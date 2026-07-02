@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>صفحة الأحداث — زاد المعرفة</title>
+    <link rel="icon" type="image/png" href="../images/logo.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="events.css" />
+  </head>
+  <body>
+    <!-- ============================================
+       HEADER
+    ============================================= -->
+    <header class="page-header">
+      <div class="header-icon">
+        <img src="../../images/logo.png" alt="logo" class="logo-img" />
+      </div>
+      <div class="header-title">صفحة الأحداث</div>
+      <div class="header-sub">زاد المعرفة — فعاليات معرفية تفاعلية</div>
+      <a href="../index.html" class="back-link">← الرئيسية</a>
+    </header>
+
+    <main>
+      <!-- ============================================
+         HERO SECTION
+      ============================================= -->
+      <section class="hero-section">
+        <div class="hero-badge">فعاليات معرفية تفاعلية</div>
+        <h1 class="hero-title">اكتشف الفعاليات القادمة</h1>
+        <p class="hero-sub">
+          ورش العمل، واللقاءات الفكرية — لا تفوّت فرصة التعلّم والتواصل مع مجتمع
+          زاد المعرفة.
+        </p>
+
+        <div class="hero-pills">
+          <div class="hero-pill">
+            <span class="pill-icon">🧠</span>
+            <span>من مجتمع تفاعلي</span>
+          </div>
+          <div class="hero-pill">
+            <span class="pill-icon">🎙️</span>
+            <span>ورش ومحاضرات</span>
+          </div>
+          <div class="hero-pill">
+            <span class="pill-icon">🎉</span>
+            <span>فعاليات وأنشطة ممتعة</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================
+         SECTION 1 — UPCOMING EVENTS
+      ============================================= -->
+      <section class="events-section">
+        <div class="section-label">الأحداث القادمة</div>
+        <h2 class="section-title">ماذا ينتظرك قريباً؟</h2>
+
+        <!-- Category filter tabs (built by JS from events-data.js) -->
+        <div class="filter-tabs" id="filterTabs"><!-- injected by JS --></div>
+
+        <!-- Event cards grid (built and filtered by JS) -->
+        <div class="events-grid" id="eventsGrid"><!-- injected by JS --></div>
+
+        <!-- Shown when no events match the active filter -->
+        <div class="empty-events is-hidden" id="emptyEvents">
+          <div class="empty-icon">📭</div>
+          <p class="empty-title">لا توجد أحداث في هذا القسم حالياً</p>
+          <p class="empty-sub">
+            قريباً هنضاف فعاليات ومسابقات ورحلات ممتعة! تابعنا عشان تكون أول
+            واحد يعرف! 🔔
+          </p>
+        </div>
+      </section>
+
+      <!-- ============================================
+         SECTION 2 — GALLERY
+      ============================================= -->
+      <section class="gallery-section" id="gallerySection">
+        <div class="section-label">معرض التوثيق</div>
+        <h2 class="section-title">ذكريات فعالياتنا</h2>
+
+        <!-- Gallery filter tabs (built by JS from events-data.js) -->
+        <div class="filter-tabs" id="galleryTabs"><!-- injected by JS --></div>
+
+        <!-- Gallery groups (built by JS) -->
+        <div id="galleryContent"><!-- injected by JS --></div>
+
+        <!-- Shown when gallery is empty -->
+        <div class="empty-gallery" id="emptyGallery">
+          <div class="empty-gallery-inner">
+            <div class="gallery-empty-icon">🖼️</div>
+            <p class="empty-title">المعرض فارغ حالياً</p>
+            <p class="empty-sub">
+              بعد كل فعالية، هنرفع هنا صور وفيديوهات للتوثيق.
+            </p>
+            <div class="gallery-placeholder-grid">
+              <div class="placeholder-cell">📷</div>
+              <div class="placeholder-cell">🎥</div>
+              <div class="placeholder-cell">📸</div>
+              <div class="placeholder-cell">🎬</div>
+              <div class="placeholder-cell">🖼️</div>
+              <div class="placeholder-cell">📹</div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- ============================================
+       LIGHTBOX (for image full-screen view)
+    ============================================= -->
+    <div class="lightbox is-hidden" id="lightbox">
+      <button class="lightbox-close" id="lightboxClose">✕</button>
+      <img class="lightbox-img" id="lightboxImg" src="" alt="" />
+      <p class="lightbox-caption" id="lightboxCaption"></p>
+    </div>
+
+    <script src="events-data.js"></script>
+    <script src="events.js"></script>
+  </body>
+</html>

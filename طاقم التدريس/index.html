@@ -1,0 +1,540 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>طاقم التدريس — زاد المعرفة</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      :root {
+        --gold: #c9a84c;
+        --gold-light: #f5ecd4;
+        --gold-hover: #b8923e;
+        --wa: #25d366;
+        --wa-dark: #128c5e;
+        --white: #ffffff;
+        --gray-50: #f9fafb;
+        --gray-200: #e5e7eb;
+        --gray-400: #9ca3af;
+        --gray-600: #4b5563;
+        --gray-800: #1f2937;
+      }
+
+      body {
+        font-family: "Cairo", sans-serif;
+        background: var(--gray-50);
+        color: var(--gray-800);
+        direction: rtl;
+      }
+
+      /* ===== HEADER ===== */
+      .page-header {
+        background: var(--white);
+        border-bottom: 1px solid var(--gray-200);
+        padding: 18px 32px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        position: sticky;
+        top: 0;
+        z-index: 50;
+      }
+      .header-icon {
+        width: 42px;
+        height: 42px;
+        background: var(--gold-light);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+      }
+      .header-title {
+        font-size: 19px;
+        font-weight: 700;
+      }
+      .header-sub {
+        font-size: 12px;
+        color: var(--gray-400);
+        margin-top: 1px;
+      }
+      .back-link {
+        margin-right: auto;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--gold);
+        text-decoration: none;
+      }
+      .back-link:hover {
+        color: var(--gold-hover);
+      }
+
+      /* ===== MAIN ===== */
+      main {
+        max-width: 1060px;
+        margin: 0 auto;
+        padding: 48px 24px 100px;
+      }
+
+      /* ===== HERO ===== */
+      .hero {
+        text-align: center;
+        margin-bottom: 52px;
+      }
+      .hero-badge {
+        display: inline-block;
+        background: var(--gold-light);
+        color: var(--gold-hover);
+        font-size: 12px;
+        font-weight: 700;
+        border-radius: 999px;
+        padding: 5px 18px;
+        margin-bottom: 14px;
+      }
+      .hero h1 {
+        font-size: 30px;
+        font-weight: 800;
+        margin-bottom: 10px;
+      }
+      .hero p {
+        font-size: 14px;
+        color: var(--gray-600);
+        line-height: 1.7;
+      }
+
+      /* ===== GRID ===== */
+      .teachers-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 28px;
+      }
+
+      /* ===== CARD ===== */
+      .card {
+        background: var(--white);
+        border: 1px solid var(--gray-200);
+        border-radius: 18px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        display: flex;
+        flex-direction: column;
+        transition:
+          transform 0.22s,
+          box-shadow 0.22s,
+          border-color 0.22s;
+      }
+      .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 14px 36px rgba(0, 0, 0, 0.12);
+        border-color: var(--gold);
+      }
+
+      /* ---- BIG RECTANGULAR PHOTO ---- */
+      .card-photo {
+        width: 100%;
+        aspect-ratio: 4 / 3;
+        object-fit: cover;
+        object-position: top center;
+        display: block;
+      }
+
+      /* placeholder emoji shown when no photo */
+      .card-no-photo {
+        width: 100%;
+        aspect-ratio: 4 / 3;
+        background: linear-gradient(150deg, var(--gold-light) 0%, #fffbef 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 72px;
+      }
+
+      /* ---- BODY ---- */
+      .card-body {
+        padding: 20px 20px 14px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .teacher-name {
+        font-size: 17px;
+        font-weight: 800;
+      }
+      .teacher-role {
+        font-size: 12.5px;
+        font-weight: 600;
+        color: var(--gold-hover);
+        margin-top: -6px;
+      }
+
+      .subjects {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .subject {
+        background: var(--gold-light);
+        color: var(--gold-hover);
+        font-size: 11px;
+        font-weight: 700;
+        border-radius: 999px;
+        padding: 4px 11px;
+      }
+
+      .bio {
+        font-size: 13px;
+        color: var(--gray-600);
+        line-height: 1.75;
+      }
+
+      .stats {
+        display: flex;
+        border-top: 1px solid var(--gray-200);
+        padding-top: 12px;
+        margin-top: auto;
+      }
+      .stat {
+        flex: 1;
+        text-align: center;
+        border-left: 1px solid var(--gray-200);
+        padding: 0 6px;
+      }
+      .stat:last-child {
+        border-left: none;
+      }
+      .stat-val {
+        font-size: 17px;
+        font-weight: 800;
+        color: var(--gold);
+      }
+      .stat-lbl {
+        font-size: 10.5px;
+        color: var(--gray-400);
+        margin-top: 1px;
+      }
+
+      /* ---- WHATSAPP BUTTON ---- */
+      .wa-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        margin: 0 18px 18px;
+        padding: 13px 0;
+        background: var(--wa);
+        color: var(--white);
+        font-family: inherit;
+        font-size: 14px;
+        font-weight: 700;
+        border-radius: 999px;
+        text-decoration: none;
+        box-shadow: 0 4px 14px rgba(37, 211, 102, 0.28);
+        transition:
+          background 0.2s,
+          transform 0.2s;
+      }
+      .wa-btn:hover {
+        background: var(--wa-dark);
+        transform: translateY(-1px);
+      }
+      .wa-icon {
+        width: 18px;
+        height: 18px;
+        flex-shrink: 0;
+      }
+
+      /* ===== RESPONSIVE ===== */
+      @media (max-width: 680px) {
+        main {
+          padding: 28px 14px 70px;
+        }
+        .page-header {
+          padding: 14px 16px;
+        }
+        .teachers-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+      .logo-img {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 50%;
+}
+    </style>
+  </head>
+  <body>
+    <header class="page-header">
+      <div class="header-icon"><img src="../../images/logo.png" alt="logo" class="logo-img" /></div>
+      <div>
+        <div class="header-title">طاقم التدريس</div>
+        <div class="header-sub">
+          نخبة من المعلمين المتميزين لخدمة العلم والمعرفة
+        </div>
+      </div>
+      <a href="../index.html" class="back-link">← الرئيسية</a>
+    </header>
+
+    <main>
+      <div class="hero">
+        <div class="hero-badge">فريق التدريس</div>
+        <h1>طاقم التدريس</h1>
+        <p>نخبة من المعلمين المتميزين لخدمة العلم والمعرفة</p>
+      </div>
+
+      <div class="teachers-grid">
+        <!-- =============================================
+         معلم 1 — اللغة العربية
+         لإضافة صورة: غيّر src="" برابط الصورة
+         واحذف السطر .card-no-photo كله
+    ============================================= -->
+        <div class="card">
+          <a href="../images/معلم الللغة العربية.png" target="_blank">
+            <img
+              class="card-photo"
+              src="../images/معلم الللغة العربية.png"
+              alt="الأستاذ ضياء نبيل"
+            />
+          </a>
+
+          <div class="card-body">
+            <div>
+              <div class="teacher-name">الأستاذ ضياء نبيل</div>
+              <div class="teacher-role">معلم متعدد التخصصات</div>
+            </div>
+            <div class="subjects">
+              <span class="subject">📚 اللغة العربية</span>
+            </div>
+            <p class="bio">
+              معلم متميز في اللغة العربية، يجمع بين العلم الشرعي الأصيل والإتقان
+              في تعليم القرآن الكريم والمواد الشرعية بأسلوب مبسط وممتع.
+            </p>
+            <div class="stats">
+              <div class="stat">
+                <div class="stat-val">10</div>
+                <div class="stat-lbl">سنوات الخبرة</div>
+              </div>
+              <div class="stat">
+                <div class="stat-val">4</div>
+                <div class="stat-lbl">تخصصات</div>
+              </div>
+              <div class="stat">
+                <div class="stat-val">500+</div>
+                <div class="stat-lbl">طالب</div>
+              </div>
+            </div>
+          </div>
+
+          <a
+            class="wa-btn"
+            href="https://wa.me/201515474939"
+            target="_blank"
+            rel="noopener"
+          >
+            <svg class="wa-icon" viewBox="0 0 24 24" fill="currentColor">
+              <path
+                d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"
+              />
+              <path
+                d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.118 1.523 5.847L.057 23.5a.5.5 0 0 0 .611.637l5.853-1.536A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.885 0-3.652-.513-5.168-1.407l-.371-.219-3.838 1.007 1.028-3.748-.241-.387A9.96 9.96 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"
+              />
+            </svg>
+            تواصل مع المعلم ←
+          </a>
+        </div>
+
+        <!-- معلم 2 — الخط العربي -->
+        <div class="card">
+          <a href="../images/الخط العربي.png" target="_blank">
+            <img
+              class="card-photo"
+              src="../images/الخط العربي.png"
+              alt="الأستاذ ضياء نبيل"
+            />
+          </a>
+
+          <div class="card-body">
+            <div>
+              <div class="teacher-name">الأستاذ ضياء نبيل</div>
+              <div class="teacher-role">
+                معلم الخط العربي والزخرفة الإسلامية
+              </div>
+            </div>
+            <div class="subjects">
+              <span class="subject">✒️ الخط العربي</span>
+              <span class="subject">🖋️ تحسين الخط</span>
+              <span class="subject">📜 الزخرفة</span>
+            </div>
+            <p class="bio">
+              معلم متخصص في تعليم الخط العربي بأنواعه المختلفة مثل النسخ والرقعة
+              والثلث، مع التركيز على تنمية مهارات الجمال الفني في الكتابة
+              والزخرفة الإسلامية.
+            </p>
+            <div class="stats">
+              <div class="stat">
+                <div class="stat-val">7</div>
+                <div class="stat-lbl">سنوات الخبرة</div>
+              </div>
+              <div class="stat">
+                <div class="stat-val">3</div>
+                <div class="stat-lbl">أنواع الخط</div>
+              </div>
+              <div class="stat">
+                <div class="stat-val">350+</div>
+                <div class="stat-lbl">طالب</div>
+              </div>
+            </div>
+          </div>
+          <a
+            class="wa-btn"
+            href="https://wa.me/201515474939"
+            target="_blank"
+            rel="noopener"
+          >
+            <svg class="wa-icon" viewBox="0 0 24 24" fill="currentColor">
+              <path
+                d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"
+              />
+              <path
+                d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.118 1.523 5.847L.057 23.5a.5.5 0 0 0 .611.637l5.853-1.536A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.885 0-3.652-.513-5.168-1.407l-.371-.219-3.838 1.007 1.028-3.748-.241-.387A9.96 9.96 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"
+              />
+            </svg>
+            تواصل مع المعلم ←
+          </a>
+        </div>
+
+        <!-- معلم 3 — القرآن الكريم -->
+        <div class="card">
+          <a href="../images/القرآن.png" target="_blank">
+            <img
+              class="card-photo"
+              src="../images/القرآن.png"
+              alt="الأستاذ ضياء نبيل"
+            />
+          </a>
+
+          <div class="card-body">
+            <div>
+              <div class="teacher-name">الأستاذ ضياء نبيل</div>
+              <div class="teacher-role">معلم القرآن الكريم وعلوم التجويد</div>
+            </div>
+            <div class="subjects">
+              <span class="subject">📖 القرآن الكريم</span>
+              <span class="subject">🕌 التجويد</span>
+              <span class="subject">🤲 حفظ القرآن</span>
+            </div>
+            <p class="bio">
+              معلم متخصص في تحفيظ القرآن الكريم وتعليم أحكام التجويد، مع
+              الاهتمام بتصحيح التلاوة وتدريب الطلاب على القراءة الصحيحة بأسلوب
+              سهل ومبسط.
+            </p>
+            <div class="stats">
+              <div class="stat">
+                <div class="stat-val">12</div>
+                <div class="stat-lbl">سنوات الخبرة</div>
+              </div>
+              <div class="stat">
+                <div class="stat-val">6</div>
+                <div class="stat-lbl">أجزاء محفوظة</div>
+              </div>
+              <div class="stat">
+                <div class="stat-val">800+</div>
+                <div class="stat-lbl">طالب</div>
+              </div>
+            </div>
+          </div>
+          <a
+            class="wa-btn"
+            href="https://wa.me/201515474939"
+            target="_blank"
+            rel="noopener"
+          >
+            <svg class="wa-icon" viewBox="0 0 24 24" fill="currentColor">
+              <path
+                d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"
+              />
+              <path
+                d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.118 1.523 5.847L.057 23.5a.5.5 0 0 0 .611.637l5.853-1.536A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.885 0-3.652-.513-5.168-1.407l-.371-.219-3.838 1.007 1.028-3.748-.241-.387A9.96 9.96 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"
+              />
+            </svg>
+            تواصل مع المعلم ←
+          </a>
+        </div>
+
+        <!-- معلم 4 — البرمجة والتقنية -->
+        <div class="card">
+          <a href="../images/teacher-malek.png" target="_blank">
+            <img
+              class="card-photo"
+              src="../images/teacher-malek.png"
+              alt="الأستاذ ضياء نبيل"
+            />
+          </a>
+
+          <div class="card-body">
+            <div>
+              <div class="teacher-name">مالك سامح</div>
+              <div class="teacher-role">معلم تقني متميز</div>
+            </div>
+            <div class="subjects">
+              <span class="subject">💻 البرمجة</span>
+              <span class="subject">🤖 الذكاء الاصطناعي</span>
+              <span class="subject">🧠 التعلم العميق</span>
+              <span class="subject">📊 تحليل البيانات</span>
+            </div>
+            <p class="bio">
+              معلم متخصص في علوم الحاسوب والبرمجة، يقدم دورات شاملة في البرمجة
+              بأنواعها والذكاء الاصطناعي بأحدث التقنيات وأفضل الممارسات
+              العالمية.
+            </p>
+            <div class="stats">
+              <div class="stat">
+                <div class="stat-val">8</div>
+                <div class="stat-lbl">سنوات الخبرة</div>
+              </div>
+              <div class="stat">
+                <div class="stat-val">5</div>
+                <div class="stat-lbl">لغات برمجة</div>
+              </div>
+              <div class="stat">
+                <div class="stat-val">300+</div>
+                <div class="stat-lbl">طالب</div>
+              </div>
+            </div>
+          </div>
+          <a
+            class="wa-btn"
+            href="https://wa.me/201515474939"
+            target="_blank"
+            rel="noopener"
+          >
+            <svg class="wa-icon" viewBox="0 0 24 24" fill="currentColor">
+              <path
+                d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"
+              />
+              <path
+                d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.118 1.523 5.847L.057 23.5a.5.5 0 0 0 .611.637l5.853-1.536A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.885 0-3.652-.513-5.168-1.407l-.371-.219-3.838 1.007 1.028-3.748-.241-.387A9.96 9.96 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"
+              />
+            </svg>
+            تواصل مع المعلم ←
+          </a>
+        </div>
+      </div>
+      <!-- /teachers-grid -->
+    </main>
+  </body>
+</html>

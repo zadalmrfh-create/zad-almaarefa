@@ -1,0 +1,884 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>زاد المعرفة — منصة تعليمية إسلامية</title>
+    <link rel="icon" type="image/png" href="images/logo.png" />
+    <link rel="stylesheet" href="style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&family=Cairo:wght@300;400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Google Fonts: Cairo for modern Arabic typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    />
+    <!-- FontAwesome for Icons -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body>
+    <!-- ═══════════ NAVBAR ═══════════ -->
+    <nav id="navbar">
+      <div class="nav-inner">
+        <a href="#" class="logo">
+          <div
+            class="w-12 h-12 rounded-full overflow-hidden border-2 border-yellow-500 shadow-lg shadow-yellow-500/25"
+          >
+            <img
+              src="images/logo.png"
+              alt="زاد المعرفة"
+              class="w-full h-full object-cover"
+            />
+          </div>
+
+          <span class="logo-text">زاد <span>المعرفة</span></span>
+        </a>
+
+        <div class="nav-links">
+          <a href="#hero" class="nav-link">الرئيسية</a>
+
+          <a href="#categories" class="nav-link">الأقسام</a>
+
+          <a href="طاقم التدريس/index.html" class="nav-link" target="_self"
+            >طاقم التدريس</a
+          >
+
+          <a
+            href="أحداث زاد المعرفة/events.html"
+            class="nav-link"
+            target="_self"
+            >الأحداث</a
+          >
+
+          <a href="sections/service.html" class="nav-link" target="_self"
+            >الخدمات</a
+          >
+
+          <a
+            href="طلاب المنصة المتميزون/students.html"
+            class="nav-link"
+            target="_self"
+            >الطلاب المتميزون</a
+          >
+        </div>
+
+        <button class="btn-nav" onclick="smoothTo('categories')">
+          ابدأ التعلم
+        </button>
+        <button class="hamburger" id="hamBtn" onclick="openMob()">
+          <svg
+            width="20"
+            height="20"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M4 6h16M4 12h16M4 18h16"
+            />
+          </svg>
+        </button>
+      </div>
+    </nav>
+
+    <!-- ═══════════ MOBILE OVERLAY ═══════════ -->
+    <div id="mobile-overlay">
+      <button class="mob-close" onclick="closeMob()">
+        <svg
+          width="18"
+          height="18"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M6 18L18 6M6 6l12 12"
+          />
+        </svg>
+      </button>
+
+      <a href="#hero" class="mob-btn" onclick="closeMob()">الرئيسية</a>
+
+      <a href="#categories" class="mob-btn" onclick="closeMob()">الأقسام</a>
+
+      <a
+        href="طاقم التدريس/index.html"
+        target="_blank"
+        class="mob-btn"
+        onclick="closeMob()"
+        >طاقم التدريس</a
+      >
+
+      <a
+        href="أحداث زاد المعرفة/events.html"
+        target="_blank"
+        class="mob-btn"
+        onclick="closeMob()"
+        >الأحداث</a
+      >
+
+      <a
+        href="sections/service.html"
+        target="_blank"
+        class="mob-btn"
+        onclick="closeMob()"
+        >الخدمات</a
+      >
+      <a
+        href="طلاب المنصة المتميزون/students.html"
+        target="_blank"
+        class="mob-btn"
+        onclick="closeMob()"
+        >الطلاب المتميزون</a
+      >
+
+      <button class="btn-primary" onclick="smoothTo('categories')">
+        ➡️ ابدأ التعلم الآن
+      </button>
+    </div>
+
+    <!-- ═══════════ HERO ═══════════ -->
+    <section id="hero">
+      <!-- Overlay -->
+      <div class="hero-overlay"></div>
+
+      <div class="hero-container">
+        <!-- النص (يمين) -->
+        <div class="hero-text">
+          <span class="hero-badge">منصتك التعليمية الشاملة</span>
+
+          <h1 class="hero-title">زاد المعرفة</h1>
+
+          <p class="hero-desc">
+            منصة تعليمية إسلامية شاملة تجمع بين العلوم الشرعية والقرآن الكريم
+            واللغة العربية، لتكون رفيقك في رحلة طلب العلم
+          </p>
+
+          <div class="hero-actions">
+            <button class="btn-primary" onclick="smoothTo('categories')">
+              استكشف الأقسام
+            </button>
+            <button class="btn-nav" onclick="smoothTo('categories')">
+              ابدأ الآن
+            </button>
+          </div>
+
+          <div class="hero-stats">
+            <div>
+              <span class="num" style="display: none">20+</span>
+              <span class="label" style="display: none">دورة</span>
+            </div>
+            <div>
+              <span class="num" style="display: none">6+</span>
+              <span class="label" style="display: none">أقسام</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- الصورة (شمال) -->
+        <div class="hero-image">
+          <img src="images/hero-student.jpg" alt="" />
+        </div>
+      </div>
+    </section>
+
+    <!-- Mission Section -->
+    <section id="mission" class="py-20 bg-white relative">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid lg:grid-cols-2 gap-16 items-center">
+          <!-- Visual Side -->
+          <div class="relative reveal">
+            <div
+              class="absolute inset-0 bg-brand-600 rounded-3xl transform rotate-3 opacity-10"
+            ></div>
+            <img
+              src="https://picsum.photos/seed/reading/600/700.jpg"
+              alt="مكتبة"
+              class="relative rounded-3xl shadow-xl w-full h-full object-cover"
+            />
+            <div
+              class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent rounded-3xl flex items-end p-8"
+            >
+              <p class="text-white text-xl font-bold">
+                "نعمل على غرس القيم والأخلاق إلى جانب التنمية المعرفية"
+              </p>
+            </div>
+          </div>
+
+          <!-- Content Side -->
+          <div class="reveal delay-200">
+            <h2 class="text-3xl lg:text-4xl font-bold text-gray-900 mb-6">
+              <span class="text-brand-600">رسالتنا</span> وقيمنا
+            </h2>
+            <div class="w-20 h-1.5 bg-accent-500 rounded-full mb-8"></div>
+
+            <div
+              class="space-y-6 text-gray-600 text-lg leading-loose text-justify"
+            >
+              <p>
+                تسعى منصة <strong>زاد المعرفة</strong> إلى تقديم محتوى تعليمي
+                متميز يجمع بين الجودة والسهولة، بهدف دعم الطلاب في رحلتهم
+                التعليمية وتمكينهم من تحقيق التفوق والنجاح.
+              </p>
+              <p>
+                ونعمل على توفير شروحات مبسطة، وملخصات شاملة، واختبارات تفاعلية،
+                ومواد تعليمية متنوعة تساعد الطلاب على فهم المناهج الدراسية
+                وإتقانها، مع توظيف أحدث الوسائل والتقنيات التعليمية لجعل عملية
+                التعلم أكثر فاعلية ومتعة.
+              </p>
+              <p>
+                كما تهدف المنصة إلى إعداد جيل من الطلاب المتميزين علميًا
+                وتربويًا، من خلال غرس القيم والأخلاق إلى جانب تنمية التحصيل
+                العلمي، وتقديم الاستشارات التربوية والنفسية التي تسهم في دعم
+                الطلاب وأولياء الأمور ومساعدتهم على مواجهة التحديات التعليمية
+                والتربوية المختلفة.
+              </p>
+            </div>
+
+            <!-- Key Pillars -->
+            <div class="mt-10 grid grid-cols-2 gap-6">
+              <div class="flex items-start gap-3">
+                <i
+                  class="fa-solid fa-check-circle text-green-500 text-xl mt-1"
+                ></i>
+                <span class="font-semibold text-gray-800">جودة تعليمية</span>
+              </div>
+              <div class="flex items-start gap-3">
+                <i
+                  class="fa-solid fa-check-circle text-green-500 text-xl mt-1"
+                ></i>
+                <span class="font-semibold text-gray-800">دعم مستمر</span>
+              </div>
+              <div class="flex items-start gap-3">
+                <i
+                  class="fa-solid fa-check-circle text-green-500 text-xl mt-1"
+                ></i>
+                <span class="font-semibold text-gray-800">تقنيات حديثة</span>
+              </div>
+              <div class="flex items-start gap-3">
+                <i
+                  class="fa-solid fa-check-circle text-green-500 text-xl mt-1"
+                ></i>
+                <span class="font-semibold text-gray-800">بناء القيم</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════ CATEGORIES ═══════════ -->
+    <section id="categories">
+      <div class="cats-inner">
+        <div class="cats-header sr">
+          <div class="section-label">استكشف عالم المعرفة</div>
+          <h2 class="section-title">اقسام المنصة</h2>
+          <p class="section-sub">
+            اختر من بين مجالات العلم الإسلامي والمعرفي المنظّمة بعناية
+          </p>
+        </div>
+        <div class="cats-grid" id="cats-grid"></div>
+      </div>
+    </section>
+
+    <!-- ═══════════ ABOUT ═══════════ -->
+    <section id="about">
+      <div class="about-inner">
+        <div class="sr">
+          <div class="section-label">عن المنصة</div>
+          <h2 class="section-title">
+            تعلّم بطريقة<br /><span style="color: var(--gold)"
+              >منظّمة وممتعة</span
+            >
+          </h2>
+          <p class="section-sub">
+            زاد المعرفة منصة تعليمية تسعى إلى تقديم العلوم الإسلامية والمعرفية
+            بأسلوب عصري وميسّر، مع الحفاظ على الأصالة والدقة.
+          </p>
+          <div class="about-features">
+            <div class="afeature">
+              <div class="afeature-icon">✅</div>
+              <div class="m1">
+                <div class="afeature-title">محتوى موثوق ومدقق</div>
+                <div class="afeature-desc">
+                  كل مقالة مراجعة من متخصصين في الشريعة الإسلامية قبل النشر
+                </div>
+              </div>
+            </div>
+            <div class="afeature">
+              <div class="afeature-icon">📚</div>
+              <div class="m1">
+                <div class="afeature-title">منهج تعليمي منظّم</div>
+                <div class="afeature-desc">
+                  تسلسل منطقي من المبادئ الأساسية إلى المسائل المتقدمة
+                </div>
+              </div>
+            </div>
+            <div class="afeature">
+              <div class="afeature-icon">📱</div>
+              <div class="m1">
+                <div class="afeature-title">متاح على جميع الأجهزة</div>
+                <div class="afeature-desc">
+                  تجربة سلسة ومتكاملة على الجوال والحاسوب واللوحي
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="about-visual sr sr-delay-2" style="position: relative">
+          <!-- <div class="float-badge">✨ مجاني للجميع دائمًا</div> -->
+          <div class="dash-mockup">
+            <div class="dash-bar">
+              <div class="dash-dot" style="background: #ff5f57"></div>
+              <div class="dash-dot" style="background: #febc2e"></div>
+              <div class="dash-dot" style="background: #28c840"></div>
+            </div>
+            <div class="dash-body">
+              <div class="dash-grid">
+                <div class="dash-widget">
+                  <div class="dw-label">الدروس المتاحة</div>
+                  <div class="dw-val">+200</div>
+                </div>
+                <div class="dash-widget">
+                  <div class="dw-label">التصنيفات</div>
+                  <div class="dw-val">12</div>
+                </div>
+              </div>
+              <div class="dash-bar2">
+                <div
+                  class="dbar-label"
+                  style="
+                    margin-bottom: 16px;
+                    font-family: &quot;Cairo&quot;, sans-serif;
+                    font-weight: 800;
+                    color: var(--text);
+                    font-size: 0.85rem;
+                  "
+                >
+                  تقدّمك هذا الأسبوع
+                </div>
+                <div class="dbar-row">
+                  <span class="dbar-label">العقيدة</span
+                  ><span class="dbar-pct">٧٨٪</span>
+                </div>
+                <div class="dbar-track" style="margin-bottom: 14px; width: 78%">
+                  <div class="dbar-fill" data-w="78%"></div>
+                </div>
+                <div class="dbar-row">
+                  <span class="dbar-label">السيرة</span
+                  ><span class="dbar-pct">٥٤٪</span>
+                </div>
+                <div class="dbar-track" style="margin-bottom: 14px; width: 54%">
+                  <div class="dbar-fill" data-w="54%"></div>
+                </div>
+                <div class="dbar-row">
+                  <span class="dbar-label">الفقه</span
+                  ><span class="dbar-pct">٣٢٪</span>
+                </div>
+                <div class="dbar-track" style="width: 38%">
+                  <div class="dbar-fill" data-w="32%"></div>
+                </div>
+              </div>
+              <div class="dash-list">
+                <div
+                  style="
+                    font-family: &quot;Cairo&quot;, sans-serif;
+                    font-weight: 800;
+                    color: var(--text);
+                    font-size: 0.85rem;
+                    margin-bottom: 12px;
+                  "
+                >
+                  آخر الدروس
+                </div>
+                <div class="dl-row">
+                  <div class="dl-icon">🌙</div>
+                  <span class="dl-text">أركان الإيمان الستة</span>
+                  <span class="dl-badge">مكتمل</span>
+                </div>
+                <div class="dl-row">
+                  <div class="dl-icon">📖</div>
+                  <span class="dl-text">أسباب النزول</span>
+                  <span
+                    class="dl-badge"
+                    style="
+                      background: rgba(124, 111, 205, 0.15);
+                      color: var(--accent2);
+                      border-color: rgba(124, 111, 205, 0.2);
+                    "
+                    >جارٍ</span
+                  >
+                </div>
+                <div class="dl-row">
+                  <div class="dl-icon">⚖️</div>
+                  <span class="dl-text">أركان الإسلام الخمسة</span>
+                  <span
+                    class="dl-badge"
+                    style="
+                      background: rgba(255, 255, 255, 0.04);
+                      color: var(--muted);
+                      border-color: var(--border);
+                    "
+                    >قريبًا</span
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!--footer-->
+    <footer id="footer">
+      <div class="footer-container">
+        <!-- Brand -->
+        <div class="footer-brand">
+          <div class="logo">
+            <div class="logo-img">
+              <img src="images/logo.png" alt="زاد المعرفة" class="logo-img" />
+            </div>
+
+            <span class="logo-text">زاد <span>المعرفة</span></span>
+          </div>
+
+          <p>
+            منصة تعليمية إسلامية تهدف إلى نشر العلم النافع وتقديم محتوى متميز
+            بأسلوب عصري بسيط.
+          </p>
+
+          <a
+            href="https://wa.me/201515474939"
+            class="whatsapp-btn"
+            target="_blank"
+          >
+            تواصل عبر واتساب
+          </a>
+          <p style="color: gray">تابعنا على السوشيال ميديا:</p>
+
+          <div class="footer-socials">
+            <a
+              href="https://whatsapp.com/channel/0029VbCKfnI4inokhRHc1k41"
+              target="_blank"
+            >
+              <i class="fab fa-whatsapp"></i>
+            </a>
+
+            <a
+              href="https://www.facebook.com/share/1BM3MS8mjM/"
+              target="_blank"
+            >
+              <i class="fab fa-facebook-f"></i>
+            </a>
+
+            <a href="https://t.me/zadelmarefh" target="_blank">
+              <i class="fab fa-telegram"></i>
+            </a>
+
+            <a
+              href="https://youtube.com/channel/UC5dMzTXCU61UrYrrc9ol8UA"
+              target="_blank"
+            >
+              <i class="fab fa-youtube"></i>
+            </a>
+          </div>
+        </div>
+
+        <!-- Quick links -->
+        <div class="footer-links-col">
+          <h4>روابط</h4>
+          <a href="#hero">الرئيسية</a>
+          <a href="#categories">الأقسام</a>
+          <a href="طاقم التدريس/index.html" target="_blank">طاقم التدريس</a>
+          <a href="sections/service.html" target="_blank">خدماتنا</a>
+          <a href="أحداث زاد المعرفة/events.html" target="_blank">الأحداث</a>
+          <a
+            href="طلاب المنصة المتميزون/students.html"
+            target="_self"
+            >الطلاب المتميزون</a
+          >
+        </div>
+
+        <!-- Sections -->
+        <div class="footer-links-col">
+          <h4>الأقسام</h4>
+          <a href="sections/Quran/quran.html">القرآن الكريم</a>
+          <a href="sections/Azhar/azhar.html">التعليم الأزهري</a>
+          <a href="sections/Sharia/">العلوم الشرعية</a>
+          <a href="sections/Arabic/arabic.html">اللغة العربية</a>
+          <a href="sections/Tazkea/tazkea.html">الإرشاد النفسي</a>
+          <a href="sections/service.html">الخدمات المصغرة</a>
+        </div>
+        <!-- Contact -->
+        <div class="footer-contact">
+          <h4>تواصل معنا</h4>
+          <p>📧 zadalmarfah@gmail.com</p>
+          <p>📱 +201515474939</p>
+          <p>📍 مصر - القاهرة</p>
+        </div>
+      </div>
+
+      <!-- Bottom -->
+
+      <div class="footer-bottom">
+        <div class="footer-bottom-inner">
+          <span>© 2026 زاد المعرفة — جميع الحقوق محفوظة</span>
+
+          <span class="footer-love"> صُنع بـ ❤️ لنشر العلم </span>
+        </div>
+      </div>
+    </footer>
+
+    <!-- ═══════════ MODAL ═══════════ -->
+    <div id="modal-overlay" onclick="handleModalClick(event)">
+      <div id="modal-box">
+        <div class="modal-head">
+          <div>
+            <div class="modal-badge" id="mBadge"></div>
+            <h2 class="modal-title" id="mTitle"></h2>
+            <div class="modal-meta">
+              <svg
+                width="13"
+                height="13"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              <span id="mTime"></span>
+            </div>
+          </div>
+          <button class="modal-close" onclick="closeModal()">
+            <svg
+              width="16"
+              height="16"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        </div>
+        <div class="modal-body-wrap">
+          <div class="modal-content" id="mBody"></div>
+        </div>
+        <div class="modal-footer">
+          <button
+            class="btn-primary"
+            style="font-size: 0.88rem; padding: 10px 22px"
+            onclick="closeModal()"
+          >
+            <svg
+              width="15"
+              height="15"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2.5"
+                d="M5 13l4 4L19 7"
+              />
+            </svg>
+            انتهيت من القراءة
+          </button>
+          <button
+            class="btn-outline"
+            style="font-size: 0.88rem; padding: 10px 22px"
+            onclick="closeModal()"
+          >
+            العودة للقائمة
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════ JS ═══════════ -->
+    <script>
+      /* ── DATA ── */
+      const CATS = [
+        {
+          id: "azhary",
+          icon: "🎓",
+          name: "التعليم الأزهري",
+          desc: "مناهج الأزهر الشريف لجميع المراحل التعليمية.",
+          topics: ["إعدادي", "ثانوي"],
+          iconBg: "rgba(16,185,129,0.15)",
+          glow: "rgba(16,185,129,0.08)",
+          image: "images/Azher-section-img.png",
+          link: "sections/Azhar/azhar.html",
+        },
+        {
+          id: "quran",
+          icon: "📖",
+          name: "القرآن الكريم وعلومه",
+          desc: "حفظ وتفسير وتجويد مع شرح مبسط لكتاب الله.",
+          topics: ["التجويد", "التفسير", "القراءات", "الحفظ والتعلم"],
+          iconBg: "rgba(201,168,76,0.15)",
+          glow: "rgba(201,168,76,0.08)",
+          image: "images/quran-sec-img.png",
+          link: "sections/Quran/quran.html",
+        },
+        {
+          id: "arabic",
+          icon: "🅰️",
+          name: "اللغة العربية وعلومها",
+          desc: "نحو، صرف، بلاغة، وأدب عربي بأسلوب مبسط ومتدرج.",
+          topics: ["النحو", "البلاغة", "الأدب العربي", "الخط العربي"],
+          iconBg: "rgba(99,102,241,0.15)",
+          glow: "rgba(99,102,241,0.08)",
+          image: "images/Arabic-sec-img.png",
+          link: "sections/Arabic/arabic.html",
+        },
+        {
+          id: "sharia",
+          icon: "⚖️",
+          name: "العلوم الشرعية",
+          desc: "فقه، حديث، عقيدة وأصول الدين بشكل مبسط.",
+          topics: ["الفقه", "الحديث", "العقيدة"],
+          iconBg: "rgba(239,68,68,0.15)",
+          glow: "rgba(239,68,68,0.08)",
+          image: "images/s-sec-img.png",
+          link: "sections/Sharia/sharia.html",
+        },
+        {
+          id: "self",
+          icon: "❤️",
+          name: "التزكية والإرشاد النفسي",
+          desc: "تنمية النفس وبناء الشخصية والتوازن الداخلي.",
+          topics: ["تزكية", "إرشاد", "تنمية الذات"],
+          iconBg: "rgba(236,72,153,0.15)",
+          glow: "rgba(236,72,153,0.08)",
+          image: "images/t-sec-img.png",
+          link: "sections/Tazkea/tazkea.html",
+        },
+        {
+          id: "services",
+          icon: "🛠️",
+          name: "الخدمات المصغّرة",
+          desc: "خدمات تساعدك في الدراسة والعمل.",
+          topics: ["تصميم", "كتابة", "ذكاء اصطناعي"],
+          iconBg: "rgba(59,130,246,0.15)",
+          glow: "rgba(59,130,246,0.08)",
+          image: "images/service.sec.img.png",
+          link: "sections/service.html",
+        },
+      ];
+
+      const BADGE_STYLES = {
+        aqeeda:
+          "background:rgba(201,168,76,.15);color:#e8c96d;border-color:rgba(201,168,76,.25)",
+        fiqh: "background:rgba(74,222,128,.12);color:#4ade80;border-color:rgba(74,222,128,.25)",
+        seerah:
+          "background:rgba(251,191,36,.12);color:#fbbf24;border-color:rgba(251,191,36,.25)",
+        quran:
+          "background:rgba(248,113,113,.12);color:#f87171;border-color:rgba(248,113,113,.25)",
+        hadith:
+          "background:rgba(56,189,248,.12);color:#38bdf8;border-color:rgba(56,189,248,.25)",
+        akhlaq:
+          "background:rgba(167,139,250,.12);color:#a78bfa;border-color:rgba(167,139,250,.25)",
+      };
+
+      /* ── STATE ── */
+      let activeFilter = "all",
+        searchQ = "";
+
+      /* ── RENDER CATS ── */
+      function renderCats() {
+        document.getElementById("cats-grid").innerHTML = CATS.map(
+          (c, i) => `
+             <div
+        class="cat-card sr sr-delay-${(i % 3) + 1}"
+       onclick="window.location.href='${c.link}'"
+        style="background-image:url('${c.image}')"
+      >
+                <div class="cat-num">${String(i + 1).padStart(2, "0")}</div>
+                <div class="cat-icon" style="background:${c.iconBg}">${c.icon}</div>
+                <div class="cat-name">${c.name}</div>
+                <div class="cat-desc">${c.desc}</div>
+                 <div class="cat-topics">${c.topics.map((t) => `<span class="cat-topic-pill">${t}</span>`).join("")}</div>
+                <div class="cat-footer">
+                 
+                  <div class="cat-arrow">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                  </div>
+                </div>
+              </div>
+            `,
+        ).join("");
+        observeNewSR();
+      }
+
+      /* ── RENDER TOPICS ── */
+      function renderTopics() {
+        const filtered = TOPICS.filter((t) => {
+          const mc = activeFilter === "all" || t.cat === activeFilter;
+          const ms = !searchQ || t.title.includes(searchQ);
+          return mc && ms;
+        });
+        const grid = document.getElementById("topicsGrid");
+        const empty = document.getElementById("empty-state");
+        if (!filtered.length) {
+          grid.innerHTML = "";
+          empty.style.display = "block";
+          return;
+        }
+        empty.style.display = "none";
+        const cat = CATS.find((c) => c.id === filtered[0]?.cat);
+        grid.innerHTML = filtered
+          .map((t, i) => {
+            const bs = BADGE_STYLES[t.cat] || "";
+            const catName = CATS.find((c) => c.id === t.cat)?.name || "";
+            return `
+              <div class="topic-card sr sr-delay-${(i % 3) + 1}" onclick="openTopic('${t.id}')">
+                <div class="topic-cat-badge" style="${bs}">${catName}</div>
+                <div class="topic-title">${t.title}</div>
+                <div class="topic-footer">
+                  <div class="topic-time">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    ${t.time} قراءة
+                  </div>
+                  <div class="topic-go">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                  </div>
+                </div>
+              </div>`;
+          })
+          .join("");
+        observeNewSR();
+      }
+
+      /* ── MODAL ── */
+      function openTopic(id) {
+        const t = TOPICS.find((x) => x.id === id);
+        if (!t) return;
+        const catName = CATS.find((c) => c.id === t.cat)?.name || "";
+        const bs = BADGE_STYLES[t.cat] || "";
+        document.getElementById("mBadge").textContent = catName;
+        document.getElementById("mBadge").style.cssText = bs;
+        document.getElementById("mTitle").textContent = t.title;
+        document.getElementById("mTime").textContent = t.time + " قراءة";
+        document.getElementById("mBody").innerHTML = t.content;
+        document.getElementById("modal-overlay").classList.add("open");
+        document.body.style.overflow = "hidden";
+      }
+      function closeModal() {
+        document.getElementById("modal-overlay").classList.remove("open");
+        document.body.style.overflow = "";
+      }
+      function handleModalClick(e) {
+        if (e.target === document.getElementById("modal-overlay")) closeModal();
+      }
+
+      /* ── NAV ── */
+      window.addEventListener("scroll", () => {
+        document
+          .getElementById("navbar")
+          .classList.toggle("scrolled", scrollY > 40);
+      });
+      function smoothTo(id) {
+        document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+      }
+
+      /* ── MOBILE ── */
+      function openMob() {
+        document.getElementById("mobile-overlay").classList.add("open");
+        document.body.style.overflow = "hidden";
+      }
+      function closeMob() {
+        document.getElementById("mobile-overlay").classList.remove("open");
+        document.body.style.overflow = "";
+      }
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+          closeModal();
+          closeMob();
+        }
+      });
+
+      /* ── SCROLL REVEAL ── */
+      const srObs = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((e) => {
+            if (e.isIntersecting) {
+              e.target.classList.add("vis");
+              srObs.unobserve(e.target);
+            }
+          });
+        },
+        { threshold: 0.1 },
+      );
+      function observeNewSR() {
+        document
+          .querySelectorAll(".sr:not(.vis)")
+          .forEach((el) => srObs.observe(el));
+      }
+
+      /* ── PROGRESS BARS ── */
+      const pbObs = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((e) => {
+            if (e.isIntersecting) {
+              e.target.querySelectorAll(".dbar-fill").forEach((b) => {
+                b.style.width = b.dataset.w || "0%";
+              });
+              pbObs.unobserve(e.target);
+            }
+          });
+        },
+        { threshold: 0.3 },
+      );
+
+      /* ── INIT ── */
+      document.addEventListener("DOMContentLoaded", () => {
+        renderCats();
+        renderTopics();
+        observeNewSR();
+        document
+          .querySelectorAll(".dash-mockup")
+          .forEach((m) => pbObs.observe(m));
+      });
+      /*links-card*/
+
+      function goTo(link) {
+        window.location.href = link;
+      }
+    </script>
+  </body>
+</html>

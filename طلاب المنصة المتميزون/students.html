@@ -1,0 +1,965 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>طلاب المنصة المتميزون — زاد المعرفة</title>
+    <link rel="icon" type="image/png" href="../images/logo.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      :root {
+        --gold: #c9a84c;
+        --gold-light: #f5ecd4;
+        --gold-hover: #b8923e;
+        --white: #ffffff;
+        --gray-50: #f9fafb;
+        --gray-200: #e5e7eb;
+        --gray-400: #9ca3af;
+        --gray-600: #4b5563;
+        --gray-800: #1f2937;
+      }
+
+      body {
+        font-family: "Cairo", sans-serif;
+        background: var(--gray-50);
+        color: var(--gray-800);
+        direction: rtl;
+      }
+      .logo-img {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+      /* ===== HEADER ===== */
+      .page-header {
+        background: var(--white);
+        border-bottom: 1px solid var(--gray-200);
+        padding: 18px 32px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        position: sticky;
+        top: 0;
+        z-index: 50;
+      }
+      .header-icon {
+        width: 42px;
+        height: 42px;
+        background: var(--gold-light);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+      }
+      .header-title {
+        font-size: 19px;
+        font-weight: 700;
+      }
+      .header-sub {
+        font-size: 12px;
+        color: var(--gray-400);
+        margin-top: 1px;
+      }
+      .back-link {
+        margin-right: auto;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--gold);
+        text-decoration: none;
+      }
+      .back-link:hover {
+        color: var(--gold-hover);
+      }
+
+      /* ===== MAIN ===== */
+      main {
+        max-width: 1060px;
+        margin: 0 auto;
+        padding: 48px 24px 100px;
+      }
+
+      /* ===== HERO ===== */
+      .hero {
+        text-align: center;
+        margin-bottom: 56px;
+      }
+      .hero-badge {
+        display: inline-block;
+        background: var(--gold-light);
+        color: var(--gold-hover);
+        font-size: 12px;
+        font-weight: 700;
+        border-radius: 999px;
+        padding: 5px 18px;
+        margin-bottom: 14px;
+      }
+      .hero h1 {
+        font-size: 30px;
+        font-weight: 800;
+        margin-bottom: 10px;
+      }
+      .hero p {
+        font-size: 14px;
+        color: var(--gray-600);
+        line-height: 1.7;
+        max-width: 520px;
+        margin: 0 auto;
+      }
+
+      /* ===== SECTION LABEL ===== */
+      .section-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--gold);
+        margin-bottom: 6px;
+      }
+      .section-label::before {
+        content: "";
+        width: 18px;
+        height: 2px;
+        border-radius: 2px;
+        background: var(--gold);
+      }
+      .section-title {
+        font-size: 22px;
+        font-weight: 700;
+        margin-bottom: 22px;
+      }
+
+      /* =============================================
+   SECTION 1 — CERTIFICATES
+   4 category cards → click → show students list
+============================================= */
+      .certs-section {
+        margin-bottom: 70px;
+      }
+
+      /* ---- search bar ---- */
+      .search-wrap {
+        margin-bottom: 24px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: var(--white);
+        border: 1.5px solid var(--gray-200);
+        border-radius: 999px;
+        padding: 11px 20px;
+        max-width: 420px;
+        transition:
+          border-color 0.2s,
+          box-shadow 0.2s;
+      }
+      .search-wrap:focus-within {
+        border-color: var(--gold);
+        box-shadow: 0 0 0 3px var(--gold-light);
+      }
+      .search-wrap input {
+        border: none;
+        outline: none;
+        font-family: inherit;
+        font-size: 14px;
+        background: none;
+        color: var(--gray-800);
+        flex: 1;
+      }
+      .search-wrap input::placeholder {
+        color: var(--gray-400);
+      }
+
+      /* ---- 4 category cards ---- */
+      .cert-categories {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 18px;
+        margin-bottom: 36px;
+      }
+
+      /* The card that matches the screenshot exactly */
+      .cat-card {
+        background: var(--gold-light);
+        border: 2px solid transparent;
+        border-radius: 20px;
+        padding: 0;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        transition:
+          border-color 0.2s,
+          box-shadow 0.2s,
+          transform 0.2s;
+        text-align: center;
+      }
+      .cat-card:hover,
+      .cat-card.active {
+        border-color: var(--gold);
+        box-shadow: 0 8px 24px rgba(201, 168, 76, 0.25);
+        transform: translateY(-3px);
+      }
+      .cat-card.active {
+        box-shadow:
+          0 0 0 3px var(--gold),
+          0 8px 24px rgba(201, 168, 76, 0.2);
+      }
+
+      /* big emoji area — same gold-light bg as screenshot */
+      .cat-icon-area {
+        background: linear-gradient(160deg, #f5ecd4 0%, #fffbef 100%);
+        padding: 36px 20px 28px;
+        font-size: 58px;
+        line-height: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .cat-info {
+        padding: 16px 16px 20px;
+        background: var(--white);
+        flex: 1;
+      }
+      .cat-name {
+        font-size: 15px;
+        font-weight: 800;
+        margin-bottom: 4px;
+      }
+      .cat-sub {
+        font-size: 12px;
+        color: var(--gold-hover);
+        font-weight: 600;
+        margin-bottom: 8px;
+      }
+      .cat-count {
+        font-size: 11.5px;
+        color: var(--gray-400);
+      }
+
+      /* ---- student list that appears under the selected category ---- */
+      .students-under-cert {
+        display: none;
+        animation: fadeUp 0.3s ease;
+      }
+      .students-under-cert.show {
+        display: block;
+      }
+
+      @keyframes fadeUp {
+        from {
+          opacity: 0;
+          transform: translateY(8px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .cert-list-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 18px;
+        padding: 14px 20px;
+        background: var(--white);
+        border: 1px solid var(--gray-200);
+        border-radius: 14px;
+      }
+      .cert-list-title {
+        font-size: 15px;
+        font-weight: 700;
+      }
+      .cert-list-close {
+        background: var(--gray-50);
+        border: 1px solid var(--gray-200);
+        border-radius: 999px;
+        padding: 5px 14px;
+        font-family: inherit;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--gray-600);
+        cursor: pointer;
+      }
+      .cert-list-close:hover {
+        border-color: var(--gold);
+        color: var(--gold);
+      }
+
+      .cert-students-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 14px;
+      }
+
+      /* each student row inside the cert list */
+      .cert-student-row {
+        background: var(--white);
+        border: 1px solid var(--gray-200);
+        border-radius: 14px;
+        padding: 16px 18px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        transition:
+          border-color 0.2s,
+          box-shadow 0.2s;
+      }
+      .cert-student-row:hover {
+        border-color: var(--gold);
+        box-shadow: 0 4px 14px rgba(201, 168, 76, 0.15);
+      }
+
+      .cert-student-avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 10px;
+        background: var(--gold-light);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        flex-shrink: 0;
+      }
+      .cert-student-info {
+        flex: 1;
+      }
+      .cert-student-name {
+        font-size: 14px;
+        font-weight: 700;
+        margin-bottom: 2px;
+      }
+      .cert-student-level {
+        font-size: 11.5px;
+        color: var(--gray-400);
+      }
+
+      .cert-dl-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 8px 14px;
+        background: var(--gold);
+        color: var(--white);
+        font-family: inherit;
+        font-size: 12px;
+        font-weight: 700;
+        border-radius: 999px;
+        text-decoration: none;
+        flex-shrink: 0;
+        transition: background 0.2s;
+      }
+      .cert-dl-btn:hover {
+        background: var(--gold-hover);
+      }
+
+      /* no-results message */
+      .no-results {
+        text-align: center;
+        color: var(--gray-400);
+        font-size: 13px;
+        padding: 30px 0;
+        display: none;
+      }
+      .no-results.show {
+        display: block;
+      }
+
+      /* =============================================
+   SECTION 2 — STAR STUDENTS
+   Same card style as teachers page
+============================================= */
+      .students-section {
+        margin-bottom: 60px;
+      }
+
+      .students-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+        gap: 24px;
+      }
+
+      .card {
+        background: var(--white);
+        border: 1px solid var(--gray-200);
+        border-radius: 18px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        display: flex;
+        flex-direction: column;
+        transition:
+          transform 0.22s,
+          box-shadow 0.22s,
+          border-color 0.22s;
+      }
+      .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 14px 36px rgba(0, 0, 0, 0.12);
+        border-color: var(--gold);
+      }
+
+      .card-photo {
+        width: 100%;
+        aspect-ratio: 4/3;
+        object-fit: cover;
+        object-position: top center;
+        display: block;
+      }
+      .card-no-photo {
+        width: 100%;
+        aspect-ratio: 4/3;
+        background: linear-gradient(150deg, var(--gold-light) 0%, #fffbef 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 72px;
+      }
+
+      .card-body {
+        padding: 20px 20px 14px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .student-name {
+        font-size: 17px;
+        font-weight: 800;
+      }
+      .student-level {
+        font-size: 12.5px;
+        font-weight: 600;
+        color: var(--gold-hover);
+        margin-top: -4px;
+      }
+
+      .tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .tag {
+        background: var(--gold-light);
+        color: var(--gold-hover);
+        font-size: 11px;
+        font-weight: 700;
+        border-radius: 999px;
+        padding: 4px 11px;
+      }
+
+      .student-bio {
+        font-size: 13px;
+        color: var(--gray-600);
+        line-height: 1.75;
+      }
+
+      .stats {
+        display: flex;
+        border-top: 1px solid var(--gray-200);
+        padding-top: 12px;
+        margin-top: auto;
+      }
+      .stat {
+        flex: 1;
+        text-align: center;
+        border-left: 1px solid var(--gray-200);
+        padding: 0 6px;
+      }
+      .stat:last-child {
+        border-left: none;
+      }
+      .stat-val {
+        font-size: 17px;
+        font-weight: 800;
+        color: var(--gold);
+      }
+      .stat-lbl {
+        font-size: 10.5px;
+        color: var(--gray-400);
+        margin-top: 1px;
+      }
+
+      .cert-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        margin: 0 18px 18px;
+        padding: 13px 0;
+        background: var(--gold);
+        color: var(--white);
+        font-family: inherit;
+        font-size: 14px;
+        font-weight: 700;
+        border-radius: 999px;
+        text-decoration: none;
+        box-shadow: 0 4px 14px rgba(201, 168, 76, 0.28);
+        transition:
+          background 0.2s,
+          transform 0.2s;
+      }
+      .cert-btn:hover {
+        background: var(--gold-hover);
+        transform: translateY(-1px);
+      }
+
+      /* ===== RESPONSIVE ===== */
+      @media (max-width: 900px) {
+        .cert-categories {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+      @media (max-width: 680px) {
+        main {
+          padding: 28px 14px 70px;
+        }
+        .page-header {
+          padding: 14px 16px;
+        }
+        .cert-categories {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        .students-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+      .cert-image {
+        width: 100%;
+        height: 220px;
+        object-fit: cover;
+        border-radius: 12px;
+        cursor: pointer;
+        display: block;
+      }
+
+      .cert-student-row {
+        padding: 10px;
+      }
+      .image-modal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.9);
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+      }
+
+      .modal-image {
+        max-width: 90%;
+        max-height: 90%;
+        border-radius: 10px;
+        box-shadow: 0 0 25px rgba(255, 255, 255, 0.2);
+      }
+
+      .close-image {
+        position: absolute;
+        top: 20px;
+        right: 30px;
+        color: #fff;
+        font-size: 50px;
+        font-weight: bold;
+        cursor: pointer;
+        user-select: none;
+      }
+
+      .close-image:hover {
+        color: #ddd;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="page-header">
+      <div class="header-icon">
+        <img src="../images/logo.png" alt="logo" class="logo-img" />
+      </div>
+        <div class="header-title">طلاب المنصة المتميزون</div>
+        <div class="header-sub">نفخر بمسيرة طلابنا وإنجازاتهم</div>
+      </div>
+      <a href="../index.html" class="back-link">← الرئيسية</a>
+    </header>
+
+    <main>
+      <!-- HERO -->
+      <div class="hero">
+        <div class="hero-badge">نجوم المنصة</div>
+        <h1>طلاب المنصة المتميزون</h1>
+        <p>
+          نفخر بمسيرة طلابنا وإنجازاتهم — هنا نحتفي بكل متميز وشهادات التقدير
+          التي يستحقونها
+        </p>
+      </div>
+
+      <!-- ============================================
+       SECTION 1 — CERTIFICATES
+  ============================================= -->
+      <section class="certs-section">
+        <div class="section-label">شهادات التقدير</div>
+        <h2 class="section-title">شهادات أصدرها الشيخ للطلاب</h2>
+
+        <!-- SEARCH -->
+        <!-- <div class="search-wrap">
+          <span>🔍</span>
+          <input
+            type="text"
+            id="certSearch"
+            placeholder="ابحث باسم الطالب..."
+            oninput="searchStudents(this.value)"
+          />
+        </div> -->
+
+        <!-- 4 CATEGORY CARDS -->
+        <div class="cert-categories">
+          <div class="cat-card" onclick="toggleCert('quran', this)">
+            <div class="cat-icon-area">📖</div>
+            <div class="cat-info">
+              <div class="cat-name">القرآن الكريم</div>
+              <div class="cat-sub">حفظ وتلاوة</div>
+              <div class="cat-count" id="count-quran">0 طالب</div>
+            </div>
+          </div>
+
+          <div class="cat-card" onclick="toggleCert('tajweed', this)">
+            <div class="cat-icon-area">🏅</div>
+            <div class="cat-info">
+              <div class="cat-name">التجويد</div>
+              <div class="cat-sub">علوم التجويد</div>
+              <div class="cat-count" id="count-tajweed">0 طالب</div>
+            </div>
+          </div>
+
+          <div class="cat-card" onclick="toggleCert('arabic', this)">
+            <div class="cat-icon-area">✨</div>
+            <div class="cat-info">
+              <div class="cat-name">اللغة العربية</div>
+              <div class="cat-sub">لغة وأدب</div>
+              <div class="cat-count" id="count-arabic">0 طالب</div>
+            </div>
+          </div>
+
+          <div class="cat-card" onclick="toggleCert('sharia', this)">
+            <div class="cat-icon-area">📜</div>
+            <div class="cat-info">
+              <div class="cat-name">العلوم الشرعية</div>
+              <div class="cat-sub">فقه وعقيدة</div>
+              <div class="cat-count" id="count-sharia">0 طالب</div>
+            </div>
+          </div>
+        </div>
+        <!-- /cert-categories -->
+
+        <!-- STUDENTS LIST — shown when a category is clicked -->
+        <div class="students-under-cert" id="certList">
+          <div class="cert-list-header">
+            <div class="cert-list-title" id="certListTitle">الطلاب</div>
+            <button class="cert-list-close" onclick="closeCertList()">
+              ✕ إغلاق
+            </button>
+          </div>
+          <div class="cert-students-grid" id="certStudentsGrid"></div>
+          <p class="no-results" id="certNoResults">لا توجد نتائج مطابقة</p>
+        </div>
+      </section>
+
+      <!-- ============================================
+       SECTION 2 — STAR STUDENTS
+  ============================================= -->
+      <section class="students-section">
+        <div class="section-label">المتميزون</div>
+        <h2 class="section-title"> الطلاب المتميزون</h2>
+<!-- SEARCH FOR STAR STUDENTS -->
+<div class="search-wrap">
+  <span>🔍</span>
+  <input
+    type="text"
+    id="studentSearch"
+    placeholder="ابحث باسم الطالب..."
+    oninput="searchStarStudents(this.value)"
+  />
+</div>
+
+        <div class="students-grid">
+          <!-- ========== طالب 1 ========== -->
+          <div class="card">
+            <!-- <img class="card-photo" src="رابط-الصورة" alt="اسم الطالب"> -->
+            <div class="card-no-photo">👨‍🎓</div>
+            <div class="card-body">
+              <div>
+                <div class="student-name">مالك سامح سيد</div>
+                <div class="student-level">الصف الثالث الثانوي — الأزهر</div>
+              </div>
+              <div class="tags">
+                <span class="tag">🏆 الأول على الفصل</span>
+                <span class="tag">📖 حافظ القرآن</span>
+              </div>
+              <p class="student-bio">
+                طالب متميز في مواد اللغة العربية والمواد الشرعية، حقق أعلى
+                الدرجات وأتم حفظ القرآن الكريم كاملاً.
+              </p>
+              <div class="stats">
+                <div class="stat">
+                  <div class="stat-val">100%</div>
+                  <div class="stat-lbl">معدل التفوق</div>
+                </div>
+                <div class="stat">
+                  <div class="stat-val">30</div>
+                  <div class="stat-lbl">جزءاً محفوظاً</div>
+                </div>
+                <div class="stat">
+                  <div class="stat-val">3</div>
+                  <div class="stat-lbl">شهادات</div>
+                </div>
+              </div>
+            </div>
+            <a class="cert-btn" href="#" download>⬇ تحميل شهادة الطالب</a>
+          </div>
+
+          <!-- ========== طالب 2 ========== -->
+          <div class="card">
+            <div class="card-no-photo">👩‍🎓</div>
+            <div class="card-body">
+              <div>
+                <div class="student-name">اسم الطالبة</div>
+                <div class="student-level">الصف الثاني الثانوي — الأزهر</div>
+              </div>
+              <div class="tags">
+                <span class="tag">🌟 متفوقة</span>
+                <span class="tag">✒️ الخط العربي</span>
+              </div>
+              <p class="student-bio">
+                طالبة متميزة في الخط العربي والمواد الأدبية، حاصلة على جائزة
+                التميز في مسابقة الخط على مستوى المعهد.
+              </p>
+              <div class="stats">
+                <div class="stat">
+                  <div class="stat-val">98%</div>
+                  <div class="stat-lbl">المعدل</div>
+                </div>
+                <div class="stat">
+                  <div class="stat-val">2</div>
+                  <div class="stat-lbl">جوائز</div>
+                </div>
+                <div class="stat">
+                  <div class="stat-val">2</div>
+                  <div class="stat-lbl">شهادات</div>
+                </div>
+              </div>
+            </div>
+            <a class="cert-btn" href="#" download>⬇ تحميل شهادة الطالبة</a>
+          </div>
+
+          <!-- ========== طالب 3 ========== -->
+          <div class="card">
+            <div class="card-no-photo">👨‍🎓</div>
+            <div class="card-body">
+              <div>
+                <div class="student-name">اسم الطالب</div>
+                <div class="student-level">الصف الأول الثانوي — الأزهر</div>
+              </div>
+              <div class="tags">
+                <span class="tag">📝 مسابقات</span>
+                <span class="tag">🕌 التجويد</span>
+              </div>
+              <p class="student-bio">
+                طالب متميز في التجويد والمسابقات القرآنية، حقق المركز الأول في
+                مسابقة التجويد على مستوى المحافظة.
+              </p>
+              <div class="stats">
+                <div class="stat">
+                  <div class="stat-val">95%</div>
+                  <div class="stat-lbl">المعدل</div>
+                </div>
+                <div class="stat">
+                  <div class="stat-val">1</div>
+                  <div class="stat-lbl">مركز أول</div>
+                </div>
+                <div class="stat">
+                  <div class="stat-val">2</div>
+                  <div class="stat-lbl">شهادات</div>
+                </div>
+              </div>
+            </div>
+            <a class="cert-btn" href="#" download>⬇ تحميل شهادة الطالب</a>
+          </div>
+
+          <!--
+        لإضافة طالب جديد — انسخ هذا البلوك وعدّل البيانات:
+
+        <div class="card">
+          <div class="card-no-photo">👨‍🎓</div>
+          <div class="card-body">
+            <div>
+              <div class="student-name">الاسم</div>
+              <div class="student-level">الصف والمرحلة</div>
+            </div>
+            <div class="tags">
+              <span class="tag">🏆 الإنجاز</span>
+            </div>
+            <p class="student-bio">وصف قصير.</p>
+            <div class="stats">
+              <div class="stat"><div class="stat-val">...</div><div class="stat-lbl">...</div></div>
+              <div class="stat"><div class="stat-val">...</div><div class="stat-lbl">...</div></div>
+              <div class="stat"><div class="stat-val">...</div><div class="stat-lbl">...</div></div>
+            </div>
+          </div>
+          <a class="cert-btn" href="رابط-PDF" download>⬇ تحميل شهادة الطالب</a>
+        </div>
+      -->
+        </div>
+      </section>
+    </main>
+
+    <!-- ============================================
+     JAVASCRIPT — minimal, only for cert filter + search
+     عشان تضيف طالب: أضف object جديد في المصفوفة المناسبة
+============================================= -->
+    <script>
+      // =============================================
+      // DATA — أضف الطلاب هنا تحت كل قسم
+      // =============================================
+      const CERT_DATA = {
+        quran: {
+          title: "شهادات القرآن الكريم",
+          students: [
+            { img: "../images/hero-bg.png" },
+            {img: "../images/youssef.png" },
+          ],
+        },
+        tajweed: {
+          title: "شهادات التجويد",
+          students: [
+            { img: "../images/omar.png" },
+            { img: "../images/sara.png" },
+          ],
+        },
+        arabic: {
+          title: "شهادات اللغة العربية",
+          students: [{ img: "../images/fatma.png" }],
+        },
+        sharia: {
+          title: "شهادات العلوم الشرعية",
+          students: [
+            { img: "../images/ibrahim.png" },
+            { img: "../images/mona.png" },
+            { img: "../images/ahmed.png" },
+          ],
+        },
+      };
+
+      // fill counts under each category card
+      Object.keys(CERT_DATA).forEach(function (key) {
+        var el = document.getElementById("count-" + key);
+        if (el) el.textContent = CERT_DATA[key].students.length + " طالب";
+      });
+
+      var activeCategory = null;
+      var activeCard = null;
+
+      function toggleCert(key, cardEl) {
+        var list = document.getElementById("certList");
+        // clicking same card again → close
+        if (activeCategory === key) {
+          closeCertList();
+          return;
+        }
+        // mark active card
+        document.querySelectorAll(".cat-card").forEach(function (c) {
+          c.classList.remove("active");
+        });
+        cardEl.classList.add("active");
+        activeCategory = key;
+        activeCard = cardEl;
+        // render
+        renderCertStudents(CERT_DATA[key].students, "");
+        document.getElementById("certListTitle").textContent =
+          CERT_DATA[key].title;
+        list.classList.add("show");
+        list.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+
+      function closeCertList() {
+        document.getElementById("certList").classList.remove("show");
+        document.querySelectorAll(".cat-card").forEach(function (c) {
+          c.classList.remove("active");
+        });
+        activeCategory = null;
+      }
+
+   function renderCertStudents(students) {
+    var grid = document.getElementById("certStudentsGrid");
+    var noRes = document.getElementById("certNoResults");
+
+    grid.innerHTML = "";
+    noRes.classList.remove("show");
+
+    students.forEach(function(s) {
+        var row = document.createElement("div");
+        row.className = "cert-student-row";
+
+        row.innerHTML =
+            '<img src="' + s.img + '" class="cert-image" onclick="openImage(\'' + s.img + '\')">';
+
+        grid.appendChild(row);
+    });
+}
+
+      function searchStudents(val) {
+        if (!activeCategory) return;
+        renderCertStudents(CERT_DATA[activeCategory].students, val);
+      }
+      function openImage(src) {
+        document.getElementById("modalImage").src = src;
+
+        document.getElementById("imageModal").style.display = "flex";
+      }
+
+      function closeImage() {
+        document.getElementById("imageModal").style.display = "none";
+      }
+      document
+        .getElementById("imageModal")
+        .addEventListener("click", function (e) {
+          if (e.target === this) {
+            closeImage();
+          }
+        });
+
+        function searchStarStudents(val) {
+  val = val.trim().toLowerCase();
+  document.querySelectorAll(".students-grid .card").forEach(function(card) {
+    var name = card.querySelector(".student-name").textContent.toLowerCase();
+    if (name.includes(val) || val === "") {
+      card.style.display = "block";
+    } else {
+      card.style.display = "none";
+    }
+  });
+}
+
+    </script>
+    <div id="imageModal" class="image-modal">
+      <span class="close-image" onclick="closeImage()">&times;</span>
+
+      <img id="modalImage" class="modal-image" />
+    </div>
+  </body>
+</html>

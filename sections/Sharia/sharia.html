@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>العلوم الشرعية</title>
+    <link rel="icon" type="image/png" href="../../images/logo.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="sharia.css" />
+  </head>
+  <body>
+    <!-- ============================================
+       HEADER — same pattern as azhar.html
+  ============================================= -->
+    <header class="page-header">
+      <div class="header-icon">
+        <img src="../../images/logo.png" alt="logo" class="logo-img" />
+      </div>
+      <div>
+        <div>
+          <div class="header-title">العلوم الشرعية</div>
+          <div class="header-sub">منصتك الكاملة للفقه والحديث والعقيدة</div>
+        </div>
+      </div>
+      <a href="../../index.html#categories" class="back-link">← الرئيسية</a>
+    </header>
+    <!-- ═══════════ HERO ═══════════ -->
+    <section id="hero">
+      <!-- Overlay -->
+      <div class="hero-overlay"></div>
+
+      <div class="hero-container">
+        <!-- النص (يمين) -->
+        <div class="hero-text">
+          <span class="hero-badge">قسم العلوم الشرعية</span>
+
+          <h1 class="hero-title">زاد المعرفة</h1>
+
+          <p class="hero-desc">
+            تعلّم الفقه والحديث والعقيدة وأصول الدين بأسلوب مبسط ومنهجي، مع شروح
+            موثوقة ومواد تعليمية تفاعلية تساعدك على الفهم العميق والتطبيق العملي
+            في حياتك اليومية.
+          </p>
+
+          <section class="cta-section">
+            <button class="cta-btn" id="ctaStart">ابدأ التعلم الآن</button>
+          </section>
+
+          <div class="hero-stats">
+            <div>
+              <span class="num" style="display: none">25+</span>
+              <span class="label" style="display: none">موضوع</span>
+            </div>
+            <div>
+              <span class="num" style="display: none">5+</span>
+              <span class="label" style="display: none">علوم</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <main>
+      <!-- ============================================
+         SECTION 1 — INTRODUCTION (Accordion)
+         Same structure as azhar.html's intro accordion.
+    ============================================= -->
+      <section class="intro-section">
+        <div class="section-label">تعرف على القسم</div>
+        <h2 class="section-title">كل ما تحتاج معرفته قبل أن تبدأ</h2>
+
+        <div class="accordion" id="accordion">
+          <div class="acc-item">
+            <button class="acc-trigger" type="button">
+              <span class="acc-icon">⭐</span>
+              <span class="acc-heading">لماذا تختارنا</span>
+              <span class="acc-chevron">⌄</span>
+            </button>
+            <div class="acc-panel">
+              <ul class="acc-list">
+                <li>تلاوة وتعليم على يد معلمين متخصصين</li>
+                <li>تغطية كاملة لرواية حفص والقراءات العشر</li>
+                <li>محتوى تفسير وعلوم قرآن موثّق</li>
+                <li>محاضرات تدبر تناسب جميع المستويات</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="acc-item">
+            <button class="acc-trigger" type="button">
+              <span class="acc-icon">💡</span>
+              <span class="acc-heading">نصائح تعليمية</span>
+              <span class="acc-chevron">⌄</span>
+            </button>
+            <div class="acc-panel">
+              <ul class="acc-list">
+                <li>اجعل لورد الحفظ اليومي وقتًا ثابتًا</li>
+                <li>استمع للتلاوة قبل القراءة لتثبيت النغمة</li>
+                <li>راجع المحفوظ القديم باستمرار حتى لا يُنسى</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="acc-item">
+            <button class="acc-trigger" type="button">
+              <span class="acc-icon">❓</span>
+              <span class="acc-heading">الأسئلة الشائعة</span>
+              <span class="acc-chevron">⌄</span>
+            </button>
+            <div class="acc-panel">
+              <ul class="acc-list">
+                <li>
+                  <strong>القراءات:</strong> متاح حفص عن عاصم والقراءات العشر
+                  المتواترة
+                </li>
+                <li><strong>التفسير:</strong> كتب تفسير معتمدة لكل مستوى</li>
+                <li>
+                  <strong>المحاضرات:</strong> تسجيلات صوتية ومرئية في التدبر
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="acc-item">
+            <button class="acc-trigger" type="button">
+              <span class="acc-icon">💬</span>
+              <span class="acc-heading">تقييمات الطلاب</span>
+              <span class="acc-chevron">⌄</span>
+            </button>
+            <div class="acc-panel">
+              <div class="reviews-grid">
+                <div class="review-card">
+                  <div class="review-stars">★★★★★</div>
+                  <p class="review-text">قسم القرآن نظّم لي خطة حفظ واضحة.</p>
+                  <div class="review-author">— محمود</div>
+                </div>
+                <div class="review-card">
+                  <div class="review-stars">★★★★★</div>
+                  <p class="review-text">محاضرات التدبر غيّرت فهمي للآيات.</p>
+                  <div class="review-author">— مريم</div>
+                </div>
+                <div class="review-card">
+                  <div class="review-stars">★★★★★</div>
+                  <p class="review-text">شرح القراءات العشر كان دقيق وسهل.</p>
+                  <div class="review-author">— إبراهيم</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- /accordion -->
+      </section>
+
+      <!-- ============================================
+         SECTION 2 — CTA
+    ============================================= -->
+
+      <!-- ============================================
+         SECTION 3 — FLOW
+         Step 1: choose one of 5 Quran sections (stacked cards)
+         Step 2: lesson list for that section (real links)
+    ============================================= -->
+      <section class="flow-section" id="flowSection">
+        <!-- STEP 1: Choose section -->
+        <div class="flow-step" id="stepStage">
+          <div class="section-label">الخطوة الأولى</div>
+          <h2 class="section-title">اختر القسم</h2>
+
+          <div class="stage-stack">
+            <button class="stage-row" data-stage="hifz">
+              <div class="stage-row-icon">📖</div>
+              <div class="stage-row-text">
+                <div class="stage-row-name">التفسير</div>
+                <div class="stage-row-hint">
+                  خطة حفظ متدرجة مع تطبيق أحكام التجويد
+                </div>
+              </div>
+              <span class="stage-row-arrow">‹</span>
+            </button>
+
+            <button class="stage-row" data-stage="hafs">
+              <div class="stage-row-icon">📜</div>
+              <div class="stage-row-text">
+                <div class="stage-row-name">
+                 الحديث
+                </div>
+                <div class="stage-row-hint">
+                  الرواية الأكثر انتشارًا في العالم الإسلامي
+                </div>
+              </div>
+              <span class="stage-row-arrow">‹</span>
+            </button>
+
+            <button class="stage-row" data-stage="qiraat">
+              <div class="stage-row-icon">☝️</div>
+              <div class="stage-row-text">
+                <div class="stage-row-name">التوحيد</div>
+                <div class="stage-row-hint">دروس في القراءات العشر وأصولها</div>
+              </div>
+              <span class="stage-row-arrow">‹</span>
+            </button>
+
+            <button class="stage-row" data-stage="tafsir">
+              <div class="stage-row-icon">🕌</div>
+              <div class="stage-row-text">
+                <div class="stage-row-name">السيرة</div>
+                <div class="stage-row-hint">
+                  مكتبة تفسير وعلوم قرآن للقراءة والتحميل
+                </div>
+              </div>
+              <span class="stage-row-arrow">‹</span>
+            </button>
+
+            <button class="stage-row" data-stage="tadabbur">
+              <div class="stage-row-icon">⚖️</div>
+              <div class="stage-row-text">
+                <div class="stage-row-name">فقه شافعي</div>
+                <div class="stage-row-hint">
+                  محاضرات صوتية ومرئية في التدبر والتأمل
+                </div>
+              </div>
+              <span class="stage-row-arrow">‹</span>
+            </button>
+
+            <button class="stage-row" data-stage="tadabbur">
+              <div class="stage-row-icon">⚖️</div>
+              <div class="stage-row-text">
+                <div class="stage-row-name">فقه حنفي</div>
+                <div class="stage-row-hint">
+                  محاضرات صوتية ومرئية في التدبر والتأمل
+                </div>
+              </div>
+              <span class="stage-row-arrow">‹</span>
+            </button>
+
+          </div>
+        </div>
+
+         <!-- STEP 2: Lessons for the chosen section (filled by JS) -->
+        <div class="flow-step is-hidden" id="stepLessons">
+          <div class="step-head">
+            <button class="step-back" data-back="stage">↩ رجوع</button>
+            <div>
+              <div class="section-label" id="lessonsLabel">القسم</div>
+              <h2 class="section-title">الدروس المتاحة</h2>
+            </div>
+          </div>
+
+          <!-- 🔍 Search bar -->
+          <div class="search-bar">
+            <span class="search-icon">🔍</span>
+            <input
+              type="text"
+              id="searchInput"
+              class="search-input"
+              placeholder="ابحث داخل الدروس..."
+            />
+          </div>
+
+          <div class="lessons-grid" id="lessonsGrid">
+            <!-- injected by JS -->
+          </div>
+
+          <p class="no-results is-hidden" id="noResults">
+            لا توجد نتائج مطابقة لبحثك
+          </p>
+
+          <!-- Shown only if a section has no lessons yet -->
+          <p class="empty-state is-hidden" id="emptyState">
+            لا توجد دروس مضافة لهذا القسم حتى الآن
+          </p>
+        </div>
+      </section>
+    </main>
+    <div class="TT">
+      <a href="https://wa.me/201515474939" class="BTN" target="_blank">
+        هل انت مستعد احجز حصتك
+      </a>
+    </div>
+    <script src="sharia-data.js"></script>
+    <script src="sharia.js"></script>
+  </body>
+</html>

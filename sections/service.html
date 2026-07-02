@@ -1,0 +1,1944 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>زاد المعرفة - خدمات إبداعية ورقمية</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Cairo", sans-serif;
+        background: #0a0a1a;
+        color: #fff;
+        overflow-x: hidden;
+      }
+
+      :root {
+        --primary: #6c63ff;
+        --secondary: #ff6584;
+        --accent: #43e97b;
+        --gold: #f7971e;
+        --dark: #0a0a1a;
+        --card-bg: rgba(255, 255, 255, 0.05);
+      }
+
+      /* ===== SCROLLBAR ===== */
+      ::-webkit-scrollbar {
+        width: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #0a0a1a;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: var(--primary);
+        border-radius: 10px;
+      }
+
+      /* ===== NAVBAR ===== */
+      .navbar {
+        position: fixed;
+        top: 0;
+        width: 100%;
+        z-index: 1000;
+        padding: 15px 30px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        backdrop-filter: blur(20px);
+        background: rgba(10, 10, 26, 0.85);
+        border-bottom: 1px solid rgba(108, 99, 255, 0.2);
+        transition: all 0.3s;
+      }
+
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .logo-icon {
+        width: 45px;
+        height: 45px;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        box-shadow: 0 0 20px rgba(108, 99, 255, 0.5);
+      }
+
+      .logo-text {
+        font-size: 22px;
+        font-weight: 900;
+        background: linear-gradient(135deg, #fff, var(--primary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .nav-links {
+        display: flex;
+        gap: 30px;
+        list-style: none;
+      }
+
+      .nav-links a {
+        color: rgba(255, 255, 255, 0.8);
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 600;
+        transition: all 0.3s;
+        position: relative;
+      }
+
+      .nav-links a::after {
+        content: "";
+        position: absolute;
+        bottom: -4px;
+        right: 0;
+        width: 0;
+        height: 2px;
+        background: var(--primary);
+        transition: width 0.3s;
+      }
+
+      .nav-links a:hover::after {
+        width: 100%;
+      }
+      .nav-links a:hover {
+        color: var(--primary);
+      }
+
+      .cta-btn {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: #fff !important;
+        padding: 10px 25px;
+        border-radius: 25px;
+        font-weight: 700;
+        transition: all 0.3s !important;
+        box-shadow: 0 5px 20px rgba(108, 99, 255, 0.4);
+      }
+
+      .cta-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 30px rgba(108, 99, 255, 0.6) !important;
+      }
+
+      .cta-btn::after {
+        display: none !important;
+      }
+
+      .hamburger {
+        display: none;
+        cursor: pointer;
+        flex-direction: column;
+        gap: 5px;
+      }
+
+      .hamburger span {
+        width: 25px;
+        height: 2px;
+        background: #fff;
+        transition: all 0.3s;
+      }
+
+      /* ===== HERO ===== */
+      .hero {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+        padding: 100px 30px 50px;
+      }
+
+      .hero-bg {
+        position: absolute;
+        inset: 0;
+        background:
+          radial-gradient(
+            ellipse at 70% 50%,
+            rgba(108, 99, 255, 0.15) 0%,
+            transparent 70%
+          ),
+          radial-gradient(
+            ellipse at 30% 80%,
+            rgba(255, 101, 132, 0.1) 0%,
+            transparent 60%
+          );
+      }
+
+      .particles {
+        position: absolute;
+        inset: 0;
+        overflow: hidden;
+      }
+
+      .particle {
+        position: absolute;
+        border-radius: 50%;
+        animation: float-particle linear infinite;
+        opacity: 0.4;
+      }
+
+      @keyframes float-particle {
+        0% {
+          transform: translateY(100vh) rotate(0deg);
+          opacity: 0;
+        }
+        10% {
+          opacity: 0.4;
+        }
+        90% {
+          opacity: 0.4;
+        }
+        100% {
+          transform: translateY(-100px) rotate(360deg);
+          opacity: 0;
+        }
+      }
+
+      .hero-content {
+        text-align: center;
+        max-width: 800px;
+        position: relative;
+        z-index: 2;
+      }
+
+      .hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(108, 99, 255, 0.15);
+        border: 1px solid rgba(108, 99, 255, 0.4);
+        padding: 8px 20px;
+        border-radius: 30px;
+        font-size: 13px;
+        color: var(--primary);
+        margin-bottom: 25px;
+        animation: pulse-badge 2s infinite;
+      }
+
+      @keyframes pulse-badge {
+        0%,
+        100% {
+          box-shadow: 0 0 0 0 rgba(108, 99, 255, 0.3);
+        }
+        50% {
+          box-shadow: 0 0 0 8px rgba(108, 99, 255, 0);
+        }
+      }
+
+      .hero h1 {
+        font-size: clamp(40px, 7vw, 80px);
+        font-weight: 900;
+        line-height: 1.2;
+        margin-bottom: 20px;
+      }
+
+      .gradient-text {
+        background: linear-gradient(
+          135deg,
+          var(--primary),
+          var(--secondary),
+          var(--gold)
+        );
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .hero p {
+        font-size: 18px;
+        color: rgba(255, 255, 255, 0.7);
+        margin-bottom: 40px;
+        line-height: 1.8;
+      }
+
+      .hero-buttons {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: #fff;
+        padding: 15px 40px;
+        border-radius: 30px;
+        font-size: 16px;
+        font-weight: 700;
+        text-decoration: none;
+        transition: all 0.3s;
+        box-shadow: 0 10px 30px rgba(108, 99, 255, 0.4);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border: none;
+        cursor: pointer;
+      }
+
+      .btn-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 20px 40px rgba(108, 99, 255, 0.6);
+      }
+
+      .btn-secondary {
+        background: transparent;
+        color: #fff;
+        padding: 15px 40px;
+        border-radius: 30px;
+        font-size: 16px;
+        font-weight: 700;
+        text-decoration: none;
+        transition: all 0.3s;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .btn-secondary:hover {
+        border-color: var(--primary);
+        color: var(--primary);
+        transform: translateY(-3px);
+      }
+
+      .hero-stats {
+        display: flex;
+        justify-content: center;
+        gap: 50px;
+        margin-top: 60px;
+        flex-wrap: wrap;
+      }
+
+      .stat-item {
+        text-align: center;
+      }
+
+      .stat-number {
+        font-size: 36px;
+        font-weight: 900;
+        background: linear-gradient(135deg, var(--primary), var(--accent));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .stat-label {
+        font-size: 13px;
+        color: rgba(255, 255, 255, 0.6);
+        margin-top: 5px;
+      }
+
+      /* ===== SECTION STYLES ===== */
+      section {
+        padding: 100px 30px;
+      }
+
+      .section-header {
+        text-align: center;
+        margin-bottom: 70px;
+      }
+
+      .section-tag {
+        display: inline-block;
+        background: rgba(108, 99, 255, 0.15);
+        border: 1px solid rgba(108, 99, 255, 0.3);
+        color: var(--primary);
+        padding: 6px 18px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 15px;
+      }
+
+      .section-title {
+        font-size: clamp(28px, 4vw, 48px);
+        font-weight: 900;
+        margin-bottom: 15px;
+      }
+
+      .section-desc {
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 16px;
+        max-width: 600px;
+        margin: 0 auto;
+        line-height: 1.8;
+      }
+
+      /* ===== SERVICES ===== */
+      .services-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 25px;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      .service-card {
+        background: var(--card-bg);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 20px;
+        padding: 30px;
+        transition: all 0.4s;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .service-card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          135deg,
+          rgba(108, 99, 255, 0.1),
+          transparent
+        );
+        opacity: 0;
+        transition: opacity 0.4s;
+      }
+
+      .service-card:hover::before {
+        opacity: 1;
+      }
+
+      .service-card:hover {
+        transform: translateY(-8px);
+        border-color: rgba(108, 99, 255, 0.4);
+        box-shadow: 0 20px 50px rgba(108, 99, 255, 0.2);
+      }
+
+      .service-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 26px;
+        margin-bottom: 20px;
+        transition: transform 0.3s;
+      }
+
+      .service-card:hover .service-icon {
+        transform: scale(1.1) rotate(5deg);
+      }
+
+      .service-title {
+        font-size: 17px;
+        font-weight: 700;
+        margin-bottom: 10px;
+        color: #fff;
+      }
+
+      .service-desc {
+        font-size: 13px;
+        color: rgba(255, 255, 255, 0.6);
+        line-height: 1.8;
+      }
+
+      .service-arrow {
+        position: absolute;
+        bottom: 20px;
+        left: 25px;
+        color: var(--primary);
+        opacity: 0;
+        transform: translateX(-10px);
+        transition: all 0.3s;
+        font-size: 18px;
+      }
+
+      .service-card:hover .service-arrow {
+        opacity: 1;
+        transform: translateX(0);
+      }
+
+      /* ===== FEATURES ===== */
+      .features-section {
+        background: linear-gradient(
+          135deg,
+          rgba(108, 99, 255, 0.08) 0%,
+          rgba(255, 101, 132, 0.05) 100%
+        );
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      }
+
+      .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 30px;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      .feature-card {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 20px;
+        padding: 30px;
+        text-align: center;
+        transition: all 0.3s;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .feature-card::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        left: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--primary), var(--secondary));
+        transform: scaleX(0);
+        transition: transform 0.3s;
+      }
+
+      .feature-card:hover::after {
+        transform: scaleX(1);
+      }
+
+      .feature-card:hover {
+        transform: translateY(-5px);
+        background: rgba(108, 99, 255, 0.08);
+      }
+
+      .feature-icon {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        margin: 0 auto 20px;
+      }
+
+      .feature-title {
+        font-size: 16px;
+        font-weight: 700;
+        margin-bottom: 10px;
+      }
+
+      .feature-desc {
+        font-size: 13px;
+        color: rgba(255, 255, 255, 0.6);
+        line-height: 1.8;
+      }
+
+      /* ===== WHY US ===== */
+      .why-us {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 60px;
+        align-items: center;
+      }
+
+      .why-content h2 {
+        font-size: clamp(28px, 4vw, 45px);
+        font-weight: 900;
+        margin-bottom: 20px;
+        line-height: 1.3;
+      }
+
+      .why-content p {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 16px;
+        line-height: 1.9;
+        margin-bottom: 30px;
+      }
+
+      .why-list {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      .why-list li {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        font-size: 15px;
+        color: rgba(255, 255, 255, 0.85);
+      }
+
+      .check-icon {
+        width: 30px;
+        height: 30px;
+        background: linear-gradient(135deg, var(--accent), #00c851);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        flex-shrink: 0;
+      }
+
+      .why-visual {
+        position: relative;
+      }
+
+      .visual-card {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        padding: 30px;
+        text-align: center;
+      }
+
+      .visual-icons-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+        margin-bottom: 25px;
+      }
+
+      .visual-icon-item {
+        background: rgba(108, 99, 255, 0.1);
+        border: 1px solid rgba(108, 99, 255, 0.2);
+        border-radius: 15px;
+        padding: 20px 10px;
+        font-size: 28px;
+        transition: all 0.3s;
+        cursor: default;
+      }
+
+      .visual-icon-item:hover {
+        background: rgba(108, 99, 255, 0.2);
+        transform: scale(1.05);
+      }
+
+      .floating-badge {
+        position: absolute;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: #fff;
+        padding: 12px 20px;
+        border-radius: 15px;
+        font-size: 13px;
+        font-weight: 700;
+        box-shadow: 0 10px 30px rgba(108, 99, 255, 0.4);
+        animation: float-badge 3s ease-in-out infinite;
+      }
+
+      @keyframes float-badge {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-10px);
+        }
+      }
+
+      .badge-1 {
+        top: -20px;
+        right: -20px;
+      }
+      .badge-2 {
+        bottom: -20px;
+        left: -20px;
+        animation-delay: 1.5s;
+      }
+
+      /* ===== PRICING ===== */
+      .pricing-note {
+        max-width: 800px;
+        margin: 0 auto;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(108, 99, 255, 0.3);
+        border-radius: 25px;
+        padding: 50px;
+        text-align: center;
+      }
+
+      .pricing-note h3 {
+        font-size: 28px;
+        font-weight: 900;
+        margin-bottom: 15px;
+      }
+
+      .pricing-note p {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 16px;
+        line-height: 1.8;
+        margin-bottom: 30px;
+      }
+
+      .contact-methods {
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      .contact-btn {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 14px 30px;
+        border-radius: 30px;
+        font-size: 15px;
+        font-weight: 700;
+        text-decoration: none;
+        transition: all 0.3s;
+        cursor: pointer;
+        border: none;
+      }
+
+      .whatsapp-btn {
+        background: linear-gradient(135deg, #25d366, #128c7e);
+        color: #fff;
+        box-shadow: 0 10px 25px rgba(37, 211, 102, 0.3);
+      }
+
+      .whatsapp-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 35px rgba(37, 211, 102, 0.5);
+      }
+
+      .messenger-btn {
+        background: linear-gradient(135deg, #0084ff, #00b0ff);
+        color: #fff;
+        box-shadow: 0 10px 25px rgba(0, 132, 255, 0.3);
+      }
+
+      .messenger-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 35px rgba(0, 132, 255, 0.5);
+      }
+
+      /* ===== TESTIMONIALS ===== */
+      .testimonials-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 25px;
+        max-width: 1100px;
+        margin: 0 auto;
+      }
+
+      .testimonial-card {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 20px;
+        padding: 30px;
+        transition: all 0.3s;
+      }
+
+      .testimonial-card:hover {
+        transform: translateY(-5px);
+        border-color: rgba(108, 99, 255, 0.3);
+      }
+
+      .stars {
+        color: var(--gold);
+        font-size: 16px;
+        margin-bottom: 15px;
+      }
+
+      .testimonial-text {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 14px;
+        line-height: 1.8;
+        margin-bottom: 20px;
+      }
+
+      .testimonial-author {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .author-avatar {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        font-weight: 700;
+        flex-shrink: 0;
+      }
+
+      .author-name {
+        font-size: 15px;
+        font-weight: 700;
+      }
+
+      .author-role {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.5);
+      }
+
+      /* ===== CTA SECTION ===== */
+      .cta-section {
+        background: linear-gradient(
+          135deg,
+          rgba(108, 99, 255, 0.2),
+          rgba(255, 101, 132, 0.1)
+        );
+        border-radius: 30px;
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 80px 50px;
+        text-align: center;
+        border: 1px solid rgba(108, 99, 255, 0.3);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .cta-section::before {
+        content: "";
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(
+          circle,
+          rgba(108, 99, 255, 0.1) 0%,
+          transparent 60%
+        );
+        animation: rotate-glow 10s linear infinite;
+      }
+
+      @keyframes rotate-glow {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .cta-section h2 {
+        font-size: clamp(26px, 4vw, 42px);
+        font-weight: 900;
+        margin-bottom: 20px;
+        position: relative;
+      }
+
+      .cta-section p {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 17px;
+        margin-bottom: 40px;
+        line-height: 1.8;
+        position: relative;
+      }
+
+      /* ===== FOOTER ===== */
+      footer {
+        background: rgba(0, 0, 0, 0.4);
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        padding: 60px 30px 30px;
+      }
+
+      .footer-content {
+        max-width: 1100px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: 2fr 1fr 1fr;
+        gap: 50px;
+        margin-bottom: 50px;
+      }
+
+      .footer-brand p {
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 14px;
+        line-height: 1.8;
+        margin-top: 15px;
+      }
+
+      .footer-links h4 {
+        font-size: 16px;
+        font-weight: 700;
+        margin-bottom: 20px;
+        color: var(--primary);
+      }
+
+      .footer-links ul {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .footer-links a {
+        color: rgba(255, 255, 255, 0.6);
+        text-decoration: none;
+        font-size: 14px;
+        transition: color 0.3s;
+      }
+
+      .footer-links a:hover {
+        color: var(--primary);
+      }
+
+      .social-links {
+        display: flex;
+        gap: 12px;
+        margin-top: 20px;
+      }
+
+      .social-link {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        text-decoration: none;
+        transition: all 0.3s;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: rgba(255, 255, 255, 0.7);
+      }
+
+      .social-link:hover {
+        background: var(--primary);
+        color: #fff;
+        border-color: var(--primary);
+        transform: translateY(-3px);
+      }
+
+      .footer-bottom {
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        padding-top: 25px;
+        text-align: center;
+        color: rgba(255, 255, 255, 0.4);
+        font-size: 13px;
+      }
+
+      /* ===== MOBILE MENU ===== */
+      .mobile-menu {
+        display: none;
+        position: fixed;
+        top: 0;
+        right: -100%;
+        width: 80%;
+        max-width: 320px;
+        height: 100vh;
+        background: rgba(10, 10, 26, 0.98);
+        backdrop-filter: blur(30px);
+        z-index: 999;
+        padding: 80px 30px 30px;
+        transition: right 0.4s ease;
+        border-left: 1px solid rgba(108, 99, 255, 0.2);
+      }
+
+      .mobile-menu.active {
+        right: 0;
+      }
+
+      .mobile-menu ul {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      .mobile-menu a {
+        color: rgba(255, 255, 255, 0.85);
+        text-decoration: none;
+        font-size: 18px;
+        font-weight: 600;
+        display: block;
+        padding: 10px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        transition: color 0.3s;
+      }
+
+      .mobile-menu a:hover {
+        color: var(--primary);
+      }
+
+      .overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.7);
+        z-index: 998;
+      }
+
+      .overlay.active {
+        display: block;
+      }
+
+      /* ===== ANIMATIONS ===== */
+      .fade-in {
+        opacity: 0;
+        transform: translateY(30px);
+        transition: all 0.7s ease;
+      }
+
+      .fade-in.visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .slide-right {
+        opacity: 0;
+        transform: translateX(40px);
+        transition: all 0.7s ease;
+      }
+
+      .slide-right.visible {
+        opacity: 1;
+        transform: translateX(0);
+      }
+
+      /* ===== RESPONSIVE ===== */
+      @media (max-width: 768px) {
+        .nav-links {
+          display: none;
+        }
+        .hamburger {
+          display: flex;
+        }
+        .mobile-menu {
+          display: block;
+        }
+
+        .hero-stats {
+          gap: 30px;
+        }
+        .stat-number {
+          font-size: 28px;
+        }
+
+        .why-us {
+          grid-template-columns: 1fr;
+        }
+        .why-visual {
+          display: none;
+        }
+
+        .footer-content {
+          grid-template-columns: 1fr;
+          gap: 30px;
+        }
+
+        .cta-section {
+          padding: 50px 25px;
+        }
+
+        section {
+          padding: 70px 20px;
+        }
+
+        .pricing-note {
+          padding: 35px 25px;
+        }
+      }
+
+      /* Gradient backgrounds for icons */
+      .grad-1 {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+      }
+      .grad-2 {
+        background: linear-gradient(135deg, #f7971e, #ffd200);
+      }
+      .grad-3 {
+        background: linear-gradient(135deg, #43e97b, #38f9d7);
+      }
+      .grad-4 {
+        background: linear-gradient(135deg, #f953c6, #b91d73);
+      }
+      .grad-5 {
+        background: linear-gradient(135deg, #4facfe, #00f2fe);
+      }
+      .grad-6 {
+        background: linear-gradient(135deg, #fa709a, #fee140);
+      }
+      .grad-7 {
+        background: linear-gradient(135deg, #a18cd1, #fbc2eb);
+      }
+      .grad-8 {
+        background: linear-gradient(135deg, #0fd850, #f9f047);
+      }
+      .grad-9 {
+        background: linear-gradient(135deg, #30cfd0, #330867);
+      }
+      .grad-10 {
+        background: linear-gradient(135deg, #ff9a9e, #fecfef);
+      }
+      .grad-11 {
+        background: linear-gradient(135deg, #a1c4fd, #c2e9fb);
+      }
+      .grad-12 {
+        background: linear-gradient(135deg, #d4fc79, #96e6a1);
+      }
+
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .logo-img {
+        width: 60px;
+        height: 60px;
+        object-fit: cover;
+        border-radius: 50%;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- NAVBAR -->
+    <nav class="navbar" id="navbar">
+      <div class="logo">
+        <img src="../images/logo.png" alt="زاد المعرفة" class="logo-img" />
+        <span class="logo-text">زاد المعرفة</span>
+      </div>
+      <ul class="nav-links">
+        <li><a href="#services">خدماتنا</a></li>
+        <li><a href="#features">مميزاتنا</a></li>
+        <li><a href="#why-us">لماذا نحن</a></li>
+        <li><a href="#testimonials">آراء العملاء</a></li>
+        <li><a href="#contact" class="cta-btn">تواصل معنا</a></li>
+        <li>
+          <a href="../../index.html#categories" class="back-link">← الرئيسية</a>
+        </li>
+      </ul>
+      <div class="hamburger" id="hamburger" onclick="toggleMenu()">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </nav>
+
+    <!-- MOBILE MENU -->
+    <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
+    <div class="mobile-menu" id="mobileMenu">
+      <ul>
+        <li><a href="#services" onclick="toggleMenu()">خدماتنا</a></li>
+        <li><a href="#features" onclick="toggleMenu()">مميزاتنا</a></li>
+        <li><a href="#why-us" onclick="toggleMenu()">لماذا نحن</a></li>
+        <li><a href="#testimonials" onclick="toggleMenu()">آراء العملاء</a></li>
+        <li><a href="#contact" onclick="toggleMenu()">تواصل معنا</a></li>
+      </ul>
+    </div>
+
+    <!-- HERO -->
+    <section class="hero">
+      <div class="hero-bg"></div>
+      <div class="particles" id="particles"></div>
+      <div class="hero-content fade-in">
+        <div class="hero-badge">
+          <i class="fas fa-star"></i>
+          خدمات إبداعية ورقمية احترافية
+        </div>
+        <h1><span class="gradient-text">زاد المعرفة</span><br /></h1>
+        <p>
+          نقدم لك أفضل الحلول الإبداعية والرقمية لتصميم محتواك وتطوير حضورك
+          الإلكتروني بجودة عالية وبأسرع وقت
+        </p>
+        <div class="hero-buttons">
+          <a href="#services" class="btn-primary">
+            <i class="fas fa-rocket"></i>
+            استكشف خدماتنا
+          </a>
+          <a href="#contact" class="btn-secondary">
+            <i class="fas fa-phone"></i>
+            تواصل معنا
+          </a>
+        </div>
+        <div class="hero-stats">
+          <div class="stat-item">
+            <div class="stat-number" data-target="300">0+</div>
+            <div class="stat-label">عميل سعيد</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number" data-target="500">0+</div>
+            <div class="stat-label">مشروع مكتمل</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number" data-target="24">0</div>
+            <div class="stat-label">ساعة تسليم</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number" data-target="100">0%</div>
+            <div class="stat-label">رضا العملاء</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SERVICES -->
+    <section id="services">
+      <div class="section-header fade-in">
+        <span class="section-tag">✨ خدماتنا</span>
+        <h2 class="section-title">كل ما تحتاجه في مكان واحد</h2>
+        <p class="section-desc">
+          نقدم مجموعة متكاملة من الخدمات الرقمية والإبداعية لتلبية جميع
+          احتياجاتك
+        </p>
+      </div>
+      <div class="services-grid">
+        <div class="service-card fade-in">
+          <div class="service-icon grad-1">🎨</div>
+          <h3 class="service-title">تصميم بوستات السوشيال ميديا</h3>
+          <p class="service-desc">
+            تصميمات احترافية وجذابة باستخدام Canva تناسب جميع المنصات وتزيد من
+            تفاعلك
+          </p>
+          <i class="fas fa-arrow-left service-arrow"></i>
+        </div>
+        <div class="service-card fade-in">
+          <div class="service-icon grad-2">📝</div>
+          <h3 class="service-title">كتابة وتنسيق الأبحاث والملخصات</h3>
+          <p class="service-desc">
+            أبحاث علمية وملخصات منسقة باحترافية عالية تتناسب مع معايير الكتابة
+            الأكاديمية
+          </p>
+          <i class="fas fa-arrow-left service-arrow"></i>
+        </div>
+        <div class="service-card fade-in">
+          <div class="service-icon grad-3">🎙️</div>
+          <h3 class="service-title">تفريغ صوتي وتحويل الصوت لكتابة</h3>
+          <p class="service-desc">
+            نحول ملفاتك الصوتية إلى نصوص مكتوبة بدقة عالية وسرعة مميزة
+          </p>
+          <i class="fas fa-arrow-left service-arrow"></i>
+        </div>
+        <div class="service-card fade-in">
+          <div class="service-icon grad-4">📋</div>
+          <h3 class="service-title">تصميم سيرة ذاتية احترافية</h3>
+          <p class="service-desc">
+            CV احترافي يبرز مهاراتك وخبراتك بتصميم عصري يلفت انتباه أصحاب العمل
+          </p>
+          <i class="fas fa-arrow-left service-arrow"></i>
+        </div>
+        <div class="service-card fade-in">
+          <div class="service-icon grad-5">📱</div>
+          <h3 class="service-title">إدارة الصفحات والرد على الرسائل</h3>
+          <p class="service-desc">
+            إدارة احترافية لصفحاتك على جميع منصات التواصل الاجتماعي والرد على
+            متابعيك
+          </p>
+          <i class="fas fa-arrow-left service-arrow"></i>
+        </div>
+        <div class="service-card fade-in">
+          <div class="service-icon grad-6">🤖</div>
+          <h3 class="service-title">خدمات وصور بالذكاء الاصطناعي</h3>
+          <p class="service-desc">
+            نستخدم أحدث تقنيات الذكاء الاصطناعي لإنشاء محتوى وصور مبتكرة ومميزة
+          </p>
+          <i class="fas fa-arrow-left service-arrow"></i>
+        </div>
+        <div class="service-card fade-in">
+          <div class="service-icon grad-7">📚</div>
+          <h3 class="service-title">تجهيز ملفات PDF وجداول للمذاكرة</h3>
+          <p class="service-desc">
+            ملفات مذاكرة منظمة وجداول دراسية تساعدك على الفهم والاستيعاب بشكل
+            أفضل
+          </p>
+          <i class="fas fa-arrow-left service-arrow"></i>
+        </div>
+        <div class="service-card fade-in">
+          <div class="service-icon grad-8">✍️</div>
+          <h3 class="service-title">كتابة محتوى وأفكار للصفحات</h3>
+          <p class="service-desc">
+            محتوى إبداعي وأفكار مبتكرة لصفحاتك يجذب الجمهور ويزيد من تفاعلك
+          </p>
+          <i class="fas fa-arrow-left service-arrow"></i>
+        </div>
+        <div class="service-card fade-in">
+          <div class="service-icon grad-9">🖼️</div>
+          <h3 class="service-title">تصميم أغلفة فيسبوك ويوتيوب</h3>
+          <p class="service-desc">
+            أغلفة احترافية بالمقاسات الصحيحة تعطي صفحتك شكلاً متميزاً وجذاباً
+          </p>
+          <i class="fas fa-arrow-left service-arrow"></i>
+        </div>
+        <div class="service-card fade-in">
+          <div class="service-icon grad-10">🔄</div>
+          <h3 class="service-title">تحويل Word إلى PDF باحترافية</h3>
+          <p class="service-desc">
+            تحويل وتنسيق ملفاتك من Word إلى PDF بشكل احترافي مع الحفاظ على جودة
+            التصميم
+          </p>
+          <i class="fas fa-arrow-left service-arrow"></i>
+        </div>
+        <div class="service-card fade-in">
+          <div class="service-icon grad-11">🏆</div>
+          <h3 class="service-title">تصميم شهادات ودعوات</h3>
+          <p class="service-desc">
+            شهادات تقدير ودعوات مناسبات مصممة باحترافية تليق بأهم لحظاتك
+          </p>
+          <i class="fas fa-arrow-left service-arrow"></i>
+        </div>
+        <div
+          class="service-card fade-in"
+          style="
+            background: linear-gradient(
+              135deg,
+              rgba(108, 99, 255, 0.15),
+              rgba(255, 101, 132, 0.1)
+            );
+            border-color: rgba(108, 99, 255, 0.3);
+          "
+        >
+          <div class="service-icon grad-12">🚀</div>
+          <h3 class="service-title">وأكثر من ذلك بكثير!</h3>
+          <p class="service-desc">
+            تواصل معنا لمعرفة جميع خدماتنا والحصول على عرض مخصص لاحتياجاتك
+          </p>
+          <i class="fas fa-arrow-left service-arrow"></i>
+        </div>
+      </div>
+    </section>
+
+    <!-- FEATURES -->
+    <section class="features-section" id="features">
+      <div class="section-header fade-in">
+        <span class="section-tag">⭐ مميزاتنا</span>
+        <h2 class="section-title">لماذا يختار عملاؤنا زاد المعرفة؟</h2>
+        <p class="section-desc">
+          مميزات حصرية نلتزم بها في كل مشروع مع كل عميل
+        </p>
+      </div>
+      <div class="features-grid" style="max-width: 1200px; margin: 0 auto">
+        <div class="feature-card fade-in">
+          <div
+            class="feature-icon"
+            style="background: rgba(108, 99, 255, 0.15)"
+          >
+            ⚡
+          </div>
+          <h3 class="feature-title">تسليم سريع خلال 24 ساعة</h3>
+          <p class="feature-desc">
+            نلتزم بتسليم مشاريعك في أسرع وقت ممكن دون التنازل عن الجودة
+          </p>
+        </div>
+        <div class="feature-card fade-in">
+          <div
+            class="feature-icon"
+            style="background: rgba(67, 233, 123, 0.15)"
+          >
+            🔧
+          </div>
+          <h3 class="feature-title">دعم وتعديل مجاني</h3>
+          <p class="feature-desc">
+            نقدم تعديلات مجانية حتى تكون راضياً تماماً عن النتيجة النهائية
+          </p>
+        </div>
+        <div class="feature-card fade-in">
+          <div
+            class="feature-icon"
+            style="background: rgba(247, 151, 30, 0.15)"
+          >
+            💎
+          </div>
+          <h3 class="feature-title">ضمان رضا العميل</h3>
+          <p class="feature-desc">
+            نضمن رضاك الكامل عن عملنا وجودة التصميم النهائي المقدم لك
+          </p>
+        </div>
+        <div class="feature-card fade-in">
+          <div
+            class="feature-icon"
+            style="background: rgba(255, 101, 132, 0.15)"
+          >
+            🤝
+          </div>
+          <h3 class="feature-title">متابعة مستمرة بعد التسليم</h3>
+          <p class="feature-desc">
+            نستمر في متابعتك بعد التسليم للتأكد من أن كل شيء يسير بشكل مثالي
+          </p>
+        </div>
+        <div class="feature-card fade-in">
+          <div
+            class="feature-icon"
+            style="background: rgba(79, 172, 254, 0.15)"
+          >
+            🌐
+          </div>
+          <h3 class="feature-title">العمل أونلاين في أي وقت</h3>
+          <p class="feature-desc">
+            نعمل عن بُعد في أي وقت من أي مكان، لنكون دائماً في خدمتك
+          </p>
+        </div>
+        <div class="feature-card fade-in">
+          <div
+            class="feature-icon"
+            style="background: rgba(169, 140, 209, 0.15)"
+          >
+            📐
+          </div>
+          <h3 class="feature-title">تصميمات لجميع المنصات</h3>
+          <p class="feature-desc">
+            نصمم بالمقاسات المثالية لكل منصة سواء فيسبوك أو إنستغرام أو تيك توك
+          </p>
+        </div>
+        <div class="feature-card fade-in">
+          <div
+            class="feature-icon"
+            style="background: rgba(247, 151, 30, 0.15)"
+          >
+            💰
+          </div>
+          <h3 class="feature-title">خصومات للطلبات الكبيرة</h3>
+          <p class="feature-desc">
+            كلما زادت طلباتك، كلما حصلت على خصومات وعروض أفضل وحصرية
+          </p>
+        </div>
+        <div class="feature-card fade-in">
+          <div
+            class="feature-icon"
+            style="background: rgba(108, 99, 255, 0.15)"
+          >
+            🌱
+          </div>
+          <h3 class="feature-title">بناء صفحات من الصفر</h3>
+          <p class="feature-desc">
+            نساعدك في بناء حضورك الرقمي من الصفر بخطة متكاملة واستراتيجية ناجحة
+          </p>
+        </div>
+        <div class="feature-card fade-in">
+          <div
+            class="feature-icon"
+            style="background: rgba(67, 233, 123, 0.15)"
+          >
+            📈
+          </div>
+          <h3 class="feature-title">تصاميم تزيد التفاعل</h3>
+          <p class="feature-desc">
+            تصميماتنا مدروسة لزيادة التفاعل والوصول وجذب المزيد من المتابعين
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- WHY US -->
+    <section id="why-us" style="padding: 100px 30px">
+      <div class="why-us">
+        <div class="why-content fade-in">
+          <span class="section-tag">💡 لماذا نحن</span>
+          <h2>
+            نحن لسنا مجرد خدمة...<br /><span class="gradient-text"
+              >نحن شريكك في النجاح</span
+            >
+          </h2>
+          <p>
+            في زاد المعرفة، نؤمن بأن كل عميل يستحق أفضل خدمة ممكنة. نعمل بشغف
+            واحترافية عالية لنضمن أن مشروعك يحصل على ما يستحقه من اهتمام وجودة.
+          </p>
+          <ul class="why-list">
+            <li>
+              <div class="check-icon">
+                <i
+                  class="fas fa-check"
+                  style="color: #fff; font-size: 10px"
+                ></i>
+              </div>
+              خبرة واسعة في مجال التصميم والمحتوى الرقمي
+            </li>
+            <li>
+              <div class="check-icon">
+                <i
+                  class="fas fa-check"
+                  style="color: #fff; font-size: 10px"
+                ></i>
+              </div>
+              أسعار تنافسية مع جودة لا تُضاهى
+            </li>
+            <li>
+              <div class="check-icon">
+                <i
+                  class="fas fa-check"
+                  style="color: #fff; font-size: 10px"
+                ></i>
+              </div>
+              تواصل سهل وسريع على مدار الساعة
+            </li>
+            <li>
+              <div class="check-icon">
+                <i
+                  class="fas fa-check"
+                  style="color: #fff; font-size: 10px"
+                ></i>
+              </div>
+              الاهتمام بأدق التفاصيل في كل مشروع
+            </li>
+            <li>
+              <div class="check-icon">
+                <i
+                  class="fas fa-check"
+                  style="color: #fff; font-size: 10px"
+                ></i>
+              </div>
+              نتائج حقيقية وقابلة للقياس
+            </li>
+            <li>
+              <div class="check-icon">
+                <i
+                  class="fas fa-check"
+                  style="color: #fff; font-size: 10px"
+                ></i>
+              </div>
+              استخدام أحدث التقنيات والأدوات الاحترافية
+            </li>
+          </ul>
+        </div>
+        <div class="why-visual slide-right">
+          <div class="floating-badge badge-1">
+            <i class="fas fa-star" style="color: #ffd200"></i>
+            جودة عالية
+          </div>
+          <div class="visual-card">
+            <div class="visual-icons-grid">
+              <div class="visual-icon-item">🎨</div>
+              <div class="visual-icon-item">📝</div>
+              <div class="visual-icon-item">🤖</div>
+              <div class="visual-icon-item">📱</div>
+              <div class="visual-icon-item">🎙️</div>
+              <div class="visual-icon-item">📋</div>
+              <div class="visual-icon-item">🏆</div>
+              <div class="visual-icon-item">📚</div>
+              <div class="visual-icon-item">🚀</div>
+            </div>
+            <p style="color: rgba(255, 255, 255, 0.7); font-size: 14px">
+              خدمات متكاملة في مكان واحد
+            </p>
+          </div>
+          <div class="floating-badge badge-2">
+            <i class="fas fa-clock" style="color: #ffd200"></i>
+            تسليم 24 ساعة
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TESTIMONIALS -->
+    <section id="testimonials" style="background: rgba(0, 0, 0, 0.2)">
+      <div class="section-header fade-in">
+        <span class="section-tag">💬 آراء العملاء</span>
+        <h2 class="section-title">ماذا يقول عملاؤنا؟</h2>
+        <p class="section-desc">
+          آراء حقيقية من عملاء حقيقيين وثقوا في خدماتنا
+        </p>
+      </div>
+      <div class="testimonials-grid">
+        <div class="testimonial-card fade-in">
+          <div class="stars">★★★★★</div>
+          <p class="testimonial-text">
+            "خدمة ممتازة وتصميم احترافي جداً، التسليم كان في الوقت المحدد
+            وبالضبط اللي طلبته. هاتعامل معاهم تاني بكل تأكيد!"
+          </p>
+          <div class="testimonial-author">
+            <div
+              class="author-avatar"
+              style="background: linear-gradient(135deg, #667eea, #764ba2)"
+            >
+              أ
+            </div>
+            <div>
+              <div class="author-name">أحمد محمود</div>
+              <div class="author-role">صاحب مشروع تجاري</div>
+            </div>
+          </div>
+        </div>
+        <div class="testimonial-card fade-in">
+          <div class="stars">★★★★★</div>
+          <p class="testimonial-text">
+            "عملوا لي CV احترافي في أقل من 24 ساعة واتقبلت في الشغل اللي كنت
+            بدور عليه. شكراً جزيلاً لفريق زاد المعرفة!"
+          </p>
+          <div class="testimonial-author">
+            <div
+              class="author-avatar"
+              style="background: linear-gradient(135deg, #f7971e, #ffd200)"
+            >
+              س
+            </div>
+            <div>
+              <div class="author-name">سارة عبدالله</div>
+              <div class="author-role">خريجة جامعية</div>
+            </div>
+          </div>
+        </div>
+        <div class="testimonial-card fade-in">
+          <div class="stars">★★★★★</div>
+          <p class="testimonial-text">
+            "بدأت صفحتي من الصفر معاهم والنتيجة كانت مذهلة. التفاعل اتضاعف في
+            أول أسبوع. ناس محترفة وأمانة في الشغل!"
+          </p>
+          <div class="testimonial-author">
+            <div
+              class="author-avatar"
+              style="background: linear-gradient(135deg, #43e97b, #38f9d7)"
+            >
+              م
+            </div>
+            <div>
+              <div class="author-name">محمد علي</div>
+              <div class="author-role">إنفلوانسر</div>
+            </div>
+          </div>
+        </div>
+        <div class="testimonial-card fade-in">
+          <div class="stars">★★★★★</div>
+          <p class="testimonial-text">
+            "التفريغ الصوتي اللي طلبته كان دقيق جداً وما فيهوش غلطة واحدة. سرعة
+            في الشغل وجودة عالية. أنصح بيهم الكل!"
+          </p>
+          <div class="testimonial-author">
+            <div
+              class="author-avatar"
+              style="background: linear-gradient(135deg, #f953c6, #b91d73)"
+            >
+              ن
+            </div>
+            <div>
+              <div class="author-name">نور حسن</div>
+              <div class="author-role">طالبة دكتوراه</div>
+            </div>
+          </div>
+        </div>
+        <div class="testimonial-card fade-in">
+          <div class="stars">★★★★★</div>
+          <p class="testimonial-text">
+            "الصور بالذكاء الاصطناعي اللي طلبتها كانت مبهرة جداً وفوق التوقعات.
+            فريق مبدع ومتميز في كل ما يقدمه!"
+          </p>
+          <div class="testimonial-author">
+            <div
+              class="author-avatar"
+              style="background: linear-gradient(135deg, #4facfe, #00f2fe)"
+            >
+              ك
+            </div>
+            <div>
+              <div class="author-name">كريم طارق</div>
+              <div class="author-role">مصمم جرافيك</div>
+            </div>
+          </div>
+        </div>
+        <div class="testimonial-card fade-in">
+          <div class="stars">★★★★★</div>
+          <p class="testimonial-text">
+            "البوستات اللي صمموها ليا رفعت التفاعل على صفحتي بشكل ملحوظ. تصاميم
+            احترافية ومحتوى هادف. ممتازين جداً!"
+          </p>
+          <div class="testimonial-author">
+            <div
+              class="author-avatar"
+              style="background: linear-gradient(135deg, #fa709a, #fee140)"
+            >
+              ر
+            </div>
+            <div>
+              <div class="author-name">رنا إبراهيم</div>
+              <div class="author-role">صاحبة متجر إلكتروني</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTACT/PRICING -->
+    <section id="contact">
+      <div class="pricing-note fade-in">
+        <div class="section-tag">💬 تواصل معنا</div>
+        <h3>مستعد تبدأ مشروعك معنا؟</h3>
+        <p>
+          تواصل معنا الآن واحصل على عرض سعر مخصص لاحتياجاتك. نحن هنا لمساعدتك في
+          كل خطوة من خطوات رحلتك الرقمية!
+        </p>
+        <div
+          style="
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+          "
+        >
+          <div
+            style="
+              background: rgba(108, 99, 255, 0.1);
+              border: 1px solid rgba(108, 99, 255, 0.3);
+              border-radius: 15px;
+              padding: 15px 25px;
+              text-align: center;
+            "
+          >
+            <div style="font-size: 24px; margin-bottom: 5px">⚡</div>
+            <div style="font-size: 14px; font-weight: 700">رد سريع</div>
+            <div style="font-size: 12px; color: rgba(255, 255, 255, 0.6)">
+              خلال دقائق
+            </div>
+          </div>
+          <div
+            style="
+              background: rgba(67, 233, 123, 0.1);
+              border: 1px solid rgba(67, 233, 123, 0.3);
+              border-radius: 15px;
+              padding: 15px 25px;
+              text-align: center;
+            "
+          >
+            <div style="font-size: 24px; margin-bottom: 5px">💰</div>
+            <div style="font-size: 14px; font-weight: 700">أسعار مناسبة</div>
+            <div style="font-size: 12px; color: rgba(255, 255, 255, 0.6)">
+              للجميع
+            </div>
+          </div>
+          <div
+            style="
+              background: rgba(247, 151, 30, 0.1);
+              border: 1px solid rgba(247, 151, 30, 0.3);
+              border-radius: 15px;
+              padding: 15px 25px;
+              text-align: center;
+            "
+          >
+            <div style="font-size: 24px; margin-bottom: 5px">🎁</div>
+            <div style="font-size: 14px; font-weight: 700">استشارة</div>
+            <div style="font-size: 12px; color: rgba(255, 255, 255, 0.6)">
+              بدون التزام
+            </div>
+          </div>
+        </div>
+        <div class="contact-methods">
+          <a
+            href="https://wa.me/201515474939"
+            target="_blank"
+            class="contact-btn whatsapp-btn"
+          >
+            <i class="fab fa-whatsapp" style="font-size: 20px"></i>
+            تواصل عبر واتساب
+          </a>
+          <a
+            href="https://www.facebook.com/zadalmahrfh"
+            target="_blank"
+            class="contact-btn messenger-btn"
+          >
+            <i class="fab fa-facebook-messenger" style="font-size: 20px"></i>
+            تواصل عبر فيسبوك
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA BANNER -->
+    <section style="padding: 50px 30px">
+      <div class="cta-section fade-in">
+        <h2 style="position: relative">
+          ابدأ رحلتك نحو <span class="gradient-text">النجاح الرقمي</span> اليوم!
+        </h2>
+        <p style="position: relative">
+          لا تتردد في التواصل معنا. فريقنا جاهز لمساعدتك في تحقيق أهدافك وتطوير
+          حضورك الرقمي بأفضل الأدوات والتقنيات
+        </p>
+        <div
+          style="
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            position: relative;
+          "
+        >
+          <a href="#contact" class="btn-primary">
+            <i class="fas fa-paper-plane"></i>
+            ابدأ الآن
+          </a>
+          <a href="#services" class="btn-secondary">
+            <i class="fas fa-eye"></i>
+            شاهد خدماتنا
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+      <div class="footer-content">
+        <div class="footer-brand">
+          <div class="logo" style="margin-bottom: 15px">
+            <div class="logo-icon">📚</div>
+            <span class="logo-text">زاد المعرفة</span>
+          </div>
+          <p>
+            نقدم خدمات إبداعية ورقمية احترافية لمساعدتك في تطوير حضورك الرقمي
+            وتحقيق أهدافك بأعلى جودة وأسرع وقت.
+          </p>
+          <div class="social-links">
+            <a href="https://www.facebook.com/zadalmahrfh" class="social-link"
+              ><i class="fab fa-facebook-f"></i
+            ></a>
+            <a
+              href="https://whatsapp.com/channel/0029VbCKfnI4inokhRHc1k41"
+              class="social-link"
+              ><i class="fab fa-whatsapp"></i
+            ></a>
+            <a href="https://t.me/zadelmarefh" class="social-link"
+              ><i class="fab fa-telegram"></i
+            ></a>
+            <a href="https://www.youtube.com/@zadalmarefh" class="social-link"
+              ><i class="fab fa-youtube"></i
+            ></a>
+          </div>
+        </div>
+        <div class="footer-links">
+          <h4>خدماتنا</h4>
+          <ul>
+            <li><a href="#services">تصميم بوستات</a></li>
+            <li><a href="#services">أبحاث وملخصات</a></li>
+            <li><a href="#services">تفريغ صوتي</a></li>
+            <li><a href="#services">تصميم CV</a></li>
+            <li><a href="#services">إدارة الصفحات</a></li>
+            <li><a href="#services">الذكاء الاصطناعي</a></li>
+          </ul>
+        </div>
+        <div class="footer-links">
+          <h4>روابط مهمة</h4>
+          <ul>
+            <li><a href="#features">مميزاتنا</a></li>
+            <li><a href="#why-us">لماذا نحن</a></li>
+            <li><a href="#testimonials">آراء العملاء</a></li>
+            <li><a href="#contact">تواصل معنا</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2025 زاد المعرفة - جميع الحقوق محفوظة ❤️ | صُنع بشغف واحترافية</p>
+      </div>
+    </footer>
+
+    <script>
+      // ===== PARTICLES =====
+      function createParticles() {
+        const container = document.getElementById("particles");
+        const colors = ["#6c63ff", "#ff6584", "#43e97b", "#f7971e", "#4facfe"];
+        for (let i = 0; i < 30; i++) {
+          const particle = document.createElement("div");
+          particle.classList.add("particle");
+          const size = Math.random() * 8 + 3;
+          particle.style.cssText = `
+                    width: ${size}px;
+                    height: ${size}px;
+                    background: ${colors[Math.floor(Math.random() * colors.length)]};
+                    left: ${Math.random() * 100}%;
+                    animation-duration: ${Math.random() * 15 + 10}s;
+                    animation-delay: ${Math.random() * 10}s;
+                `;
+          container.appendChild(particle);
+        }
+      }
+      createParticles();
+
+      // ===== SCROLL ANIMATIONS =====
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("visible");
+            }
+          });
+        },
+        { threshold: 0.1 },
+      );
+
+      document
+        .querySelectorAll(".fade-in, .slide-right")
+        .forEach((el) => observer.observe(el));
+
+      // ===== NAVBAR SCROLL =====
+      window.addEventListener("scroll", () => {
+        const navbar = document.getElementById("navbar");
+        if (window.scrollY > 50) {
+          navbar.style.background = "rgba(10, 10, 26, 0.98)";
+          navbar.style.boxShadow = "0 5px 30px rgba(0,0,0,0.3)";
+        } else {
+          navbar.style.background = "rgba(10, 10, 26, 0.85)";
+          navbar.style.boxShadow = "none";
+        }
+      });
+
+      // ===== MOBILE MENU =====
+      function toggleMenu() {
+        const menu = document.getElementById("mobileMenu");
+        const overlay = document.getElementById("overlay");
+        menu.classList.toggle("active");
+        overlay.classList.toggle("active");
+      }
+
+      // ===== SMOOTH SCROLL =====
+      document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+        anchor.addEventListener("click", function (e) {
+          e.preventDefault();
+          const target = document.querySelector(this.getAttribute("href"));
+          if (target) {
+            target.scrollIntoView({ behavior: "smooth", block: "start" });
+          }
+        });
+      });
+
+      // ===== COUNTER ANIMATION =====
+      function animateCounter(el, target, suffix) {
+        let current = 0;
+        const step = target / 60;
+        const timer = setInterval(() => {
+          current += step;
+          if (current >= target) {
+            current = target;
+            clearInterval(timer);
+          }
+          el.textContent = Math.floor(current) + suffix;
+        }, 30);
+      }
+
+      const statsObserver = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              const statNumbers = document.querySelectorAll(".stat-number");
+              const targets = [500, 1200, 24, 100];
+              const suffixes = ["+", "+", "", "%"];
+              statNumbers.forEach((el, i) => {
+                animateCounter(el, targets[i], suffixes[i]);
+              });
+              statsObserver.unobserve(entry.target);
+            }
+          });
+        },
+        { threshold: 0.5 },
+      );
+
+      const heroStats = document.querySelector(".hero-stats");
+      if (heroStats) statsObserver.observe(heroStats);
+
+      // ===== SERVICE CARD HOVER EFFECT =====
+      document.querySelectorAll(".service-card").forEach((card) => {
+        card.addEventListener("mouseenter", function () {
+          this.style.transition =
+            "all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)";
+        });
+      });
+    </script>
+  </body>
+</html>
