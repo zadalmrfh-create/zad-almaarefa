@@ -58,7 +58,7 @@ Example:
 
 # 🚀 Live Demo
 
-🔗 https://zad-eta.vercel.app/
+ https://zadalmrfh-create.github.io/zad-almaarefa/
 
 ---
 
@@ -67,7 +67,7 @@ Example:
 Clone the repository:
 
 ```bash
-git clone https://github.com/your-github-username/zad-almaarefa.git
+git clone https://github.com/zadalmrfh-create/zad-almaarefa.git
 ```
 
 Go to the project directory:
@@ -102,12 +102,13 @@ Responsibilities:
 
 ---
 
-### Ahmed Ali
+### [malek sameh](https://github.com/maleksameh121-web)
 
-**Role:** Content Manager
+**Role:** Front-End Developer & Content Manager
 
 Responsibilities:
 
+- Front-End Development
 - Content Management
 - Content Publishing
 - Educational Materials
