@@ -31,7 +31,6 @@
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
   </head>
   <body>
     <!-- ═══════════ NAVBAR ═══════════ -->
@@ -47,30 +46,30 @@
               class="w-full h-full object-cover"
             />
           </div>
-
           <span class="logo-text">زاد <span>المعرفة</span></span>
         </a>
 
         <div class="nav-links">
           <a href="#hero" class="nav-link">الرئيسية</a>
-
           <a href="#categories" class="nav-link">الأقسام</a>
-
           <a href="طاقم التدريس/index.html" class="nav-link" target="_self"
             >طاقم التدريس</a
           >
-
           <a
             href="أحداث زاد المعرفة/events.html"
             class="nav-link"
             target="_self"
-            >الأحداث</a
+            >أحداث المنصة</a
           >
-
-          <a href="sections/service.html" class="nav-link" target="_self"
+          <a
+            href="sections/services/services.html"
+            class="nav-link"
+            target="_self"
             >الخدمات</a
           >
-
+          <a href="sections/library.html" class="nav-link" target="_self"
+            >المكتبة</a
+          >
           <a
             href="طلاب المنصة المتميزون/students.html"
             class="nav-link"
@@ -121,62 +120,59 @@
       </button>
 
       <a href="#hero" class="mob-btn" onclick="closeMob()">الرئيسية</a>
-
       <a href="#categories" class="mob-btn" onclick="closeMob()">الأقسام</a>
-
       <a
         href="طاقم التدريس/index.html"
-        target="_blank"
+        target="_self"
         class="mob-btn"
         onclick="closeMob()"
         >طاقم التدريس</a
       >
-
       <a
         href="أحداث زاد المعرفة/events.html"
-        target="_blank"
+        target="_self"
         class="mob-btn"
         onclick="closeMob()"
-        >الأحداث</a
+        >أحداث المنصة</a
       >
-
       <a
-        href="sections/service.html"
-        target="_blank"
+        href="sections/services/services.html"
+        target="_self"
         class="mob-btn"
         onclick="closeMob()"
         >الخدمات</a
       >
       <a
+        href="sections/library.html"
+        target="_self"
+        class="mob-btn"
+        onclick="closeMob()"
+        >المكتبة</a
+      >
+      <a
         href="طلاب المنصة المتميزون/students.html"
-        target="_blank"
+        target="_self"
         class="mob-btn"
         onclick="closeMob()"
         >الطلاب المتميزون</a
       >
 
       <button class="btn-primary" onclick="smoothTo('categories')">
-        ➡️ ابدأ التعلم الآن
+        ابدأ التعلم الآن
       </button>
     </div>
 
     <!-- ═══════════ HERO ═══════════ -->
     <section id="hero">
-      <!-- Overlay -->
       <div class="hero-overlay"></div>
-
       <div class="hero-container">
-        <!-- النص (يمين) -->
         <div class="hero-text">
           <span class="hero-badge">منصتك التعليمية الشاملة</span>
-
           <h1 class="hero-title">زاد المعرفة</h1>
-
           <p class="hero-desc">
             منصة تعليمية إسلامية شاملة تجمع بين العلوم الشرعية والقرآن الكريم
             واللغة العربية، لتكون رفيقك في رحلة طلب العلم
           </p>
-
           <div class="hero-actions">
             <button class="btn-primary" onclick="smoothTo('categories')">
               استكشف الأقسام
@@ -185,7 +181,6 @@
               ابدأ الآن
             </button>
           </div>
-
           <div class="hero-stats">
             <div>
               <span class="num" style="display: none">20+</span>
@@ -197,8 +192,6 @@
             </div>
           </div>
         </div>
-
-        <!-- الصورة (شمال) -->
         <div class="hero-image">
           <img src="images/hero-student.jpg" alt="" />
         </div>
@@ -209,7 +202,6 @@
     <section id="mission" class="py-20 bg-white relative">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="grid lg:grid-cols-2 gap-16 items-center">
-          <!-- Visual Side -->
           <div class="relative reveal">
             <div
               class="absolute inset-0 bg-brand-600 rounded-3xl transform rotate-3 opacity-10"
@@ -228,13 +220,11 @@
             </div>
           </div>
 
-          <!-- Content Side -->
           <div class="reveal delay-200">
             <h2 class="text-3xl lg:text-4xl font-bold text-gray-900 mb-6">
               <span class="text-brand-600">رسالتنا</span> وقيمنا
             </h2>
             <div class="w-20 h-1.5 bg-accent-500 rounded-full mb-8"></div>
-
             <div
               class="space-y-6 text-gray-600 text-lg leading-loose text-justify"
             >
@@ -258,7 +248,6 @@
               </p>
             </div>
 
-            <!-- Key Pillars -->
             <div class="mt-10 grid grid-cols-2 gap-6">
               <div class="flex items-start gap-3">
                 <i
@@ -349,7 +338,6 @@
           </div>
         </div>
         <div class="about-visual sr sr-delay-2" style="position: relative">
-          <!-- <div class="float-badge">✨ مجاني للجميع دائمًا</div> -->
           <div class="dash-mockup">
             <div class="dash-bar">
               <div class="dash-dot" style="background: #ff5f57"></div>
@@ -451,77 +439,62 @@
         </div>
       </div>
     </section>
+
     <!--footer-->
     <footer id="footer">
       <div class="footer-container">
-        <!-- Brand -->
         <div class="footer-brand">
           <div class="logo">
             <div class="logo-img">
               <img src="images/logo.png" alt="زاد المعرفة" class="logo-img" />
             </div>
-
             <span class="logo-text">زاد <span>المعرفة</span></span>
           </div>
-
           <p>
             منصة تعليمية إسلامية تهدف إلى نشر العلم النافع وتقديم محتوى متميز
             بأسلوب عصري بسيط.
           </p>
-
           <a
             href="https://wa.me/201515474939"
             class="whatsapp-btn"
             target="_blank"
+            >تواصل عبر واتساب</a
           >
-            تواصل عبر واتساب
-          </a>
           <p style="color: gray">تابعنا على السوشيال ميديا:</p>
-
           <div class="footer-socials">
             <a
               href="https://whatsapp.com/channel/0029VbCKfnI4inokhRHc1k41"
               target="_blank"
-            >
-              <i class="fab fa-whatsapp"></i>
-            </a>
-
-            <a
-              href="https://www.facebook.com/share/1BM3MS8mjM/"
-              target="_blank"
-            >
-              <i class="fab fa-facebook-f"></i>
-            </a>
-
-            <a href="https://t.me/zadelmarefh" target="_blank">
-              <i class="fab fa-telegram"></i>
-            </a>
-
+              ><i class="fab fa-whatsapp"></i
+            ></a>
+            <a href="https://www.facebook.com/share/1BM3MS8mjM/" target="_blank"
+              ><i class="fab fa-facebook-f"></i
+            ></a>
+            <a href="https://t.me/zadelmarefh" target="_blank"
+              ><i class="fab fa-telegram"></i
+            ></a>
             <a
               href="https://youtube.com/channel/UC5dMzTXCU61UrYrrc9ol8UA"
               target="_blank"
-            >
-              <i class="fab fa-youtube"></i>
-            </a>
+              ><i class="fab fa-youtube"></i
+            ></a>
           </div>
         </div>
 
-        <!-- Quick links -->
         <div class="footer-links-col">
           <h4>روابط</h4>
           <a href="#hero">الرئيسية</a>
           <a href="#categories">الأقسام</a>
-          <a href="طاقم التدريس/index.html" target="_blank">طاقم التدريس</a>
-          <a href="sections/service.html" target="_blank">خدماتنا</a>
-          <a href="أحداث زاد المعرفة/events.html" target="_blank">الأحداث</a>
-          <a
-            href="طلاب المنصة المتميزون/students.html"
-            target="_self"
+          <a href="طاقم التدريس/index.html" target="_self">طاقم التدريس</a>
+          <a href="sections/services/services.html" target="_self">خدماتنا</a>
+          <a href="أحداث زاد المعرفة/events.html" target="_self"
+            >أحداث المنصة</a
+          >
+          <a href="طلاب المنصة المتميزون/students.html" target="_self"
             >الطلاب المتميزون</a
           >
         </div>
 
-        <!-- Sections -->
         <div class="footer-links-col">
           <h4>الأقسام</h4>
           <a href="sections/Quran/quran.html">القرآن الكريم</a>
@@ -529,9 +502,9 @@
           <a href="sections/Sharia/">العلوم الشرعية</a>
           <a href="sections/Arabic/arabic.html">اللغة العربية</a>
           <a href="sections/Tazkea/tazkea.html">الإرشاد النفسي</a>
-          <a href="sections/service.html">الخدمات المصغرة</a>
+          <a href="sections/services/services.html">الخدمات المصغرة</a>
         </div>
-        <!-- Contact -->
+
         <div class="footer-contact">
           <h4>تواصل معنا</h4>
           <p>📧 zadalmarfah@gmail.com</p>
@@ -540,12 +513,9 @@
         </div>
       </div>
 
-      <!-- Bottom -->
-
       <div class="footer-bottom">
         <div class="footer-bottom-inner">
           <span>© 2026 زاد المعرفة — جميع الحقوق محفوظة</span>
-
           <span class="footer-love"> صُنع بـ ❤️ لنشر العلم </span>
         </div>
       </div>
@@ -697,7 +667,7 @@
           iconBg: "rgba(59,130,246,0.15)",
           glow: "rgba(59,130,246,0.08)",
           image: "images/service.sec.img.png",
-          link: "sections/service.html",
+          link: "sections/services/services.html",
         },
       ];
 
@@ -723,81 +693,23 @@
       function renderCats() {
         document.getElementById("cats-grid").innerHTML = CATS.map(
           (c, i) => `
-             <div
-        class="cat-card sr sr-delay-${(i % 3) + 1}"
-       onclick="window.location.href='${c.link}'"
-        style="background-image:url('${c.image}')"
-      >
+             <div class="cat-card sr sr-delay-${(i % 3) + 1}" onclick="window.location.href='${c.link}'" style="background-image:url('${c.image}')">
                 <div class="cat-num">${String(i + 1).padStart(2, "0")}</div>
                 <div class="cat-icon" style="background:${c.iconBg}">${c.icon}</div>
                 <div class="cat-name">${c.name}</div>
                 <div class="cat-desc">${c.desc}</div>
                  <div class="cat-topics">${c.topics.map((t) => `<span class="cat-topic-pill">${t}</span>`).join("")}</div>
                 <div class="cat-footer">
-                 
                   <div class="cat-arrow">
                     <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
                   </div>
                 </div>
-              </div>
-            `,
+              </div>`,
         ).join("");
         observeNewSR();
       }
 
-      /* ── RENDER TOPICS ── */
-      function renderTopics() {
-        const filtered = TOPICS.filter((t) => {
-          const mc = activeFilter === "all" || t.cat === activeFilter;
-          const ms = !searchQ || t.title.includes(searchQ);
-          return mc && ms;
-        });
-        const grid = document.getElementById("topicsGrid");
-        const empty = document.getElementById("empty-state");
-        if (!filtered.length) {
-          grid.innerHTML = "";
-          empty.style.display = "block";
-          return;
-        }
-        empty.style.display = "none";
-        const cat = CATS.find((c) => c.id === filtered[0]?.cat);
-        grid.innerHTML = filtered
-          .map((t, i) => {
-            const bs = BADGE_STYLES[t.cat] || "";
-            const catName = CATS.find((c) => c.id === t.cat)?.name || "";
-            return `
-              <div class="topic-card sr sr-delay-${(i % 3) + 1}" onclick="openTopic('${t.id}')">
-                <div class="topic-cat-badge" style="${bs}">${catName}</div>
-                <div class="topic-title">${t.title}</div>
-                <div class="topic-footer">
-                  <div class="topic-time">
-                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    ${t.time} قراءة
-                  </div>
-                  <div class="topic-go">
-                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
-                  </div>
-                </div>
-              </div>`;
-          })
-          .join("");
-        observeNewSR();
-      }
-
       /* ── MODAL ── */
-      function openTopic(id) {
-        const t = TOPICS.find((x) => x.id === id);
-        if (!t) return;
-        const catName = CATS.find((c) => c.id === t.cat)?.name || "";
-        const bs = BADGE_STYLES[t.cat] || "";
-        document.getElementById("mBadge").textContent = catName;
-        document.getElementById("mBadge").style.cssText = bs;
-        document.getElementById("mTitle").textContent = t.title;
-        document.getElementById("mTime").textContent = t.time + " قراءة";
-        document.getElementById("mBody").innerHTML = t.content;
-        document.getElementById("modal-overlay").classList.add("open");
-        document.body.style.overflow = "hidden";
-      }
       function closeModal() {
         document.getElementById("modal-overlay").classList.remove("open");
         document.body.style.overflow = "";
@@ -868,13 +780,11 @@
       /* ── INIT ── */
       document.addEventListener("DOMContentLoaded", () => {
         renderCats();
-        renderTopics();
         observeNewSR();
         document
           .querySelectorAll(".dash-mockup")
           .forEach((m) => pbObs.observe(m));
       });
-      /*links-card*/
 
       function goTo(link) {
         window.location.href = link;

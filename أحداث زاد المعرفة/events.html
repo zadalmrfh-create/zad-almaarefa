@@ -25,38 +25,51 @@
       <a href="../index.html" class="back-link">← الرئيسية</a>
     </header>
 
-    <main>
-      <!-- ============================================
-         HERO SECTION
-      ============================================= -->
-      <section class="hero-section">
-        <div class="hero-badge">فعاليات معرفية تفاعلية</div>
-        <h1 class="hero-title">اكتشف الفعاليات القادمة</h1>
-        <p class="hero-sub">
-          ورش العمل، واللقاءات الفكرية — لا تفوّت فرصة التعلّم والتواصل مع مجتمع
-          زاد المعرفة.
-        </p>
+    <!-- ═══════════ HERO ═══════════ -->
+    <section id="hero">
+      <!-- Overlay -->
+      <div class="hero-overlay"></div>
 
-        <div class="hero-pills">
-          <div class="hero-pill">
-            <span class="pill-icon">🧠</span>
-            <span>من مجتمع تفاعلي</span>
+      <div class="hero-container">
+        <!-- النص (يمين) -->
+        <div class="hero-text">
+          <span class="hero-badge"> زاد المعرفة </span>
+
+          <h1 class="hero-title">فعاليات معرفية تفاعلية</h1>
+
+          <p class="hero-desc">
+            اكتشف الفعاليات القادمة من ورش العمل، واللقاءات الفكرية — لا تفوّت
+            فرصة التعلّم والتواصل مع مجتمع زاد المعرفة.
+          </p>
+
+          <div class="hero-btns">
+            <a href="#events-section" class="btn-primary" target="_self"
+              >الاحداث القادمة
+            </a>
+            <a href="#gallerySection" class="btn-outline" target="_self">
+              معرض التوثيق</a
+            >
           </div>
-          <div class="hero-pill">
-            <span class="pill-icon">🎙️</span>
-            <span>ورش ومحاضرات</span>
-          </div>
-          <div class="hero-pill">
-            <span class="pill-icon">🎉</span>
-            <span>فعاليات وأنشطة ممتعة</span>
+
+          <div class="hero-stats">
+            <div>
+              <span class="num" style="display: none">20+</span>
+              <span class="label" style="display: none">دورة</span>
+            </div>
+            <div>
+              <span class="num" style="display: none">6+</span>
+              <span class="label" style="display: none">أقسام</span>
+            </div>
           </div>
         </div>
-      </section>
+      </div>
+    </section>
 
+    <main>
       <!-- ============================================
          SECTION 1 — UPCOMING EVENTS
       ============================================= -->
-      <section class="events-section">
+      <section id="events-section" class="events-section">
         <div class="section-label">الأحداث القادمة</div>
         <h2 class="section-title">ماذا ينتظرك قريباً؟</h2>
 

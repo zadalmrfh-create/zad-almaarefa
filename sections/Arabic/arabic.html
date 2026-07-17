@@ -34,9 +34,9 @@
       <div class="hero-container">
         <!-- النص (يمين) -->
         <div class="hero-text">
-          <span class="hero-badge">قسم اللغة العربية وعلومها</span>
+          <span class="hero-badge">زاد المعرفة</span>
 
-          <h1 class="hero-title">زاد المعرفة</h1>
+          <h1 class="hero-title">قسم اللغة العربية وعلومها</h1>
 
           <p class="hero-desc">
             تعلم النحو والصرف والبلاغة والأدب العربي بأسلوب مبسط ومتدرج، واكتشف
@@ -168,33 +168,32 @@
           <h2 class="section-title">اختر القسم</h2>
 
           <div class="stage-stack">
-            <button class="stage-row" data-stage="hifz">
+            <button class="stage-row" data-stage="s1">
               <div class="stage-row-icon">✏️</div>
               <div class="stage-row-text">
-                <div class="stage-row-name">تأسيس القرءاة والكتابة والإملاء</div>
+                <div class="stage-row-name">
+                  تأسيس القرءاة والكتابة والإملاء
+                </div>
                 <div class="stage-row-hint">
-                  تدرج في التعلم يتناسب مع المرحلة العمرية للطالب والتعامل مع صعوبات التعلم
+                  تدرج في التعلم يتناسب مع المرحلة العمرية للطالب والتعامل مع
+                  صعوبات التعلم
                 </div>
               </div>
               <span class="stage-row-arrow">‹</span>
             </button>
 
-            <button class="stage-row" data-stage="hafs">
+            <button class="stage-row" data-stage="s2">
               <div class="stage-row-icon">✒️</div>
               <div class="stage-row-text">
-                <div class="stage-row-name">
-                 الخط العربي
-                </div>
+                <div class="stage-row-name">الخط العربي</div>
                 <div class="stage-row-hint">
                   🌟 دروس عملية لتعلم الخط العربي خطوة بخطوة.
-
-
                 </div>
               </div>
               <span class="stage-row-arrow">‹</span>
             </button>
 
-            <button class="stage-row" data-stage="qiraat">
+            <button class="stage-row" data-stage="s3">
               <div class="stage-row-icon">📚</div>
               <div class="stage-row-text">
                 <div class="stage-row-name">النحو</div>
@@ -203,7 +202,7 @@
               <span class="stage-row-arrow">‹</span>
             </button>
 
-            <button class="stage-row" data-stage="tafsir">
+            <button class="stage-row" data-stage="s4">
               <div class="stage-row-icon">📝</div>
               <div class="stage-row-text">
                 <div class="stage-row-name">الصرف</div>
@@ -214,7 +213,7 @@
               <span class="stage-row-arrow">‹</span>
             </button>
 
-            <button class="stage-row" data-stage="tadabbur">
+            <button class="stage-row" data-stage="s5">
               <div class="stage-row-icon">✨</div>
               <div class="stage-row-text">
                 <div class="stage-row-name">البلاغة</div>
@@ -224,7 +223,7 @@
               </div>
               <span class="stage-row-arrow">‹</span>
             </button>
-          <button class="stage-row" data-stage="adb">
+            <button class="stage-row" data-stage="adb">
               <div class="stage-row-icon">📖</div>
               <div class="stage-row-text">
                 <div class="stage-row-name">الأدب والنصوص</div>
@@ -235,7 +234,7 @@
               <span class="stage-row-arrow">‹</span>
             </button>
 
-            <button class="stage-row" data-stage="adb">
+            <button class="stage-row" data-stage="s6">
               <div class="stage-row-icon">🎼</div>
               <div class="stage-row-text">
                 <div class="stage-row-name">العروض والقافية</div>
@@ -246,7 +245,7 @@
               <span class="stage-row-arrow">‹</span>
             </button>
 
-            <button class="stage-row" data-stage="adb">
+            <button class="stage-row" data-stage="s7">
               <div class="stage-row-icon">🎤</div>
               <div class="stage-row-text">
                 <div class="stage-row-name">الخطابة والإلقاء</div>
@@ -257,17 +256,18 @@
               <span class="stage-row-arrow">‹</span>
             </button>
 
-            <button class="stage-row" data-stage="adb">
+            <button class="stage-row" data-stage="s8">
               <div class="stage-row-icon">🌍</div>
               <div class="stage-row-text">
-                <div class="stage-row-name">تعليم اللغة العربية لغير الناطقين بها</div>
+                <div class="stage-row-name">
+                  تعليم اللغة العربية لغير الناطقين بها
+                </div>
                 <div class="stage-row-hint">
                   خطة حفظ متدرجة مع تطبيق أحكام التجويد
                 </div>
               </div>
               <span class="stage-row-arrow">‹</span>
             </button>
-
           </div>
         </div>
 
@@ -291,6 +291,10 @@
               class="search-input"
               placeholder="ابحث داخل الدروس..."
             />
+          </div>
+          <!-- 📂 Filters -->
+          <div class="filter-bar" id="filterBar">
+            <!-- injected by JS -->
           </div>
 
           <div class="lessons-grid" id="lessonsGrid">

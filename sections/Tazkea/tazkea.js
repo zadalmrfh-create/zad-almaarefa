@@ -1,22 +1,22 @@
 /* =========================================================
    QURAN SECTION PAGE — BEHAVIOR
-   3 independent parts, same pattern as azhar.js:
-   1) Accordion (Section 1)
-   2) CTA smooth scroll (Section 2)
-   3) Flow: choose section -> render its lessons (Section 3)
-   + Search inside lessons
+   1) Accordion
+   2) CTA Scroll
+   3) Flow: Sections → Lessons
+   4) Search
+   5) Filters
 ========================================================= */
 
 /* ---------------------------------------------------------
    1) ACCORDION
 --------------------------------------------------------- */
 
-// افتح كل عناصر الـ Accordion عند تحميل الصفحة
+// افتح جميع العناصر عند تحميل الصفحة
 document.querySelectorAll(".acc-item").forEach(function (item) {
   item.classList.add("open");
 });
 
-// كل عنصر يفتح ويقفل بشكل مستقل
+// فتح وغلق كل عنصر بشكل مستقل
 document.querySelectorAll(".acc-trigger").forEach(function (trigger) {
   trigger.addEventListener("click", function () {
     const item = trigger.closest(".acc-item");
@@ -27,19 +27,32 @@ document.querySelectorAll(".acc-trigger").forEach(function (trigger) {
 /* ---------------------------------------------------------
    2) CTA SCROLL
 --------------------------------------------------------- */
+
 document.getElementById("ctaStart").addEventListener("click", function () {
   document.getElementById("flowSection").scrollIntoView({ behavior: "smooth" });
 });
 
 /* ---------------------------------------------------------
-   3) FLOW: section -> lessons
+   3) FLOW
 --------------------------------------------------------- */
+
 const stepStage = document.getElementById("stepStage");
 const stepLessons = document.getElementById("stepLessons");
+
 const lessonsGrid = document.getElementById("lessonsGrid");
 const emptyState = document.getElementById("emptyState");
+
 const searchInput = document.getElementById("searchInput");
 const noResults = document.getElementById("noResults");
+
+const lessonsLabel = document.getElementById("lessonsLabel");
+const sectionDescription = document.getElementById("sectionDescription");
+
+const filterBar = document.getElementById("filterBar");
+
+let currentFilter = "all";
+
+/* ---------- Show Step ---------- */
 
 function showStep(step) {
   [stepStage, stepLessons].forEach(function (el) {
@@ -47,42 +60,53 @@ function showStep(step) {
   });
 
   step.classList.remove("is-hidden");
-  step.scrollIntoView({ behavior: "smooth", block: "start" });
+
+  step.scrollIntoView({
+    behavior: "smooth",
+    block: "start",
+  });
 }
+
+/* ---------- Open Section ---------- */
 
 document.querySelectorAll(".stage-row").forEach(function (row) {
   row.addEventListener("click", function () {
-    const sectionKey = row.dataset.stage;
-    openLessonsStep(sectionKey);
+    openLessonsStep(row.dataset.stage);
   });
 });
 
 function openLessonsStep(sectionKey) {
   const section = QURAN_DATA[sectionKey];
 
-  document.getElementById("lessonsLabel").textContent = section.title;
+  lessonsLabel.textContent = section.title;
+
+  // وصف القسم
+  sectionDescription.innerHTML = section.description || "";
+
   lessonsGrid.innerHTML = "";
+
   emptyState.classList.add("is-hidden");
+  noResults.classList.add("is-hidden");
 
   if (section.lessons.length === 0) {
     emptyState.classList.remove("is-hidden");
-  } else {
-    section.lessons.forEach(function (lesson) {
-      lessonsGrid.appendChild(buildLessonCard(lesson));
-    });
+    filterBar.innerHTML = "";
   }
 
-  // إعادة تهيئة السيرش عند فتح القسم
-  searchInput.value = "";
+  currentFilter = "all";
 
-  searchInput.oninput = function (e) {
-    const term = e.target.value.trim().toLowerCase();
+  function renderLessons() {
+    const term = searchInput.value.trim().toLowerCase();
 
-    const filtered = term
-      ? section.lessons.filter(function (lesson) {
-          return lesson.name.toLowerCase().includes(term);
-        })
-      : section.lessons;
+    const filtered = section.lessons.filter(function (lesson) {
+      const matchesSearch = lesson.name.toLowerCase().includes(term);
+
+      const matchesFilter =
+        currentFilter === "all" ||
+        normalizeType(lesson.fileType) === currentFilter;
+
+      return matchesSearch && matchesFilter;
+    });
 
     lessonsGrid.innerHTML = "";
 
@@ -91,39 +115,137 @@ function openLessonsStep(sectionKey) {
     filtered.forEach(function (lesson) {
       lessonsGrid.appendChild(buildLessonCard(lesson));
     });
-  };
+  }
+
+  createFilters(section, renderLessons);
+
+  searchInput.value = "";
+  searchInput.oninput = renderLessons;
+
+  renderLessons();
 
   showStep(stepLessons);
 }
 
+/* ---------------------------------------------------------
+   FILTERS
+--------------------------------------------------------- */
+
+function normalizeType(type) {
+  const t = String(type).toLowerCase();
+
+  if (t === "pdf") return "pdf";
+
+  if (t === "mp3" || t === "audio") {
+    return "audio";
+  }
+
+  if (t === "mp4" || t === "video") {
+    return "video";
+  }
+
+  if (t === "jpg" || t === "jpeg" || t === "png" || t === "image") {
+    return "image";
+  }
+
+  if (t === "exam") {
+    return "exam";
+  }
+
+  if (t === "book") {
+    return "book";
+  }
+
+  return t;
+}
+
+function getFilterLabel(type) {
+  const labels = {
+    all: "✨ الكل",
+    pdf: "📄 PDF",
+    image: "🖼 صور",
+    video: "🎥 فيديوهات",
+    audio: "🎵 صوت",
+    exam: "📝 اختبار",
+    book: "📚 كتب",
+  };
+
+  return labels[type] || type;
+}
+
+function createFilters(section, renderCallback) {
+  filterBar.innerHTML = "";
+
+  const types = [
+    ...new Set(
+      section.lessons.map(function (lesson) {
+        return normalizeType(lesson.fileType);
+      }),
+    ),
+  ];
+
+  const filters = ["all", ...types];
+
+  filters.forEach(function (type) {
+    const btn = document.createElement("button");
+
+    btn.className = "filter-btn" + (type === "all" ? " active" : "");
+
+    btn.textContent = getFilterLabel(type);
+
+    btn.addEventListener("click", function () {
+      document.querySelectorAll(".filter-btn").forEach(function (b) {
+        b.classList.remove("active");
+      });
+
+      btn.classList.add("active");
+
+      currentFilter = type;
+
+      renderCallback();
+    });
+
+    filterBar.appendChild(btn);
+  });
+}
+
+/* ---------------------------------------------------------
+   Lesson Card
+--------------------------------------------------------- */
+
 function buildLessonCard(lesson) {
   const wrapper = document.createElement("div");
+
   wrapper.className = "lesson-card-wrapper";
 
   let actionLabel = "فتح الملف";
 
-  if (lesson.fileType.toLowerCase() === "pdf") actionLabel = "⬇ تحميل الدرس";
-  else if (
-    lesson.fileType.toLowerCase() === "mp4" ||
-    lesson.fileType.toLowerCase() === "video"
-  )
-    actionLabel = "▶ مشاهدة فيديو";
-  else if (
-    lesson.fileType.toLowerCase() === "jpg" ||
-    lesson.fileType.toLowerCase() === "png" ||
-    lesson.fileType.toLowerCase() === "image"
-  )
-    actionLabel = "🖼 فتح صورة";
-  else if (
-    lesson.fileType.toLowerCase() === "exam" ||
-    lesson.fileType.toLowerCase() === "اختبار"
-  )
-    actionLabel = "📝 فتح الاختبار";
-  else if (
-    lesson.fileType.toLowerCase() === "mp3" ||
-    lesson.fileType.toLowerCase() === "audio"
-  )
-    actionLabel = "🎧 استماع للصوت";
+  switch (lesson.fileType.toLowerCase()) {
+    case "pdf":
+      actionLabel = "⬇ تحميل الدرس";
+      break;
+
+    case "mp4":
+    case "video":
+      actionLabel = "▶ مشاهدة الفيديو";
+      break;
+
+    case "jpg":
+    case "png":
+    case "image":
+      actionLabel = "🖼 فتح الصورة";
+      break;
+
+    case "exam":
+    case "اختبار":
+      actionLabel = "📝 فتح الاختبار";
+      break;
+
+    case "mp3":
+    case "audio":
+      actionLabel = "🎧 استماع للصوت";
+      break;
+  }
 
   wrapper.innerHTML =
     '<div class="lesson-card">' +
@@ -157,6 +279,7 @@ function buildLessonCard(lesson) {
 /* ---------------------------------------------------------
    BACK BUTTON
 --------------------------------------------------------- */
+
 document.querySelectorAll(".step-back").forEach(function (btn) {
   btn.addEventListener("click", function () {
     if (btn.dataset.back === "stage") {

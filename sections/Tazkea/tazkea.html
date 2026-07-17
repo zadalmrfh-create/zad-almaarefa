@@ -36,9 +36,9 @@
       <div class="hero-container">
         <!-- النص (يمين) -->
         <div class="hero-text">
-          <span class="hero-badge">قسم التزكية والإرشاد النفسي</span>
+          <span class="hero-badge">زاد المعرفة</span>
 
-          <h1 class="hero-title">زاد المعرفة</h1>
+          <h1 class="hero-title">قسم التزكية والإرشاد النفسي</h1>
 
           <p class="hero-desc">
             ارتقِ بنفسك عبر التزكية والإرشاد النفسي، وتعلّم كيف تبني شخصية
@@ -170,7 +170,7 @@
           <h2 class="section-title">اختر القسم</h2>
 
           <div class="stage-stack">
-            <button class="stage-row" data-stage="hifz">
+            <button class="stage-row" data-stage="s1">
               <div class="stage-row-icon">📿</div>
               <div class="stage-row-text">
                 <div class="stage-row-name">حفظ وتعليم القرآن بالتجويد</div>
@@ -181,7 +181,7 @@
               <span class="stage-row-arrow">‹</span>
             </button>
 
-            <button class="stage-row" data-stage="hafs">
+            <button class="stage-row" data-stage="s2">
               <div class="stage-row-icon">🕊️</div>
               <div class="stage-row-text">
                 <div class="stage-row-name">
@@ -194,7 +194,7 @@
               <span class="stage-row-arrow">‹</span>
             </button>
 
-            <button class="stage-row" data-stage="qiraat">
+            <button class="stage-row" data-stage="s3">
               <div class="stage-row-icon">🎙️</div>
               <div class="stage-row-text">
                 <div class="stage-row-name">القراءات العشر المتواترة</div>
@@ -203,7 +203,7 @@
               <span class="stage-row-arrow">‹</span>
             </button>
 
-            <button class="stage-row" data-stage="tafsir">
+            <button class="stage-row" data-stage="s4">
               <div class="stage-row-icon">📚</div>
               <div class="stage-row-text">
                 <div class="stage-row-name">كتب التفسير وعلوم القرآن</div>
@@ -214,7 +214,7 @@
               <span class="stage-row-arrow">‹</span>
             </button>
 
-            <button class="stage-row" data-stage="tadabbur">
+            <button class="stage-row" data-stage="s5">
               <div class="stage-row-icon">🎓</div>
               <div class="stage-row-text">
                 <div class="stage-row-name">محاضرات في تدبر القرآن الكريم</div>
@@ -236,6 +236,7 @@
               <h2 class="section-title">الدروس المتاحة</h2>
             </div>
           </div>
+          <div id="sectionDescription" class="section-description"></div>
 
           <!-- 🔍 Search bar -->
           <div class="search-bar">
@@ -246,6 +247,10 @@
               class="search-input"
               placeholder="ابحث داخل الدروس..."
             />
+          </div>
+          <!-- 📂 Filters -->
+          <div class="filter-bar" id="filterBar">
+            <!-- injected by JS -->
           </div>
 
           <div class="lessons-grid" id="lessonsGrid">

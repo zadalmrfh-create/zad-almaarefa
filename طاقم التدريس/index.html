@@ -9,277 +9,13 @@
       href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <style>
-      *,
-      *::before,
-      *::after {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-      }
-
-      :root {
-        --gold: #c9a84c;
-        --gold-light: #f5ecd4;
-        --gold-hover: #b8923e;
-        --wa: #25d366;
-        --wa-dark: #128c5e;
-        --white: #ffffff;
-        --gray-50: #f9fafb;
-        --gray-200: #e5e7eb;
-        --gray-400: #9ca3af;
-        --gray-600: #4b5563;
-        --gray-800: #1f2937;
-      }
-
-      body {
-        font-family: "Cairo", sans-serif;
-        background: var(--gray-50);
-        color: var(--gray-800);
-        direction: rtl;
-      }
-
-      /* ===== HEADER ===== */
-      .page-header {
-        background: var(--white);
-        border-bottom: 1px solid var(--gray-200);
-        padding: 18px 32px;
-        display: flex;
-        align-items: center;
-        gap: 14px;
-        position: sticky;
-        top: 0;
-        z-index: 50;
-      }
-      .header-icon {
-        width: 42px;
-        height: 42px;
-        background: var(--gold-light);
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 20px;
-      }
-      .header-title {
-        font-size: 19px;
-        font-weight: 700;
-      }
-      .header-sub {
-        font-size: 12px;
-        color: var(--gray-400);
-        margin-top: 1px;
-      }
-      .back-link {
-        margin-right: auto;
-        font-size: 13px;
-        font-weight: 600;
-        color: var(--gold);
-        text-decoration: none;
-      }
-      .back-link:hover {
-        color: var(--gold-hover);
-      }
-
-      /* ===== MAIN ===== */
-      main {
-        max-width: 1060px;
-        margin: 0 auto;
-        padding: 48px 24px 100px;
-      }
-
-      /* ===== HERO ===== */
-      .hero {
-        text-align: center;
-        margin-bottom: 52px;
-      }
-      .hero-badge {
-        display: inline-block;
-        background: var(--gold-light);
-        color: var(--gold-hover);
-        font-size: 12px;
-        font-weight: 700;
-        border-radius: 999px;
-        padding: 5px 18px;
-        margin-bottom: 14px;
-      }
-      .hero h1 {
-        font-size: 30px;
-        font-weight: 800;
-        margin-bottom: 10px;
-      }
-      .hero p {
-        font-size: 14px;
-        color: var(--gray-600);
-        line-height: 1.7;
-      }
-
-      /* ===== GRID ===== */
-      .teachers-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        gap: 28px;
-      }
-
-      /* ===== CARD ===== */
-      .card {
-        background: var(--white);
-        border: 1px solid var(--gray-200);
-        border-radius: 18px;
-        overflow: hidden;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-        display: flex;
-        flex-direction: column;
-        transition:
-          transform 0.22s,
-          box-shadow 0.22s,
-          border-color 0.22s;
-      }
-      .card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 14px 36px rgba(0, 0, 0, 0.12);
-        border-color: var(--gold);
-      }
-
-      /* ---- BIG RECTANGULAR PHOTO ---- */
-      .card-photo {
-        width: 100%;
-        aspect-ratio: 4 / 3;
-        object-fit: cover;
-        object-position: top center;
-        display: block;
-      }
-
-      /* placeholder emoji shown when no photo */
-      .card-no-photo {
-        width: 100%;
-        aspect-ratio: 4 / 3;
-        background: linear-gradient(150deg, var(--gold-light) 0%, #fffbef 100%);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 72px;
-      }
-
-      /* ---- BODY ---- */
-      .card-body {
-        padding: 20px 20px 14px;
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-      }
-
-      .teacher-name {
-        font-size: 17px;
-        font-weight: 800;
-      }
-      .teacher-role {
-        font-size: 12.5px;
-        font-weight: 600;
-        color: var(--gold-hover);
-        margin-top: -6px;
-      }
-
-      .subjects {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 6px;
-      }
-      .subject {
-        background: var(--gold-light);
-        color: var(--gold-hover);
-        font-size: 11px;
-        font-weight: 700;
-        border-radius: 999px;
-        padding: 4px 11px;
-      }
-
-      .bio {
-        font-size: 13px;
-        color: var(--gray-600);
-        line-height: 1.75;
-      }
-
-      .stats {
-        display: flex;
-        border-top: 1px solid var(--gray-200);
-        padding-top: 12px;
-        margin-top: auto;
-      }
-      .stat {
-        flex: 1;
-        text-align: center;
-        border-left: 1px solid var(--gray-200);
-        padding: 0 6px;
-      }
-      .stat:last-child {
-        border-left: none;
-      }
-      .stat-val {
-        font-size: 17px;
-        font-weight: 800;
-        color: var(--gold);
-      }
-      .stat-lbl {
-        font-size: 10.5px;
-        color: var(--gray-400);
-        margin-top: 1px;
-      }
-
-      /* ---- WHATSAPP BUTTON ---- */
-      .wa-btn {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        margin: 0 18px 18px;
-        padding: 13px 0;
-        background: var(--wa);
-        color: var(--white);
-        font-family: inherit;
-        font-size: 14px;
-        font-weight: 700;
-        border-radius: 999px;
-        text-decoration: none;
-        box-shadow: 0 4px 14px rgba(37, 211, 102, 0.28);
-        transition:
-          background 0.2s,
-          transform 0.2s;
-      }
-      .wa-btn:hover {
-        background: var(--wa-dark);
-        transform: translateY(-1px);
-      }
-      .wa-icon {
-        width: 18px;
-        height: 18px;
-        flex-shrink: 0;
-      }
-
-      /* ===== RESPONSIVE ===== */
-      @media (max-width: 680px) {
-        main {
-          padding: 28px 14px 70px;
-        }
-        .page-header {
-          padding: 14px 16px;
-        }
-        .teachers-grid {
-          grid-template-columns: 1fr;
-        }
-      }
-      .logo-img {
-  width: 60px;
-  height: 60px;
-  object-fit: cover;
-  border-radius: 50%;
-}
-    </style>
+    <link rel="stylesheet" href="style.css" />
   </head>
   <body>
     <header class="page-header">
-      <div class="header-icon"><img src="../../images/logo.png" alt="logo" class="logo-img" /></div>
+      <div class="header-icon">
+        <img src="../../images/logo.png" alt="logo" class="logo-img" />
+      </div>
       <div>
         <div class="header-title">طاقم التدريس</div>
         <div class="header-sub">
@@ -289,14 +25,50 @@
       <a href="../index.html" class="back-link">← الرئيسية</a>
     </header>
 
-    <main>
-      <div class="hero">
-        <div class="hero-badge">فريق التدريس</div>
-        <h1>طاقم التدريس</h1>
-        <p>نخبة من المعلمين المتميزين لخدمة العلم والمعرفة</p>
-      </div>
+    <!-- <div class="hero">
+      <div class="hero-badge">فريق التدريس</div>
+      <h1>طاقم التدريس</h1>
+      <p>نخبة من المعلمين المتميزين لخدمة العلم والمعرفة</p>
+    </div> -->
 
-      <div class="teachers-grid">
+    <!-- ═══════════ HERO ═══════════ -->
+    <section id="hero">
+      <!-- Overlay -->
+      <div class="hero-overlay"></div>
+
+      <div class="hero-container">
+        <!-- النص (يمين) -->
+        <div class="hero-text">
+          <span class="hero-badge"> زاد المعرفة</span>
+
+          <h1 class="hero-title">طاقم التدريس</h1>
+          <p class="hero-desc">
+            نضم نخبة من أفضل الكفاءات الأكاديمية والتربوية الملتزمة بتقديم تعليم
+            متميز، لتوجيه الطلاب نحو تحقيق التميز الدراسي وبناء مستقبل واعد.
+          </p>
+
+          <div class="hero-btns">
+            <a href="#teachers-grid" class="btn-primary" target="_self"
+              >🚀 استكشف طاقم التدريس</a
+            >
+          </div>
+
+          <div class="hero-stats">
+            <div>
+              <span class="num" style="display: none">20+</span>
+              <span class="label" style="display: none">دورة</span>
+            </div>
+            <div>
+              <span class="num" style="display: none">6+</span>
+              <span class="label" style="display: none">أقسام</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <main>
+      <div id="teachers-grid" class="teachers-grid">
         <!-- =============================================
          معلم 1 — اللغة العربية
          لإضافة صورة: غيّر src="" برابط الصورة

@@ -36,9 +36,9 @@
       <div class="hero-container">
         <!-- النص (يمين) -->
         <div class="hero-text">
-          <span class="hero-badge">قسم العلوم الشرعية</span>
+          <span class="hero-badge">زاد المعرفة</span>
 
-          <h1 class="hero-title">زاد المعرفة</h1>
+          <h1 class="hero-title">قسم العلوم الشرعية</h1>
 
           <p class="hero-desc">
             تعلّم الفقه والحديث والعقيدة وأصول الدين بأسلوب مبسط ومنهجي، مع شروح
@@ -170,7 +170,7 @@
           <h2 class="section-title">اختر القسم</h2>
 
           <div class="stage-stack">
-            <button class="stage-row" data-stage="hifz">
+            <button class="stage-row" data-stage="s1">
               <div class="stage-row-icon">📖</div>
               <div class="stage-row-text">
                 <div class="stage-row-name">التفسير</div>
@@ -181,12 +181,10 @@
               <span class="stage-row-arrow">‹</span>
             </button>
 
-            <button class="stage-row" data-stage="hafs">
+            <button class="stage-row" data-stage="s2">
               <div class="stage-row-icon">📜</div>
               <div class="stage-row-text">
-                <div class="stage-row-name">
-                 الحديث
-                </div>
+                <div class="stage-row-name">الحديث</div>
                 <div class="stage-row-hint">
                   الرواية الأكثر انتشارًا في العالم الإسلامي
                 </div>
@@ -194,7 +192,7 @@
               <span class="stage-row-arrow">‹</span>
             </button>
 
-            <button class="stage-row" data-stage="qiraat">
+            <button class="stage-row" data-stage="s3">
               <div class="stage-row-icon">☝️</div>
               <div class="stage-row-text">
                 <div class="stage-row-name">التوحيد</div>
@@ -203,7 +201,7 @@
               <span class="stage-row-arrow">‹</span>
             </button>
 
-            <button class="stage-row" data-stage="tafsir">
+            <button class="stage-row" data-stage="s4">
               <div class="stage-row-icon">🕌</div>
               <div class="stage-row-text">
                 <div class="stage-row-name">السيرة</div>
@@ -214,7 +212,7 @@
               <span class="stage-row-arrow">‹</span>
             </button>
 
-            <button class="stage-row" data-stage="tadabbur">
+            <button class="stage-row" data-stage="s5">
               <div class="stage-row-icon">⚖️</div>
               <div class="stage-row-text">
                 <div class="stage-row-name">فقه شافعي</div>
@@ -225,7 +223,7 @@
               <span class="stage-row-arrow">‹</span>
             </button>
 
-            <button class="stage-row" data-stage="tadabbur">
+            <button class="stage-row" data-stage="s6">
               <div class="stage-row-icon">⚖️</div>
               <div class="stage-row-text">
                 <div class="stage-row-name">فقه حنفي</div>
@@ -235,11 +233,10 @@
               </div>
               <span class="stage-row-arrow">‹</span>
             </button>
-
           </div>
         </div>
 
-         <!-- STEP 2: Lessons for the chosen section (filled by JS) -->
+        <!-- STEP 2: Lessons for the chosen section (filled by JS) -->
         <div class="flow-step is-hidden" id="stepLessons">
           <div class="step-head">
             <button class="step-back" data-back="stage">↩ رجوع</button>
@@ -248,6 +245,7 @@
               <h2 class="section-title">الدروس المتاحة</h2>
             </div>
           </div>
+          <div id="sectionDescription" class="section-description"></div>
 
           <!-- 🔍 Search bar -->
           <div class="search-bar">
@@ -258,6 +256,10 @@
               class="search-input"
               placeholder="ابحث داخل الدروس..."
             />
+          </div>
+          <!-- 📂 Filters -->
+          <div class="filter-bar" id="filterBar">
+            <!-- injected by JS -->
           </div>
 
           <div class="lessons-grid" id="lessonsGrid">

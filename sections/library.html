@@ -1,0 +1,1176 @@
+<!doctype html>
+<html lang="ar" dir="rtl" class="h-full">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+    <script src="/_sdk/element_sdk.js"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@400;600;700;800&amp;display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        font-family: "Noto Kufi Arabic", sans-serif;
+      }
+      .book-card {
+        transition:
+          transform 0.3s ease,
+          box-shadow 0.3s ease;
+      }
+      .book-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+      }
+      .download-btn {
+        transition: all 0.25s ease;
+        cursor: pointer;
+      }
+      .download-btn:hover {
+        transform: scale(1.05);
+      }
+      @keyframes fadeUp {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .animate-card {
+        animation: fadeUp 0.5s ease forwards;
+        opacity: 0;
+      }
+      .filter-btn {
+        transition: all 0.2s ease;
+        cursor: pointer;
+      }
+      .filter-btn.active {
+        transform: scale(1.05);
+      }
+      .search-box {
+        transition: all 0.3s ease;
+      }
+      .search-box:focus {
+        box-shadow: 0 0 0 3px rgba(240, 192, 64, 0.2);
+        outline: none;
+      }
+      .sort-badge {
+        transition: all 0.2s ease;
+        cursor: pointer;
+      }
+      .sort-badge:hover {
+        transform: scale(1.05);
+      }
+    </style>
+    <style>
+      body {
+        box-sizing: border-box;
+      }
+    </style>
+    <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+  </head>
+  <body class="h-full">
+    <div
+      id="app"
+      class="w-full h-full overflow-auto"
+      style="background-color: #0f172a"
+    >
+      <div
+        class="text-center py-10 px-4"
+        style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%)"
+      >
+        <div class="text-5xl mb-4">📚</div>
+        <h1
+          id="main-title"
+          class="text-3xl md:text-4xl font-extrabold mb-3"
+          style="color: #f0c040"
+        >
+          مكتبة أولى ثانوي
+        </h1>
+        <p id="main-subtitle" class="text-lg" style="color: #94a3b8">
+          الترم الثاني – كل الكتب في مكان واحد 🚀
+        </p>
+        <div class="mt-6 flex justify-center gap-3">
+          <button
+            id="theme-toggle"
+            onclick="toggleTheme()"
+            class="px-4 py-2 rounded-full text-sm font-semibold transition"
+            style="background-color: #1e293b; color: #f0c040"
+          >
+            🌙 وضع داكن
+          </button>
+        </div>
+      </div>
+      <div
+        class="flex flex-wrap justify-center gap-2 px-4 py-4"
+        style="border-bottom: 1px solid #1e293b"
+      >
+        <button
+          onclick="switchGrade('1prep')"
+          data-grade="1prep"
+          class="grade-btn active px-4 py-2 rounded-full text-sm font-semibold transition"
+          style="background-color: #f0c040; color: #0f172a"
+        >
+          📖 أولى إعدادي
+        </button>
+        <button
+          onclick="switchGrade('2prep')"
+          data-grade="2prep"
+          class="grade-btn px-4 py-2 rounded-full text-sm font-semibold transition"
+          style="background-color: #1e293b; color: #94a3b8"
+        >
+          📖 ثانية إعدادي
+        </button>
+        <button
+          onclick="switchGrade('3prep')"
+          data-grade="3prep"
+          class="grade-btn px-4 py-2 rounded-full text-sm font-semibold transition"
+          style="background-color: #1e293b; color: #94a3b8"
+        >
+          📖 ثالثة إعدادي
+        </button>
+        <button
+          onclick="switchGrade('1sec')"
+          data-grade="1sec"
+          class="grade-btn px-4 py-2 rounded-full text-sm font-semibold transition"
+          style="background-color: #1e293b; color: #94a3b8"
+        >
+          🏫 أولى ثانوي
+        </button>
+        <button
+          onclick="switchGrade('2sec')"
+          data-grade="2sec"
+          class="grade-btn px-4 py-2 rounded-full text-sm font-semibold transition"
+          style="background-color: #1e293b; color: #94a3b8"
+        >
+          🏫 ثانية ثانوي
+        </button>
+        <button
+          onclick="switchGrade('3sec')"
+          data-grade="3sec"
+          class="grade-btn px-4 py-2 rounded-full text-sm font-semibold transition"
+          style="background-color: #1e293b; color: #94a3b8"
+        >
+          🏫 ثالثة ثانوي
+        </button>
+      </div>
+      <div class="max-w-6xl mx-auto px-4 py-6">
+        <div class="flex flex-col sm:flex-row gap-4 mb-6">
+          <div class="flex-1 relative">
+            <input
+              type="text"
+              id="search-input"
+              class="search-box w-full px-4 py-3 rounded-xl border-0 text-sm"
+              placeholder="ابحث عن الكتاب..."
+              style="background-color: #1e293b; color: #f0c040"
+              onkeyup="handleSearch()"
+            />
+            <i
+              data-lucide="search"
+              style="
+                position: absolute;
+                right: 12px;
+                top: 50%;
+                transform: translateY(-50%);
+                width: 20px;
+                height: 20px;
+                color: #94a3b8;
+                pointer-events: none;
+              "
+            ></i>
+          </div>
+          <div class="flex gap-2">
+            <button
+              onclick="sortBooks('name')"
+              data-sort="name"
+              class="sort-badge px-4 py-3 rounded-xl text-sm font-semibold"
+              style="background-color: #1e293b; color: #94a3b8"
+            >
+              أ-ي
+            </button>
+            <button
+              onclick="sortBooks('newest')"
+              data-sort="newest"
+              class="sort-badge px-4 py-3 rounded-xl text-sm font-semibold"
+              style="background-color: #1e293b; color: #94a3b8"
+            >
+              🆕 جديد
+            </button>
+            <button
+              onclick="sortBooks('popular')"
+              data-sort="popular"
+              class="sort-badge px-4 py-3 rounded-xl text-sm font-semibold"
+              style="background-color: #f0c040; color: #0f172a"
+            >
+              ⭐ شهير
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="flex flex-wrap justify-center gap-2 px-4 py-6">
+        <button
+          onclick="filterBooks('all')"
+          data-filter="all"
+          class="filter-btn active px-4 py-2 rounded-full text-sm font-semibold"
+          style="background-color: #f0c040; color: #0f172a"
+        >
+          الكل
+        </button>
+        <button
+          onclick="filterBooks('لغة عربية')"
+          data-filter="لغة عربية"
+          class="filter-btn px-4 py-2 rounded-full text-sm font-semibold"
+          style="background-color: #1e293b; color: #94a3b8"
+        >
+          اللغة العربية
+        </button>
+        <button
+          onclick="filterBooks('مواد شرعية')"
+          data-filter="مواد شرعية"
+          class="filter-btn px-4 py-2 rounded-full text-sm font-semibold"
+          style="background-color: #1e293b; color: #94a3b8"
+        >
+          المواد الشرعية
+        </button>
+        <button
+          onclick="filterBooks('مواد متنوعة')"
+          data-filter="مواد متنوعة"
+          class="filter-btn px-4 py-2 rounded-full text-sm font-semibold"
+          style="background-color: #1e293b; color: #94a3b8"
+        >
+          مواد متنوعة
+        </button>
+      </div>
+      <div
+        id="books-grid"
+        class="max-w-6xl mx-auto px-4 pb-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
+      ></div>
+      <div class="text-center py-8 px-4" style="border-top: 1px solid #1e293b">
+        <p style="color: #475569" class="text-sm">
+          بالتوفيق يا أبطال 🌟 ذاكروا بذكاء وربنا يوفقكم
+        </p>
+      </div>
+    </div>
+    <script>
+      const books = [
+        {
+          title: "كراسة الخط العربي 1",
+          icon: "✏️",
+          cat: "لغة عربية",
+          grade: "1sec",
+          desc: "تدريبات مبسطة لتحسين الخط العربي والكتابة الصحيحة",
+          url: "https://drive.google.com/file/d/1qoWwrk4NeQ6GNY4KfS1cXLXupLxkPYTF/view?usp=drivesdk",
+          date: 20260305,
+          popular: 75,
+        },
+        {
+          title: "كراسة الخط العربي 2",
+          icon: "✏️",
+          cat: "لغة عربية",
+          grade: "1sec",
+          desc: "تدريبات متقدمة لتطوير مهارات الخط العربي",
+          url: "https://drive.google.com/file/d/1-o-K_VMW8GYMeabUcmGGZhi3cYThVrVw/view?usp=drivesdk",
+          date: 20260305,
+          popular: 74,
+        },
+        {
+          title: "كراسة الخط العربي 3",
+          icon: "✏️",
+          cat: "لغة عربية",
+          grade: "1sec",
+          desc: "تدريبات شاملة لإتقان الخط العربي والكتابة الجميلة",
+          url: "https://drive.google.com/file/d/1uj35_tceS-W7oBgGP-KRRti1Js6bD1ia/view?usp=drivesdk",
+          date: 20260305,
+          popular: 73,
+        },
+        {
+          title: "كراسة الخط العربي 1",
+          icon: "✏️",
+          cat: "لغة عربية",
+          grade: "2sec",
+          desc: "تدريبات مبسطة لتحسين الخط العربي والكتابة الصحيحة",
+          url: "https://drive.google.com/file/d/1qoWwrk4NeQ6GNY4KfS1cXLXupLxkPYTF/view?usp=drivesdk",
+          date: 20260305,
+          popular: 75,
+        },
+        {
+          title: "كراسة الخط العربي 2",
+          icon: "✏️",
+          cat: "لغة عربية",
+          grade: "2sec",
+          desc: "تدريبات متقدمة لتطوير مهارات الخط العربي",
+          url: "https://drive.google.com/file/d/1-o-K_VMW8GYMeabUcmGGZhi3cYThVrVw/view?usp=drivesdk",
+          date: 20260305,
+          popular: 74,
+        },
+        {
+          title: "كراسة الخط العربي 3",
+          icon: "✏️",
+          cat: "لغة عربية",
+          grade: "2sec",
+          desc: "تدريبات شاملة لإتقان الخط العربي والكتابة الجميلة",
+          url: "https://drive.google.com/file/d/1uj35_tceS-W7oBgGP-KRRti1Js6bD1ia/view?usp=drivesdk",
+          date: 20260305,
+          popular: 73,
+        },
+        {
+          title: "كراسة الخط العربي 1",
+          icon: "✏️",
+          cat: "لغة عربية",
+          grade: "3sec",
+          desc: "تدريبات مبسطة لتحسين الخط العربي والكتابة الصحيحة",
+          url: "https://drive.google.com/file/d/1qoWwrk4NeQ6GNY4KfS1cXLXupLxkPYTF/view?usp=drivesdk",
+          date: 20260305,
+          popular: 75,
+        },
+        {
+          title: "كراسة الخط العربي 2",
+          icon: "✏️",
+          cat: "لغة عربية",
+          grade: "3sec",
+          desc: "تدريبات متقدمة لتطوير مهارات الخط العربي",
+          url: "https://drive.google.com/file/d/1-o-K_VMW8GYMeabUcmGGZhi3cYThVrVw/view?usp=drivesdk",
+          date: 20260305,
+          popular: 74,
+        },
+        {
+          title: "كراسة الخط العربي 3",
+          icon: "✏️",
+          cat: "لغة عربية",
+          grade: "3sec",
+          desc: "تدريبات شاملة لإتقان الخط العربي والكتابة الجميلة",
+          url: "https://drive.google.com/file/d/1uj35_tceS-W7oBgGP-KRRti1Js6bD1ia/view?usp=drivesdk",
+          date: 20260305,
+          popular: 73,
+        },
+        {
+          title: "كراسة الخط العربي 1",
+          icon: "✏️",
+          cat: "لغة عربية",
+          grade: "1prep",
+          desc: "تدريبات مبسطة لتحسين الخط العربي والكتابة الصحيحة",
+          url: "https://drive.google.com/file/d/1qoWwrk4NeQ6GNY4KfS1cXLXupLxkPYTF/view?usp=drivesdk",
+          date: 20260305,
+          popular: 75,
+        },
+        {
+          title: "كراسة الخط العربي 2",
+          icon: "✏️",
+          cat: "لغة عربية",
+          grade: "1prep",
+          desc: "تدريبات متقدمة لتطوير مهارات الخط العربي",
+          url: "https://drive.google.com/file/d/1-o-K_VMW8GYMeabUcmGGZhi3cYThVrVw/view?usp=drivesdk",
+          date: 20260305,
+          popular: 74,
+        },
+        {
+          title: "كراسة الخط العربي 3",
+          icon: "✏️",
+          cat: "لغة عربية",
+          grade: "1prep",
+          desc: "تدريبات شاملة لإتقان الخط العربي والكتابة الجميلة",
+          url: "https://drive.google.com/file/d/1uj35_tceS-W7oBgGP-KRRti1Js6bD1ia/view?usp=drivesdk",
+          date: 20260305,
+          popular: 73,
+        },
+        {
+          title: "كراسة الخط العربي 1",
+          icon: "✏️",
+          cat: "لغة عربية",
+          grade: "2prep",
+          desc: "تدريبات مبسطة لتحسين الخط العربي والكتابة الصحيحة",
+          url: "https://drive.google.com/file/d/1qoWwrk4NeQ6GNY4KfS1cXLXupLxkPYTF/view?usp=drivesdk",
+          date: 20260305,
+          popular: 75,
+        },
+        {
+          title: "كراسة الخط العربي 2",
+          icon: "✏️",
+          cat: "لغة عربية",
+          grade: "2prep",
+          desc: "تدريبات متقدمة لتطوير مهارات الخط العربي",
+          url: "https://drive.google.com/file/d/1-o-K_VMW8GYMeabUcmGGZhi3cYThVrVw/view?usp=drivesdk",
+          date: 20260305,
+          popular: 74,
+        },
+        {
+          title: "كراسة الخط العربي 3",
+          icon: "✏️",
+          cat: "لغة عربية",
+          grade: "2prep",
+          desc: "تدريبات شاملة لإتقان الخط العربي والكتابة الجميلة",
+          url: "https://drive.google.com/file/d/1uj35_tceS-W7oBgGP-KRRti1Js6bD1ia/view?usp=drivesdk",
+          date: 20260305,
+          popular: 73,
+        },
+        {
+          title: "كراسة الخط العربي 1",
+          icon: "✏️",
+          cat: "لغة عربية",
+          grade: "3prep",
+          desc: "تدريبات مبسطة لتحسين الخط العربي والكتابة الصحيحة",
+          url: "https://drive.google.com/file/d/1qoWwrk4NeQ6GNY4KfS1cXLXupLxkPYTF/view?usp=drivesdk",
+          date: 20260305,
+          popular: 75,
+        },
+        {
+          title: "كراسة الخط العربي 2",
+          icon: "✏️",
+          cat: "لغة عربية",
+          grade: "3prep",
+          desc: "تدريبات متقدمة لتطوير مهارات الخط العربي",
+          url: "https://drive.google.com/file/d/1-o-K_VMW8GYMeabUcmGGZhi3cYThVrVw/view?usp=drivesdk",
+          date: 20260305,
+          popular: 74,
+        },
+        {
+          title: "كراسة الخط العربي 3",
+          icon: "✏️",
+          cat: "لغة عربية",
+          grade: "3prep",
+          desc: "تدريبات شاملة لإتقان الخط العربي والكتابة الجميلة",
+          url: "https://drive.google.com/file/d/1uj35_tceS-W7oBgGP-KRRti1Js6bD1ia/view?usp=drivesdk",
+          date: 20260305,
+          popular: 73,
+        },
+        {
+          title: "المرشد – بلاغة",
+          icon: "📘",
+          cat: "لغة عربية",
+          grade: "1sec",
+          desc: "شرح مبسط ومنظم + أمثلة وأسئلة مراجعة",
+          url: "https://drive.google.com/file/d/1pXucpoq2AFaGeQ7J97yqZEvecXh0GFrd/view?usp=drivesdk",
+          date: 20260305,
+          popular: 92,
+        },
+        {
+          title: "المرشد – حديث",
+          icon: "📗",
+          cat: "مواد شرعية",
+          grade: "1sec",
+          desc: "شرح مبسط لأهم أحاديث السنة + ملخصات سهلة",
+          url: "https://drive.google.com/file/d/1-TrFsxzne3L8Nhx6Ce9vNebqtUpa510B/view?usp=drivesdk",
+          date: 20260305,
+          popular: 88,
+        },
+        {
+          title: "ملخص بلاغة",
+          icon: "📙",
+          cat: "لغة عربية",
+          grade: "1sec",
+          desc: "ملخص مهم ومركز في البلاغة + أمثلة سريعة",
+          url: "https://drive.google.com/file/d/1BvmOxdHLK3X8OjDlZyso-qTiaPuurYDm/view?usp=drivesdk",
+          date: 20260305,
+          popular: 85,
+        },
+        {
+          title: "الفلسفة والمنطق",
+          icon: "🧠",
+          cat: "مواد متنوعة",
+          grade: "1sec",
+          desc: "شرح مبسط لأهم مفاهيم الفلسفة وقواعد المنطق",
+          url: "https://drive.google.com/file/d/1-gVXvVRaWPXN_FD4eNk3e4Ctxi0tMylb/view?usp=drivesdk",
+          date: 20260305,
+          popular: 84,
+        },
+        {
+          title: "بلاغة سلاح الأزهري",
+          icon: "⚔️",
+          cat: "لغة عربية",
+          grade: "1sec",
+          desc: "ملف شامل ومنظم لشرح البلاغة + أمثلة مهمة",
+          url: "https://drive.google.com/file/d/12PE-Av0f1RlZnjwOa-h9Q3UlgINknUy9/view?usp=drivesdk",
+          date: 20260305,
+          popular: 89,
+        },
+        {
+          title: "المرشد – إنشاء",
+          icon: "✍️",
+          cat: "لغة عربية",
+          grade: "1sec",
+          desc: "شرح مبسط ومنظم لموضوعات الإنشاء",
+          url: "https://drive.google.com/file/d/1XYa2wPndygmwhrJHtpdwC2a4arIzBuZ6/view?usp=drivesdk",
+          date: 20260305,
+          popular: 82,
+        },
+        {
+          title: "المرشد – توحيد",
+          icon: "🕌",
+          cat: "مواد شرعية",
+          grade: "1sec",
+          desc: "شرح مبسّط لأهم مبادئ التوحيد + أسئلة مراجعة",
+          url: "https://drive.google.com/file/d/10IZdVEnImYEALdfGvSqteG5ZWE2QrED1/view?usp=drivesdk",
+          date: 20260305,
+          popular: 83,
+        },
+        {
+          title: "المرشد – فقه حنفي",
+          icon: "📕",
+          cat: "مواد شرعية",
+          grade: "1sec",
+          desc: "شرح الفقه الحنفي بطريقة سهلة + أمثلة مراجعة",
+          url: "https://drive.google.com/file/d/1-CcqhKNtf_uqzEdLhcMV49DdelZxTQ-p/view?usp=drivesdk",
+          date: 20260305,
+          popular: 80,
+        },
+        {
+          title: "المنطق",
+          icon: "🧩",
+          cat: "مواد متنوعة",
+          grade: "1sec",
+          desc: "شرح مبسط لأهم مفاهيم المنطق بطريقة سهلة",
+          url: "https://drive.google.com/file/d/1mT8AdXIe3cpSi7zDip8qz2GYt3ezkCmY/view?usp=drivesdk",
+          date: 20260305,
+          popular: 95,
+        },
+        {
+          title: "المرشد – صرف",
+          icon: "📓",
+          cat: "لغة عربية",
+          grade: "1sec",
+          desc: "شرح مبسط ومنظم + أمثلة وأسئلة مراجعة",
+          url: "https://drive.google.com/file/d/1lMnZqztmwscoSEnJtJozDtzV1wsKMEQ-/view?usp=drivesdk",
+          date: 20260310,
+          popular: 87,
+        },
+        {
+          title: "المرشد – نحو",
+          icon: "📓",
+          cat: "لغة عربية",
+          grade: "1sec",
+          desc: "شرح مبسط ومنظم + أمثلة وأسئلة مراجعة",
+          url: "https://drive.google.com/file/d/1maPTZuaOIbg20s_aYv50sTKCSCfkd1hR/view?usp=drivesdk",
+          date: 20260310,
+          popular: 90,
+        },
+        {
+          title: "ملخص رياضيات أولى ثانوي",
+          icon: "📊",
+          cat: "مواد علمية",
+          grade: "1sec",
+          desc: "ملخص شامل لكل قوانين الرياضيات بطريقة سهلة",
+          url: "https://drive.google.com/file/d/1Ed-Z58tekYzBKlBzfyn6AiysYJlc9C5w/view",
+          date: 20260403,
+          popular: 98,
+        },
+        {
+          title: "امتحانات هندسة أزهر",
+          icon: "📊",
+          cat: "مواد علمية",
+          grade: "1sec",
+          desc: "امتحانات هندسة متنوعة تشمل أهم الأسئلة والتدريبات على المنهج",
+          url: "https://drive.google.com/file/d/1R5w7QMqlvnM0nHNuZ56R1jKBbUFVvbaR/view?usp=drivesdk",
+          date: 20260403,
+          popular: 98,
+        },
+        {
+          title: "مذكرة الثقافة الإسلامية",
+          icon: "📖",
+          cat: "مواد شرعية",
+          grade: "1sec",
+          desc: "شرح مبسط ومنظم مع ملخص لأهم النقاط",
+          url: "https://drive.google.com/file/d/1unpeTqxJqjReBfpkI4sTI3jfsipfSCD8/view?usp=drivesdk",
+          date: 20260403,
+          popular: 86,
+        },
+        {
+          title: "مذكرة التوحيد",
+          icon: "🕌",
+          cat: "مواد شرعية",
+          grade: "1sec",
+          desc: "شرح مبسط للدروس مع أمثلة وأسئلة للمراجعة",
+          url: "https://drive.google.com/file/d/1oLNgveGbnWDCqrwepXMO98nojad4UYt0/view?usp=drivesdk",
+          date: 20260403,
+          popular: 84,
+        },
+        {
+          title: "مذكرة التفسير",
+          icon: "📘",
+          cat: "مواد شرعية",
+          grade: "1sec",
+          desc: "شرح الآيات المقررة مع معاني الكلمات المهمة",
+          url: "https://drive.google.com/file/d/1rP9NNNgaRAyilisnQ8MdSvU4L4b1CRXI/view?usp=drivesdk",
+          date: 20260403,
+          popular: 88,
+        },
+        {
+          title: "مذكرة الفقه الشافعي",
+          icon: "📗",
+          cat: "مواد شرعية",
+          grade: "1sec",
+          desc: "شرح مبسط لأحكام الفقه الشافعي مع التدريبات",
+          url: "https://drive.google.com/file/d/1NaZDvzh-eE0RitAsb61Rv3UmvLgWGtms/view?usp=drivesdk",
+          date: 20260403,
+          popular: 82,
+        },
+        {
+          title: "كتاب فلسفة ومنطق – الامتحان",
+          icon: "🧠",
+          cat: "مواد متنوعة",
+          grade: "1sec",
+          desc: "شرح مبسط لأهم المفاهيم مع تدريبات وأسئلة",
+          url: "https://drive.google.com/file/d/1fv3_nLOJfjxcccyXrhyVPITbgw1kVE65/view?usp=drivesdk",
+          date: 20260403,
+          popular: 93,
+        },
+        {
+          title: "المرشد – تاريخ",
+          icon: "🏛️",
+          cat: "مواد متنوعة",
+          grade: "1sec",
+          desc: "شرح مبسط ومنظم لأحداث التاريخ مع الأسئلة",
+          url: "https://drive.google.com/file/d/1z1Ve8cbUQFsy3hOCy5tIp9UzIrO_lCwx/view?usp=drive_link",
+          date: 20260403,
+          popular: 85,
+        },
+        {
+          title: "كتاب الفلسفة والمنطق – الوزارة",
+          icon: "📚",
+          cat: "مواد متنوعة",
+          grade: "1sec",
+          desc: "الكتاب الرسمي من وزارة التربية والتعليم",
+          url: "https://drive.google.com/file/d/1lk63FLv9difNd0Yf-G0sCHqiurcNwTXz/view?usp=drive_link",
+          date: 20260403,
+          popular: 96,
+        },
+        {
+          title: "المرشد – تفسير",
+          icon: "📖",
+          cat: "مواد شرعية",
+          grade: "1sec",
+          desc: "شرح الآيات المقررة مع توضيح المقاصد والمعاني",
+          url: "https://drive.google.com/file/d/1yeTqhmDpNhQD_ui6-F0Pam6cCQkvvCDB/view?usp=drivesdk",
+          date: 20260403,
+          popular: 90,
+        },
+        {
+          title: "المرشد – أدب ومطالعة ونصوص وإنشاء",
+          icon: "📚",
+          cat: "لغة عربية",
+          grade: "1sec",
+          desc: "شرح مبسط لدروس الأدب + تحليل النصوص وتدريبات",
+          url: "https://drive.google.com/file/d/142NxGArN8Rr1h1GRqYkb8w-O3D5tnzW2/view?usp=drivesdk",
+          date: 20260403,
+          popular: 91,
+        },
+        {
+          title: "المرشد – فقه مالكي",
+          icon: "📕",
+          cat: "مواد شرعية",
+          grade: "1sec",
+          desc: "شرح مبسط لأحكام الفقه المالكي + أسئلة مراجعة",
+          url: "https://drive.google.com/file/d/1XRZOLTF1on5adiDW3TPVCtp-ePvkKzVg/view?usp=drive_link",
+          date: 20260403,
+          popular: 79,
+        },
+        {
+          title: "قوانين العلوم المتكاملة",
+          icon: "🔬",
+          cat: "مواد علمية",
+          grade: "1sec",
+          desc: "جميع قوانين العلوم في مكان واحد مع أمثلة وشرح",
+          url: "https://drive.google.com/file/d/1Zl5lnK2e9IzR_3uyuH_WWvKE52QTO804/view?usp=drivesdk",
+          date: 20260403,
+          popular: 97,
+        },
+        {
+          title: "ملخص العلوم المتكاملة – الدروس الأولى",
+          icon: "🔭",
+          cat: "مواد علمية",
+          grade: "1sec",
+          desc: "ملخص مختصر لأول 6 دروس مع أهم النقاط",
+          url: "https://drive.google.com/file/d/1ZtlsM1g8zHlt0XqA_fvlLJTztxODlJiu/view?usp=drivesdk",
+          date: 20260403,
+          popular: 86,
+        },
+        {
+          title: "ملخص العلوم المتكاملة الشامل",
+          icon: "🧪",
+          cat: "مواد علمية",
+          grade: "1sec",
+          desc: "شرح مختصر لكل الدروس مع القوانين الأساسية",
+          url: "https://drive.google.com/file/d/1uRVygzrI6I5_rPkYWaMsiJZrP6v6cyil/view?usp=drivesdk",
+          date: 20260403,
+          popular: 94,
+        },
+        {
+          title: "ملخص الأدب والنصوص والمطالعة",
+          icon: "📕",
+          cat: "لغة عربية",
+          grade: "1sec",
+          desc: "أهم أفكار الأدب + شرح النصوص + دروس المطالعة",
+          url: "https://drive.google.com/file/d/1MQDiaWBsmCJDhdOoKqaFmT2FXsBMj-Tg/view?usp=drivesdk",
+          date: 20260403,
+          popular: 92,
+        },
+        {
+          title: "ملخص الصرف المبسط",
+          icon: "📘",
+          cat: "لغة عربية",
+          grade: "1sec",
+          desc: "قواعد الصرف بطريقة سهلة مع جداول توضيحية",
+          url: "https://drive.google.com/file/d/1lMnZqztmwscoSEnJtJozDtzV1wsKMEQ-/view?usp=drivesdk",
+          date: 20260405,
+          popular: 81,
+        },
+        {
+          title: "إجابات المعاصر – رياضيات",
+          icon: "🔢",
+          cat: "مواد علمية",
+          grade: "1sec",
+          desc: "حل جميع تدريبات كتاب المعاصر كاملة",
+          url: "https://drive.google.com/file/d/1JLKN5t3YCBli-Qw2Pj86cRPs2-LgXSgv/view",
+          date: 20260405,
+          popular: 99,
+        },
+        {
+          title: "ملخص التاريخ",
+          icon: "🏛️",
+          cat: "مواد متنوعة",
+          grade: "1sec",
+          desc: "ملخص مختصر لأهم أحداث التاريخ المقررة",
+          url: "https://drive.google.com/file/d/1Ry91T_uYodmPk1gUmMvj7HDVnxlVGx88/view?usp=drivesdk",
+          date: 20260404,
+          popular: 87,
+        },
+        {
+          title: "ملخص جرامر الإنجليزية",
+          icon: "🇬🇧",
+          cat: "لغة عربية",
+          grade: "1sec",
+          desc: "شرح مبسط لقواعد الإنجليزية مع أمثلة",
+          url: "https://drive.google.com/file/d/1EL-w1upI_yc3O_rrMN7SYHwQWl6J6PD1/view?usp=drivesdk",
+          date: 20260404,
+          popular: 83,
+        },
+        {
+          title: "ملخص البلاغة المركز",
+          icon: "🎨",
+          cat: "لغة عربية",
+          grade: "1sec",
+          desc: "ملخص مركز لأهم موضوعات البلاغة والبديع",
+          url: "https://drive.google.com/file/d/1AedRSDBmUXTnWMlLDSE5G-CU7bue2Ppg/view?usp=drivesdk",
+          date: 20260404,
+          popular: 86,
+        },
+        {
+          title: "ملخص الإسلاميات",
+          icon: "🕌",
+          cat: "مواد شرعية",
+          grade: "1sec",
+          desc: "ملخص شامل للدروس الإسلامية المهمة",
+          url: "https://drive.google.com/file/d/1nZXbPCHYGqeAbqkNgxrf7mwT7rPnYJqb/view?usp=drivesdk",
+          date: 20260404,
+          popular: 85,
+        },
+        {
+          title: "ملخص التوحيد المركز",
+          icon: "🕌",
+          cat: "مواد شرعية",
+          grade: "1sec",
+          desc: "ملخص مركز لأهم مبادئ التوحيد والعقيدة",
+          url: "https://drive.google.com/file/d/1WzdnRZn70UhTCX2fs6wcK3CfzGQe-ns5/view?usp=drivesdk",
+          date: 20260404,
+          popular: 81,
+        },
+        {
+          title: "ملخص الإنشاء في 3 ورقات",
+          icon: "✍️",
+          cat: "لغة عربية",
+          grade: "1sec",
+          desc: "موضوعات الإنشاء الأساسية في ملخص قصير جداً",
+          url: "https://drive.google.com/file/d/16qTJuegnhHUXEzmONy8b0JTErCK-9TA8/view?usp=drivesdk",
+          date: 20260404,
+          popular: 80,
+        },
+        {
+          title: "ملخص الفقه الشافعي",
+          icon: "📗",
+          cat: "مواد شرعية",
+          grade: "1sec",
+          desc: "ملخص مبسط لأحكام الفقه الشافعي المقررة",
+          url: "https://drive.google.com/file/d/1irfgjmgOtgObxAX7BpOGQNrADDVeC_jn/view?usp=drivesdk",
+          date: 20260404,
+          popular: 78,
+        },
+        {
+          title: "ملخص الحديث وعلومه",
+          icon: "📖",
+          cat: "مواد شرعية",
+          grade: "1sec",
+          desc: "شرح الأحاديث المقررة مع علوم الحديث الأساسية",
+          url: "https://drive.google.com/file/d/1B5BjUIUKDWHpVE4KxtdDyu1gmK89Gym7/view?usp=drivesdk",
+          date: 20260404,
+          popular: 89,
+        },
+        {
+          title: "ملخص التفسير وعلومه",
+          icon: "📖",
+          cat: "مواد شرعية",
+          grade: "1sec",
+          desc: "ملخص شامل لآيات التفسير مع علوم القرآن",
+          url: "https://drive.google.com/file/d/1-Q0XlGHhUatV9du2AsX4zpNsVt4V-kd9/view?usp=drivesdk",
+          date: 20260404,
+          popular: 91,
+        },
+        {
+          title: "ملخص علوم القرآن",
+          icon: "🕌",
+          cat: "مواد شرعية",
+          grade: "1sec",
+          desc: "شرح مبسط لعلوم القرآن الكريم والأحكام",
+          url: "https://drive.google.com/file/d/1Yt3qqOKusydV-2yBJFgQCIWc6PfuqrfC/view?usp=drivesdk",
+          date: 20260404,
+          popular: 88,
+        },
+        {
+          title: "توقعات أسئلة الماضي في القرآن",
+          icon: "❓",
+          cat: "مواد شرعية",
+          grade: "1sec",
+          desc: "أهم الأسئلة المتوقعة من أسئلة السنوات السابقة",
+          url: "https://drive.google.com/file/d/17ZrcAPPhKu2gm9gDy4d6D8ZF5S1OB2fH/view?usp=drivesdk",
+          date: 20260404,
+          popular: 84,
+        },
+      ];
+
+      let currentFilter = "all",
+        currentSort = "popular",
+        isDarkMode = true,
+        currentGrade = "1sec";
+
+      function switchGrade(grade) {
+        currentGrade = grade;
+        document.querySelectorAll(".grade-btn").forEach((btn) => {
+          const isActive = btn.dataset.grade === grade;
+          btn.style.backgroundColor = isActive
+            ? isDarkMode
+              ? "#f0c040"
+              : "#d97706"
+            : isDarkMode
+              ? "#1e293b"
+              : "#e2e8f0";
+          btn.style.color = isActive
+            ? isDarkMode
+              ? "#0f172a"
+              : "#ffffff"
+            : isDarkMode
+              ? "#94a3b8"
+              : "#64748b";
+          btn.classList.toggle("active", isActive);
+        });
+        const gradeName = {
+          "1sec": "أولى ثانوي",
+          "2sec": "ثانية ثانوي",
+          "3sec": "ثالثة ثانوي",
+          "1prep": "أولى إعدادي",
+          "2prep": "ثانية إعدادي",
+          "3prep": "ثالثة إعدادي",
+        };
+        document.getElementById("main-title").textContent =
+          `مكتبة ${gradeName[grade]}`;
+        applySort();
+      }
+
+      function handleSearch() {
+        const searchTerm = document
+          .getElementById("search-input")
+          .value.toLowerCase();
+        let filtered =
+          currentFilter === "all"
+            ? books.filter((b) => b.grade === currentGrade)
+            : books.filter(
+                (b) => b.cat === currentFilter && b.grade === currentGrade,
+              );
+        filtered = filtered.filter(
+          (b) =>
+            b.title.includes(searchTerm) ||
+            b.desc.includes(searchTerm) ||
+            b.cat.includes(searchTerm),
+        );
+        applyCurrentSort(filtered);
+      }
+
+      function sortBooks(type) {
+        currentSort = type;
+        updateSortButtons();
+        applySort();
+      }
+
+      function updateSortButtons() {
+        document.querySelectorAll(".sort-badge").forEach((btn) => {
+          const isActive = btn.dataset.sort === currentSort;
+          btn.style.backgroundColor = isActive
+            ? isDarkMode
+              ? "#f0c040"
+              : "#d97706"
+            : isDarkMode
+              ? "#1e293b"
+              : "#e2e8f0";
+          btn.style.color = isActive
+            ? isDarkMode
+              ? "#0f172a"
+              : "#ffffff"
+            : isDarkMode
+              ? "#94a3b8"
+              : "#64748b";
+        });
+      }
+
+      function applySort() {
+        let filtered =
+          currentFilter === "all"
+            ? books.filter((b) => b.grade === currentGrade)
+            : books.filter(
+                (b) => b.cat === currentFilter && b.grade === currentGrade,
+              );
+        const searchTerm = document
+          .getElementById("search-input")
+          .value.toLowerCase();
+        filtered = filtered.filter(
+          (b) =>
+            b.title.includes(searchTerm) ||
+            b.desc.includes(searchTerm) ||
+            b.cat.includes(searchTerm),
+        );
+        applyCurrentSort(filtered);
+      }
+
+      function applyCurrentSort(filtered) {
+        if (currentSort === "name")
+          filtered.sort((a, b) => a.title.localeCompare(b.title, "ar"));
+        else if (currentSort === "newest")
+          filtered.sort((a, b) => b.date - a.date);
+        else if (currentSort === "popular")
+          filtered.sort((a, b) => b.popular - a.popular);
+        renderBooks(filtered);
+      }
+
+      function toggleTheme() {
+        isDarkMode = !isDarkMode;
+        const app = document.getElementById("app");
+        const btn = document.getElementById("theme-toggle");
+        if (isDarkMode) {
+          app.style.backgroundColor = "#0f172a";
+          btn.textContent = "🌙 وضع داكن";
+          btn.style.backgroundColor = "#1e293b";
+          btn.style.color = "#f0c040";
+        } else {
+          app.style.backgroundColor = "#f8fafc";
+          btn.textContent = "☀️ وضع فاتح";
+          btn.style.backgroundColor = "#ffffff";
+          btn.style.color = "#d97706";
+        }
+        updateSearchStyles();
+        updateSortButtons();
+        applySort();
+      }
+
+      function updateSearchStyles() {
+        const input = document.getElementById("search-input");
+        if (isDarkMode) {
+          input.style.backgroundColor = "#1e293b";
+          input.style.color = "#f0c040";
+        } else {
+          input.style.backgroundColor = "#ffffff";
+          input.style.color = "#d97706";
+        }
+      }
+
+      function renderBooks(filtered) {
+        const grid = document.getElementById("books-grid");
+        grid.innerHTML = "";
+        const bgColor = isDarkMode ? "#1e293b" : "#ffffff";
+        const textColor = isDarkMode ? "#94a3b8" : "#64748b";
+        const titleColor = isDarkMode ? "#f0c040" : "#d97706";
+        const tagBg = isDarkMode ? "#0f172a" : "#f1f5f9";
+
+        filtered.forEach((book, i) => {
+          const card = document.createElement("div");
+          card.className =
+            "book-card animate-card rounded-2xl p-5 flex flex-col";
+          card.style.cssText = `background-color: ${bgColor}; animation-delay: ${i * 0.07}s;`;
+          card.innerHTML = `
+      <div class="text-4xl mb-3">${book.icon}</div>
+      <h3 class="text-lg font-bold mb-1" style="color: ${titleColor};">${book.title}</h3>
+      <span class="inline-block text-xs px-2 py-1 rounded-full mb-3 w-fit font-semibold" style="background-color: ${tagBg}; color: ${textColor};">${book.cat}</span>
+      <p class="text-sm mb-4 flex-1" style="color: ${textColor};">${book.desc}</p>
+      <div class="flex gap-2">
+        <a href="${book.url}" target="_blank" rel="noopener noreferrer" class="download-btn flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-bold" style="background-color: ${titleColor}; color: ${isDarkMode ? "#0f172a" : "#ffffff"};"><i data-lucide="download" style="width:18px;height:18px;"></i>تحميل</a>
+      </div>
+    `;
+          grid.appendChild(card);
+        });
+        if (filtered.length === 0)
+          grid.innerHTML = `<div class="col-span-full text-center py-12" style="color: ${textColor};">لا توجد كتب تطابق البحث</div>`;
+        lucide.createIcons();
+      }
+
+      function filterBooks(cat) {
+        currentFilter = cat;
+        document.querySelectorAll(".filter-btn").forEach((btn) => {
+          const isActive = btn.dataset.filter === cat;
+          const activeColor = isDarkMode ? "#f0c040" : "#d97706";
+          const inactiveColor = isDarkMode ? "#1e293b" : "#e2e8f0";
+          btn.style.backgroundColor = isActive ? activeColor : inactiveColor;
+          btn.style.color = isActive
+            ? isDarkMode
+              ? "#0f172a"
+              : "#ffffff"
+            : isDarkMode
+              ? "#94a3b8"
+              : "#64748b";
+          btn.classList.toggle("active", isActive);
+        });
+        applySort();
+      }
+
+      const defaultConfig = {
+        library_title: "مكتبة أولى ثانوي",
+        subtitle: "الترم الثاني – كل الكتب في مكان واحد 🚀",
+        search_placeholder: "ابحث عن الكتاب...",
+        empty_message: "لا توجد كتب تطابق البحث",
+        background_color: "#0f172a",
+        surface_color: "#1e293b",
+        text_color: "#94a3b8",
+        accent_color: "#f0c040",
+        font_family: "Noto Kufi Arabic",
+        font_size: 16,
+      };
+
+      function applyConfig(config) {
+        const font = config.font_family || defaultConfig.font_family;
+        const fs = config.font_size || defaultConfig.font_size;
+        document.getElementById("main-title").textContent =
+          config.library_title || defaultConfig.library_title;
+        document.getElementById("main-title").style.fontFamily =
+          `${font}, sans-serif`;
+        document.getElementById("main-title").style.fontSize = `${fs * 2}px`;
+        document.getElementById("main-subtitle").textContent =
+          config.subtitle || defaultConfig.subtitle;
+        document.getElementById("main-subtitle").style.fontFamily =
+          `${font}, sans-serif`;
+        document.getElementById("main-subtitle").style.fontSize = `${fs}px`;
+        document.getElementById("search-input").placeholder =
+          config.search_placeholder || defaultConfig.search_placeholder;
+      }
+
+      if (window.elementSdk) {
+        window.elementSdk.init({
+          defaultConfig,
+          onConfigChange: async (config) => {
+            applyConfig(config);
+          },
+          mapToCapabilities: (config) => ({
+            recolorables: [
+              {
+                get: () =>
+                  config.background_color || defaultConfig.background_color,
+                set: (v) => {
+                  config.background_color = v;
+                  window.elementSdk.setConfig({ background_color: v });
+                },
+              },
+              {
+                get: () => config.surface_color || defaultConfig.surface_color,
+                set: (v) => {
+                  config.surface_color = v;
+                  window.elementSdk.setConfig({ surface_color: v });
+                },
+              },
+              {
+                get: () => config.text_color || defaultConfig.text_color,
+                set: (v) => {
+                  config.text_color = v;
+                  window.elementSdk.setConfig({ text_color: v });
+                },
+              },
+              {
+                get: () => config.accent_color || defaultConfig.accent_color,
+                set: (v) => {
+                  config.accent_color = v;
+                  window.elementSdk.setConfig({ accent_color: v });
+                },
+              },
+            ],
+            borderables: [],
+            fontEditable: {
+              get: () => config.font_family || defaultConfig.font_family,
+              set: (v) => {
+                config.font_family = v;
+                window.elementSdk.setConfig({ font_family: v });
+              },
+            },
+            fontSizeable: {
+              get: () => config.font_size || defaultConfig.font_size,
+              set: (v) => {
+                config.font_size = v;
+                window.elementSdk.setConfig({ font_size: v });
+              },
+            },
+          }),
+          mapToEditPanelValues: (config) =>
+            new Map([
+              [
+                "library_title",
+                config.library_title || defaultConfig.library_title,
+              ],
+              ["subtitle", config.subtitle || defaultConfig.subtitle],
+              [
+                "search_placeholder",
+                config.search_placeholder || defaultConfig.search_placeholder,
+              ],
+              [
+                "empty_message",
+                config.empty_message || defaultConfig.empty_message,
+              ],
+            ]),
+        });
+      }
+
+      renderBooks(books);
+      sortBooks("popular");
+      lucide.createIcons();
+    </script>
+    <script>
+      (function () {
+        function c() {
+          var b = a.contentDocument || a.contentWindow.document;
+          if (b) {
+            var d = b.createElement("script");
+            d.innerHTML =
+              "window.__CF$cv$params={r:'9e6cb15b544ca470',t:'MTc3NTI2Nzc0Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";
+            b.getElementsByTagName("head")[0].appendChild(d);
+          }
+        }
+        if (document.body) {
+          var a = document.createElement("iframe");
+          a.height = 1;
+          a.width = 1;
+          a.style.position = "absolute";
+          a.style.top = 0;
+          a.style.left = 0;
+          a.style.border = "none";
+          a.style.visibility = "hidden";
+          document.body.appendChild(a);
+          if ("loading" !== document.readyState) c();
+          else if (window.addEventListener)
+            document.addEventListener("DOMContentLoaded", c);
+          else {
+            var e = document.onreadystatechange || function () {};
+            document.onreadystatechange = function (b) {
+              e(b);
+              "loading" !== document.readyState &&
+                ((document.onreadystatechange = e), c());
+            };
+          }
+        }
+      })();
+    </script>
+  </body>
+</html>

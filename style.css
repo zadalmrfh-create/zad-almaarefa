@@ -1396,6 +1396,9 @@ body::before {
   .about-visual {
     display: none;
   }
+  .footer-socials {
+    justify-content: center;
+  }
 }
 @media (max-width: 480px) {
   .feat-grid {

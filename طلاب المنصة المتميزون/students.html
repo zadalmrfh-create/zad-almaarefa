@@ -10,582 +10,9 @@
       href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap"
       rel="stylesheet"
     />
+    <link rel="stylesheet" href="students.css">
 
-    <style>
-      *,
-      *::before,
-      *::after {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-      }
-
-      :root {
-        --gold: #c9a84c;
-        --gold-light: #f5ecd4;
-        --gold-hover: #b8923e;
-        --white: #ffffff;
-        --gray-50: #f9fafb;
-        --gray-200: #e5e7eb;
-        --gray-400: #9ca3af;
-        --gray-600: #4b5563;
-        --gray-800: #1f2937;
-      }
-
-      body {
-        font-family: "Cairo", sans-serif;
-        background: var(--gray-50);
-        color: var(--gray-800);
-        direction: rtl;
-      }
-      .logo-img {
-  width: 60px;
-  height: 60px;
-  object-fit: cover;
-  border-radius: 50%;
-}
-
-      /* ===== HEADER ===== */
-      .page-header {
-        background: var(--white);
-        border-bottom: 1px solid var(--gray-200);
-        padding: 18px 32px;
-        display: flex;
-        align-items: center;
-        gap: 14px;
-        position: sticky;
-        top: 0;
-        z-index: 50;
-      }
-      .header-icon {
-        width: 42px;
-        height: 42px;
-        background: var(--gold-light);
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 20px;
-      }
-      .header-title {
-        font-size: 19px;
-        font-weight: 700;
-      }
-      .header-sub {
-        font-size: 12px;
-        color: var(--gray-400);
-        margin-top: 1px;
-      }
-      .back-link {
-        margin-right: auto;
-        font-size: 13px;
-        font-weight: 600;
-        color: var(--gold);
-        text-decoration: none;
-      }
-      .back-link:hover {
-        color: var(--gold-hover);
-      }
-
-      /* ===== MAIN ===== */
-      main {
-        max-width: 1060px;
-        margin: 0 auto;
-        padding: 48px 24px 100px;
-      }
-
-      /* ===== HERO ===== */
-      .hero {
-        text-align: center;
-        margin-bottom: 56px;
-      }
-      .hero-badge {
-        display: inline-block;
-        background: var(--gold-light);
-        color: var(--gold-hover);
-        font-size: 12px;
-        font-weight: 700;
-        border-radius: 999px;
-        padding: 5px 18px;
-        margin-bottom: 14px;
-      }
-      .hero h1 {
-        font-size: 30px;
-        font-weight: 800;
-        margin-bottom: 10px;
-      }
-      .hero p {
-        font-size: 14px;
-        color: var(--gray-600);
-        line-height: 1.7;
-        max-width: 520px;
-        margin: 0 auto;
-      }
-
-      /* ===== SECTION LABEL ===== */
-      .section-label {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 11px;
-        font-weight: 700;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: var(--gold);
-        margin-bottom: 6px;
-      }
-      .section-label::before {
-        content: "";
-        width: 18px;
-        height: 2px;
-        border-radius: 2px;
-        background: var(--gold);
-      }
-      .section-title {
-        font-size: 22px;
-        font-weight: 700;
-        margin-bottom: 22px;
-      }
-
-      /* =============================================
-   SECTION 1 — CERTIFICATES
-   4 category cards → click → show students list
-============================================= */
-      .certs-section {
-        margin-bottom: 70px;
-      }
-
-      /* ---- search bar ---- */
-      .search-wrap {
-        margin-bottom: 24px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        background: var(--white);
-        border: 1.5px solid var(--gray-200);
-        border-radius: 999px;
-        padding: 11px 20px;
-        max-width: 420px;
-        transition:
-          border-color 0.2s,
-          box-shadow 0.2s;
-      }
-      .search-wrap:focus-within {
-        border-color: var(--gold);
-        box-shadow: 0 0 0 3px var(--gold-light);
-      }
-      .search-wrap input {
-        border: none;
-        outline: none;
-        font-family: inherit;
-        font-size: 14px;
-        background: none;
-        color: var(--gray-800);
-        flex: 1;
-      }
-      .search-wrap input::placeholder {
-        color: var(--gray-400);
-      }
-
-      /* ---- 4 category cards ---- */
-      .cert-categories {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 18px;
-        margin-bottom: 36px;
-      }
-
-      /* The card that matches the screenshot exactly */
-      .cat-card {
-        background: var(--gold-light);
-        border: 2px solid transparent;
-        border-radius: 20px;
-        padding: 0;
-        cursor: pointer;
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-        transition:
-          border-color 0.2s,
-          box-shadow 0.2s,
-          transform 0.2s;
-        text-align: center;
-      }
-      .cat-card:hover,
-      .cat-card.active {
-        border-color: var(--gold);
-        box-shadow: 0 8px 24px rgba(201, 168, 76, 0.25);
-        transform: translateY(-3px);
-      }
-      .cat-card.active {
-        box-shadow:
-          0 0 0 3px var(--gold),
-          0 8px 24px rgba(201, 168, 76, 0.2);
-      }
-
-      /* big emoji area — same gold-light bg as screenshot */
-      .cat-icon-area {
-        background: linear-gradient(160deg, #f5ecd4 0%, #fffbef 100%);
-        padding: 36px 20px 28px;
-        font-size: 58px;
-        line-height: 1;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-
-      .cat-info {
-        padding: 16px 16px 20px;
-        background: var(--white);
-        flex: 1;
-      }
-      .cat-name {
-        font-size: 15px;
-        font-weight: 800;
-        margin-bottom: 4px;
-      }
-      .cat-sub {
-        font-size: 12px;
-        color: var(--gold-hover);
-        font-weight: 600;
-        margin-bottom: 8px;
-      }
-      .cat-count {
-        font-size: 11.5px;
-        color: var(--gray-400);
-      }
-
-      /* ---- student list that appears under the selected category ---- */
-      .students-under-cert {
-        display: none;
-        animation: fadeUp 0.3s ease;
-      }
-      .students-under-cert.show {
-        display: block;
-      }
-
-      @keyframes fadeUp {
-        from {
-          opacity: 0;
-          transform: translateY(8px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-
-      .cert-list-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 18px;
-        padding: 14px 20px;
-        background: var(--white);
-        border: 1px solid var(--gray-200);
-        border-radius: 14px;
-      }
-      .cert-list-title {
-        font-size: 15px;
-        font-weight: 700;
-      }
-      .cert-list-close {
-        background: var(--gray-50);
-        border: 1px solid var(--gray-200);
-        border-radius: 999px;
-        padding: 5px 14px;
-        font-family: inherit;
-        font-size: 12px;
-        font-weight: 600;
-        color: var(--gray-600);
-        cursor: pointer;
-      }
-      .cert-list-close:hover {
-        border-color: var(--gold);
-        color: var(--gold);
-      }
-
-      .cert-students-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-        gap: 14px;
-      }
-
-      /* each student row inside the cert list */
-      .cert-student-row {
-        background: var(--white);
-        border: 1px solid var(--gray-200);
-        border-radius: 14px;
-        padding: 16px 18px;
-        display: flex;
-        align-items: center;
-        gap: 14px;
-        transition:
-          border-color 0.2s,
-          box-shadow 0.2s;
-      }
-      .cert-student-row:hover {
-        border-color: var(--gold);
-        box-shadow: 0 4px 14px rgba(201, 168, 76, 0.15);
-      }
-
-      .cert-student-avatar {
-        width: 44px;
-        height: 44px;
-        border-radius: 10px;
-        background: var(--gold-light);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 20px;
-        flex-shrink: 0;
-      }
-      .cert-student-info {
-        flex: 1;
-      }
-      .cert-student-name {
-        font-size: 14px;
-        font-weight: 700;
-        margin-bottom: 2px;
-      }
-      .cert-student-level {
-        font-size: 11.5px;
-        color: var(--gray-400);
-      }
-
-      .cert-dl-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-        padding: 8px 14px;
-        background: var(--gold);
-        color: var(--white);
-        font-family: inherit;
-        font-size: 12px;
-        font-weight: 700;
-        border-radius: 999px;
-        text-decoration: none;
-        flex-shrink: 0;
-        transition: background 0.2s;
-      }
-      .cert-dl-btn:hover {
-        background: var(--gold-hover);
-      }
-
-      /* no-results message */
-      .no-results {
-        text-align: center;
-        color: var(--gray-400);
-        font-size: 13px;
-        padding: 30px 0;
-        display: none;
-      }
-      .no-results.show {
-        display: block;
-      }
-
-      /* =============================================
-   SECTION 2 — STAR STUDENTS
-   Same card style as teachers page
-============================================= */
-      .students-section {
-        margin-bottom: 60px;
-      }
-
-      .students-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
-        gap: 24px;
-      }
-
-      .card {
-        background: var(--white);
-        border: 1px solid var(--gray-200);
-        border-radius: 18px;
-        overflow: hidden;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-        display: flex;
-        flex-direction: column;
-        transition:
-          transform 0.22s,
-          box-shadow 0.22s,
-          border-color 0.22s;
-      }
-      .card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 14px 36px rgba(0, 0, 0, 0.12);
-        border-color: var(--gold);
-      }
-
-      .card-photo {
-        width: 100%;
-        aspect-ratio: 4/3;
-        object-fit: cover;
-        object-position: top center;
-        display: block;
-      }
-      .card-no-photo {
-        width: 100%;
-        aspect-ratio: 4/3;
-        background: linear-gradient(150deg, var(--gold-light) 0%, #fffbef 100%);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 72px;
-      }
-
-      .card-body {
-        padding: 20px 20px 14px;
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-      }
-      .student-name {
-        font-size: 17px;
-        font-weight: 800;
-      }
-      .student-level {
-        font-size: 12.5px;
-        font-weight: 600;
-        color: var(--gold-hover);
-        margin-top: -4px;
-      }
-
-      .tags {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 6px;
-      }
-      .tag {
-        background: var(--gold-light);
-        color: var(--gold-hover);
-        font-size: 11px;
-        font-weight: 700;
-        border-radius: 999px;
-        padding: 4px 11px;
-      }
-
-      .student-bio {
-        font-size: 13px;
-        color: var(--gray-600);
-        line-height: 1.75;
-      }
-
-      .stats {
-        display: flex;
-        border-top: 1px solid var(--gray-200);
-        padding-top: 12px;
-        margin-top: auto;
-      }
-      .stat {
-        flex: 1;
-        text-align: center;
-        border-left: 1px solid var(--gray-200);
-        padding: 0 6px;
-      }
-      .stat:last-child {
-        border-left: none;
-      }
-      .stat-val {
-        font-size: 17px;
-        font-weight: 800;
-        color: var(--gold);
-      }
-      .stat-lbl {
-        font-size: 10.5px;
-        color: var(--gray-400);
-        margin-top: 1px;
-      }
-
-      .cert-btn {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        margin: 0 18px 18px;
-        padding: 13px 0;
-        background: var(--gold);
-        color: var(--white);
-        font-family: inherit;
-        font-size: 14px;
-        font-weight: 700;
-        border-radius: 999px;
-        text-decoration: none;
-        box-shadow: 0 4px 14px rgba(201, 168, 76, 0.28);
-        transition:
-          background 0.2s,
-          transform 0.2s;
-      }
-      .cert-btn:hover {
-        background: var(--gold-hover);
-        transform: translateY(-1px);
-      }
-
-      /* ===== RESPONSIVE ===== */
-      @media (max-width: 900px) {
-        .cert-categories {
-          grid-template-columns: repeat(2, 1fr);
-        }
-      }
-      @media (max-width: 680px) {
-        main {
-          padding: 28px 14px 70px;
-        }
-        .page-header {
-          padding: 14px 16px;
-        }
-        .cert-categories {
-          grid-template-columns: repeat(2, 1fr);
-        }
-        .students-grid {
-          grid-template-columns: 1fr;
-        }
-      }
-      .cert-image {
-        width: 100%;
-        height: 220px;
-        object-fit: cover;
-        border-radius: 12px;
-        cursor: pointer;
-        display: block;
-      }
-
-      .cert-student-row {
-        padding: 10px;
-      }
-      .image-modal {
-        display: none;
-        position: fixed;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.9);
-        justify-content: center;
-        align-items: center;
-        z-index: 9999;
-      }
-
-      .modal-image {
-        max-width: 90%;
-        max-height: 90%;
-        border-radius: 10px;
-        box-shadow: 0 0 25px rgba(255, 255, 255, 0.2);
-      }
-
-      .close-image {
-        position: absolute;
-        top: 20px;
-        right: 30px;
-        color: #fff;
-        font-size: 50px;
-        font-weight: bold;
-        cursor: pointer;
-        user-select: none;
-      }
-
-      .close-image:hover {
-        color: #ddd;
-      }
-    </style>
+    
   </head>
   <body>
     <header class="page-header">
@@ -598,21 +25,53 @@
       <a href="../index.html" class="back-link">← الرئيسية</a>
     </header>
 
-    <main>
-      <!-- HERO -->
-      <div class="hero">
-        <div class="hero-badge">نجوم المنصة</div>
-        <h1>طلاب المنصة المتميزون</h1>
-        <p>
+   
+
+      <!-- ═══════════ HERO ═══════════ -->
+    <section id="hero">
+      <!-- Overlay -->
+      <div class="hero-overlay"></div>
+
+      <div class="hero-container">
+        <!-- النص (يمين) -->
+        <div class="hero-text">
+          <span class="hero-badge"> زاد المعرفة </span>
+
+          <h1 class="hero-title">  طلاب المنصة المتميزون</h1>
+
+          <p class="hero-desc">
           نفخر بمسيرة طلابنا وإنجازاتهم — هنا نحتفي بكل متميز وشهادات التقدير
           التي يستحقونها
-        </p>
-      </div>
+          </p>
 
+          <div class="hero-btns">
+            <a href="#certs-section" class="btn-primary" target="_self"
+              > شهادات التقدير
+            </a>
+            <a href="#students-section" class="btn-outline" target="_self"
+              >  الطلاب المتميزون</a
+            >
+          </div>
+
+          <div class="hero-stats">
+            <div>
+              <span class="num" style="display: none">20+</span>
+              <span class="label" style="display: none">دورة</span>
+            </div>
+            <div>
+              <span class="num" style="display: none">6+</span>
+              <span class="label" style="display: none">أقسام</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+      <main>
       <!-- ============================================
        SECTION 1 — CERTIFICATES
   ============================================= -->
-      <section class="certs-section">
+      <section id="certs-section" class="certs-section">
         <div class="section-label">شهادات التقدير</div>
         <h2 class="section-title">شهادات أصدرها الشيخ للطلاب</h2>
 
@@ -683,7 +142,7 @@
       <!-- ============================================
        SECTION 2 — STAR STUDENTS
   ============================================= -->
-      <section class="students-section">
+      <section id="students-section" class="students-section">
         <div class="section-label">المتميزون</div>
         <h2 class="section-title"> الطلاب المتميزون</h2>
 <!-- SEARCH FOR STAR STUDENTS -->

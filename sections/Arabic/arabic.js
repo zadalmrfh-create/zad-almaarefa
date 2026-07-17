@@ -4,6 +4,7 @@
    2) CTA Scroll
    3) Flow: Sections → Lessons
    4) Search
+   5) Filters
 ========================================================= */
 
 /* ---------------------------------------------------------
@@ -28,9 +29,7 @@ document.querySelectorAll(".acc-trigger").forEach(function (trigger) {
 --------------------------------------------------------- */
 
 document.getElementById("ctaStart").addEventListener("click", function () {
-  document
-    .getElementById("flowSection")
-    .scrollIntoView({ behavior: "smooth" });
+  document.getElementById("flowSection").scrollIntoView({ behavior: "smooth" });
 });
 
 /* ---------------------------------------------------------
@@ -49,6 +48,10 @@ const noResults = document.getElementById("noResults");
 const lessonsLabel = document.getElementById("lessonsLabel");
 const sectionDescription = document.getElementById("sectionDescription");
 
+const filterBar = document.getElementById("filterBar");
+
+let currentFilter = "all";
+
 /* ---------- Show Step ---------- */
 
 function showStep(step) {
@@ -57,6 +60,7 @@ function showStep(step) {
   });
 
   step.classList.remove("is-hidden");
+
   step.scrollIntoView({
     behavior: "smooth",
     block: "start",
@@ -76,7 +80,7 @@ function openLessonsStep(sectionKey) {
 
   lessonsLabel.textContent = section.title;
 
-  // عرض نبذة القسم
+  // وصف القسم
   sectionDescription.innerHTML = section.description || "";
 
   lessonsGrid.innerHTML = "";
@@ -86,37 +90,123 @@ function openLessonsStep(sectionKey) {
 
   if (section.lessons.length === 0) {
     emptyState.classList.remove("is-hidden");
-  } else {
-    section.lessons.forEach(function (lesson) {
-      lessonsGrid.appendChild(buildLessonCard(lesson));
-    });
+    filterBar.innerHTML = "";
   }
 
-  // إعادة ضبط البحث
-  searchInput.value = "";
+  currentFilter = "all";
 
-  searchInput.oninput = function () {
+  function renderLessons() {
     const term = searchInput.value.trim().toLowerCase();
 
-    const filtered = term
-      ? section.lessons.filter(function (lesson) {
-          return lesson.name.toLowerCase().includes(term);
-        })
-      : section.lessons;
+    const filtered = section.lessons.filter(function (lesson) {
+      const matchesSearch = lesson.name.toLowerCase().includes(term);
+
+      const matchesFilter =
+        currentFilter === "all" ||
+        normalizeType(lesson.fileType) === currentFilter;
+
+      return matchesSearch && matchesFilter;
+    });
 
     lessonsGrid.innerHTML = "";
 
-    noResults.classList.toggle(
-      "is-hidden",
-      filtered.length > 0
-    );
+    noResults.classList.toggle("is-hidden", filtered.length > 0);
 
     filtered.forEach(function (lesson) {
       lessonsGrid.appendChild(buildLessonCard(lesson));
     });
-  };
+  }
+
+  createFilters(section, renderLessons);
+
+  searchInput.value = "";
+  searchInput.oninput = renderLessons;
+
+  renderLessons();
 
   showStep(stepLessons);
+}
+
+/* ---------------------------------------------------------
+   FILTERS
+--------------------------------------------------------- */
+
+function normalizeType(type) {
+  const t = String(type).toLowerCase();
+
+  if (t === "pdf") return "pdf";
+
+  if (t === "mp3" || t === "audio") {
+    return "audio";
+  }
+
+  if (t === "mp4" || t === "video") {
+    return "video";
+  }
+
+  if (t === "jpg" || t === "jpeg" || t === "png" || t === "image") {
+    return "image";
+  }
+
+  if (t === "exam") {
+    return "exam";
+  }
+
+  if (t === "book") {
+    return "book";
+  }
+
+  return t;
+}
+
+function getFilterLabel(type) {
+  const labels = {
+    all: "✨ الكل",
+    pdf: "📄 PDF",
+    image: "🖼 صور",
+    video: "🎥 فيديوهات",
+    audio: "🎵 صوت",
+    exam: "📝 اختبار",
+    book: "📚 كتب",
+  };
+
+  return labels[type] || type;
+}
+
+function createFilters(section, renderCallback) {
+  filterBar.innerHTML = "";
+
+  const types = [
+    ...new Set(
+      section.lessons.map(function (lesson) {
+        return normalizeType(lesson.fileType);
+      }),
+    ),
+  ];
+
+  const filters = ["all", ...types];
+
+  filters.forEach(function (type) {
+    const btn = document.createElement("button");
+
+    btn.className = "filter-btn" + (type === "all" ? " active" : "");
+
+    btn.textContent = getFilterLabel(type);
+
+    btn.addEventListener("click", function () {
+      document.querySelectorAll(".filter-btn").forEach(function (b) {
+        b.classList.remove("active");
+      });
+
+      btn.classList.add("active");
+
+      currentFilter = type;
+
+      renderCallback();
+    });
+
+    filterBar.appendChild(btn);
+  });
 }
 
 /* ---------------------------------------------------------
@@ -157,40 +247,31 @@ function buildLessonCard(lesson) {
       break;
   }
 
-  wrapper.innerHTML = `
-    <div class="lesson-card">
-
-        <div class="lesson-info">
-
-            <div class="lesson-name">
-                ${lesson.name}
-            </div>
-
-            <div class="lesson-meta">
-                <span>${lesson.fileType}</span>
-                <span>${lesson.meta}</span>
-            </div>
-
-            <div class="lesson-source">
-                ${lesson.source}
-            </div>
-
-        </div>
-
-        <div class="lesson-icon">
-            📖
-        </div>
-
-    </div>
-
-    <a
-        href="${lesson.downloadUrl}"
-        class="download-btn"
-        target="_blank"
-    >
-        ${actionLabel}
-    </a>
-  `;
+  wrapper.innerHTML =
+    '<div class="lesson-card">' +
+    '<div class="lesson-info">' +
+    '<div class="lesson-name">' +
+    lesson.name +
+    "</div>" +
+    '<div class="lesson-meta">' +
+    "<span>" +
+    lesson.fileType +
+    "</span>" +
+    "<span>" +
+    lesson.meta +
+    "</span>" +
+    "</div>" +
+    '<div class="lesson-source">' +
+    lesson.source +
+    "</div>" +
+    "</div>" +
+    '<div class="lesson-icon">📖</div>' +
+    "</div>" +
+    '<a href="' +
+    lesson.downloadUrl +
+    '" class="download-btn" target="_blank">' +
+    actionLabel +
+    "</a>";
 
   return wrapper;
 }

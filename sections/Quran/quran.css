@@ -144,8 +144,8 @@ body {
   font-family: "Cairo", sans-serif;
   font-size: clamp(3rem, 8vw, 6rem);
   font-weight: 900;
-  line-height: 1.05;
-  letter-spacing: -0.03em;
+  line-height: 1.4;
+  letter-spacing: 0.03em;
   color: var(--text);
   margin-bottom: 28px;
 }
@@ -338,7 +338,7 @@ body {
 .hero-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(15, 23, 42, 0.65);
+  background: rgba(15, 23, 42, 0.35);
 }
 
 /* الكونتينر */
@@ -793,14 +793,18 @@ main {
   border-radius: var(--radius-card);
   box-shadow: var(--shadow-sm);
   padding: 22px;
+
   display: flex;
   flex-direction: column;
+
   gap: 18px;
+
   transition:
     border-color 0.2s var(--ease),
     box-shadow 0.2s var(--ease),
     transform 0.2s var(--ease);
 }
+
 .lesson-card-wrapper:hover {
   border-color: var(--gold);
   box-shadow: var(--shadow-md);
@@ -812,6 +816,7 @@ main {
   align-items: flex-start;
   justify-content: space-between;
   gap: 14px;
+  flex: 1;
 }
 
 .lesson-name {
@@ -819,6 +824,12 @@ main {
   font-weight: 700;
   color: var(--gray-800);
   margin-bottom: 10px;
+
+  min-height: 66px;
+}
+
+.download-btn {
+  margin-top: auto;
 }
 
 .lesson-meta {
@@ -924,6 +935,58 @@ main {
 .search-input::placeholder {
   color: #999;
   font-size: 14px;
+}
+
+/* ═══════════ FILTER BAR ═══════════ */
+
+.filter-bar {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding: 8px 0 20px;
+  margin-bottom: 18px;
+
+  scrollbar-width: none;
+}
+
+.filter-bar::-webkit-scrollbar {
+  display: none;
+}
+
+.filter-btn {
+  border: 1px solid var(--gray-200);
+  background: var(--white);
+  color: var(--gray-600);
+
+  font-family: "Cairo", sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+
+  padding: 12px 24px;
+  border-radius: 999px;
+
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.25s ease;
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  flex-shrink: 0;
+}
+
+.filter-btn:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+  transform: translateY(-2px);
+}
+
+.filter-btn.active {
+  background: var(--gold);
+  color: white;
+  border-color: var(--gold);
+  box-shadow: 0 6px 18px rgba(201, 168, 76, 0.35);
 }
 
 /* نتائج البحث */

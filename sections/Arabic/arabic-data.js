@@ -4,7 +4,7 @@
 ========================================================= */
 
 const QURAN_DATA = {
-  hifz: {
+  s1: {
     title: "تأسيس القراءة والكتابة والإملاء",
 
     description: `
@@ -35,7 +35,7 @@ const QURAN_DATA = {
     ],
   },
 
-  hafs: {
+  s2: {
     title: "الخط العربي",
 
     description: `
@@ -67,8 +67,7 @@ const QURAN_DATA = {
         fileType: "image",
         meta: "الجزء الأول",
         source: "Google Drive",
-        downloadUrl:
-          "https://www.bing.com/ck/a?!&&p=9db8be61a477784e0aea103cae27ea8ed34cb15cf720b8ae8b566b17630af84aJmltdHM9MTc4MTc0MDgwMA&ptn=3&ver=2&hsh=4&fclid=1fed9cb7-9fe3-6403-2de3-8af79e9f655f&u=a1aHR0cHM6Ly93d3cuc2h1dHRlcnN0b2NrLmNvbS9zZWFyY2gvJUQ4JUE3JUQ5JTg0JUQ5JTgyJUQ5JTg1JUQ4JUIxP21zb2NraWQ9MWZlZDljYjc5ZmUzNjQwMzJkZTM4YWY3OWU5ZjY1NWY&ntb=1",
+        downloadUrl: "#",
       },
       {
         name: "اختبار تجويد",
@@ -80,7 +79,7 @@ const QURAN_DATA = {
     ],
   },
 
-  qiraat: {
+  s3: {
     title: "النحو",
 
     description: `
@@ -95,7 +94,7 @@ const QURAN_DATA = {
     lessons: [],
   },
 
-  tafsir: {
+  s4: {
     title: "الصرف",
 
     description: `
@@ -125,7 +124,7 @@ const QURAN_DATA = {
     ],
   },
 
-  tadabbur: {
+  s5: {
     title: "البلاغة",
 
     description: `
@@ -148,7 +147,7 @@ const QURAN_DATA = {
     ],
   },
 
-  adb: {
+  s6: {
     title: "الأدب والنصوص",
 
     description: `
