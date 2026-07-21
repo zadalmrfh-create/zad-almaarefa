@@ -1696,7 +1696,7 @@ body:not(.dark) .hero-overlay{
 ========================= */
 
 body.dark #mission{
-    background:#111827;
+    background:#111827 !important;
     color:#ffffff;
 }
 
@@ -1704,31 +1704,37 @@ body.dark #mission{
 body.dark #mission h2,
 body.dark #mission h3,
 body.dark #mission h4{
-    color:#ffffff;
+    color:#ffffff !important;
 }
 
 /* الفقرات */
 body.dark #mission p{
-    color:#e5e7eb;
+    color:#e5e7eb !important;
 }
 
-/* أي نصوص داخل القسم */
+/* أي نصوص */
 body.dark #mission span,
-body.dark #mission li{
-    color:#e5e7eb;
+body.dark #mission li,
+body.dark #mission strong{
+    color:#ffffff !important;
 }
 
-/* الكروت داخل القسم لو موجودة */
+/* التغلب على Tailwind */
+body.dark #mission .text-gray-900,
+body.dark #mission .text-gray-800,
+body.dark #mission .text-gray-700,
+body.dark #mission .text-gray-600{
+    color:#ffffff !important;
+}
+
+/* الإبقاء على كلمة "رسالتنا" بالذهبي */
+body.dark #mission .text-brand-600{
+    background:none !important;
+    -webkit-text-fill-color:#d4af37 !important;
+    color:#d4af37 !important;
+}
+
+/* الكروت البيضاء */
 body.dark #mission .bg-white{
     background:#1f2937 !important;
-}
-
-/* النص داخل الكروت */
-body.dark #mission .bg-white h3,
-body.dark #mission .bg-white h4{
-    color:#ffffff;
-}
-
-body.dark #mission .bg-white p{
-    color:#cbd5e1;
 }
