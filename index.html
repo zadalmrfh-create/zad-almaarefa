@@ -28,11 +28,13 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
-
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
   </head>
   <body>
+
     <!-- ═══════════ NAVBAR ═══════════ -->
     <nav id="navbar">
       <div class="nav-inner">
@@ -81,6 +83,10 @@
         <button class="btn-nav" onclick="smoothTo('categories')">
           ابدأ التعلم
         </button>
+
+        <button id="theme-toggle" class="btn-nav">
+    <i class="fa-solid fa-moon"></i>
+</button>
         <button class="hamburger" id="hamBtn" onclick="openMob()">
           <svg
             width="20"
@@ -460,25 +466,24 @@
             target="_blank"
             >تواصل عبر واتساب</a
           >
-          <p style="color: gray">تابعنا على السوشيال ميديا:</p>
-          <div class="footer-socials">
-            <a
-              href="https://whatsapp.com/channel/0029VbCKfnI4inokhRHc1k41"
-              target="_blank"
-              ><i class="fab fa-whatsapp"></i
-            ></a>
-            <a href="https://www.facebook.com/share/1BM3MS8mjM/" target="_blank"
-              ><i class="fab fa-facebook-f"></i
-            ></a>
-            <a href="https://t.me/zadelmarefh" target="_blank"
-              ><i class="fab fa-telegram"></i
-            ></a>
-            <a
-              href="https://youtube.com/channel/UC5dMzTXCU61UrYrrc9ol8UA"
-              target="_blank"
-              ><i class="fab fa-youtube"></i
-            ></a>
-          </div>
+<p class="social-title">تابعنا على السوشيال ميديا:</p>
+<div class="footer-socials">
+    <a href="https://whatsapp.com/channel/0029VbCKfnI4inokhRHc1k41" class="social-icon" target="_blank">
+        <i class="fab fa-whatsapp"></i>
+    </a>
+
+    <a href="https://www.facebook.com/share/1BM3MS8mjM/" class="social-icon" target="_blank">
+        <i class="fab fa-facebook-f"></i>
+    </a>
+
+    <a href="https://t.me/zadelmarefh" class="social-icon" target="_blank">
+        <i class="fab fa-telegram"></i>
+    </a>
+
+    <a href="https://youtube.com/channel/UC5dMzTXCU61UrYrrc9ol8UA" class="social-icon" target="_blank">
+        <i class="fab fa-youtube"></i>
+    </a>
+</div>
         </div>
 
         <div class="footer-links-col">
@@ -789,6 +794,62 @@
       function goTo(link) {
         window.location.href = link;
       }
+
+      const toggle = document.getElementById("theme-toggle");
+
+// استرجاع الوضع المحفوظ
+if (localStorage.getItem("theme") === "dark") {
+    document.body.classList.add("dark");
+    toggle.innerHTML = '<i class="fa-solid fa-sun"></i>';
+}
+
+toggle.onclick = () => {
+    document.body.classList.toggle("dark");
+
+    if (document.body.classList.contains("dark")) {
+        localStorage.setItem("theme", "dark");
+        toggle.innerHTML = '<i class="fa-solid fa-sun"></i>';
+    } else {
+        localStorage.setItem("theme", "light");
+        toggle.innerHTML = '<i class="fa-solid fa-moon"></i>';
+    }
+};
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const shareBtn = document.getElementById("shareBtn");
+
+    shareBtn.addEventListener("click", async function () {
+
+        const shareData = {
+            title: "زاد المعرفة",
+            text: "📚 انضم إلى منصة زاد المعرفة.",
+            url: window.location.href
+        };
+
+        if (navigator.share) {
+            try {
+                await navigator.share(shareData);
+            } catch (err) {
+                console.log(err);
+            }
+        } else {
+            try {
+                await navigator.clipboard.writeText(window.location.href);
+                alert("✅ تم نسخ رابط المنصة");
+            } catch (err) {
+                prompt("انسخ الرابط:", window.location.href);
+            }
+        }
+
+    });
+
+});
     </script>
-  </body>
+ 
+<!-- Floating Share Button -->
+<button id="shareBtn" class="floating-share" title="مشاركة المنصة">
+    <i class="fas fa-share-alt"></i>
+</button>
+</body>
 </html>
