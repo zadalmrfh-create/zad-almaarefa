@@ -1738,3 +1738,29 @@ body.dark #mission .text-brand-600{
 body.dark #mission .bg-white{
     background:#1f2937 !important;
 }
+
+/* Mission */
+.mission-title{
+    color:#111827;
+}
+
+.mission-text{
+    color:#4b5563;
+}
+
+.mission-item{
+    color:#1f2937;
+}
+
+/* Dark Mode */
+body.dark .mission-title{
+    color:#fff;
+}
+
+body.dark .mission-text{
+    color:#fff;
+}
+
+body.dark .mission-item{
+    color:#fff;
+}
