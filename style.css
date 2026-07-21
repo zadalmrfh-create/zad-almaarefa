@@ -143,85 +143,87 @@ body::before {
   color: var(--gold);
 }
 
-.nav-links {
-  display: flex;
-  align-items: center;
-  gap: 32px;
+/* =========================
+   Navbar
+========================= */
+
+.nav-links{
+    display:flex;
+    align-items:center;
+    gap:32px;
 }
-.nav-link {
-  position: relative;
-  color: #e3e1e1;
-  font-size: 0.9rem;
-  font-weight: 600;
-  text-decoration: none;
-  padding: 6px 4px;
-  transition: 0.3s;
+
+.nav-link{
+    position:relative;
+    color:#111827;   /* الوضع الفاتح */
+    font-size:.9rem;
+    font-weight:600;
+    text-decoration:none;
+    padding:6px 4px;
+    transition:color .3s ease;
 }
-#navbar.scrolled .nav-link {
-  position: relative;
-  color: black;
-  font-size: 0.9rem;
-  font-weight: 600;
-  text-decoration: none;
-  padding: 6px 4px;
-  transition: 0.3s;
+
+/* أثناء الـ Scroll في الوضع الفاتح */
+#navbar.scrolled .nav-link{
+    color:#111827;
+}
+
+/* الوضع الداكن */
+body.dark .nav-link{
+    color:#ffffff;
+}
+
+/* أثناء الـ Scroll في الوضع الداكن */
+body.dark #navbar.scrolled .nav-link{
+    color:#ffffff;
 }
 
 /* Hover */
-.nav-link:hover {
-  color: var(--gold);
+.nav-link:hover{
+    color:var(--gold);
 }
 
-/* Underline animation */
-.nav-link::after {
-  content: "";
-  position: absolute;
-  bottom: -3px;
-  right: 0;
-  width: 0;
-  height: 2px;
-  background: var(--gold);
-  transition: 0.3s;
+/* الرابط النشط */
+.nav-link.active{
+    color:var(--gold);
+    font-weight:700;
 }
 
-/* Expand line */
-.nav-link:hover::after {
-  width: 100%;
+/* الخط الذهبي أسفل الرابط */
+.nav-link::after{
+    content:"";
+    position:absolute;
+    right:0;
+    bottom:-3px;
+    width:0;
+    height:2px;
+    background:var(--gold);
+    transition:width .3s ease;
 }
 
-/* Underline animation */
-.nav-link::after {
-  content: "";
-  position: absolute;
-  bottom: -3px;
-  right: 0;
-  width: 0;
-  height: 2px;
-  background: var(--gold);
-  transition: 0.3s;
+.nav-link:hover::after,
+.nav-link.active::after{
+    width:100%;
 }
 
-.nav-link.active {
-  color: var(--gold);
-  font-weight: 700;
+/* زر ابدأ التعلم */
+.btn-nav{
+    padding:9px 22px;
+    border-radius:10px;
+    background:var(--gold-dim);
+    border:1px solid rgba(201,168,76,.3);
+    color:var(--gold-light);
+    font-weight:700;
+    font-size:.9rem;
+    cursor:pointer;
+    transition:all .25s;
+    font-family:"Tajawal",sans-serif;
 }
 
-.btn-nav {
-  padding: 9px 22px;
-  border-radius: 10px;
-  background: var(--gold-dim);
-  border: 1px solid rgba(201, 168, 76, 0.3);
-  color: var(--gold-light);
-  font-weight: 700;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: all 0.25s;
-  font-family: "Tajawal", sans-serif;
-}
-.btn-nav:hover {
-  background: var(--gold);
-  color: #0a0a0f;
-  box-shadow: 0 0 24px rgba(201, 168, 76, 0.35);
+.btn-nav:hover{
+    background:var(--gold);
+    color:#0a0a0f;
+    box-shadow:0 0 24px rgba(201,168,76,.35);
 }
 
 /* ══ MOBILE MENU ══ */
@@ -1556,20 +1558,10 @@ section,
         box-shadow .35s ease;
 }
 
-/* Navbar */
 body.dark #navbar.scrolled{
-    background:rgba(15,23,42,.88);
-    backdrop-filter:blur(20px);
+    background: rgba(15,23,42,.88);
+    backdrop-filter: blur(20px);
 }
-
-body.dark .nav-link{
-    color:#f8fafc;
-}
-
-body.dark .nav-link:hover{
-    color:var(--gold);
-}
-
 /* Hero */
 body.dark .hero-overlay{
     background:rgba(0,0,0,.72);
@@ -1697,4 +1689,46 @@ body:not(.dark) .hero-overlay{
 
 .floating-share i{
     color:#fff;
+}
+
+/* =========================
+   Mission Section - Dark Mode
+========================= */
+
+body.dark #mission{
+    background:#111827;
+    color:#ffffff;
+}
+
+/* العنوان */
+body.dark #mission h2,
+body.dark #mission h3,
+body.dark #mission h4{
+    color:#ffffff;
+}
+
+/* الفقرات */
+body.dark #mission p{
+    color:#e5e7eb;
+}
+
+/* أي نصوص داخل القسم */
+body.dark #mission span,
+body.dark #mission li{
+    color:#e5e7eb;
+}
+
+/* الكروت داخل القسم لو موجودة */
+body.dark #mission .bg-white{
+    background:#1f2937 !important;
+}
+
+/* النص داخل الكروت */
+body.dark #mission .bg-white h3,
+body.dark #mission .bg-white h4{
+    color:#ffffff;
+}
+
+body.dark #mission .bg-white p{
+    color:#cbd5e1;
 }
