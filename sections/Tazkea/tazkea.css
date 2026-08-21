@@ -280,7 +280,7 @@ body {
   height: 100vh;
   background:
     linear-gradient(rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.55)),
-    url("azhar-hero.jpg") center/cover no-repeat;
+    url("../../images/hero-bg.webp") center/cover no-repeat;
   display: flex;
   align-items: center;
   justify-content: flex-end; /* الكلام على اليمين */
@@ -329,7 +329,7 @@ body {
   align-items: center;
   padding: 100px 40px;
 
-  background: url("../../images/t-sec-img.png");
+  background: url("../../images/t-sec-img.webp");
   background-size: cover;
   background-position: center;
 }

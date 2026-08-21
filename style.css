@@ -1174,7 +1174,7 @@ body.dark #navbar.scrolled .nav-link{
   align-items: center;
   padding: 100px 40px;
 
-  background: url("images/hero-bg.png");
+  background: url("images/hero-bg.webp");
   background-size: cover;
   background-position: center;
 }
