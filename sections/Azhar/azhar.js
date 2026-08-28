@@ -62,23 +62,38 @@ const GRADES = {
 const SUBJECTS = {
   prep1: {
     library: [
-      {
-        name: "كراسة الخط العربي 1",
-        level: "إعدادي",
-        link: "https://drive.google.com/file/d/1qoWwrk4NeQ6GNY4KfS1cXLXupLxkPYTF/view?usp=drivesdk",
-      },
-      {
-        name: "كراسة الخط العربي 2",
-        level: "إعدادي",
-        link: "https://drive.google.com/file/d/1-o-K_VMW8GYMeabUcmGGZhi3cYThVrVw/view?usp=drivesdk",
-      },
-      {
-        name: "كراسة الخط العربي 3",
-        level: "إعدادي",
-        link: "https://drive.google.com/file/d/1uj35_tceS-W7oBgGP-KRRti1Js6bD1ia/view?usp=drivesdk",
-      }
+   {
+    name: "المعاصر رياضيات الصف الأول الإعدادي",
+    level: "إعدادي",
+    link: "https://drive.google.com/file/d/1dq4D5q_yfrAeaiLKzO42rbvemd9r99pP/view?usp=drive_link",
+},
+{
+    name: "الامتحان لغة عربية الصف الأول الإعدادي",
+    level: "إعدادي",
+    link: "https://drive.google.com/file/d/17LhcQFPzQEFs7YD6xhWGGwyWT7guCNC4/view?usp=drive_link",
+},
+{
+    name: "الامتحان علوم الصف الأول الإعدادي",
+    level: "إعدادي",
+    link: "https://drive.google.com/file/d/1ZZav3mb4OZplWqbtJwkiXPV1GPfdzTW1/view?usp=drive_link",
+},
+{
+    name: "ملزمة التكنولوجيا الصف الأول الإعدادي",
+    level: "إعدادي",
+    link: "https://drive.google.com/file/d/1WWVeJjAa8Bs-zu_zM4UTqR_VbZqDoe12/view?usp=drive_link",
+},
+{
+    name: "الامتحان دراسات الصف الأول الإعدادي",
+    level: "إعدادي",
+    link: "https://drive.google.com/file/d/1j37XpQaXAA-Oesjtb6HydVuzdQ-C2s5q/view?usp=drive_link",
+},
+{
+    name: "المعاصر لغة إنجليزية الصف الأول الإعدادي",
+    level: "إعدادي",
+    link: "https://drive.google.com/file/d/1Yi0-eJTPlRHKzc8XPpr1HdEF9xdXpaAp/view?usp=drive_link",
+},
     ],
-    exams: [
+    /*exams: [
       {
         name: " book 1",
         level: "إعدادي",
@@ -90,44 +105,60 @@ const SUBJECTS = {
         link: "https://www.lkhibra.ma/books/clean-code.pdf",
       },
     ],
+    */
   },
   prep2: {
     library: [
-      {
-        name: "كراسة الخط العربي 1",
-        level: "إعدادي",
-        link: "https://drive.google.com/file/d/1qoWwrk4NeQ6GNY4KfS1cXLXupLxkPYTF/view?usp=drivesdk",
-      },
-      {
-        name: "كراسة الخط العربي 2",
-        level: "إعدادي",
-        link: "https://drive.google.com/file/d/1-o-K_VMW8GYMeabUcmGGZhi3cYThVrVw/view?usp=drivesdk",
-      },
-      {
-        name: "كراسة الخط العربي 3",
-        level: "إعدادي",
-        link: "https://drive.google.com/file/d/1uj35_tceS-W7oBgGP-KRRti1Js6bD1ia/view?usp=drivesdk",
-      }
+{
+    name: "الامتحان علوم الصف الثاني الإعدادي",
+    level: "إعدادي",
+    link: "https://drive.google.com/file/d/1fzqBSuqsttawdBdPvDmQEjp2oVxyqr1H/view?usp=drive_link",
+},
+{
+    name: "الامتحان دراسات الصف الثاني الإعدادي",
+    level: "إعدادي",
+    link: "https://drive.google.com/file/d/1i7PeWXHbWRjJrYMGZdvIZRTx4hVDRuA3/view?usp=drive_link",
+},
+{
+    name: "المعاصر رياضيات الصف الثاني الإعدادي",
+    level: "إعدادي",
+    link: "https://drive.google.com/file/d/1ocsDfpmNOEvZRlBI1m9aB3JSBi4Fu6gw/view?usp=drive_link",
+},
+{
+    name: "المعاصر لغة إنجليزية الصف الثاني الإعدادي",
+    level: "إعدادي",
+    link: "https://drive.google.com/file/d/1K8xYLeviKBguJFasa7kO_TJF34MBB1Vq/view?usp=drive_link",
+},
     ],
     exams: [],
   },
   prep3: {
     library: [
-      {
-        name: "كراسة الخط العربي 1",
-        level: "إعدادي",
-        link: "https://drive.google.com/file/d/1qoWwrk4NeQ6GNY4KfS1cXLXupLxkPYTF/view?usp=drivesdk",
-      },
-      {
-        name: "كراسة الخط العربي 2",
-        level: "إعدادي",
-        link: "https://drive.google.com/file/d/1-o-K_VMW8GYMeabUcmGGZhi3cYThVrVw/view?usp=drivesdk",
-      },
-      {
-        name: "كراسة الخط العربي 3",
-        level: "إعدادي",
-        link: "https://drive.google.com/file/d/1uj35_tceS-W7oBgGP-KRRti1Js6bD1ia/view?usp=drivesdk",
-      }
+{
+    name: "المعاصر رياضيات الصف الثالث الإعدادي",
+    level: "إعدادي",
+    link: "https://drive.google.com/file/d/1zIJ4svOF4IsT_PBRQWlmfcCBWjxagyz0/view?usp=drive_link",
+},
+{
+    name: "المعاصر لغة إنجليزية الصف الثالث الإعدادي",
+    level: "إعدادي",
+    link: "https://drive.google.com/file/d/1hVWPWByO5nRULxBDCZWDZzi7G6oHSzko/view?usp=drive_link",
+},
+{
+    name: "الامتحان لغة عربية الصف الثالث الإعدادي",
+    level: "إعدادي",
+    link: "https://drive.google.com/file/d/1ORwHbtyzX-zyuJSGRf9WYbLaapgbMYpH/view?usp=drive_link",
+},
+{
+    name: "الامتحان علوم الصف الثالث الإعدادي",
+    level: "إعدادي",
+    link: "https://drive.google.com/file/d/1Mc1Q6G1soGxmeOZRHznYNuWyPnT-aPRn/view?usp=drive_link",
+},
+{
+    name: "الامتحان دراسات الصف الثالث الإعدادي",
+    level: "إعدادي",
+    link: "https://drive.google.com/file/d/1rD0WGymogkXApO5HqZnNd4Jfm5U_I1Nx/view?usp=drive_link",
+},
     ],
     exams: [
       {
@@ -144,233 +175,89 @@ const SUBJECTS = {
   },
   sec1: {
     library: [
-      {
-        name: "كراسة الخط العربي 1",
-        level: "ثانوي",
-        link: "https://drive.google.com/file/d/1qoWwrk4NeQ6GNY4KfS1cXLXupLxkPYTF/view?usp=drivesdk",
-      },
-      {
-        name: "كراسة الخط العربي 2",
-        level: "ثانوي",
-        link: "https://drive.google.com/file/d/1-o-K_VMW8GYMeabUcmGGZhi3cYThVrVw/view?usp=drivesdk",
-      },
-      {
-        name: "كراسة الخط العربي 3",
-        level: "ثانوي",
-        link: "https://drive.google.com/file/d/1uj35_tceS-W7oBgGP-KRRti1Js6bD1ia/view?usp=drivesdk",
-      },
-      {
-        name: "المرشد – بلاغة",
-        level: "ثانوي",
-        link: "https://drive.google.com/file/d/1pXucpoq2AFaGeQ7J97yqZEvecXh0GFrd/view?usp=drivesdk",
-      },
-      {
-        name: "المرشد – حديث",
-        level: "ثانوي",
-        link: "https://drive.google.com/file/d/1-TrFsxzne3L8Nhx6Ce9vNebqtUpa510B/view?usp=drivesdk",
-      },
-      {
-        name: "ملخص بلاغة",
-        level: "ثانوي",
-        link: "https://drive.google.com/file/d/1BvmOxdHLK3X8OjDlZyso-qTiaPuurYDm/view?usp=drivesdk",
-      },
-      {
-        name: "الفلسفة والمنطق",
-        level: "ثانوي",
-        link: "https://drive.google.com/file/d/1-gVXvVRaWPXN_FD4eNk3e4Ctxi0tMylb/view?usp=drivesdk",
-      },
-      {
-        name: "بلاغة سلاح الأزهري",
-        level: "ثانوي",
-        link: "https://drive.google.com/file/d/12PE-Av0f1RlZnjwOa-h9Q3UlgINknUy9/view?usp=drivesdk",
-      },
-      {
-        name: "المرشد – إنشاء",
-        level: "ثانوي",
-        link: "https://drive.google.com/file/d/1XYa2wPndygmwhrJHtpdwC2a4arIzBuZ6/view?usp=drivesdk",
-      },
-      {
-        name: "المرشد – توحيد",
-        level: "ثانوي",
-        link: "https://drive.google.com/file/d/10IZdVEnImYEALdfGvSqteG5ZWE2QrED1/view?usp=drivesdk",
-      },
-      {
-        name: "المرشد – فقه حنفي",
-        level: "ثانوي",
-        link: "https://drive.google.com/file/d/1-CcqhKNtf_uqzEdLhcMV49DdelZxTQ-p/view?usp=drivesdk",
-      },
-      {
-        name: "المنطق",
-        level: "ثانوي",
-        link: "https://drive.google.com/file/d/1mT8AdXIe3cpSi7zDip8qz2GYt3ezkCmY/view?usp=drivesdk",
-      },
-      {
-        name: "المرشد – صرف",
-        level: "ثانوي",
-        link: "https://drive.google.com/file/d/1lMnZqztmwscoSEnJtJozDtzV1wsKMEQ-/view?usp=drivesdk",
-      },
-      {
-        name: "المرشد – نحو",
-        level: "ثانوي",
-        link: "https://drive.google.com/file/d/1maPTZuaOIbg20s_aYv50sTKCSCfkd1hR/view?usp=drivesdk",
-      },
-      {
-        name: "ملخص رياضيات أولى ثانوي",
-        level: "ثانوي",
-        link: "https://drive.google.com/file/d/1Ed-Z58tekYzBKlBzfyn6AiysYJlc9C5w/view",
-      },
-      {
-        name: "امتحانات هندسة أزهر",
-        level: "ثانوي",
-        link: "https://drive.google.com/file/d/1R5w7QMqlvnM0nHNuZ56R1jKBbUFVvbaR/view?usp=drivesdk",
-      },
-      {
-        name: "مذكرة الثقافة الإسلامية",
-        level: "ثانوي",
-        link: "https://drive.google.com/file/d/1unpeTqxJqjReBfpkI4sTI3jfsipfSCD8/view?usp=drivesdk",
-      },
-      {
-        name: "مذكرة التوحيد",
-        level: "ثانوي",
-        link: "https://drive.google.com/file/d/1oLNgveGbnWDCqrwepXMO98nojad4UYt0/view?usp=drivesdk",
-      },
-      {
-        name: "مذكرة التفسير",
-        level: "ثانوي",
-        link: "https://drive.google.com/file/d/1rP9NNNgaRAyilisnQ8MdSvU4L4b1CRXI/view?usp=drivesdk",
-      },
-      {
-        name: "مذكرة الفقه الشافعي",
-        level: "ثانوي",
-        link: "https://drive.google.com/file/d/1NaZDvzh-eE0RitAsb61Rv3UmvLgWGtms/view?usp=drivesdk",
-      },
-      {
-        name: "كتاب فلسفة ومنطق – الامتحان",
-        level: "ثانوي",
-        link: "https://drive.google.com/file/d/1fv3_nLOJfjxcccyXrhyVPITbgw1kVE65/view?usp=drivesdk",
-      },
-      {
-        name: "المرشد – تاريخ",
-        level: "ثانوي",
-        link: "https://drive.google.com/file/d/1z1Ve8cbUQFsy3hOCy5tIp9UzIrO_lCwx/view?usp=drive_link",
-      },
-      {
-        name: "كتاب الفلسفة والمنطق – الوزارة",
-        level: "ثانوي",
-        link: "https://drive.google.com/file/d/1lk63FLv9difNd0Yf-G0sCHqiurcNwTXz/view?usp=drive_link",
-      },
-      {
-        name: "المرشد – تفسير",
-        level: "ثانوي",
-        link: "https://drive.google.com/file/d/1yeTqhmDpNhQD_ui6-F0Pam6cCQkvvCDB/view?usp=drivesdk",
-      },
-      {
-        name: "المرشد – أدب ومطالعة ونصوص وإنشاء",
-        level: "ثانوي",
-        link: "https://drive.google.com/file/d/142NxGArN8Rr1h1GRqYkb8w-O3D5tnzW2/view?usp=drivesdk",
-      },
-      {
-        name: "المرشد – فقه مالكي",
-        level: "ثانوي",
-        link: "https://drive.google.com/file/d/1XRZOLTF1on5adiDW3TPVCtp-ePvkKzVg/view?usp=drive_link",
-      },
-      {
-        name: "قوانين العلوم المتكاملة",
-        level: "ثانوي",
-        link: "https://drive.google.com/file/d/1Zl5lnK2e9IzR_3uyuH_WWvKE52QTO804/view?usp=drivesdk",
-      },
-      {
-        name: "ملخص العلوم المتكاملة – الدروس الأولى",
-        level: "ثانوي",
-        link: "https://drive.google.com/file/d/1ZtlsM1g8zHlt0XqA_fvlLJTztxODlJiu/view?usp=drivesdk",
-      },
-      {
-        name: "ملخص العلوم المتكاملة الشامل",
-        level: "ثانوي",
-        link: "https://drive.google.com/file/d/1uRVygzrI6I5_rPkYWaMsiJZrP6v6cyil/view?usp=drivesdk",
-      },
-      {
-        name: "ملخص الأدب والنصوص والمطالعة",
-        level: "ثانوي",
-        link: "https://drive.google.com/file/d/1MQDiaWBsmCJDhdOoKqaFmT2FXsBMj-Tg/view?usp=drivesdk",
-      },
-      {
-        name: "ملخص الصرف المبسط",
-        level: "ثانوي",
-        link: "https://drive.google.com/file/d/1lMnZqztmwscoSEnJtJozDtzV1wsKMEQ-/view?usp=drivesdk",
-      },
-      {
-        name: "إجابات المعاصر – رياضيات",
-        level: "ثانوي",
-        link: "https://drive.google.com/file/d/1JLKN5t3YCBli-Qw2Pj86cRPs2-LgXSgv/view",
-      },
-      {
-        name: "ملخص التاريخ",
-        level: "ثانوي",
-        link: "https://drive.google.com/file/d/1Ry91T_uYodmPk1gUmMvj7HDVnxlVGx88/view?usp=drivesdk",
-      },
-      {
-        name: "ملخص جرامر الإنجليزية",
-        level: "ثانوي",
-        link: "https://drive.google.com/file/d/1EL-w1upI_yc3O_rrMN7SYHwQWl6J6PD1/view?usp=drivesdk",
-      },
-      {
-        name: "ملخص البلاغة المركز",
-        level: "ثانوي",
-        link: "https://drive.google.com/file/d/1AedRSDBmUXTnWMlLDSE5G-CU7bue2Ppg/view?usp=drivesdk",
-      },
-      {
-        name: "ملخص الإسلاميات",
-        level: "ثانوي",
-        link: "https://drive.google.com/file/d/1nZXbPCHYGqeAbqkNgxrf7mwT7rPnYJqb/view?usp=drivesdk",
-      },
-      {
-        name: "ملخص التوحيد المركز",
-        level: "ثانوي",
-        link: "https://drive.google.com/file/d/1WzdnRZn70UhTCX2fs6wcK3CfzGQe-ns5/view?usp=drivesdk",
-      },
-      {
-        name: "ملخص الإنشاء في 3 ورقات",
-        level: "ثانوي",
-        link: "https://drive.google.com/file/d/16qTJuegnhHUXEzmONy8b0JTErCK-9TA8/view?usp=drivesdk",
-      },
-      {
-        name: "ملخص الفقه الشافعي",
-        level: "ثانوي",
-        link: "https://drive.google.com/file/d/1irfgjmgOtgObxAX7BpOGQNrADDVeC_jn/view?usp=drivesdk",
-      },
-      {
-        name: "ملخص الحديث وعلومه",
-        level: "ثانوي",
-        link: "https://drive.google.com/file/d/1B5BjUIUKDWHpVE4KxtdDyu1gmK89Gym7/view?usp=drivesdk",
-      },
-      {
-        name: "ملخص التفسير وعلومه",
-        level: "ثانوي",
-        link: "https://drive.google.com/file/d/1-Q0XlGHhUatV9du2AsX4zpNsVt4V-kd9/view?usp=drivesdk",
-      },
-      {
-        name: "ملخص علوم القرآن",
-        level: "ثانوي",
-        link: "https://drive.google.com/file/d/1Yt3qqOKusydV-2yBJFgQCIWc6PfuqrfC/view?usp=drivesdk",
-      },
-      {
-        name: "توقعات أسئلة الماضي في القرآن",
-        level: "ثانوي",
-        link: "https://drive.google.com/file/d/17ZrcAPPhKu2gm9gDy4d6D8ZF5S1OB2fH/view?usp=drivesdk",
-      }
+{
+  name: "كتب تاريخ 1ث",
+  level: "1ث",
+  link: "https://drive.google.com/file/d/1mqkxa7TgN5d6Z5qt1zZs9ZySw3MDnkCZ/view?usp=drivesdk",
+},
+{
+  name: "كتب فلسفة 1ث",
+  level: "1ث",
+  link: "https://drive.google.com/file/d/162vwXgoyAmRKcTjj1sxqzJuNOLgKhMAY/view?usp=drivesdk",
+},
+{
+  name: "كتب لغة عربية 1ث",
+  level: "1ث",
+  link: "https://drive.google.com/file/d/1mmPDwmWmhxQCpgSpLYtls4UJrDdWh5qm/view?usp=drivesdk",
+},
+{
+  name: "كتب رياضيات 1ث",
+  level: "1ث",
+  link: "https://drive.google.com/file/d/1wEwttMNFE_B_72kfOMjGySnCj0_KAGRL/view?usp=drivesdk",
+},
+{
+  name: "كتب إنجليزي 1ث",
+  level: "1ث",
+  link: "https://drive.google.com/file/d/1Xe9dq-Hgx_sYhDJlz6PernGmsLlEIw-S/view?usp=drivesdk",
+},
+{
+  name: "كتب فرنساوي 1ث",
+  level: "1ث",
+  link: "https://drive.google.com/file/d/1-rkGQn27qD2EOQSmP5IUIwm2Eal-RaR1/view?usp=drivesdk",
+},
+{
+  name: "كتب علوم متكاملة 1ث",
+  level: "1ث",
+  link: "https://drive.google.com/file/d/1ruvmWf54DNr9WeVEjBoGpz7JJwb3wt3D/view?usp=drivesdk",
+},
+{
+  name: "كتب نحو 1ث",
+  level: "1ث",
+  link: "https://drive.google.com/file/d/1j_fwW5OXW5uXHgNEOKQIyNMSoDUVSAmq/view?usp=drivesdk",
+},
+{
+  name: "كتب صرف 1ث",
+  level: "1ث",
+  link: "https://drive.google.com/file/d/1V35LhkSmFXjU-GqxNx2DUZQxK1wFgE32/view?usp=drivesdk",
+},
+{
+  name: "كتب بلاغة 1ث",
+  level: "1ث",
+  link: "https://drive.google.com/file/d/1y_AO9kYUw-Q2tk2Fy0kkHtuh9i2VRn3Z/view?usp=drivesdk",
+},
+{
+  name: "كتب توحيد 1ث",
+  level: "1ث",
+  link: "https://drive.google.com/file/d/18r6wAA3kUZF1df_IH6Dp64h7ZUzGtnlz/view?usp=drivesdk",
+},
+{
+  name: "كتب حديث 1ث",
+  level: "1ث",
+  link: "https://drive.google.com/file/d/1OmEFPtSISKtQGqDYVG8I2XAcy4f95Q07/view?usp=drivesdk",
+},
+{
+  name: "كتب تفسير 1ث",
+  level: "1ث",
+  link: "https://drive.google.com/file/d/1xes4-HYavziTnixzD7y3lcPWx0jLilEU/view?usp=drivesdk",
+},
+{
+  name: "كتب فقه شافعي 1ث",
+  level: "1ث",
+  link: "https://drive.google.com/file/d/1_KObjwQrbyFMJmkg8h6gCSug30etbL6H/view?usp=drivesdk",
+},
+{
+  name: "كتب فقه حنفي 1ث",
+  level: "1ث",
+  link: "https://drive.google.com/file/d/1M5UYdIsdwCt-aGQIF8tGxg1OTb03rKMq/view?usp=drivesdk",
+},
+{
+  name: "كتب فقه مالكي 1ث",
+  level: "1ث",
+  link: "https://drive.google.com/file/d/1OtNdNw4ocdAQwoFLV9PJ3UWenMnBL923/view?usp=drivesdk",
+},
     ],
-    exams: [
-      {
-        name: "امتحان بلاغة إعدادي 3",
-        level: "إعدادي",
-        link: "https://drive.google.com/...",
-      },
-      {
-        name: "امتحان حديث إعدادي 3",
-        level: "إعدادي",
-        link: "https://drive.google.com/...",
-      },
+    exams:[
+
     ],
 
     /* video: [
@@ -395,60 +282,117 @@ const SUBJECTS = {
   sec2: {
     library: [
       {
-        name: "كراسة الخط العربي 1",
-        level: "ثانوي",
-        link: "https://drive.google.com/file/d/1qoWwrk4NeQ6GNY4KfS1cXLXupLxkPYTF/view?usp=drivesdk",
-      },
-      {
-        name: "كراسة الخط العربي 2",
-        level: "ثانوي",
-        link: "https://drive.google.com/file/d/1-o-K_VMW8GYMeabUcmGGZhi3cYThVrVw/view?usp=drivesdk",
-      },
-      {
-        name: "كراسة الخط العربي 3",
-        level: "ثانوي",
-        link: "https://drive.google.com/file/d/1uj35_tceS-W7oBgGP-KRRti1Js6bD1ia/view?usp=drivesdk",
-      }
+  name: "المرشد بلاغة الصف الثاني الثانوي",
+  level: "ثانوي",
+  link: "https://drive.google.com/file/d/1ihoqInpKCQN-1USJUNR06RAHYERYA7Pj/view?usp=drive_link",
+},
+{
+  name: "العروض والقافية ج2",
+  level: "ثانوي",
+  link: "https://drive.google.com/file/d/126brxtdcY4sw2oA2fxpogb2JXImfKI2F/view?usp=drive_link",
+},
+{
+  name: "المرشد رياضيات ج2 - بحتة وتطبيقية - ترم أول",
+  level: "ثانوي",
+  link: "https://drive.google.com/file/d/1qXqpgiUL8SpC4_9873ZI0Ohz8xBv4S5j/view?usp=drive_link",
+},
+{
+  name: "المرشد فيزياء 2 ثانوي - ترم 1 - بنك إلكتروني",
+  level: "ثانوي",
+  link: "https://drive.google.com/file/d/1o0GVlpd0WX8xAwcr2wWL_IqnxJ2ijqfq/view?usp=drive_link",
+},
+{
+  name: "المطالعة والإنشاء ج2",
+  level: "ثانوي",
+  link: "https://drive.google.com/file/d/1SpbmDctxGkWSexFPMxatRHuDkXPhlriH/view?usp=drive_link",
+},
+{
+  name: "الامتحان علم نفس ج2 ترم أول 2026",
+  level: "ثانوي",
+  link: "https://drive.google.com/file/d/1o1xTTi7dKXEDRwCKrw1zgZZR-gvH74cV/view?usp=drive_link",
+},
+{
+  name: "المرشد كيمياء 2 ثانوي - ترم 1 - بنك إلكتروني",
+  level: "ثانوي",
+  link: "https://drive.google.com/file/d/1DrvCOFxdFo7uQX52RnNiXaBhCKhju31F/view?usp=drive_link",
+},
+{
+  name: "امتحان كيمياء 2 ث 2026",
+  level: "ثانوي",
+  link: "https://drive.google.com/file/d/1DzrHo5F8d5dLlk9PTa0q5_6OkdTz3e_x/view?usp=drive_link",
+},
+{
+  name: "المرشد فقه حنفي ج2 - 2025 - المرشد للعلوم الشرعية",
+  level: "ثانوي",
+  link: "https://drive.google.com/file/d/1F45dkDC2Y8vM3yrORf0GER0KGGomz3NG/view?usp=drive_link",
+},
+{
+  name: "الامتحان فيزياء 2 ثانوي ترم 1 - بنك إلكتروني",
+  level: "ثانوي",
+  link: "https://drive.google.com/file/d/1D0ML3_cW58FLOhJHI4JY3cHtu8hrWWpx/view?usp=drive_link",
+},
+{
+  name: "المرشد تفسير ج2 2026 ترم أول للعلوم الشرعية",
+  level: "ثانوي",
+  link: "https://drive.google.com/file/d/1_cWDHvuFTN-3VtR2MLLnj4JD5xgCayG8/view?usp=drive_link",
+},
+{
+  name: "المرشد فقه مالكي ج2 2026 للعلوم الشرعية",
+  level: "ثانوي",
+  link: "https://drive.google.com/file/d/1ZQEc4iFBP0PtOo4Zqs-xo1n1azXS7zlF/view?usp=drive_link",
+},
+{
+  name: "المعاصر لغة إنجليزية 2 ثانوي ج2 ترم 1 - بنك إلكتروني",
+  level: "ثانوي",
+  link: "https://drive.google.com/file/d/1FbGw1JHauDI5gavVEA4xSCWw1FEVYZll/view?usp=drive_link",
+},
+{
+  name: "المتفوقون الامتحان جغرافيا ج2 ترم أول 2026",
+  level: "ثانوي",
+  link: "https://drive.google.com/file/d/1kKxfDYo8kbruJKzHF9NCmpXOQ_GMoQkM/view?usp=drive_link",
+},
+{
+  name: "المتفوقون الامتحانات تاريخ ج2 ترم أول 2026",
+  level: "ثانوي",
+  link: "https://drive.google.com/file/d/16INt48lGDUKF2xf2uxqnv53W6FxR0lAS/view?usp=drive_link",
+},
+{
+  name: "برافو لغة فرنسية 2 ثانوي - ترم 1 - بنك إلكتروني",
+  level: "ثانوي",
+  link: "https://drive.google.com/file/d/1J8SMBKu5ctexcVYgbEsi7RPZQ9i5PvX-/view?usp=drive_link",
+},
+{
+  name: "كتاب المرشد فقه حنفي ثانية ثانوي 2026",
+  level: "ثانوي",
+  link: "https://drive.google.com/file/d/1wahrwIUBgIJi5D_NGt3Rsh4aJB8Aekbz/view?usp=drive_link",
+},
+{
+    name: "المرشد صرف الصف الثاني الثانوي",
+    level: "ثانوي",
+    link: "https://drive.google.com/file/d/1rIplobAzBr1biVtWAIlEixHQqy65AZ8Y/view?usp=drivesdk",
+},
+{
+    name: "المرشد نحو الصف الثاني الثانوي",
+    level: "ثانوي",
+    link: "https://drive.google.com/file/d/1McNFaKF35dJT0JhJrVtSpBNPgQD2rS3M/view?usp=drivesdk",
+},
+{
+    name: "المرشد أدب ونصوص الصف الثاني الثانوي",
+    level: "ثانوي",
+    link: "https://drive.google.com/file/d/1XZq0ojVX0DdMdIdxP71z7Kme4_an0Zoh/view?usp=drivesdk",
+},
+
     ],
     exams: [],
 
-   video: [
-      {
-        name: "امتحان نحوss ثاني ثانوي",
-        level: "ثانوي",
-        link: "https://drive.gssoogle.com/...",
-      },
-    ],
+  video: [ ],
   },
   sec3: {
     library: [
-      {
-        name: "كراسة الخط العربي 1",
-        level: "ثانوي",
-        link: "https://drive.google.com/file/d/1qoWwrk4NeQ6GNY4KfS1cXLXupLxkPYTF/view?usp=drivesdk",
-      },
-      {
-        name: "كراسة الخط العربي 2",
-        level: "ثانوي",
-        link: "https://drive.google.com/file/d/1-o-K_VMW8GYMeabUcmGGZhi3cYThVrVw/view?usp=drivesdk",
-      },
-      {
-        name: "كراسة الخط العربي 3",
-        level: "ثانوي",
-        link: "https://drive.google.com/file/d/1uj35_tceS-W7oBgGP-KRRti1Js6bD1ia/view?usp=drivesdk",
-      }
+
     ],
     exams: [
-      {
-        name: "امتحان فقه ثالث ثانوي",
-        level: "ثانوي",
-        link: "https://drive.google.com/...",
-      },
-      {
-        name: "امتحان تفسير ثالث ثانوي",
-        level: "ثانوي",
-        link: "https://drive.google.com/...",
-      },
+
     ],
   },
 };
