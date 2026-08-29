@@ -389,7 +389,215 @@ const SUBJECTS = {
   },
   sec3: {
     library: [
+{
+  name: "فيزياء شرح الصف الثالث الثانوي",
+  level: "ثانوي",
+  link: "https://drive.google.com/file/d/1ryem3Z6CxtRe4-7TzIOJebzJpq_loa9r/view?usp=drivesdk",
+},
 
+{
+  name: "فيزياء أسئلة الصف الثالث الثانوي",
+  level: "ثانوي",
+  link: "https://drive.google.com/file/d/1Z_AeuxCts0riMDDeK4qGAsfVkG6LEk2e/view?usp=drivesdk",
+},
+
+{
+  name: "فيزياء إجابات الصف الثالث الثانوي",
+  level: "ثانوي",
+  link: "https://drive.google.com/file/d/1xUYf4EGYiewwLPCgw1qaajC0BIegI-zr/view?usp=drivesdk",
+},
+
+{
+  name: "جغرافيا جزء المراجعة الصف الثالث الثانوي",
+  level: "ثانوي",
+  link: "https://drive.google.com/file/d/1sJrklZEP5YwxC4eFp6RDx0jmjg7774Eu/view?usp=drivesdk",
+},
+
+{
+  name: "جغرافيا جزء الأسئلة الصف الثالث الثانوي",
+  level: "ثانوي",
+  link: "https://drive.google.com/file/d/1aKlyfGqF8IL-_c1bHzaU0HU-yV-VDzES/view?usp=drivesdk",
+},
+
+{
+  name: "جغرافيا جزء الشرح الصف الثالث الثانوي",
+  level: "ثانوي",
+  link: "https://drive.google.com/file/d/1XX0QXMqwYF7ig1fM3sCbXuhOlh3RAJQg/view?usp=drivesdk",
+},
+
+{
+  name: "أحياء شرح الصف الثالث الثانوي",
+  level: "ثانوي",
+  link: "https://drive.google.com/file/d/1XCYsg0r5sQGQy0NWL5txNS9Ms786WCco/view?usp=drivesdk",
+},
+
+{
+  name: "أحياء أسئلة الصف الثالث الثانوي",
+  level: "ثانوي",
+  link: "https://drive.google.com/file/d/14NJ9ESSZadCv3Nq2MihHMPXYU_UGYkSR/view?usp=drivesdk",
+},
+
+{
+  name: "أحياء إجابات الصف الثالث الثانوي",
+  level: "ثانوي",
+  link: "https://drive.google.com/file/d/1SQn5d9HHQBWjz-uVrEervIyvgiUBMLWG/view?usp=drivesdk",
+},
+
+{
+  name: "ملحق رياضة بحتة الصف الثالث الثانوي",
+  level: "ثانوي",
+  link: "https://drive.google.com/file/d/18Vj7F1PUWEhTVusTCRgURtmwV9Wf5x7n/view?usp=drivesdk",
+},
+
+{
+  name: "ملحق رياضة تطبيقية الصف الثالث الثانوي",
+  level: "ثانوي",
+  link: "https://drive.google.com/file/d/1XmmozfOy2_YKJv9zZqGYPqy3MyhewvfR/view?usp=drivesdk",
+},
+
+{
+  name: "رياضة تطبيقية الجزء الأول الصف الثالث الثانوي",
+  level: "ثانوي",
+  link: "https://drive.google.com/file/d/1VWSPmghAp6amd9yuKFAWd1sNf-9jfFK_/view?usp=drivesdk",
+},
+
+{
+  name: "رياضة تطبيقية الجزء الثاني الصف الثالث الثانوي",
+  level: "ثانوي",
+  link: "https://drive.google.com/file/d/1cPv8rkFuWmQLea70MLQDshBwO3_aw0Wg/view?usp=drivesdk",
+},
+
+{
+  name: "رياضة بحتة الجزء الأول الصف الثالث الثانوي",
+  level: "ثانوي",
+  link: "https://drive.google.com/file/d/16b8MzyjuSVvKJImSHsMgL2jHgM4B6Hid/view?usp=drivesdk",
+},
+
+{
+  name: "رياضة بحتة الجزء الثاني الصف الثالث الثانوي",
+  level: "ثانوي",
+  link: "https://drive.google.com/file/d/1KdUI0zM3XM9yrbdBGFUZkEOdZsdMx6iq/view?usp=drivesdk",
+},
+
+{
+  name: "إنجليزي الصف الثالث الثانوي",
+  level: "ثانوي",
+  link: "https://drive.google.com/file/d/15-KD_4pYTENe0XNYqZ6XQa-1lKzem5vH/view?usp=drivesdk",
+},
+
+{
+  name: "المرشد بلاغة الصف الثالث الثانوي",
+  level: "ثانوي",
+  link: "https://drive.google.com/file/d/1e5OBbCevs2rq9LHzswlL5Vl8xNJuggRh/view?usp=drivesdk",
+},
+
+{
+  name: "بوكليت المرشد بلاغة الصف الثالث الثانوي",
+  level: "ثانوي",
+  link: "https://drive.google.com/file/d/1uwHL9R9mB717JJGmICMjIRVRn6uERbwY/view?usp=drivesdk",
+},
+
+{
+  name: "المرشد أدب ونصوص الصف الثالث الثانوي",
+  level: "ثانوي",
+  link: "https://drive.google.com/file/d/12RZoZLrc7IGDDWMyN5bb5pViToVia5vH/view?usp=drivesdk",
+},
+
+{
+  name: "بوكليت أدب ونصوص الصف الثالث الثانوي",
+  level: "ثانوي",
+  link: "https://drive.google.com/file/d/1sLLScAFpqRHNGny4v4G1bsMCq3Pj0tj0/view?usp=drivesdk",
+},
+
+{
+  name: "المرشد نحو الصف الثالث الثانوي",
+  level: "ثانوي",
+  link: "https://drive.google.com/file/d/1iZgv-qr1nxMleP7CdW0zajS5m1TftbeZ/view?usp=drivesdk",
+},
+
+{
+  name: "بوكليت المرشد نحو الصف الثالث الثانوي",
+  level: "ثانوي",
+  link: "https://drive.google.com/file/d/1BzW9yvFHnzT30SxrbBsc_ijTzSoAD1UQ/view?usp=drivesdk",
+},
+
+{
+  name: "المرشد تفسير الصف الثالث الثانوي",
+  level: "ثانوي",
+  link: "https://drive.google.com/file/d/1x5Z_ImjQbQgF9VxTNgKJMmIpH2IBtAbe/view?usp=drivesdk",
+},
+
+{
+  name: "المرشد صرف الصف الثالث الثانوي",
+  level: "ثانوي",
+  link: "https://drive.google.com/file/d/1BGoKxDyH0rcVShAIQ02t6_wHuVpJ-Yz8/view?usp=drivesdk",
+},
+
+{
+  name: "بوكليت صرف الصف الثالث الثانوي",
+  level: "ثانوي",
+  link: "https://drive.google.com/file/d/116dQrxV9CMN21GLbfg8LI-jzR4o8x1Eo/view?usp=drivesdk",
+},
+
+{
+  name: "توحيد بوكليت الصف الثالث الثانوي",
+  level: "ثانوي",
+  link: "https://drive.google.com/file/d/1LtWQGEX2EbVqS5Gc4lg_yS2TGA4fB0T9/view?usp=drivesdk",
+},
+
+{
+  name: "المرشد توحيد الصف الثالث الثانوي",
+  level: "ثانوي",
+  link: "https://drive.google.com/file/d/11VAt_MIseziqXD8HnkL3CCDU1CaeR2jv/view?usp=drivesdk",
+},
+
+{
+  name: "بوكليت فقه مالكي الصف الثالث الثانوي",
+  level: "ثانوي",
+  link: "https://drive.google.com/file/d/1glJa9fixkWw6fRjUBHE65oa8fHniaUEy/view?usp=drivesdk",
+},
+
+{
+  name: "المرشد فقه مالكي الصف الثالث الثانوي",
+  level: "ثانوي",
+  link: "https://drive.google.com/file/d/1iapB4zFilAHZ43Kr_bKaYa9eQZKRNwSa/view?usp=drivesdk",
+},
+
+{
+  name: "بوكليت فقه حنفي الصف الثالث الثانوي",
+  level: "ثانوي",
+  link: "https://drive.google.com/file/d/1k4t-4ZkcaR3J52YszdYt5NrLtUxZT1KJ/view?usp=drivesdk",
+},
+
+{
+  name: "المرشد فقه حنفي الصف الثالث الثانوي",
+  level: "ثانوي",
+  link: "https://drive.google.com/file/d/1k4t-4ZkcaR3J52YszdYt5NrLtUxZT1KJ/view?usp=drivesdk",
+},
+
+{
+  name: "بوكليت حديث الصف الثالث الثانوي",
+  level: "ثانوي",
+  link: "https://drive.google.com/file/d/1JsXIogFUODI7xmqbREnh8i5IirWuvs83/view?usp=drivesdk",
+},
+
+{
+  name: "المرشد حديث الصف الثالث الثانوي",
+  level: "ثانوي",
+  link: "https://drive.google.com/file/d/1SybW7j_NoCUsql5e8WYTl59xtLbNzuOC/view?usp=drivesdk",
+},
+
+{
+  name: "فقه شافعي",
+  level: "ثانوي",
+  link: "https://drive.google.com/file/d/1swkx5QuwACycN1-Azvh8li7yYFM8jquE/view?usp=drivesdk",
+},
+
+{
+  name: "بوكليت فقه شافعي الصف الثالث الثانوي",
+  level: "ثانوي",
+  link: "https://drive.google.com/file/d/1ti2q5g9jP-ukEob7MI4X8bFUw1hnH59B/view?usp=drivesdk",
+},
     ],
     exams: [
 
