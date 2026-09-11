@@ -206,131 +206,392 @@ body.dark #navbar.scrolled .nav-link{
     width:100%;
 }
 
-/* زر ابدأ التعلم */
-.btn-nav{
-    padding:9px 22px;
-    border-radius:10px;
-    background:var(--gold-dim);
-    border:1px solid rgba(201,168,76,.3);
-    color:var(--gold-light);
-    font-weight:700;
-    font-size:.9rem;
-    cursor:pointer;
-    transition:all .25s;
-    font-family:"Tajawal",sans-serif;
+/* ================================
+   NAVBAR BUTTONS
+================================ */
+
+/* الحالة الافتراضية: أعلى الصفحة */
+#navbar .nav-links a,
+#navbar .nav-inner > a:not(.logo),
+#navbar .nav-inner button:not(.theme-toggle) {
+  color: #ffffff;
+  transition: color 0.3s ease, background 0.3s ease;
 }
 
-.btn-nav:hover{
-    background:var(--gold);
-    color:#0a0a0f;
-    box-shadow:0 0 24px rgba(201,168,76,.35);
+/* Hover دائمًا = ذهبي */
+#navbar .nav-links a:hover,
+#navbar .nav-inner > a:not(.logo):hover,
+#navbar .nav-inner button:not(.theme-toggle):hover {
+  color: #dcb84f;
 }
 
-/* ══ MOBILE MENU ══ */
-.hamburger {
-  display: none;
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  background: var(--surface2);
-  border: 1px solid var(--border);
+/* ================================
+   بعد الـ SCROLL
+================================ */
+
+#navbar.scrolled .nav-links a,
+#navbar.scrolled .nav-inner > a:not(.logo),
+#navbar.scrolled .nav-inner button:not(.theme-toggle) {
+  color: #111111;
+}
+
+/* Hover بعد الـ Scroll = ذهبي */
+#navbar.scrolled .nav-links a:hover,
+#navbar.scrolled .nav-inner > a:not(.logo):hover,
+#navbar.scrolled .nav-inner button:not(.theme-toggle):hover {
+  color: #dcb84f;
+}
+/* =========================
+   تسجيل الدخول
+========================= */
+
+.login-nav-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    padding: 9px 17px;
+    min-width: 120px;
+
+    color: var(--gold-light);
+    background: rgba(255, 255, 255, 0.06);
+
+    border: 1px solid rgba(201, 168, 76, 0.45);
+    border-radius: 10px;
+
+    text-decoration: none;
+
+    backdrop-filter: blur(8px);
+}
+
+.login-nav-btn i {
+    font-size: 14px;
+}
+
+.login-nav-btn:hover {
+    background: rgba(201, 168, 76, 0.15);
+    border-color: var(--gold);
+    color: #fff;
+
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(201, 168, 76, 0.18);
+}
+
+
+/* =========================
+   ابدأ التعلم
+========================= */
+
+.nav-inner > .btn-nav:not(.login-nav-btn):not(#theme-toggle) {
+    padding: 10px 20px;
+
+    color: #0a0a0f;
+
+    background: linear-gradient(
+        135deg,
+        #e8c96a,
+        #c9a84c
+    );
+
+    border: 1px solid rgba(255, 220, 120, 0.5);
+    border-radius: 10px;
+
+    box-shadow: 0 5px 16px rgba(201, 168, 76, 0.18);
+}
+
+.nav-inner > .btn-nav:not(.login-nav-btn):not(#theme-toggle):hover {
+    background: linear-gradient(
+        135deg,
+        #f2d77d,
+        #d4b45b
+    );
+
+    transform: translateY(-2px);
+
+    box-shadow: 0 8px 22px rgba(201, 168, 76, 0.3);
+}
+
+
+/* زر الوضع الليلي */
+.theme-toggle {
+  width: 30px;
+  height: 50px;
+  min-width: 52px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 50%;
+  background: rgba(20, 20, 20, 0.55);
+  color: #f5d36a;
+  display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: var(--text);
-  transition: all 0.2s;
+  font-size: 25px;
+  line-height: 1;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+  z-index: 10;
 }
-.hamburger:hover {
-  border-color: var(--border2);
+
+/* عند المرور */
+.theme-toggle:hover {
+  background: #dcb84f;
+  color: #1d1d1d;
+  transform: scale(1.08);
+  box-shadow: 0 6px 20px rgba(220, 184, 79, 0.35);
 }
+
+/* عند الضغط */
+.theme-toggle:active {
+  transform: scale(0.95);
+}
+
+/* شكل الأيقونة */
+.theme-toggle i,
+.theme-toggle svg {
+  font-size: 24px;
+  width: 24px;
+  height: 24px;
+}
+
+/* الوضع الليلي */
+body.dark-mode .theme-toggle {
+  background: rgba(255, 255, 255, 0.12);
+  color: #f5d36a;
+  border-color: rgba(245, 211, 106, 0.45);
+}
+
+body.dark-mode .theme-toggle:hover {
+  background: #f5d36a;
+  color: #222;
+}
+
+/* ═════════════════════════════════════
+   MOBILE MENU — زاد المعرفة
+═════════════════════════════════════ */
 
 #mobile-overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  z-index: 200;
-  background: rgba(10, 10, 15, 0.97);
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 36px;
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    padding: 80px 24px 30px;
+
+    background: rgba(8, 10, 14, 0.97);
+    backdrop-filter: blur(18px);
+
+    overflow-y: auto;
+
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-15px);
+
+    transition:
+        opacity .3s ease,
+        visibility .3s ease,
+        transform .3s ease;
 }
-#mobile-overlay.open {
-  display: flex;
+
+
+/* القائمة مفتوحة */
+#mobile-overlay.open,
+#mobile-overlay.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
 }
-.mob-link {
-  font-family: "Cairo", sans-serif;
-  font-size: 2rem;
-  font-weight: 800;
-  color: var(--muted);
-  text-decoration: none;
-  transition: color 0.2s;
-}
-.mob-link:hover {
-  color: var(--gold);
-}
+
+
+/* ═══════════ زر الإغلاق ═══════════ */
+
 .mob-close {
-  position: absolute;
-  top: 24px;
-  left: 24px;
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: var(--muted);
+    position: absolute;
+    top: 20px;
+    right: 20px;
+
+    width: 42px;
+    height: 42px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid rgba(201, 168, 76, .35);
+    border-radius: 12px;
+
+    background: rgba(255, 255, 255, .05);
+    color: var(--gold-light);
+
+    cursor: pointer;
+
+    transition: all .25s ease;
+}
+
+.mob-close:hover {
+    background: rgba(201, 168, 76, .15);
+    border-color: var(--gold);
+    color: #fff;
+    transform: rotate(90deg);
 }
 
 
-.btn-primary {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 14px 32px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, var(--gold) 0%, #a07828 100%);
-  color: #e3e1e1;
-  font-weight: 800;
-  font-size: 1rem;
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s;
-  font-family: "Tajawal", sans-serif;
-  box-shadow: 0 8px 32px rgba(201, 168, 76, 0.3);
-}
-.btn-primary:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 16px 48px rgba(201, 168, 76, 0.45);
-}
-.btn-primary:active {
-  transform: translateY(0);
+/* ═══════════ روابط القائمة ═══════════ */
+
+.mob-btn {
+    width: min(100%, 420px);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 48px;
+    margin-bottom: 9px;
+
+    padding: 11px 18px;
+
+    color: #fff;
+    background: rgba(255, 255, 255, .045);
+
+    border: 1px solid rgba(255, 255, 255, .08);
+    border-radius: 12px;
+
+    text-decoration: none;
+
+    font-family: "Tajawal", sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+
+    transition: all .25s ease;
 }
 
-.btn-outline {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 14px 32px;
-  border-radius: 12px;
-  background: transparent;
-  color: var(--text);
-  font-weight: 700;
-  font-size: 1rem;
-  border: 1px solid var(--border2);
-  cursor: pointer;
-  transition: all 0.3s;
-  font-family: "Tajawal", sans-serif;
-}
-.btn-outline:hover {
-  background: var(--surface2);
-  border-color: rgba(255, 255, 255, 0.2);
-  transform: translateY(-2px);
+.mob-btn:hover,
+.mob-btn:active {
+    color: var(--gold-light);
+
+    background: rgba(201, 168, 76, .10);
+    border-color: rgba(201, 168, 76, .45);
+
+    transform: translateX(-3px);
 }
 
+
+/* ═══════════ تسجيل الدخول ═══════════ */
+
+.login-mobile-btn {
+    width: min(100%, 420px);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+
+    min-height: 50px;
+
+    margin-top: 14px;
+    margin-bottom: 10px;
+
+    padding: 12px 20px;
+
+    color: var(--gold-light);
+
+    background: rgba(201, 168, 76, .08);
+
+    border: 1px solid rgba(201, 168, 76, .5);
+    border-radius: 12px;
+
+    text-decoration: none;
+
+    font-family: "Tajawal", sans-serif;
+    font-weight: 800;
+
+    transition: all .25s ease;
+}
+
+.login-mobile-btn:hover,
+.login-mobile-btn:active {
+    color: #fff;
+
+    background: rgba(201, 168, 76, .18);
+    border-color: var(--gold);
+
+    transform: translateY(-2px);
+
+    box-shadow: 0 8px 25px rgba(201, 168, 76, .15);
+}
+
+
+/* ═══════════ ابدأ التعلم ═══════════ */
+
+#mobile-overlay > .btn-primary:not(.login-mobile-btn) {
+    width: min(100%, 420px);
+
+    min-height: 50px;
+
+    padding: 12px 20px;
+
+    border: 1px solid rgba(255, 220, 120, .5);
+    border-radius: 12px;
+
+    background: linear-gradient(
+        135deg,
+        #e8c96a,
+        #c9a84c
+    );
+
+    color: #0a0a0f;
+
+    font-family: "Tajawal", sans-serif;
+    font-size: 15px;
+    font-weight: 900;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 7px 20px rgba(201, 168, 76, .20);
+
+    transition: all .25s ease;
+}
+
+#mobile-overlay > .btn-primary:not(.login-mobile-btn):hover,
+#mobile-overlay > .btn-primary:not(.login-mobile-btn):active {
+    background: linear-gradient(
+        135deg,
+        #f2d77d,
+        #d4b45b
+    );
+
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 10px 28px rgba(201, 168, 76, .30);
+}
+
+
+/* ═══════════ شاشات صغيرة جدًا ═══════════ */
+
+@media (max-width: 400px) {
+
+    #mobile-overlay {
+        padding: 75px 16px 25px;
+    }
+
+    .mob-btn {
+        min-height: 45px;
+        font-size: 14px;
+        margin-bottom: 7px;
+    }
+
+    .login-mobile-btn,
+    #mobile-overlay > .btn-primary:not(.login-mobile-btn) {
+        min-height: 48px;
+    }
+}
 
 
 /* ══ SECTION HEADER ══ */
@@ -1763,4 +2024,253 @@ body.dark .mission-text{
 
 body.dark .mission-item{
     color:#fff;
+}
+/* =========================
+   Hero Buttons — زاد المعرفة
+========================= */
+
+.hero-actions .btn,
+.hero-actions a,
+.hero-actions button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    min-height: 50px;
+    padding: 12px 24px;
+
+    border-radius: 12px;
+
+    font-family: "Tajawal", sans-serif;
+    font-size: 0.95rem;
+    font-weight: 800;
+
+    text-decoration: none;
+    cursor: pointer;
+
+    transition: all 0.3s ease;
+}
+
+/* زر ابدأ الآن */
+.hero-actions .btn-primary,
+.hero-actions .btn-primary:visited {
+    background: linear-gradient(
+        135deg,
+        #e8c96d,
+        #c9a84c
+    ) !important;
+
+    color: #111827 !important;
+
+    border: 1px solid #f5d76e !important;
+
+    box-shadow:
+        0 6px 20px rgba(201, 168, 76, 0.28);
+}
+
+.hero-actions .btn-primary:hover {
+    background: linear-gradient(
+        135deg,
+        #f5d76e,
+        #d4af37
+    ) !important;
+
+    color: #000 !important;
+
+    transform: translateY(-3px);
+
+    box-shadow:
+        0 10px 28px rgba(201, 168, 76, 0.4);
+}
+
+
+/* زر استكشف الأقسام */
+.hero-actions .btn-secondary,
+.hero-actions .btn-outline,
+.hero-actions a:not(.btn-primary) {
+    background: rgba(255, 255, 255, 0.08) !important;
+
+    color: #ffffff !important;
+
+    border: 1px solid rgba(255, 255, 255, 0.35) !important;
+
+    backdrop-filter: blur(10px);
+
+    box-shadow:
+        0 6px 18px rgba(0, 0, 0, 0.18);
+}
+
+.hero-actions .btn-secondary:hover,
+.hero-actions .btn-outline:hover,
+.hero-actions a:not(.btn-primary):hover {
+    background: rgba(201, 168, 76, 0.18) !important;
+
+    color: #f5d76e !important;
+
+    border-color: #d4af37 !important;
+
+    transform: translateY(-3px);
+
+    box-shadow:
+        0 10px 25px rgba(201, 168, 76, 0.22);
+}
+
+
+/* الموبايل */
+@media (max-width: 768px) {
+
+    .hero-actions {
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .hero-actions .btn,
+    .hero-actions a,
+    .hero-actions button {
+        width: min(100%, 280px);
+    }
+}
+
+/* =========================
+   زر القائمة - الكمبيوتر
+========================= */
+
+.hamburger {
+    width: 44px;
+    height: 44px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: rgba(10, 10, 15, 0.65) !important;
+
+    color: #f5d76e !important;
+
+    border: 1px solid rgba(245, 215, 110, 0.65) !important;
+    border-radius: 10px;
+
+    font-size: 22px;
+    font-weight: 900;
+
+    cursor: pointer;
+
+    backdrop-filter: blur(8px);
+
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+
+    transition: all 0.3s ease;
+}
+
+.hamburger i {
+    color: #f5d76e !important;
+}
+
+.hamburger:hover {
+    background: rgba(201, 168, 76, 0.25) !important;
+    color: #ffffff !important;
+
+    border-color: #f5d76e !important;
+
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 6px 20px rgba(201, 168, 76, 0.35);
+}
+
+.hamburger:hover i {
+    color: #ffffff !important;
+}
+
+/* زر القائمة مخفي على الكمبيوتر */
+.hamburger {
+    display: none;
+
+    width: 44px;
+    height: 44px;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0;
+
+    background: rgba(15, 23, 42, 0.72);
+    color: #f5d76e;
+
+    border: 1px solid rgba(245, 215, 110, 0.65);
+    border-radius: 10px;
+
+    cursor: pointer;
+
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.hamburger svg {
+    width: 22px;
+    height: 22px;
+    stroke: #f5d76e;
+    stroke-width: 2.5;
+}
+
+@media (max-width: 768px) {
+    .hamburger {
+        display: flex;
+    }
+}
+
+/* ═══════════════════════════════════════
+   Custom Scrollbar — زاد المعرفة
+═══════════════════════════════════════ */
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* حجم شريط التمرير */
+::-webkit-scrollbar {
+  width: 14px;
+}
+
+/* خلفية الشريط */
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.08);
+  border-radius: 20px;
+}
+
+/* الجزء الذي يتم سحبه */
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(
+    180deg,
+    #f0d477,
+    #c9a84c,
+    #a07828
+  );
+  border-radius: 20px;
+
+  /* يخليه واضح وكبير */
+  border: 3px solid transparent;
+  background-clip: padding-box;
+
+  min-height: 70px;
+}
+
+/* عند الوقوف عليه بالماوس */
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(
+    180deg,
+    #ffe58a,
+    #d4af37,
+    #b58b2a
+  );
+  background-clip: padding-box;
+}
+
+/* Firefox */
+html {
+  scrollbar-width: auto;
+  scrollbar-color: #c9a84c rgba(0, 0, 0, 0.08);
 }

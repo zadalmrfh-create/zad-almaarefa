@@ -1,0 +1,1014 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+
+  <title>لوحة الإدارة | زاد المعرفة</title>
+
+  <link rel="icon" href="../../images/logo.png.png">
+  <link rel="stylesheet" href="../dashboard.css">
+</head>
+
+<body>
+
+<div class="wrap">
+
+  <!-- ═════════════ HEADER ═════════════ -->
+
+  <header class="top">
+
+    <div class="brand">
+
+      <img src="../../images/logo.png.png" alt="زاد المعرفة">
+
+      <div>
+        <h1>زاد المعرفة</h1>
+        <small>لوحة تحكم الإدارة</small>
+      </div>
+
+    </div>
+
+    <div class="actions">
+
+      <a class="btn" href="../../index.html">
+        الرئيسية
+      </a>
+
+      <button id="logout" class="btn danger">
+        تسجيل الخروج
+      </button>
+
+    </div>
+
+  </header>
+
+
+  <main>
+
+    <div id="loading" class="notice">
+      جارٍ التحقق من صلاحية الأدمن…
+    </div>
+
+
+    <!-- ═════════════ HERO ═════════════ -->
+
+    <section class="hero">
+
+      <h2>
+        لوحة التحكم 👑
+      </h2>
+
+      <p>
+        إدارة الحسابات واعتماد المعلمين.
+      </p>
+
+    </section>
+
+
+    <!-- ═════════════ USERS ═════════════ -->
+
+    <section class="card">
+
+      <div
+        class="actions"
+        style="justify-content:space-between"
+      >
+
+        <h3>
+          👥 المستخدمون
+        </h3>
+
+        <button
+          id="refresh"
+          class="btn gold"
+        >
+          تحديث
+        </button>
+
+      </div>
+
+
+      <div class="table-wrap">
+
+        <table class="table">
+
+          <thead>
+
+            <tr>
+
+              <th>الاسم</th>
+
+              <th>البريد</th>
+
+              <th>النوع</th>
+
+              <th>الحالة</th>
+
+              <th>الإجراء</th>
+
+            </tr>
+
+          </thead>
+
+
+          <tbody id="users">
+
+            <tr>
+              <td colspan="5">
+                جارٍ التحميل…
+              </td>
+            </tr>
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    </section>
+
+  </main>
+
+</div>
+
+
+<!-- ═════════════ USER MODAL ═════════════ -->
+
+<div id="userModal" class="modal">
+
+  <div class="modal-box">
+
+    <div class="modal-header">
+
+      <h3>
+        بيانات المستخدم
+      </h3>
+
+      <button
+        id="closeModal"
+        class="modal-close"
+      >
+        ×
+      </button>
+
+    </div>
+
+
+    <div id="userInfo" class="user-info"></div>
+
+  </div>
+
+</div>
+
+
+<script type="module">
+
+import { guard } from '../dashboard.js';
+
+import {
+  auth,
+  db
+} from '../../firebase-config.js';
+
+import {
+  signOut
+} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
+
+import {
+  collection,
+  getDocs,
+  doc,
+  updateDoc,
+  deleteDoc
+} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
+
+
+const tbody =
+  document.getElementById('users');
+
+const modal =
+  document.getElementById('userModal');
+
+const userInfo =
+  document.getElementById('userInfo');
+
+const closeModal =
+  document.getElementById('closeModal');
+
+
+/* ═══════════════════════════════════════
+   حماية النصوص
+═══════════════════════════════════════ */
+
+function escapeHtml(value) {
+
+  return String(value ?? '').replace(
+    /[&<>'"]/g,
+
+    char => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      "'": '&#39;',
+      '"': '&quot;'
+    }[char])
+  );
+
+}
+
+
+/* ═══════════════════════════════════════
+   تحويل حالة الحساب إلى نص
+═══════════════════════════════════════ */
+
+function getStatusText(status) {
+
+  if (status === 'pending') {
+    return '⏳ في انتظار الاعتماد';
+  }
+
+  if (status === 'disabled') {
+    return '🚫 معطل';
+  }
+
+  if (status === 'banned') {
+    return '⛔ محظور';
+  }
+
+  return '🟢 نشط';
+
+}
+
+
+/* ═══════════════════════════════════════
+   عرض بيانات المستخدم
+═══════════════════════════════════════ */
+
+function showUser(user) {
+
+  userInfo.innerHTML = `
+
+    <div class="info-row">
+      <strong>الاسم</strong>
+      <span>
+        ${escapeHtml(
+          user.fullName ||
+          user.name ||
+          user.displayName ||
+          'بدون اسم'
+        )}
+      </span>
+    </div>
+
+    <div class="info-row">
+      <strong>البريد الإلكتروني</strong>
+      <span>
+        ${escapeHtml(
+          user.email ||
+          'بدون بريد'
+        )}
+      </span>
+    </div>
+
+    <div class="info-row">
+      <strong>النوع</strong>
+      <span>
+        ${
+          user.role === 'teacher'
+            ? '👨‍🏫 معلم'
+            : '🎓 طالب'
+        }
+      </span>
+    </div>
+
+    <div class="info-row">
+      <strong>الحالة</strong>
+      <span>
+        ${getStatusText(user.status)}
+      </span>
+    </div>
+
+  `;
+
+  modal.classList.add('show');
+
+}
+
+
+/* ═══════════════════════════════════════
+   إغلاق النافذة
+═══════════════════════════════════════ */
+
+closeModal.onclick = () => {
+
+  modal.classList.remove('show');
+
+};
+
+
+modal.addEventListener('click', event => {
+
+  if (event.target === modal) {
+
+    modal.classList.remove('show');
+
+  }
+
+});
+
+
+/* ═══════════════════════════════════════
+   تحميل المستخدمين
+═══════════════════════════════════════ */
+
+async function load() {
+
+  tbody.innerHTML = `
+    <tr>
+      <td colspan="5">
+        جارٍ تحميل المستخدمين…
+      </td>
+    </tr>
+  `;
+
+
+  try {
+
+    const snap =
+      await getDocs(
+        collection(db, 'users')
+      );
+
+
+    if (snap.empty) {
+
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="5">
+            لا يوجد مستخدمون بعد.
+          </td>
+        </tr>
+      `;
+
+      return;
+
+    }
+
+
+    tbody.innerHTML = '';
+
+
+    snap.forEach(userDoc => {
+
+      const user =
+        userDoc.data();
+
+
+      const name =
+        user.fullName ||
+        user.name ||
+        user.displayName ||
+        'بدون اسم';
+
+
+      const email =
+        user.email ||
+        'بدون بريد';
+
+
+      const isTeacher =
+        user.role === 'teacher';
+
+
+      const status =
+        user.status || 'active';
+
+
+      const isPending =
+        status === 'pending';
+
+
+      const isDisabled =
+        status === 'disabled';
+
+
+      const isBanned =
+        status === 'banned';
+
+
+      const roleText =
+        isTeacher
+          ? 'معلم'
+          : 'طالب';
+
+
+      /* ═══════════════════════════════════════
+         حالة الحساب
+      ═══════════════════════════════════════ */
+
+      let statusText =
+        '🟢 نشط';
+
+      let statusClass =
+        'status status-active';
+
+
+      if (isPending) {
+
+        statusText =
+          '⏳ في انتظار الاعتماد';
+
+        statusClass =
+          'status status-pending';
+
+      }
+
+      else if (isDisabled) {
+
+        statusText =
+          '🚫 معطل';
+
+        statusClass =
+          'status status-disabled';
+
+      }
+
+      else if (isBanned) {
+
+        statusText =
+          '⛔ محظور';
+
+        /*
+         * لو dashboard.css القديم لا يحتوي
+         * status-banned سنضيفه تلقائيًا
+         * بشكل بسيط من خلال style.
+         */
+
+        statusClass =
+          'status status-banned';
+
+      }
+
+
+      /* ═══════════════════════════════════════
+         أزرار الإجراءات
+      ═══════════════════════════════════════ */
+
+      let buttons = `
+
+        <button
+          class="action-btn action-view"
+          title="عرض البيانات"
+          data-action="view"
+        >
+          👁️
+        </button>
+
+      `;
+
+
+      /* ═══════════════════════════════════════
+         اعتماد المعلم
+      ═══════════════════════════════════════ */
+
+      if (isTeacher && isPending) {
+
+        buttons += `
+
+          <button
+            class="action-btn action-approve"
+            title="اعتماد المعلم"
+            data-action="approve"
+          >
+            👨‍🏫 اعتماد
+          </button>
+
+        `;
+
+      }
+
+
+      /* ═══════════════════════════════════════
+         الحظر / إلغاء الحظر
+      ═══════════════════════════════════════ */
+
+      if (isBanned) {
+
+        buttons += `
+
+          <button
+            class="action-btn action-toggle"
+            title="إلغاء الحظر"
+            data-action="ban"
+          >
+            🟢 إلغاء الحظر
+          </button>
+
+        `;
+
+      }
+
+      else {
+
+        buttons += `
+
+          <button
+            class="action-btn action-ban"
+            title="حظر الحساب"
+            data-action="ban"
+          >
+            ⛔ حظر
+          </button>
+
+        `;
+
+      }
+
+
+      /* ═══════════════════════════════════════
+         تعطيل / تفعيل
+      ═══════════════════════════════════════ */
+
+      if (!isBanned) {
+
+        if (isDisabled) {
+
+          buttons += `
+
+            <button
+              class="action-btn action-toggle"
+              title="تفعيل الحساب"
+              data-action="toggle"
+            >
+              🟢 تفعيل
+            </button>
+
+          `;
+
+        }
+
+        else {
+
+          buttons += `
+
+            <button
+              class="action-btn action-toggle"
+              title="تعطيل الحساب"
+              data-action="toggle"
+            >
+              🚫 تعطيل
+            </button>
+
+          `;
+
+        }
+
+      }
+
+
+      /* ═══════════════════════════════════════
+         حذف سجل المستخدم
+      ═══════════════════════════════════════ */
+
+      buttons += `
+
+        <button
+          class="action-btn action-delete"
+          title="حذف المستخدم"
+          data-action="delete"
+        >
+          🗑️
+        </button>
+
+      `;
+
+
+      /* ═══════════════════════════════════════
+         إنشاء الصف
+      ═══════════════════════════════════════ */
+
+      const tr =
+        document.createElement('tr');
+
+
+      tr.innerHTML = `
+
+        <td>
+          ${escapeHtml(name)}
+        </td>
+
+        <td>
+          ${escapeHtml(email)}
+        </td>
+
+        <td>
+          ${roleText}
+        </td>
+
+        <td>
+
+          <span class="${statusClass}">
+            ${statusText}
+          </span>
+
+        </td>
+
+        <td>
+
+          <div class="user-actions">
+
+            ${buttons}
+
+          </div>
+
+        </td>
+
+      `;
+
+
+      /* ═══════════════════════════════════════
+         عرض البيانات
+      ═══════════════════════════════════════ */
+
+      tr
+        .querySelector('[data-action="view"]')
+        ?.addEventListener(
+          'click',
+          () => {
+
+            showUser(user);
+
+          }
+        );
+
+
+      /* ═══════════════════════════════════════
+         اعتماد المعلم
+      ═══════════════════════════════════════ */
+
+      tr
+        .querySelector('[data-action="approve"]')
+        ?.addEventListener(
+          'click',
+          async buttonEvent => {
+
+            const button =
+              buttonEvent.currentTarget;
+
+
+            try {
+
+              button.disabled = true;
+
+              button.textContent =
+                'جارٍ الاعتماد…';
+
+
+              await updateDoc(
+                doc(
+                  db,
+                  'users',
+                  userDoc.id
+                ),
+                {
+                  status: 'active'
+                }
+              );
+
+
+              await load();
+
+
+            } catch (error) {
+
+              console.error(
+                'خطأ في اعتماد المعلم:',
+                error
+              );
+
+
+              alert(
+                'حدث خطأ أثناء اعتماد المعلم.'
+              );
+
+
+              button.disabled = false;
+
+              button.textContent =
+                '👨‍🏫 اعتماد';
+
+            }
+
+          }
+        );
+
+
+      /* ═══════════════════════════════════════
+         حظر / إلغاء حظر
+      ═══════════════════════════════════════ */
+
+      tr
+        .querySelector('[data-action="ban"]')
+        ?.addEventListener(
+          'click',
+          async buttonEvent => {
+
+            const button =
+              buttonEvent.currentTarget;
+
+
+            const banning =
+              !isBanned;
+
+
+            const actionText =
+              banning
+                ? 'حظر'
+                : 'إلغاء الحظر';
+
+
+            const confirmed =
+              confirm(
+                banning
+
+                  ? `هل أنت متأكد من حظر حساب ${name}؟\n\nبعد الحظر لن يستطيع تسجيل الدخول بهذا الحساب، ولن يستطيع استخدام نفس البريد لإنشاء حساب جديد.`
+
+                  : `هل تريد إلغاء حظر حساب ${name}؟\n\nسيتمكن من تسجيل الدخول مرة أخرى.`
+              );
+
+
+            if (!confirmed) return;
+
+
+            try {
+
+              button.disabled = true;
+
+              button.textContent =
+                banning
+                  ? 'جارٍ الحظر…'
+                  : 'جارٍ إلغاء الحظر…';
+
+
+              await updateDoc(
+                doc(
+                  db,
+                  'users',
+                  userDoc.id
+                ),
+                {
+                  status:
+                    banning
+                      ? 'banned'
+                      : 'active'
+                }
+              );
+
+
+              await load();
+
+
+            } catch (error) {
+
+              console.error(
+                'خطأ في الحظر:',
+                error
+              );
+
+
+              alert(
+                `حدث خطأ أثناء ${actionText} الحساب.`
+              );
+
+
+              button.disabled = false;
+
+              button.textContent =
+                banning
+                  ? '⛔ حظر'
+                  : '🟢 إلغاء الحظر';
+
+            }
+
+          }
+        );
+
+
+      /* ═══════════════════════════════════════
+         تعطيل / تفعيل
+      ═══════════════════════════════════════ */
+
+      tr
+        .querySelector('[data-action="toggle"]')
+        ?.addEventListener(
+          'click',
+          async () => {
+
+            const newStatus =
+              isDisabled
+                ? 'active'
+                : 'disabled';
+
+
+            const actionText =
+              isDisabled
+                ? 'تفعيل'
+                : 'تعطيل';
+
+
+            const confirmed =
+              confirm(
+                `هل أنت متأكد من ${actionText} هذا الحساب؟`
+              );
+
+
+            if (!confirmed) return;
+
+
+            try {
+
+              await updateDoc(
+                doc(
+                  db,
+                  'users',
+                  userDoc.id
+                ),
+                {
+                  status: newStatus
+                }
+              );
+
+
+              await load();
+
+
+            } catch (error) {
+
+              console.error(
+                'خطأ في تغيير حالة المستخدم:',
+                error
+              );
+
+
+              alert(
+                'حدث خطأ أثناء تغيير حالة الحساب.'
+              );
+
+            }
+
+          }
+        );
+
+
+      /* ═══════════════════════════════════════
+         حذف المستخدم
+      ═══════════════════════════════════════ */
+
+      tr
+        .querySelector('[data-action="delete"]')
+        ?.addEventListener(
+          'click',
+          async () => {
+
+            const confirmed =
+              confirm(
+                `هل أنت متأكد من حذف حساب ${name} من قائمة المستخدمين؟\n\nهذا سيحذف بياناته من Firestore فقط، وليس حساب Firebase Authentication.`
+              );
+
+
+            if (!confirmed) return;
+
+
+            try {
+
+              await deleteDoc(
+                doc(
+                  db,
+                  'users',
+                  userDoc.id
+                )
+              );
+
+
+              await load();
+
+
+            } catch (error) {
+
+              console.error(
+                'خطأ في حذف المستخدم:',
+                error
+              );
+
+
+              alert(
+                'حدث خطأ أثناء حذف المستخدم.'
+              );
+
+            }
+
+          }
+        );
+
+
+      tbody.appendChild(tr);
+
+    });
+
+
+  } catch (error) {
+
+    console.error(
+      'خطأ في تحميل المستخدمين:',
+      error
+    );
+
+
+    tbody.innerHTML = `
+
+      <tr>
+
+        <td colspan="5">
+
+          ❌ حدث خطأ أثناء تحميل المستخدمين.
+
+          <br>
+
+          افتح Console لمعرفة الخطأ.
+
+        </td>
+
+      </tr>
+
+    `;
+
+  }
+
+}
+
+
+/* ═══════════════════════════════════════
+   تشغيل الحماية
+═══════════════════════════════════════ */
+
+guard(
+  'admin',
+  load
+);
+
+
+/* ═══════════════════════════════════════
+   تحديث
+═══════════════════════════════════════ */
+
+document
+  .getElementById('refresh')
+  .onclick = load;
+
+
+/* ═══════════════════════════════════════
+   تسجيل الخروج
+═══════════════════════════════════════ */
+
+document
+  .getElementById('logout')
+  .onclick = async () => {
+
+    await signOut(auth);
+
+    location.href =
+      '../../index.html';
+
+  };
+
+</script>
+
+
+<!-- ═══════════════════════════════════════
+     تنسيق حالة الحظر
+═══════════════════════════════════════ -->
+
+<style>
+
+.status-banned {
+  background: #4a1f25;
+  color: #fca5a5;
+}
+
+.action-ban {
+  border-color: #ef4444;
+  color: #fca5a5;
+}
+
+.action-ban:hover {
+  background: #7f1d1d;
+  border-color: #ef4444;
+  color: #fff;
+}
+
+</style>
+
+</body>
+</html>

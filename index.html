@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>زاد المعرفة — منصة تعليمية إسلامية</title>
-    <link rel="icon" type="image/png" href="images/logo.png" />
+    <link rel="icon" type="image/png" href="images/logo.png.png" />
     <link rel="stylesheet" href="style.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -35,138 +35,219 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
   </head>
   <body>
 
-    <!-- ═══════════ NAVBAR ═══════════ -->
-    <nav id="navbar">
-      <div class="nav-inner">
-        <a href="#" class="logo">
-          <div
-            class="w-12 h-12 rounded-full overflow-hidden border-2 border-yellow-500 shadow-lg shadow-yellow-500/25"
-          >
-            <img
-              src="images/logo.png"
-              alt="زاد المعرفة"
-              class="w-full h-full object-cover"
-            />
-          </div>
-          <span class="logo-text">زاد <span>المعرفة</span></span>
-        </a>
+<!-- ═══════════ NAVBAR ═══════════ -->
+<nav id="navbar">
+  <div class="nav-inner">
 
-        <div class="nav-links">
-          <a href="#hero" class="nav-link">الرئيسية</a>
-          <a href="#categories" class="nav-link">الأقسام</a>
-          <a href="طاقم التدريس/index.html" class="nav-link" target="_self"
-            >طاقم التدريس</a
-          >
-          <a
-            href="أحداث زاد المعرفة/events.html"
-            class="nav-link"
-            target="_self"
-            >أحداث المنصة</a
-          >
-          <a
-            href="sections/services/services.html"
-            class="nav-link"
-            target="_self"
-            >الخدمات</a
-          >
-          <a href="sections/library.html" class="nav-link" target="_self"
-            >المكتبة</a
-          >
-          <a
-            href="طلاب المنصة المتميزون/students.html"
-            class="nav-link"
-            target="_self"
-            >الطلاب المتميزون</a
-          >
-        </div>
-
-        <button class="btn-nav" onclick="smoothTo('categories')">
-          ابدأ التعلم
-        </button>
-
-        <button id="theme-toggle" class="btn-nav">
-    <i class="fa-solid fa-moon"></i>
-</button>
-        <button class="hamburger" id="hamBtn" onclick="openMob()">
-          <svg
-            width="20"
-            height="20"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M4 6h16M4 12h16M4 18h16"
-            />
-          </svg>
-        </button>
+    <a href="#" class="logo">
+      <div
+        class="w-12 h-12 rounded-full overflow-hidden border-2 border-yellow-500 shadow-lg shadow-yellow-500/25"
+      >
+        <img
+          src="images/logo.png.png"
+          alt="زاد المعرفة"
+          class="w-full h-full object-cover"
+        />
       </div>
-    </nav>
 
-    <!-- ═══════════ MOBILE OVERLAY ═══════════ -->
-    <div id="mobile-overlay">
-      <button class="mob-close" onclick="closeMob()">
-        <svg
-          width="18"
-          height="18"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M6 18L18 6M6 6l12 12"
-          />
-        </svg>
-      </button>
+      <span class="logo-text">
+        زاد <span>المعرفة</span>
+      </span>
+    </a>
 
-      <a href="#hero" class="mob-btn" onclick="closeMob()">الرئيسية</a>
-      <a href="#categories" class="mob-btn" onclick="closeMob()">الأقسام</a>
-      <a
-        href="طاقم التدريس/index.html"
-        target="_self"
-        class="mob-btn"
-        onclick="closeMob()"
-        >طاقم التدريس</a
-      >
-      <a
-        href="أحداث زاد المعرفة/events.html"
-        target="_self"
-        class="mob-btn"
-        onclick="closeMob()"
-        >أحداث المنصة</a
-      >
-      <a
-        href="sections/services/services.html"
-        target="_self"
-        class="mob-btn"
-        onclick="closeMob()"
-        >الخدمات</a
-      >
-      <a
-        href="sections/library.html"
-        target="_self"
-        class="mob-btn"
-        onclick="closeMob()"
-        >المكتبة</a
-      >
-      <a
-        href="طلاب المنصة المتميزون/students.html"
-        target="_self"
-        class="mob-btn"
-        onclick="closeMob()"
-        >الطلاب المتميزون</a
-      >
 
-      <button class="btn-primary" onclick="smoothTo('categories')">
-        ابدأ التعلم الآن
-      </button>
+    <div class="nav-links">
+
+      <a href="#hero" class="nav-link">
+        الرئيسية
+      </a>
+
+      <a href="#categories" class="nav-link">
+        الأقسام
+      </a>
+
+      <!-- طاقم التدريس -->
+      <a
+        href="./طاقم التدريس"
+        class="nav-link"
+      >
+        طاقم التدريس
+      </a>
+
+      <!-- أحداث المنصة -->
+      <a
+        href="./events/events.html"
+        class="nav-link"
+      >
+        أحداث المنصة
+      </a>
+
+      <!-- الخدمات -->
+      <a
+        href="./sections/services/services.html"
+        class="nav-link"
+      >
+        الخدمات
+      </a>
+
+      <!-- المكتبة -->
+      <a
+        href="./sections/library.html"
+        class="nav-link"
+      >
+        المكتبة
+      </a>
+
+      <!-- الطلاب المتميزون -->
+      <a
+        href="./students/students.html"
+        class="nav-link"
+      >
+        الطلاب المتميزون
+      </a>
+
     </div>
+
+
+    <!-- تسجيل الدخول -->
+    <a
+      href="./login/index.html"
+      class="btn-nav login-nav-btn"
+    >
+      <i class="fa-solid fa-right-to-bracket"></i>
+      تسجيل الدخول
+    </a>
+
+
+    <!-- ابدأ التعلم -->
+    <button
+      class="btn-nav"
+      onclick="smoothTo('categories')"
+    >
+      ابدأ التعلم
+    </button>
+
+
+    <!-- الوضع الليلي -->
+<button
+  class="theme-toggle"
+  id="themeToggle"
+  aria-label="تبديل الوضع الليلي"
+  title="الوضع الليلي"
+>
+  ☾
+</button>
+
+    <!-- قائمة الهاتف -->
+    <button
+      class="hamburger"
+      id="hamBtn"
+      onclick="openMob()"
+      type="button"
+    >
+      <svg
+        width="20"
+        height="20"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M4 6h16M4 12h16M4 18h16"
+        />
+      </svg>
+    </button>
+
+  </div>
+</nav>
+
+<!-- ═══════════ MOBILE OVERLAY ═══════════ -->
+<div id="mobile-overlay">
+
+  <button class="mob-close" onclick="closeMob()">
+    <svg
+      width="18"
+      height="18"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        d="M6 18L18 6M6 6l12 12"
+      />
+    </svg>
+  </button>
+
+  <a href="#hero" class="mob-btn" onclick="closeMob()">
+    الرئيسية
+  </a>
+
+  <a href="#categories" class="mob-btn" onclick="closeMob()">
+    الأقسام
+  </a>
+
+  <a
+    href="./طاقم التدريس/index.html"
+    class="mob-btn"
+    onclick="closeMob()"
+  >
+    طاقم التدريس
+  </a>
+
+  <a
+    href="./events/events.html"
+    class="mob-btn"
+    onclick="closeMob()"
+  >
+    أحداث المنصة
+  </a>
+
+  <a
+    href="./sections/services/services.html"
+    class="mob-btn"
+    onclick="closeMob()"
+  >
+    الخدمات
+  </a>
+
+  <a
+    href="./sections/library.html"
+    class="mob-btn"
+    onclick="closeMob()"
+  >
+    المكتبة
+  </a>
+
+  <a
+    href="./students/students.html"
+    class="mob-btn"
+    onclick="closeMob()"
+  >
+    الطلاب المتميزون
+  </a>
+
+  <a
+    href="./login/index.html"
+    class="btn-primary login-mobile-btn"
+  >
+    <i class="fa-solid fa-right-to-bracket"></i>
+    تسجيل الدخول
+  </a>
+
+  <button
+    class="btn-primary"
+    onclick="smoothTo('categories'); closeMob();"
+  >
+    ابدأ التعلم الآن
+  </button>
+
+</div>
 
     <!-- ═══════════ HERO ═══════════ -->
     <section id="hero">
@@ -454,7 +535,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
         <div class="footer-brand">
           <div class="logo">
             <div class="logo-img">
-              <img src="images/logo.png" alt="زاد المعرفة" class="logo-img" />
+              <img src="images/logo.png.png" alt="زاد المعرفة" class="logo-img" />
             </div>
             <span class="logo-text">زاد <span>المعرفة</span></span>
           </div>
@@ -494,10 +575,10 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
           <a href="#categories">الأقسام</a>
           <a href="طاقم التدريس/index.html" target="_self">طاقم التدريس</a>
           <a href="sections/services/services.html" target="_self">خدماتنا</a>
-          <a href="أحداث زاد المعرفة/events.html" target="_self"
+          <a href="events/events.html" target="_self"
             >أحداث المنصة</a
           >
-          <a href="طلاب المنصة المتميزون/students.html" target="_self"
+          <a href="students/students.html" target="_self"
             >الطلاب المتميزون</a
           >
         </div>
@@ -853,5 +934,227 @@ document.addEventListener("DOMContentLoaded", function () {
 <button id="shareBtn" class="floating-share" title="مشاركة المنصة">
     <i class="fas fa-share-alt"></i>
 </button>
+<script type="module">
+import { guard } from '../dashboard.js';
+
+import { auth, db } from '../../firebase-config.js';
+
+import {
+  signOut
+} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
+
+import {
+  collection,
+  getDocs,
+  doc,
+  updateDoc
+} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
+
+
+const tbody = document.getElementById('users');
+
+
+function escapeHtml(value) {
+  return String(value ?? '').replace(
+    /[&<>'"]/g,
+    char => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      "'": '&#39;',
+      '"': '&quot;'
+    }[char])
+  );
+}
+
+
+async function loadUsers() {
+
+  tbody.innerHTML = `
+    <tr>
+      <td colspan="5">جارٍ تحميل المستخدمين…</td>
+    </tr>
+  `;
+
+  try {
+
+    const snapshot = await getDocs(
+      collection(db, 'users')
+    );
+
+    console.log('عدد المستخدمين:', snapshot.size);
+
+    if (snapshot.empty) {
+
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="5">
+            لا يوجد مستخدمون بعد.
+          </td>
+        </tr>
+      `;
+
+      return;
+    }
+
+
+    tbody.innerHTML = '';
+
+
+    snapshot.forEach(userDoc => {
+
+      const user = userDoc.data();
+
+      console.log('بيانات المستخدم:', user);
+
+
+      const name =
+        user.fullName ||
+        user.name ||
+        user.displayName ||
+        'بدون اسم';
+
+
+      const email =
+        user.email ||
+        'بدون بريد';
+
+
+      const role =
+        user.role === 'teacher'
+          ? 'معلم'
+          : 'طالب';
+
+
+      const status =
+        user.status === 'pending'
+          ? 'في انتظار الاعتماد'
+          : 'نشط';
+
+
+      const tr = document.createElement('tr');
+
+
+      tr.innerHTML = `
+        <td>${escapeHtml(name)}</td>
+
+        <td>${escapeHtml(email)}</td>
+
+        <td>${role}</td>
+
+        <td>${status}</td>
+
+        <td>
+          ${
+            user.role === 'teacher' &&
+            user.status === 'pending'
+
+            ? `
+              <button
+                class="btn gold approve-btn"
+              >
+                اعتماد
+              </button>
+            `
+
+            : '—'
+          }
+        </td>
+      `;
+
+
+      const approveButton =
+        tr.querySelector('.approve-btn');
+
+
+      if (approveButton) {
+
+        approveButton.addEventListener(
+          'click',
+          async () => {
+
+            try {
+
+              approveButton.disabled = true;
+              approveButton.textContent = 'جارٍ الاعتماد…';
+
+
+              await updateDoc(
+                doc(db, 'users', userDoc.id),
+                {
+                  status: 'active'
+                }
+              );
+
+
+              await loadUsers();
+
+            } catch (error) {
+
+              console.error(
+                'خطأ في اعتماد المعلم:',
+                error
+              );
+
+              alert(
+                'حدث خطأ أثناء اعتماد المعلم.'
+              );
+
+              approveButton.disabled = false;
+              approveButton.textContent = 'اعتماد';
+            }
+
+          }
+        );
+      }
+
+
+      tbody.appendChild(tr);
+
+    });
+
+
+  } catch (error) {
+
+    console.error(
+      'خطأ في تحميل المستخدمين:',
+      error
+    );
+
+
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="5">
+          ❌ حدث خطأ أثناء تحميل المستخدمين.
+          <br>
+          افتح Console لمعرفة الخطأ.
+        </td>
+      </tr>
+    `;
+  }
+}
+
+
+/* حماية لوحة الأدمن */
+guard('admin', loadUsers);
+
+
+/* زر التحديث */
+document.getElementById('refresh').onclick =
+  loadUsers;
+
+
+/* تسجيل الخروج */
+document.getElementById('logout').onclick =
+  async () => {
+
+    await signOut(auth);
+
+    location.href = '../../index.html';
+
+  };
+
+</script><script type="module" src="auth-ui.js"></script>
+
 </body>
 </html>
