@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>لوحة الطالب | زاد المعرفة</title>
+    <link rel="icon" href="../../images/logo.png.png">
+    <link rel="stylesheet" href="../dashboard.css">
+</head>
+<body>
+<div class="wrap">
+    <header class="top">
+        <div class="brand">
+            <img src="../../images/logo.png.png" alt="Logo">
+            <div>
+                <h1>زاد المعرفة</h1>
+                <small>لوحة الطالب</small>
+            </div>
+        </div>
+        <div class="actions">
+            <a href="../../index.html" class="btn">الرئيسية</a>
+            <button id="logout" class="btn danger">تسجيل الخروج</button>
+        </div>
+    </header>
+
+    <main>
+        <div id="loading" class="notice">جارٍ التحقق من الحساب…</div>
+        
+        <section class="hero">
+            <h2>مرحبًا <span data-name>...</span> 👋</h2>
+            <p data-email></p>
+        </section>
+
+        <section class="grid">
+            <div class="card">
+                <h3>📚 دروسي</h3>
+                <p>تابع المواد والدروس الخاصة بك.</p>
+                <a class="btn gold" href="../../sections/library.html">فتح المكتبة</a>
+            </div>
+            <div class="card">
+                <h3>📖 القرآن الكريم</h3>
+                <p>انتقل إلى قسم القرآن وعلومه.</p>
+                <a class="btn gold" href="../../sections/Quran/quran.html">فتح القسم</a>
+            </div>
+            <div class="card">
+                <h3>🗓️ الحجوزات</h3>
+                <p>سيتم ربط حجوزات الدروس بحسابك في المرحلة التالية.</p>
+            </div>
+        </section>
+    </main>
+</div>
+
+<script type="module">
+import { auth, db } from '../../firebase-config.js';
+import { signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
+import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
+
+// التحقق من حالة الدخول
+onAuthStateChanged(auth, async (user) => {
+    const loadingElem = document.getElementById('loading');
+    const nameElem = document.querySelector('[data-name]');
+    const emailElem = document.querySelector('[data-email]');
+
+    if (!user) {
+        window.location.href = '../../login/index.html';
+        return;
+    }
+
+    try {
+        const snap = await getDoc(doc(db, 'users', user.uid));
+        if (snap.exists() && snap.data().fullName) {
+            if (nameElem) nameElem.textContent = snap.data().fullName;
+        } else {
+            if (nameElem) nameElem.textContent = user.displayName || user.email.split('@')[0];
+        }
+        if (emailElem) emailElem.textContent = user.email;
+    } catch (err) {
+        console.error("خطأ:", err);
+    } finally {
+        if (loadingElem) loadingElem.style.display = 'none';
+    }
+});
+
+// زر تسجيل الخروج
+document.getElementById('logout').addEventListener('click', async () => {
+    await signOut(auth);
+    window.location.href = '../../index.html';
+});
+</script>
+
+</body>
+</html>

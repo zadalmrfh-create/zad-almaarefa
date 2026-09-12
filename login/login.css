@@ -1,0 +1,705 @@
+:root {
+  --bg: #0f172a;
+  --card: #1f2937;
+
+  --gold: #e5bd3d;
+  --gold2: #f5d76e;
+
+  --text: #f8fafc;
+  --muted: #cbd5e1;
+
+  --border: #475569;
+  --input: #17202e;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+
+  font-family:
+    Cairo,
+    Tajawal,
+    Arial,
+    sans-serif;
+
+  background:
+    radial-gradient(
+      circle at top,
+      #1e293b 0%,
+      #0f172a 50%,
+      #080f1c 100%
+    );
+
+  color: var(--text);
+
+  min-height: 100vh;
+}
+
+
+/* الصفحة */
+
+.login-page {
+  min-height: 100vh;
+
+  display: grid;
+  place-items: center;
+
+  padding: 80px 16px 40px;
+
+  position: relative;
+}
+
+
+/* العودة */
+
+.back-home {
+  position: absolute;
+
+  top: 20px;
+  right: 25px;
+
+  color: var(--muted);
+
+  text-decoration: none;
+
+  font-size: 14px;
+
+  transition: .2s;
+}
+
+.back-home:hover {
+  color: var(--gold2);
+}
+
+
+/* الكارت */
+
+.login-card {
+  width: min(460px, 100%);
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(31, 41, 55, .98),
+      rgba(24, 34, 49, .98)
+    );
+
+  border: 1px solid rgba(229,189,61,.18);
+
+  border-radius: 24px;
+
+  padding: 32px;
+
+  box-shadow:
+    0 25px 70px rgba(0,0,0,.45);
+
+  backdrop-filter: blur(10px);
+}
+
+
+/* الشعار */
+
+.brand {
+  text-align: center;
+
+  margin-bottom: 22px;
+}
+
+.brand img {
+  width: 72px;
+  height: 72px;
+
+  border-radius: 50%;
+
+  border: 2px solid var(--gold);
+
+  object-fit: cover;
+
+  box-shadow:
+    0 0 0 5px rgba(229,189,61,.05);
+}
+
+.brand h1 {
+  margin: 10px 0 3px;
+
+  font-size: 28px;
+
+  font-weight: 800;
+}
+
+.brand p {
+  margin: 0;
+
+  color: var(--muted);
+
+  font-size: 14px;
+}
+
+
+/* الرسائل */
+
+.message {
+  text-align: center;
+
+  font-size: 13px;
+
+  line-height: 1.7;
+
+  margin: 0 0 10px;
+}
+
+.message:empty {
+  display: none;
+}
+
+.message.success {
+  color: #86efac;
+}
+
+.message.error {
+  color: #fca5a5;
+}
+
+.message.info {
+  color: #93c5fd;
+}
+
+
+/* الفورم */
+
+form {
+  display: grid;
+
+  gap: 10px;
+}
+
+.field {
+  display: grid;
+
+  gap: 7px;
+}
+
+.field label {
+  font-weight: 700;
+
+  font-size: 14px;
+}
+
+.login-card input {
+  width: 100%;
+
+  padding: 13px 14px;
+
+  border: 1px solid var(--border);
+
+  background: var(--input);
+
+  color: var(--text);
+
+  border-radius: 12px;
+
+  outline: none;
+
+  font-family: inherit;
+
+  font-size: 14px;
+
+  transition: .2s;
+}
+
+.login-card input::placeholder {
+  color: #64748b;
+}
+
+.login-card input:focus {
+  border-color: var(--gold);
+
+  box-shadow:
+    0 0 0 3px rgba(229,189,61,.08);
+}
+
+
+/* كلمة المرور */
+
+.password-wrap {
+  position: relative;
+}
+
+.password-wrap input {
+  padding-left: 55px;
+}
+
+.password-wrap button {
+  position: absolute;
+
+  left: 7px;
+  top: 7px;
+
+  width: 38px;
+  height: 38px;
+
+  border: 0;
+
+  border-radius: 9px;
+
+  background: #334155;
+
+  color: #fff;
+
+  cursor: pointer;
+}
+
+
+/* تذكرني */
+
+.form-row {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 10px;
+
+  margin: 5px 0 12px;
+
+  font-size: 13px;
+}
+
+.remember {
+  display: flex;
+
+  align-items: center;
+
+  gap: 7px;
+
+  font-weight: 500;
+}
+
+.remember input {
+  width: auto;
+
+  accent-color: var(--gold);
+}
+
+.form-row a {
+  color: var(--gold2);
+
+  text-decoration: none;
+}
+
+
+/* زر الدخول */
+
+.submit-btn {
+  width: 100%;
+
+  border: 0;
+
+  border-radius: 12px;
+
+  padding: 14px;
+
+  background:
+    linear-gradient(
+      135deg,
+      var(--gold),
+      var(--gold2)
+    );
+
+  color: #161616;
+
+  font-family: inherit;
+
+  font-size: 16px;
+
+  font-weight: 800;
+
+  cursor: pointer;
+
+  transition: .2s;
+}
+
+.submit-btn:hover {
+  transform: translateY(-1px);
+
+  box-shadow:
+    0 8px 20px rgba(229,189,61,.18);
+}
+
+
+/* الفاصل */
+
+.divider {
+  display: flex;
+
+  align-items: center;
+
+  gap: 12px;
+
+  color: #94a3b8;
+
+  font-size: 12px;
+
+  margin: 22px 0 16px;
+}
+
+.divider::before,
+.divider::after {
+  content: "";
+
+  height: 1px;
+
+  background: #334155;
+
+  flex: 1;
+}
+
+
+/* أزرار تسجيل الدخول */
+
+.social-login {
+  display: grid;
+
+  gap: 10px;
+}
+
+.provider-btn {
+  width: 100%;
+
+  min-height: 50px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 11px;
+
+  background: #fff;
+
+  color: #202124;
+
+  border: 1px solid #dadce0;
+
+  border-radius: 10px;
+
+  font-family: Arial, Cairo, sans-serif;
+
+  font-size: 14px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition: .2s;
+}
+
+.provider-btn:hover {
+  background: #f8f9fa;
+
+  border-color: #c7c9cc;
+
+  box-shadow:
+    0 2px 6px rgba(0,0,0,.12);
+
+  transform: translateY(-1px);
+}
+
+.provider-btn:active {
+  transform: translateY(0);
+}
+
+.provider-btn:disabled {
+  opacity: .6;
+
+  cursor: not-allowed;
+}
+
+
+/* Google */
+
+.provider-icon {
+  width: 22px;
+  height: 22px;
+
+  flex-shrink: 0;
+}
+
+
+/* Facebook */
+
+.facebook-icon {
+  width: 22px;
+  height: 22px;
+
+  border-radius: 50%;
+
+  background: #1877f2;
+
+  color: #fff;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  font-family: Arial;
+
+  font-size: 20px;
+
+  font-weight: bold;
+}
+
+
+/* Microsoft */
+
+.microsoft-icon {
+  width: 21px;
+  height: 21px;
+
+  display: grid;
+
+  grid-template-columns: 1fr 1fr;
+
+  gap: 2px;
+}
+
+.microsoft-icon i {
+  display: block;
+}
+
+.microsoft-icon i:nth-child(1) {
+  background: #f35325;
+}
+
+.microsoft-icon i:nth-child(2) {
+  background: #81bc06;
+}
+
+.microsoft-icon i:nth-child(3) {
+  background: #05a6f0;
+}
+
+.microsoft-icon i:nth-child(4) {
+  background: #ffba08;
+}
+
+
+/* Apple */
+
+.apple-icon {
+  font-size: 25px;
+
+  line-height: 1;
+}
+
+
+/* GitHub */
+
+.github-icon {
+  width: 22px;
+  height: 22px;
+
+  border-radius: 50%;
+
+  background: #24292f;
+
+  color: #fff;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  font-size: 8px;
+}
+
+
+/* X */
+
+.x-icon {
+  font-size: 20px;
+
+  font-weight: 700;
+}
+
+
+/* Yahoo */
+
+.yahoo-icon {
+  width: 22px;
+  height: 22px;
+
+  border-radius: 50%;
+
+  background: #6001d2;
+
+  color: #fff;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  font-size: 11px;
+
+  font-weight: 800;
+}
+
+
+/* طرق أخرى */
+
+.other-login {
+  display: grid;
+
+  grid-template-columns: 1fr 1fr;
+
+  gap: 10px;
+
+  margin-top: 10px;
+}
+
+.other-btn {
+  min-height: 45px;
+
+  border: 1px solid rgba(203,213,225,.18);
+
+  border-radius: 10px;
+
+  background: rgba(15,23,42,.45);
+
+  color: var(--muted);
+
+  font-family: inherit;
+
+  font-size: 12px;
+
+  cursor: pointer;
+
+  transition: .2s;
+}
+
+.other-btn:hover {
+  border-color: rgba(229,189,61,.45);
+
+  color: var(--gold2);
+
+  background: rgba(229,189,61,.04);
+}
+
+
+/* reCAPTCHA */
+
+#recaptcha-container {
+  margin-top: 10px;
+
+  display: flex;
+
+  justify-content: center;
+}
+
+
+/* إنشاء حساب */
+
+.register {
+  text-align: center;
+
+  color: var(--muted);
+
+  margin: 20px 0 0;
+
+  font-size: 14px;
+}
+
+.register a {
+  color: var(--gold2);
+
+  text-decoration: none;
+
+  font-weight: 700;
+}
+
+
+/* تحميل */
+
+.loading {
+  pointer-events: none;
+
+  opacity: .7;
+}
+
+.loading::after {
+  content: "";
+
+  display: inline-block;
+
+  width: 15px;
+  height: 15px;
+
+  margin-right: 8px;
+
+  vertical-align: -2px;
+
+  border: 2px solid currentColor;
+
+  border-left-color: transparent;
+
+  border-radius: 50%;
+
+  animation: spin .7s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
+/* الموبايل */
+
+@media (max-width: 480px) {
+
+  .login-page {
+    padding: 75px 13px 30px;
+  }
+
+  .login-card {
+    padding: 25px 18px;
+
+    border-radius: 20px;
+  }
+
+  .brand img {
+    width: 65px;
+    height: 65px;
+  }
+
+  .brand h1 {
+    font-size: 25px;
+  }
+
+  .other-login {
+    grid-template-columns: 1fr;
+  }
+
+  .back-home {
+    right: 16px;
+
+    font-size: 13px;
+  }
+
+  .provider-btn {
+    min-height: 48px;
+
+    font-size: 13px;
+  }
+}
