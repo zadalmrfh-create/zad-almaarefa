@@ -357,13 +357,13 @@ body.dark #navbar.scrolled .nav-link{
 }
 
 /* الوضع الليلي */
-body.dark-mode .theme-toggle {
+body.dark .theme-toggle {
   background: rgba(255, 255, 255, 0.12);
   color: #f5d36a;
   border-color: rgba(245, 211, 106, 0.45);
 }
 
-body.dark-mode .theme-toggle:hover {
+body.dark .theme-toggle:hover {
   background: #f5d36a;
   color: #222;
 }

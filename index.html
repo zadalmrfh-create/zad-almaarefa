@@ -878,25 +878,27 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
         window.location.href = link;
       }
 
-      const toggle = document.getElementById("theme-toggle");
+      const toggle = document.getElementById("themeToggle");
 
 // استرجاع الوضع المحفوظ
 if (localStorage.getItem("theme") === "dark") {
     document.body.classList.add("dark");
-    toggle.innerHTML = '<i class="fa-solid fa-sun"></i>';
+    toggle.innerHTML = '☀';
 }
 
+if (toggle) {
 toggle.onclick = () => {
     document.body.classList.toggle("dark");
 
     if (document.body.classList.contains("dark")) {
         localStorage.setItem("theme", "dark");
-        toggle.innerHTML = '<i class="fa-solid fa-sun"></i>';
+        toggle.innerHTML = '☀';
     } else {
         localStorage.setItem("theme", "light");
-        toggle.innerHTML = '<i class="fa-solid fa-moon"></i>';
+        toggle.innerHTML = '☾';
     }
 };
+}
 
 document.addEventListener("DOMContentLoaded", function () {
 

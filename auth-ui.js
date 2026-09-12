@@ -1,5 +1,5 @@
 import { auth, db, FIREBASE_READY } from './firebase-config.js';
-import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
+import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
 import {
   doc,
   getDoc
@@ -110,28 +110,37 @@ if (FIREBASE_READY && links.length) {
 
     links.forEach(link => {
 
-      if (isAdmin) {
+      // عند تسجيل الدخول يصبح زر الحساب زر تسجيل خروج
+      // ونمنع الانتقال لأي صفحة عند الضغط عليه.
+      link.href = '#';
+      link.setAttribute('title', 'تسجيل الخروج');
+      link.setAttribute('aria-label', `تسجيل الخروج من حساب ${userName}`);
 
-        // الأدمن → لوحة تحكم الأدمن
-        link.href = 'dashboard/admin/index.html';
+      link.innerHTML = `
+        <i class="fa-solid fa-user-circle"></i>
+        ${userName}
+      `;
 
-        link.innerHTML = `
-          <i class="fa-solid fa-gauge-high"></i>
-          لوحة التحكم
-        `;
+      // تجنب إضافة نفس الحدث أكثر من مرة إذا أعيد تشغيل الكود.
+      link.onclick = async (event) => {
+        event.preventDefault();
 
-      } else {
+        if (link.dataset.loggingOut === 'true') return;
+        link.dataset.loggingOut = 'true';
 
-        // المستخدم العادي → الصفحة الرئيسية
-        link.href = 'index.html';
+        const originalHtml = link.innerHTML;
+        link.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> تسجيل الخروج...';
 
-        link.innerHTML = `
-          <i class="fa-solid fa-user-circle"></i>
-          ${userName}
-        `;
-
-      }
-
+        try {
+          await signOut(auth);
+          window.location.href = 'index.html';
+        } catch (error) {
+          console.error('خطأ أثناء تسجيل الخروج:', error);
+          link.dataset.loggingOut = 'false';
+          link.innerHTML = originalHtml;
+          alert('تعذر تسجيل الخروج. حاول مرة أخرى.');
+        }
+      };
     });
 
   });

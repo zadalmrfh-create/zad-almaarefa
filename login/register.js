@@ -1,4 +1,3 @@
-```js
 import {
   auth,
   db,
@@ -278,4 +277,3 @@ googleRegister?.addEventListener(
 
   }
 );
-```
