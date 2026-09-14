@@ -2,6 +2,7 @@
 <html lang="ar" dir="rtl" class="h-full">
 
 <head>
+<style>html{visibility:hidden}</style>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
@@ -2723,6 +2724,21 @@ document.addEventListener(
   }
 );
 
+</script>
+
+
+<script type="module">
+  import { auth } from '../firebase-config.js';
+  import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
+
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      document.documentElement.style.visibility = 'visible';
+    } else {
+      sessionStorage.setItem('redirectAfterLogin', window.location.pathname);
+      window.location.replace('../login/index.html');
+    }
+  });
 </script>
 
 </body>

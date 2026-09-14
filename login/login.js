@@ -12,8 +12,6 @@ import {
   TwitterAuthProvider,
 
   signInWithPopup,
-  signInWithRedirect,
-  getRedirectResult,
   signInWithEmailAndPassword,
   sendPasswordResetEmail,
   signInAnonymously,
@@ -116,6 +114,18 @@ function clearMsg() {
    Firebase
 ========================================================= */
 
+
+function redirectAfterLogin() {
+  const target = sessionStorage.getItem('redirectAfterLogin');
+
+  if (target && target.includes('/sections/library.html')) {
+    sessionStorage.removeItem('redirectAfterLogin');
+    window.location.replace('../sections/library.html');
+  } else {
+    window.location.replace('../index.html');
+  }
+}
+
 console.log('login.js يعمل بنجاح');
 
 console.log(
@@ -130,150 +140,50 @@ console.log(
 ========================================================= */
 
 async function checkUserAndContinue(user) {
+  if (!user) throw new Error('لم يتم العثور على المستخدم.');
 
-  if (!user) {
-    throw new Error('لم يتم العثور على المستخدم.');
+  console.log('تم تسجيل الدخول:', user.email || user.uid);
+
+  // لا نمنع تسجيل الدخول بسبب قواعد Firestore أو عدم إنشاء ملف المستخدم.
+  // يتم فحص بيانات الأدمن/المستخدم إن أمكن، ثم نفتح المنصة مباشرة.
+  try {
+    const adminSnap = await getDoc(doc(db, 'admins', user.uid));
+    if (adminSnap.exists()) {
+      msg('تم تسجيل الدخول كمسؤول، جارٍ فتح لوحة التحكم...', 'success');
+      setTimeout(() => window.location.replace('../dashboard/admin/index.html'), 300);
+      return;
+    }
+
+    const userRef = doc(db, 'users', user.uid);
+    const userSnap = await getDoc(userRef);
+
+    if (!userSnap.exists()) {
+      await setDoc(userRef, {
+        uid: user.uid,
+        name: user.displayName || 'مستخدم',
+        email: user.email || '',
+        photoURL: user.photoURL || '',
+        role: 'student',
+        status: 'active',
+        provider: 'google.com',
+        createdAt: serverTimestamp(),
+        lastLoginAt: serverTimestamp()
+      });
+    } else {
+      const profile = userSnap.data();
+      if (profile.status === 'banned' || profile.status === 'disabled') {
+        await signOut(auth);
+        msg(profile.status === 'banned' ? '⛔ هذا الحساب محظور حاليًا.' : '🚫 هذا الحساب معطل حاليًا.');
+        return;
+      }
+    }
+  } catch (firestoreError) {
+    // تسجيل الدخول في Firebase Auth ناجح حتى لو كانت Firestore Rules تمنع القراءة/الكتابة.
+    console.warn('تم تسجيل الدخول، لكن تعذر فحص Firestore:', firestoreError);
   }
 
-
-  console.log(
-    'تم تسجيل الدخول:',
-    user.email || user.uid
-  );
-
-
-  /* =========================
-     فحص الأدمن
-  ========================== */
-
-  const adminRef =
-    doc(db, 'admins', user.uid);
-
-  const adminSnap =
-    await getDoc(adminRef);
-
-
-  if (adminSnap.exists()) {
-
-    msg(
-      'تم تسجيل الدخول كمسؤول، جارٍ فتح لوحة التحكم...',
-      'success'
-    );
-
-    setTimeout(() => {
-
-      window.location.replace(
-        '../dashboard/admin/index.html'
-      );
-
-    }, 500);
-
-    return;
-  }
-
-
-
-  /* =========================
-     فحص المستخدم
-  ========================== */
-
-  const userRef =
-    doc(db, 'users', user.uid);
-
-  const userSnap =
-    await getDoc(userRef);
-
-
-
-  /* =========================
-     مستخدم Google جديد
-  ========================== */
-
-  if (!userSnap.exists()) {
-
-    // إنشاء ملف المستخدم تلقائياً حتى يظل تسجيل Google مكتملًا
-    await setDoc(userRef, {
-      uid: user.uid,
-      name: user.displayName || 'مستخدم',
-      email: user.email || '',
-      photoURL: user.photoURL || '',
-      role: 'student',
-      status: 'active',
-      provider: 'google.com',
-      createdAt: serverTimestamp(),
-      lastLoginAt: serverTimestamp()
-    });
-
-    msg(
-      'تم إنشاء الحساب وتسجيل الدخول بنجاح، جارٍ فتح المنصة...',
-      'success'
-    );
-
-    setTimeout(() => {
-      window.location.replace('../index.html');
-    }, 500);
-
-    return;
-  }
-
-
-
-  const profile =
-    userSnap.data();
-
-
-
-  /* =========================
-     محظور
-  ========================== */
-
-  if (profile.status === 'banned') {
-
-    await signOut(auth);
-
-    msg(
-      '⛔ هذا الحساب محظور حاليًا ولا يمكنك تسجيل الدخول به.'
-    );
-
-    return;
-  }
-
-
-
-  /* =========================
-     معطل
-  ========================== */
-
-  if (profile.status === 'disabled') {
-
-    await signOut(auth);
-
-    msg(
-      '🚫 هذا الحساب معطل حاليًا.'
-    );
-
-    return;
-  }
-
-
-
-  /* =========================
-     دخول ناجح
-  ========================== */
-
-  msg(
-    'تم تسجيل الدخول بنجاح، جارٍ فتح المنصة...',
-    'success'
-  );
-
-  setTimeout(() => {
-
-    window.location.replace(
-      '../index.html'
-    );
-
-  }, 500);
-
+  msg('تم تسجيل الدخول بنجاح، جارٍ فتح المنصة...', 'success');
+  setTimeout(() => redirectAfterLogin(), 300);
 }
 
 
@@ -483,49 +393,9 @@ async function loginWithProvider(
 
 
 /* =========================================================
-   Google — تسجيل الدخول باستخدام Redirect
+   Google — تسجيل الدخول باستخدام Popup
 ========================================================= */
-
-let googleRedirectHandled = false;
-
-async function handleGoogleRedirectResult() {
-
-  if (googleRedirectHandled) return;
-  googleRedirectHandled = true;
-
-  try {
-
-    console.log('فحص نتيجة الرجوع من Google...');
-
-    const result = await getRedirectResult(auth);
-
-    if (!result || !result.user) {
-      console.log('لا توجد نتيجة Google Redirect حالياً.');
-      return;
-    }
-
-    console.log(
-      'تم تسجيل الدخول باستخدام Google:',
-      result.user.email || result.user.uid
-    );
-
-    await checkUserAndContinue(result.user);
-
-  } catch (error) {
-
-    console.error('Google Redirect Error:', error);
-    msg(firebaseError(error));
-
-  }
-}
-
-
-/*
- * مهم:
- * Google هنا يستخدم Redirect وليس Popup، لذلك Chrome لن يمنع نافذة.
- */
 googleLogin?.addEventListener('click', async (event) => {
-
   event.preventDefault();
   clearMsg();
 
@@ -535,43 +405,27 @@ googleLogin?.addEventListener('click', async (event) => {
   }
 
   try {
-
     googleLogin.disabled = true;
     googleLogin.dataset.originalHTML = googleLogin.innerHTML;
-    googleLogin.innerHTML = 'جارٍ الانتقال إلى Google...';
+    googleLogin.innerHTML = 'جارٍ تسجيل الدخول باستخدام Google...';
 
     await configurePersistence();
 
     const provider = new GoogleAuthProvider();
-    provider.setCustomParameters({
-      prompt: 'select_account'
-    });
+    provider.setCustomParameters({ prompt: 'select_account' });
 
-    console.log('بدء Google Redirect...');
-
-    await signInWithRedirect(auth, provider);
+    const result = await signInWithPopup(auth, provider);
+    await checkUserAndContinue(result.user);
 
   } catch (error) {
-
     console.error('Google Login Error:', error);
-
     googleLogin.disabled = false;
-
     if (googleLogin.dataset.originalHTML) {
       googleLogin.innerHTML = googleLogin.dataset.originalHTML;
     }
-
     msg(firebaseError(error));
   }
-
 });
-
-
-/*
- * يجب تشغيل getRedirectResult بعد تحميل الصفحة التي يعود إليها Google.
- */
-handleGoogleRedirectResult();
-
 
 /* =========================================================
    Facebook
