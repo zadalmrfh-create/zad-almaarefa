@@ -8,8 +8,22 @@ export function guard(requiredRole, onReady){
   onAuthStateChanged(auth, async user=>{
     if(!user){ location.href='../../login/index.html'; return; }
     let profile=null;
-    if(user.email?.toLowerCase()===ADMIN_EMAIL.toLowerCase()) profile={role:'admin',name:'مدير المنصة',email:user.email,status:'active'};
-    else { const snap=await getDoc(doc(db,'users',user.uid)); profile=snap.exists()?snap.data():null; }
+
+    // الأدمن الحقيقي يتم التحقق منه من admins/{uid}
+    const adminSnap = await getDoc(doc(db, 'admins', user.uid));
+
+    if (adminSnap.exists() || (ADMIN_EMAIL && user.email && user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase())) {
+      const adminData = adminSnap.data() || {};
+      profile = {
+        role: 'admin',
+        name: adminData.name || 'مدير المنصة',
+        email: user.email || adminData.email || '',
+        status: 'active'
+      };
+    } else {
+      const snap = await getDoc(doc(db, 'users', user.uid));
+      profile = snap.exists() ? snap.data() : null;
+    }
     if(!profile || (requiredRole && profile.role!==requiredRole)){
       location.href=requiredRole==='admin'?'../../index.html':'../../dashboard/'+(profile?.role||'student')+'/index.html'; return;
     }

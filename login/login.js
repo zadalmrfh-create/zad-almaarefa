@@ -12,6 +12,8 @@ import {
   TwitterAuthProvider,
 
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   signInWithEmailAndPassword,
   sendPasswordResetEmail,
   signInAnonymously,
@@ -28,7 +30,9 @@ import {
 
 import {
   doc,
-  getDoc
+  getDoc,
+  setDoc,
+  serverTimestamp
 } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 
 
@@ -152,14 +156,14 @@ async function checkUserAndContinue(user) {
   if (adminSnap.exists()) {
 
     msg(
-      'تم تسجيل الدخول كمسؤول، جارٍ فتح المنصة...',
+      'تم تسجيل الدخول كمسؤول، جارٍ فتح لوحة التحكم...',
       'success'
     );
 
     setTimeout(() => {
 
       window.location.replace(
-        '../index.html'
+        '../dashboard/admin/index.html'
       );
 
     }, 500);
@@ -182,24 +186,32 @@ async function checkUserAndContinue(user) {
 
 
   /* =========================
-     مستخدم جديد
+     مستخدم Google جديد
   ========================== */
 
   if (!userSnap.exists()) {
 
-    /*
-     * مهم:
-     * نحتفظ بتسجيل الدخول.
-     */
+    // إنشاء ملف المستخدم تلقائياً حتى يظل تسجيل Google مكتملًا
+    await setDoc(userRef, {
+      uid: user.uid,
+      name: user.displayName || 'مستخدم',
+      email: user.email || '',
+      photoURL: user.photoURL || '',
+      role: 'student',
+      status: 'active',
+      provider: 'google.com',
+      createdAt: serverTimestamp(),
+      lastLoginAt: serverTimestamp()
+    });
 
-    sessionStorage.setItem(
-      'googleUserPending',
-      'true'
+    msg(
+      'تم إنشاء الحساب وتسجيل الدخول بنجاح، جارٍ فتح المنصة...',
+      'success'
     );
 
-    window.location.replace(
-      'register.html'
-    );
+    setTimeout(() => {
+      window.location.replace('../index.html');
+    }, 500);
 
     return;
   }
@@ -282,6 +294,9 @@ function firebaseError(error) {
 
     'auth/popup-closed-by-user':
       'تم إغلاق نافذة تسجيل الدخول.',
+
+    'auth/redirect-cancelled-by-user':
+      'تم إلغاء تسجيل الدخول باستخدام Google.',
 
     'auth/popup-blocked':
       'المتصفح منع نافذة تسجيل الدخول. اسمح بالنوافذ المنبثقة.',
@@ -468,31 +483,94 @@ async function loginWithProvider(
 
 
 /* =========================================================
-   Google
+   Google — تسجيل الدخول باستخدام Redirect
 ========================================================= */
 
-googleLogin?.addEventListener(
-  'click',
-  async () => {
+let googleRedirectHandled = false;
 
-    const provider =
-      new GoogleAuthProvider();
+async function handleGoogleRedirectResult() {
+
+  if (googleRedirectHandled) return;
+  googleRedirectHandled = true;
+
+  try {
+
+    console.log('فحص نتيجة الرجوع من Google...');
+
+    const result = await getRedirectResult(auth);
+
+    if (!result || !result.user) {
+      console.log('لا توجد نتيجة Google Redirect حالياً.');
+      return;
+    }
+
+    console.log(
+      'تم تسجيل الدخول باستخدام Google:',
+      result.user.email || result.user.uid
+    );
+
+    await checkUserAndContinue(result.user);
+
+  } catch (error) {
+
+    console.error('Google Redirect Error:', error);
+    msg(firebaseError(error));
+
+  }
+}
 
 
+/*
+ * مهم:
+ * Google هنا يستخدم Redirect وليس Popup، لذلك Chrome لن يمنع نافذة.
+ */
+googleLogin?.addEventListener('click', async (event) => {
+
+  event.preventDefault();
+  clearMsg();
+
+  if (!FIREBASE_READY) {
+    msg('إعداد Firebase غير مكتمل.');
+    return;
+  }
+
+  try {
+
+    googleLogin.disabled = true;
+    googleLogin.dataset.originalHTML = googleLogin.innerHTML;
+    googleLogin.innerHTML = 'جارٍ الانتقال إلى Google...';
+
+    await configurePersistence();
+
+    const provider = new GoogleAuthProvider();
     provider.setCustomParameters({
       prompt: 'select_account'
     });
 
+    console.log('بدء Google Redirect...');
 
-    await loginWithProvider(
-      provider,
-      googleLogin,
-      'Google'
-    );
+    await signInWithRedirect(auth, provider);
 
+  } catch (error) {
+
+    console.error('Google Login Error:', error);
+
+    googleLogin.disabled = false;
+
+    if (googleLogin.dataset.originalHTML) {
+      googleLogin.innerHTML = googleLogin.dataset.originalHTML;
+    }
+
+    msg(firebaseError(error));
   }
-);
 
+});
+
+
+/*
+ * يجب تشغيل getRedirectResult بعد تحميل الصفحة التي يعود إليها Google.
+ */
+handleGoogleRedirectResult();
 
 
 /* =========================================================

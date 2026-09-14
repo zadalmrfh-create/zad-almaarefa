@@ -14,6 +14,7 @@ const firebaseConfig = {
 };
 
 export const ADMIN_EMAIL = 'maleksameh121@gmail.com';
+export const FCM_VAPID_KEY = 'BJTiIKho0Y0w-8DK60vnRm3-SRm1jHfbRei5oI5Nj_65_P5iYXrZVdwigvSfrf303cLSx_AkFp4Opl6YFM1acvg';
 export const FIREBASE_READY = !Object.values(firebaseConfig).some(v => String(v).includes('ضع_')) && !ADMIN_EMAIL.includes('ضع_');
 
 const app = initializeApp(firebaseConfig);

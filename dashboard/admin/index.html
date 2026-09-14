@@ -9,6 +9,7 @@
 
   <link rel="icon" href="../../images/logo.png.png">
   <link rel="stylesheet" href="../dashboard.css">
+  <link rel="stylesheet" href="notifications-admin.css">
 </head>
 
 <body>
@@ -129,6 +130,58 @@
 
     </section>
 
+
+
+    <!-- ═════════════ NOTIFICATIONS ═════════════ -->
+    <section class="card notifications-admin-card">
+      <div class="actions" style="justify-content:space-between">
+        <h3>🔔 الإشعارات</h3>
+      </div>
+      <p class="admin-muted">أرسل إشعارًا لجميع المستخدمين أو لمستخدم محدد.</p>
+      <form id="notificationForm" class="notification-form">
+        <div class="notification-grid">
+          <label>
+            عنوان الإشعار
+            <input id="notificationTitle" maxlength="100" required placeholder="مثال: تم إضافة كتب جديدة">
+          </label>
+          <label>
+            نوع الإشعار
+            <select id="notificationType">
+              <option value="info">معلومة</option>
+              <option value="book">📚 كتب جديدة</option>
+              <option value="event">📢 حدث / إعلان</option>
+              <option value="important">⚠️ مهم</option>
+            </select>
+          </label>
+        </div>
+        <label>
+          نص الإشعار
+          <textarea id="notificationMessage" rows="4" maxlength="500" required placeholder="اكتب رسالة الإشعار هنا..."></textarea>
+        </label>
+        <div class="notification-grid">
+          <label>
+            المستلمون
+            <select id="notificationAudience">
+              <option value="all">👥 جميع المستخدمين</option>
+              <option value="user">👤 مستخدم محدد</option>
+            </select>
+          </label>
+          <label id="notificationUserWrap" style="display:none">
+            المستخدم
+            <select id="notificationUser"></select>
+          </label>
+        </div>
+        <button class="btn gold" id="sendNotification" type="submit">إرسال الإشعار 🔔</button>
+        <div id="notificationStatus" class="notice" style="display:none;margin-top:12px"></div>
+      </form>
+
+      <div class="notification-history-head">
+        <h4>آخر الإشعارات</h4>
+        <button id="refreshNotifications" class="btn" type="button">تحديث</button>
+      </div>
+      <div id="notificationHistory" class="notification-history">جارٍ التحميل…</div>
+    </section>
+
   </main>
 
 </div>
@@ -181,7 +234,12 @@ import {
   getDocs,
   doc,
   updateDoc,
-  deleteDoc
+  deleteDoc,
+  addDoc,
+  serverTimestamp,
+  query,
+  orderBy,
+  limit
 } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 
 
@@ -323,6 +381,407 @@ modal.addEventListener('click', event => {
    تحميل المستخدمين
 ═══════════════════════════════════════ */
 
+
+
+/* ═══════════════════════════════════════
+   نظام إرسال الإشعارات من لوحة الأدمن
+═══════════════════════════════════════ */
+
+const notificationForm =
+  document.getElementById('notificationForm');
+
+const notificationTitle =
+  document.getElementById('notificationTitle');
+
+const notificationType =
+  document.getElementById('notificationType');
+
+const notificationMessage =
+  document.getElementById('notificationMessage');
+
+const notificationAudience =
+  document.getElementById('notificationAudience');
+
+const notificationUserWrap =
+  document.getElementById('notificationUserWrap');
+
+const notificationUser =
+  document.getElementById('notificationUser');
+
+const sendNotification =
+  document.getElementById('sendNotification');
+
+const notificationStatus =
+  document.getElementById('notificationStatus');
+
+const notificationHistory =
+  document.getElementById('notificationHistory');
+
+const refreshNotifications =
+  document.getElementById('refreshNotifications');
+
+
+function showNotificationStatus(message, type = 'success') {
+
+  notificationStatus.textContent = message;
+
+  notificationStatus.style.display = 'block';
+
+  notificationStatus.style.background =
+    type === 'error'
+      ? 'rgba(127,29,29,.45)'
+      : 'rgba(22,101,52,.45)';
+
+  notificationStatus.style.color = '#fff';
+
+  notificationStatus.style.border =
+    '1px solid ' +
+    (type === 'error' ? '#ef4444' : '#22c55e');
+
+}
+
+
+function populateNotificationUsers(snapshot) {
+
+  notificationUser.innerHTML =
+    '<option value="">اختر المستخدم</option>';
+
+  snapshot.forEach(userDoc => {
+
+    const user = userDoc.data();
+
+    const name =
+      user.fullName ||
+      user.name ||
+      user.displayName ||
+      'بدون اسم';
+
+    const email =
+      user.email ||
+      'بدون بريد';
+
+    const option =
+      document.createElement('option');
+
+    option.value = userDoc.id;
+
+    option.textContent =
+      `${name} — ${email}`;
+
+    notificationUser.appendChild(option);
+
+  });
+
+}
+
+
+function toggleNotificationAudience() {
+
+  const isUser =
+    notificationAudience.value === 'user';
+
+  notificationUserWrap.style.display =
+    isUser ? 'grid' : 'none';
+
+  notificationUser.required = isUser;
+
+}
+
+
+notificationAudience.addEventListener(
+  'change',
+  toggleNotificationAudience
+);
+
+
+async function sendNotificationFromAdmin(event) {
+
+  event.preventDefault();
+
+  const title =
+    notificationTitle.value.trim();
+
+  const message =
+    notificationMessage.value.trim();
+
+  const type =
+    notificationType.value;
+
+  const audience =
+    notificationAudience.value;
+
+  const targetUid =
+    notificationUser.value;
+
+
+  if (!title || !message) {
+
+    showNotificationStatus(
+      'اكتب عنوان الإشعار ونص الإشعار أولًا.',
+      'error'
+    );
+
+    return;
+
+  }
+
+
+  if (
+    audience === 'user' &&
+    !targetUid
+  ) {
+
+    showNotificationStatus(
+      'اختر المستخدم الذي تريد إرسال الإشعار إليه.',
+      'error'
+    );
+
+    return;
+
+  }
+
+
+  try {
+
+    sendNotification.disabled = true;
+
+    sendNotification.textContent =
+      'جارٍ إرسال الإشعار…';
+
+    notificationStatus.style.display =
+      'none';
+
+
+    const data = {
+
+      title,
+
+      message,
+
+      type,
+
+      audience,
+
+      readBy: [],
+
+      createdAt: serverTimestamp(),
+
+      createdBy: auth.currentUser?.uid || null
+
+    };
+
+
+    if (audience === 'user') {
+
+      data.targetUid = targetUid;
+
+    }
+
+
+    await addDoc(
+      collection(db, 'notifications'),
+      data
+    );
+
+
+    notificationForm.reset();
+
+    notificationAudience.value = 'all';
+
+    toggleNotificationAudience();
+
+
+    showNotificationStatus(
+      '✅ تم إرسال الإشعار بنجاح.',
+      'success'
+    );
+
+
+    await loadNotificationHistory();
+
+  }
+
+  catch (error) {
+
+    console.error(
+      'خطأ في إرسال الإشعار:',
+      error
+    );
+
+    showNotificationStatus(
+      '❌ تعذر إرسال الإشعار. راجع Firestore Rules.',
+      'error'
+    );
+
+  }
+
+  finally {
+
+    sendNotification.disabled = false;
+
+    sendNotification.textContent =
+      'إرسال الإشعار 🔔';
+
+  }
+
+}
+
+
+async function loadNotificationHistory() {
+
+  notificationHistory.innerHTML =
+    '<div class="notification-empty">جارٍ تحميل الإشعارات…</div>';
+
+
+  try {
+
+    const snap =
+      await getDocs(
+        query(
+          collection(db, 'notifications'),
+          limit(50)
+        )
+      );
+
+    const items = [];
+
+    snap.forEach(item => {
+
+      items.push({
+        id: item.id,
+        ...item.data()
+      });
+
+    });
+
+
+    items.sort((a, b) => {
+
+      const getTime = value => {
+
+        if (!value) return 0;
+
+        if (typeof value.toMillis === 'function') {
+          return value.toMillis();
+        }
+
+        if (typeof value.toDate === 'function') {
+          return value.toDate().getTime();
+        }
+
+        const date = new Date(value);
+
+        return Number.isNaN(date.getTime())
+          ? 0
+          : date.getTime();
+
+      };
+
+      return getTime(b.createdAt) - getTime(a.createdAt);
+
+    });
+
+
+    if (!items.length) {
+
+      notificationHistory.innerHTML =
+        '<div class="notification-empty">لا توجد إشعارات بعد.</div>';
+
+      return;
+
+    }
+
+
+    notificationHistory.innerHTML =
+      items.map(item => {
+
+        const audienceText =
+          item.audience === 'all'
+            ? '👥 للجميع'
+            : '👤 لمستخدم محدد';
+
+        const time =
+          item.createdAt &&
+          typeof item.createdAt.toDate === 'function'
+            ? item.createdAt.toDate()
+            : null;
+
+        const timeText =
+          time
+            ? new Intl.DateTimeFormat('ar-EG', {
+                dateStyle: 'medium',
+                timeStyle: 'short'
+              }).format(time)
+            : 'منذ قليل';
+
+        return `
+          <div class="notification-history-item" data-notification-id="${escapeHtml(item.id)}">
+            <div>
+              <strong>${escapeHtml(item.title || 'بدون عنوان')}</strong>
+              <p>${escapeHtml(item.message || '')}</p>
+              <small>${audienceText} · ${escapeHtml(timeText)}</small>
+            </div>
+            <button type="button" class="btn danger notification-delete-btn" data-id="${escapeHtml(item.id)}">حذف الإشعار 🗑️</button>
+          </div>
+        `;
+
+      }).join('');
+
+  }
+
+  catch (error) {
+
+    console.error(
+      'خطأ في تحميل سجل الإشعارات:',
+      error
+    );
+
+    notificationHistory.innerHTML =
+      '<div class="notification-empty">❌ تعذر تحميل سجل الإشعارات.</div>';
+
+  }
+
+}
+
+
+async function deleteNotificationFromAdmin(id) {
+  if (!id) return;
+  if (!confirm('هل تريد حذف هذا الإشعار نهائيًا؟')) return;
+  try {
+    await deleteDoc(doc(db, 'notifications', id));
+    await loadNotificationHistory();
+    showNotificationStatus('تم حذف الإشعار بنجاح.', 'success');
+  } catch (error) {
+    console.error('خطأ في حذف الإشعار:', error);
+    showNotificationStatus('تعذر حذف الإشعار. تأكد من Firestore Rules.', 'error');
+  }
+}
+
+notificationHistory.addEventListener('click', event => {
+  const button = event.target.closest('.notification-delete-btn');
+  if (!button) return;
+  deleteNotificationFromAdmin(button.dataset.id);
+});
+
+notificationForm.addEventListener(
+  'submit',
+  sendNotificationFromAdmin
+);
+
+
+refreshNotifications.addEventListener(
+  'click',
+  loadNotificationHistory
+);
+
+
+/* ═══════════════════════════════════════
+   تحميل سجل الإشعارات عند فتح الصفحة
+═══════════════════════════════════════ */
+
+loadNotificationHistory();
+
+
 async function load() {
 
   tbody.innerHTML = `
@@ -340,6 +799,9 @@ async function load() {
       await getDocs(
         collection(db, 'users')
       );
+
+
+    populateNotificationUsers(snap);
 
 
     if (snap.empty) {

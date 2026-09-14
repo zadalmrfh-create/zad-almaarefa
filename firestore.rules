@@ -23,5 +23,40 @@ service cloud.firestore {
 
       allow delete: if isAdmin();
     }
+
+    // ملف صلاحية الأدمن: القراءة لصاحب الحساب الأدمن فقط.
+    match /admins/{uid} {
+      allow read: if isAdmin() && isOwner(uid);
+      allow create, update, delete: if false;
+    }
+
+    // الإشعارات: الأدمن ينشئ ويحذف، والمستخدم يقرأ العامة أو الموجهة إليه.
+    // الاستعلامات في notifications.js تقيّد audience لتوافق هذه القاعدة.
+    match /notifications/{notificationId} {
+      allow read: if isAdmin()
+        || (signedIn() && (
+          resource.data.audience == 'all'
+          || (resource.data.audience == 'user' && resource.data.targetUid == request.auth.uid)
+        ));
+
+      allow create: if isAdmin()
+        && request.resource.data.title is string
+        && request.resource.data.message is string
+        && request.resource.data.audience in ['all', 'user']
+        && request.resource.data.readBy is list
+        && (request.resource.data.audience == 'all'
+          || (request.resource.data.audience == 'user' && request.resource.data.targetUid is string));
+
+      allow update: if isAdmin()
+        || (signedIn()
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['readBy'])
+          && request.resource.data.readBy is list
+          && resource.data.readBy is list
+          && request.resource.data.readBy.hasAll(resource.data.readBy)
+          && request.resource.data.readBy.size() == resource.data.readBy.size() + 1
+          && request.resource.data.readBy.hasAll([request.auth.uid]));
+
+      allow delete: if isAdmin();
+    }
   }
 }

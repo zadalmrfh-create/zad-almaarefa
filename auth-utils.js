@@ -33,9 +33,20 @@ export function watchNavbar() {
       return;
     }
     const profile = await getUserProfile(user);
-    const isAdmin = user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+
+    // الأدمن يتم التحقق منه من admins/{uid}
+    let isAdmin = false;
+    try {
+      const adminSnap = await getDoc(doc(db, 'admins', user.uid));
+      isAdmin = adminSnap.exists();
+    } catch (error) {
+      console.error('خطأ في التحقق من صلاحية الأدمن:', error);
+    }
+
     loginLinks.forEach(link => {
-      link.href = isAdmin ? 'dashboard/admin/index.html' : 'dashboard/' + (profile?.role || 'student') + '/index.html';
+      link.href = isAdmin
+        ? 'dashboard/admin/index.html'
+        : 'dashboard/' + (profile?.role || 'student') + '/index.html';
       link.innerHTML = '<i class="fa-solid fa-user-circle"></i> حسابي';
     });
   });
