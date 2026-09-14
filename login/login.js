@@ -6,23 +6,17 @@ import {
 
 import {
   GoogleAuthProvider,
-  FacebookAuthProvider,
   OAuthProvider,
-  GithubAuthProvider,
-  TwitterAuthProvider,
 
   signInWithPopup,
   signInWithEmailAndPassword,
   sendPasswordResetEmail,
-  signInAnonymously,
   signOut,
 
   setPersistence,
   browserLocalPersistence,
   browserSessionPersistence,
 
-  RecaptchaVerifier,
-  signInWithPhoneNumber
 
 } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
 
@@ -42,29 +36,14 @@ import {
 const googleLogin =
   document.getElementById('googleLogin');
 
-const facebookLogin =
-  document.getElementById('facebookLogin');
 
-const microsoftLogin =
-  document.getElementById('microsoftLogin');
 
 const appleLogin =
   document.getElementById('appleLogin');
 
-const githubLogin =
-  document.getElementById('githubLogin');
 
-const twitterLogin =
-  document.getElementById('twitterLogin');
 
-const yahooLogin =
-  document.getElementById('yahooLogin');
 
-const anonymousLogin =
-  document.getElementById('anonymousLogin');
-
-const phoneLogin =
-  document.getElementById('phoneLogin');
 
 const emailLoginForm =
   document.getElementById('emailLoginForm');
@@ -256,9 +235,7 @@ function firebaseError(error) {
     'auth/invalid-verification-code':
       'رمز التحقق غير صحيح.',
 
-    'auth/invalid-phone-number':
-      'رقم الهاتف غير صحيح.',
-
+  
     'auth/quota-exceeded':
       'تم تجاوز الحد المسموح به.'
   };
@@ -428,54 +405,6 @@ googleLogin?.addEventListener('click', async (event) => {
 });
 
 /* =========================================================
-   Facebook
-========================================================= */
-
-facebookLogin?.addEventListener(
-  'click',
-  async () => {
-
-    const provider =
-      new FacebookAuthProvider();
-
-
-    await loginWithProvider(
-      provider,
-      facebookLogin,
-      'Facebook'
-    );
-
-  }
-);
-
-
-
-/* =========================================================
-   Microsoft
-========================================================= */
-
-microsoftLogin?.addEventListener(
-  'click',
-  async () => {
-
-    const provider =
-      new OAuthProvider(
-        'microsoft.com'
-      );
-
-
-    await loginWithProvider(
-      provider,
-      microsoftLogin,
-      'Microsoft'
-    );
-
-  }
-);
-
-
-
-/* =========================================================
    Apple
 ========================================================= */
 
@@ -493,77 +422,6 @@ appleLogin?.addEventListener(
       provider,
       appleLogin,
       'Apple'
-    );
-
-  }
-);
-
-
-
-/* =========================================================
-   GitHub
-========================================================= */
-
-githubLogin?.addEventListener(
-  'click',
-  async () => {
-
-    const provider =
-      new GithubAuthProvider();
-
-
-    await loginWithProvider(
-      provider,
-      githubLogin,
-      'GitHub'
-    );
-
-  }
-);
-
-
-
-/* =========================================================
-   Twitter / X
-========================================================= */
-
-twitterLogin?.addEventListener(
-  'click',
-  async () => {
-
-    const provider =
-      new TwitterAuthProvider();
-
-
-    await loginWithProvider(
-      provider,
-      twitterLogin,
-      'X'
-    );
-
-  }
-);
-
-
-
-/* =========================================================
-   Yahoo
-========================================================= */
-
-yahooLogin?.addEventListener(
-  'click',
-  async () => {
-
-    const provider =
-      new OAuthProvider(
-        'yahoo.com'
-      );
-
-
-    await loginWithProvider(
-      provider,
-      yahooLogin,
-      'Yahoo'
     );
 
   }
@@ -772,234 +630,6 @@ togglePassword?.addEventListener(
 
       togglePassword.textContent =
         '👁';
-
-    }
-
-  }
-);
-
-
-
-/* =========================================================
-   الدخول كزائر
-========================================================= */
-
-anonymousLogin?.addEventListener(
-  'click',
-  async () => {
-
-    clearMsg();
-
-
-    if (!FIREBASE_READY) {
-
-      msg(
-        'إعداد Firebase غير مكتمل.'
-      );
-
-      return;
-    }
-
-
-    try {
-
-      anonymousLogin.disabled = true;
-
-      anonymousLogin.dataset.originalHTML =
-        anonymousLogin.innerHTML;
-
-      anonymousLogin.innerHTML =
-        'جارٍ الدخول كزائر...';
-
-
-      await configurePersistence();
-
-
-      const result =
-        await signInAnonymously(auth);
-
-
-      await checkUserAndContinue(
-        result.user
-      );
-
-
-    } catch (error) {
-
-      console.error(
-        'Anonymous Login Error:',
-        error
-      );
-
-
-      msg(
-        firebaseError(error)
-      );
-
-
-    } finally {
-
-      anonymousLogin.disabled = false;
-
-      if (
-        anonymousLogin.dataset.originalHTML
-      ) {
-
-        anonymousLogin.innerHTML =
-          anonymousLogin.dataset.originalHTML;
-      }
-
-    }
-
-  }
-);
-
-
-
-/* =========================================================
-   تسجيل الدخول برقم الهاتف
-========================================================= */
-
-let recaptchaVerifier = null;
-
-
-function createRecaptcha() {
-
-  if (recaptchaVerifier) {
-
-    return recaptchaVerifier;
-  }
-
-
-  recaptchaVerifier =
-    new RecaptchaVerifier(
-      auth,
-      'recaptcha-container',
-      {
-        size: 'normal'
-      }
-    );
-
-
-  return recaptchaVerifier;
-}
-
-
-
-phoneLogin?.addEventListener(
-  'click',
-  async () => {
-
-    clearMsg();
-
-
-    if (!FIREBASE_READY) {
-
-      msg(
-        'إعداد Firebase غير مكتمل.'
-      );
-
-      return;
-    }
-
-
-    const phone =
-      prompt(
-        'اكتب رقم الهاتف بصيغة دولية.\nمثال: +201xxxxxxxxx'
-      );
-
-
-    if (!phone) return;
-
-
-    try {
-
-      phoneLogin.disabled = true;
-
-      phoneLogin.dataset.originalHTML =
-        phoneLogin.innerHTML;
-
-      phoneLogin.innerHTML =
-        'جارٍ إرسال رمز التحقق...';
-
-
-      await configurePersistence();
-
-
-      const appVerifier =
-        createRecaptcha();
-
-
-      const confirmationResult =
-        await signInWithPhoneNumber(
-          auth,
-          phone,
-          appVerifier
-        );
-
-
-      const code =
-        prompt(
-          'تم إرسال رمز التحقق إلى هاتفك.\nأدخل الرمز:'
-        );
-
-
-      if (!code) {
-
-        msg(
-          'تم إلغاء التحقق.'
-        );
-
-        return;
-      }
-
-
-      const result =
-        await confirmationResult
-          .confirm(code);
-
-
-      await checkUserAndContinue(
-        result.user
-      );
-
-
-    } catch (error) {
-
-      console.error(
-        'Phone Login Error:',
-        error
-      );
-
-
-      if (recaptchaVerifier) {
-
-        try {
-
-          recaptchaVerifier.clear();
-
-        } catch (_) {}
-
-        recaptchaVerifier = null;
-      }
-
-
-      msg(
-        firebaseError(error)
-      );
-
-
-    } finally {
-
-      phoneLogin.disabled = false;
-
-      if (
-        phoneLogin.dataset.originalHTML
-      ) {
-
-        phoneLogin.innerHTML =
-          phoneLogin.dataset.originalHTML;
-      }
 
     }
 
