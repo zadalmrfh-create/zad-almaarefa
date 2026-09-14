@@ -7,6 +7,10 @@ import {
 import {
   GoogleAuthProvider,
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
+  createUserWithEmailAndPassword,
+  updateProfile,
   signOut
 } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
 
@@ -17,263 +21,201 @@ import {
   serverTimestamp
 } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 
-
-const googleRegister =
-  document.getElementById('googleRegister');
-
-const message =
-  document.getElementById('message');
-
-const roleSelect =
-  document.getElementById('role');
-
-
-/* ═══════════════════════════════════════
-   الرسائل
-═══════════════════════════════════════ */
+const googleRegister = document.getElementById('googleRegister');
+const emailRegisterForm = document.getElementById('emailRegisterForm');
+const emailRegisterBtn = document.getElementById('emailRegisterBtn');
+const togglePassword = document.getElementById('togglePassword');
+const message = document.getElementById('message');
+const roleSelect = document.getElementById('role');
 
 function msg(text, type = 'error') {
-
   if (!message) return;
-
   message.textContent = text;
-
-  message.className =
-    `message ${type}`;
-
+  message.className = `message ${type}`;
 }
 
+function clearMsg() {
+  if (!message) return;
+  message.textContent = '';
+  message.className = 'message';
+}
 
-/* ═══════════════════════════════════════
-   إنشاء الحساب باستخدام Google
-═══════════════════════════════════════ */
+function firebaseError(error) {
+  const errors = {
+    'auth/popup-closed-by-user': 'تم إغلاق نافذة Google.',
+    'auth/popup-blocked': 'المتصفح منع نافذة Google. اسمح بالنوافذ المنبثقة ثم حاول مرة أخرى.',
+    'auth/cancelled-popup-request': 'تم إلغاء العملية.',
+    'auth/network-request-failed': 'تحقق من اتصال الإنترنت.',
+    'auth/unauthorized-domain': 'هذا النطاق غير مسموح به في Firebase. أضف نطاق GitHub Pages من Firebase Console.',
+    'auth/operation-not-allowed': 'طريقة التسجيل هذه غير مفعلة في Firebase Authentication.',
+    'auth/email-already-in-use': 'هذا البريد الإلكتروني مستخدم بالفعل. جرّب تسجيل الدخول بدلًا من إنشاء حساب جديد.',
+    'auth/invalid-email': 'البريد الإلكتروني غير صحيح.',
+    'auth/weak-password': 'كلمة المرور ضعيفة. استخدم كلمة مرور أقوى.',
+    'auth/account-exists-with-different-credential': 'هذا البريد مرتبط بطريقة تسجيل دخول أخرى.',
+    'auth/too-many-requests': 'تم إجراء محاولات كثيرة. حاول لاحقًا.'
+  };
+  return errors[error?.code] || `تعذر إنشاء الحساب: ${error?.message || 'خطأ غير معروف'}`;
+}
 
-googleRegister?.addEventListener(
-  'click',
-  async () => {
+function getRole() {
+  return roleSelect?.value === 'teacher' ? 'teacher' : 'student';
+}
 
-    if (!FIREBASE_READY) {
+async function saveUserProfile(user, role, provider) {
+  const userRef = doc(db, 'users', user.uid);
+  const existingUser = await getDoc(userRef);
 
-      return msg(
-        'أكمل إعداد Firebase في ملف firebase-config.js أولًا.'
-      );
-
+  if (existingUser.exists()) {
+    const profile = existingUser.data();
+    if (profile.status === 'banned') {
+      await signOut(auth);
+      throw Object.assign(new Error('هذا الحساب محظور حاليًا.'), { code: 'app/banned' });
     }
-
-
-    const role =
-      roleSelect?.value === 'teacher'
-        ? 'teacher'
-        : 'student';
-
-
-    try {
-
-      googleRegister.disabled = true;
-
-      googleRegister.innerHTML =
-        'جارٍ إنشاء الحساب باستخدام Google…';
-
-
-      /* Google Provider */
-
-      const provider =
-        new GoogleAuthProvider();
-
-
-      provider.setCustomParameters({
-        prompt: 'select_account'
-      });
-
-
-      /* تسجيل Google */
-
-      const result =
-        await signInWithPopup(
-          auth,
-          provider
-        );
-
-
-      const user =
-        result.user;
-
-
-      /* ═══════════════════════════════════════
-         التحقق من وجود المستخدم
-      ═══════════════════════════════════════ */
-
-      const userRef =
-        doc(
-          db,
-          'users',
-          user.uid
-        );
-
-
-      const existingUser =
-        await getDoc(userRef);
-
-
-      /* ═══════════════════════════════════════
-         الحساب موجود بالفعل
-      ═══════════════════════════════════════ */
-
-      if (existingUser.exists()) {
-
-        const profile =
-          existingUser.data();
-
-
-        /* محظور */
-
-        if (
-          profile.status === 'banned'
-        ) {
-
-          await signOut(auth);
-
-          googleRegister.disabled = false;
-
-          googleRegister.innerHTML =
-            '<span class="google-icon">G</span> إنشاء الحساب باستخدام Google';
-
-
-          return msg(
-            '⛔ هذا الحساب محظور حاليًا.'
-          );
-
-        }
-
-
-        msg(
-          'هذا الحساب موجود بالفعل، جارٍ فتح المنصة…',
-          'success'
-        );
-
-
-        setTimeout(() => {
-
-          const homeUrl =
-            new URL(
-              '../index.html',
-              import.meta.url
-            ).href;
-
-          window.location.replace(
-            homeUrl
-          );
-
-        }, 400);
-
-
-        return;
-
-      }
-
-
-      /* ═══════════════════════════════════════
-         حساب جديد
-      ═══════════════════════════════════════ */
-
-      const name =
-        user.displayName ||
-        'مستخدم زاد المعرفة';
-
-
-      const email =
-        user.email ||
-        '';
-
-
-      await setDoc(
-        userRef,
-        {
-
-          name: name,
-
-          fullName: name,
-
-          email: email,
-
-          role: role,
-
-          status:
-            role === 'teacher'
-              ? 'pending'
-              : 'active',
-
-          createdAt:
-            serverTimestamp()
-
-        }
-      );
-
-
-      /* ═══════════════════════════════════════
-         نجاح التسجيل
-      ═══════════════════════════════════════ */
-
-      msg(
-        role === 'teacher'
-          ? 'تم إنشاء حسابك، وسيتم مراجعته من الإدارة.'
-          : 'تم إنشاء حسابك بنجاح، جارٍ فتح المنصة…',
-        'success'
-      );
-
-
-      setTimeout(() => {
-
-        const homeUrl =
-          new URL(
-            '../index.html',
-            import.meta.url
-          ).href;
-
-        window.location.replace(
-          homeUrl
-        );
-
-      }, 700);
-
-
-    } catch (error) {
-
-      console.error(
-        'خطأ إنشاء الحساب بجوجل:',
-        error
-      );
-
-
-      googleRegister.disabled = false;
-
-      googleRegister.innerHTML =
-        '<span class="google-icon">G</span> إنشاء الحساب باستخدام Google';
-
-
-      const map = {
-
-        'auth/popup-closed-by-user':
-          'تم إغلاق نافذة تسجيل الدخول.',
-
-        'auth/popup-blocked':
-          'المتصفح منع نافذة Google. اسمح بالنوافذ المنبثقة ثم حاول مرة أخرى.',
-
-        'auth/cancelled-popup-request':
-          'تم إلغاء العملية.',
-
-        'auth/network-request-failed':
-          'تحقق من اتصال الإنترنت.'
-
-      };
-
-
-      msg(
-        map[error.code] ||
-        'تعذر إنشاء الحساب باستخدام Google. حاول مرة أخرى.'
-      );
-
-    }
-
+    return false;
   }
-);
+
+  const name = user.displayName || 'مستخدم زاد المعرفة';
+
+  await setDoc(userRef, {
+    uid: user.uid,
+    name,
+    fullName: name,
+    email: user.email || '',
+    photoURL: user.photoURL || '',
+    role,
+    status: role === 'teacher' ? 'pending' : 'active',
+    provider,
+    createdAt: serverTimestamp(),
+    lastLoginAt: serverTimestamp()
+  });
+
+  return true;
+}
+
+function goHome() {
+  window.location.replace('../index.html');
+}
+
+async function finishRegistration(user, role, provider) {
+  const created = await saveUserProfile(user, role, provider);
+
+  if (created) {
+    msg(
+      role === 'teacher'
+        ? 'تم إنشاء حساب المعلم بنجاح، وسيتم مراجعته من الإدارة.'
+        : 'تم إنشاء حسابك بنجاح، جارٍ فتح المنصة…',
+      'success'
+    );
+  } else {
+    msg('هذا الحساب موجود بالفعل، جارٍ فتح المنصة…', 'success');
+  }
+
+  setTimeout(goHome, 700);
+}
+
+async function handleGoogleResult(result) {
+  if (!result?.user) return;
+  await finishRegistration(result.user, getRole(), 'google.com');
+}
+
+// معالجة الرجوع من Google Redirect، وهو مفيد على بعض الهواتف والمتصفحات.
+(async () => {
+  if (!FIREBASE_READY) return;
+  try {
+    const result = await getRedirectResult(auth);
+    if (result?.user) await handleGoogleResult(result);
+  } catch (error) {
+    console.error('Google Register Redirect Error:', error);
+    msg(firebaseError(error));
+  }
+})();
+
+googleRegister?.addEventListener('click', async (event) => {
+  event.preventDefault();
+  clearMsg();
+
+  if (!FIREBASE_READY) {
+    msg('إعداد Firebase غير مكتمل في firebase-config.js.');
+    return;
+  }
+
+  try {
+    googleRegister.disabled = true;
+    googleRegister.dataset.originalHTML = googleRegister.innerHTML;
+    googleRegister.innerHTML = 'جارٍ فتح Google...';
+
+    const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: 'select_account' });
+
+    // نستخدم Popup أولًا، وإذا رفض المتصفح النافذة نستخدم Redirect.
+    try {
+      const result = await signInWithPopup(auth, provider);
+      await handleGoogleResult(result);
+    } catch (error) {
+      if (error?.code === 'auth/popup-blocked') {
+        await signInWithRedirect(auth, provider);
+        return;
+      }
+      throw error;
+    }
+  } catch (error) {
+    console.error('Google Register Error:', error);
+    googleRegister.disabled = false;
+    googleRegister.innerHTML = googleRegister.dataset.originalHTML || '<span class="google-icon">G</span> إنشاء الحساب باستخدام Google';
+    msg(firebaseError(error));
+  }
+});
+
+emailRegisterForm?.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  clearMsg();
+
+  if (!FIREBASE_READY) {
+    msg('إعداد Firebase غير مكتمل في firebase-config.js.');
+    return;
+  }
+
+  const name = document.getElementById('fullName')?.value.trim() || '';
+  const email = document.getElementById('registerEmail')?.value.trim() || '';
+  const password = document.getElementById('registerPassword')?.value || '';
+  const role = getRole();
+
+  if (name.length < 2) {
+    msg('اكتب الاسم بالكامل.');
+    return;
+  }
+  if (!email) {
+    msg('اكتب البريد الإلكتروني.');
+    return;
+  }
+  if (password.length < 6) {
+    msg('كلمة المرور يجب ألا تقل عن 6 أحرف.');
+    return;
+  }
+
+  try {
+    emailRegisterBtn.disabled = true;
+    emailRegisterBtn.dataset.originalHTML = emailRegisterBtn.innerHTML;
+    emailRegisterBtn.innerHTML = 'جارٍ إنشاء الحساب...';
+
+    const result = await createUserWithEmailAndPassword(auth, email, password);
+    await updateProfile(result.user, { displayName: name });
+    await finishRegistration(result.user, role, 'password');
+  } catch (error) {
+    console.error('Email Register Error:', error);
+    msg(firebaseError(error));
+  } finally {
+    emailRegisterBtn.disabled = false;
+    if (emailRegisterBtn.dataset.originalHTML) {
+      emailRegisterBtn.innerHTML = emailRegisterBtn.dataset.originalHTML;
+    }
+  }
+});
+
+togglePassword?.addEventListener('click', () => {
+  const password = document.getElementById('registerPassword');
+  if (!password) return;
+  const visible = password.type === 'text';
+  password.type = visible ? 'password' : 'text';
+  togglePassword.textContent = visible ? '👁' : '🙈';
+});

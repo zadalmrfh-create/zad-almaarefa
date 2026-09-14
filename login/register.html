@@ -1,155 +1,95 @@
 <!doctype html>
 <html lang="ar" dir="rtl">
-
 <head>
-
   <meta charset="UTF-8">
-
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  >
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>إنشاء حساب | زاد المعرفة</title>
-
-  <link
-    rel="icon"
-    type="image/png"
-    href="../images/logo.png.png"
-  >
-
-  <link
-    rel="preconnect"
-    href="https://fonts.googleapis.com"
-  >
-
-  <link
-    rel="preconnect"
-    href="https://fonts.gstatic.com"
-    crossorigin
-  >
-
-  <link
-    href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap"
-    rel="stylesheet"
-  >
-
-  <link
-    rel="stylesheet"
-    href="login.css"
-  >
-
+  <link rel="icon" type="image/png" href="../images/logo.png.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="login.css">
+  <style>
+    .register-options { margin-top: 8px; }
+    .field { margin-bottom: 14px; }
+    .field label { display:block; margin-bottom:7px; }
+    .field input, .role-select {
+      width:100%; box-sizing:border-box; padding:12px 13px;
+      border-radius:12px; border:1px solid var(--border);
+      background:rgba(255,255,255,.05); color:var(--text);
+      font-family:inherit; outline:none;
+    }
+    .role-select option { color:#111827; background:#fff; }
+    .password-wrap { position:relative; }
+    .password-wrap input { padding-left:48px; }
+    #togglePassword {
+      position:absolute; left:8px; top:50%; transform:translateY(-50%);
+      border:0; background:transparent; color:var(--muted); cursor:pointer;
+      font-size:18px;
+    }
+    .small-note { color:var(--muted); font-size:12px; margin:8px 0 0; line-height:1.7; }
+  </style>
 </head>
-
-
 <body>
-
 <main class="login-page">
-
-  <a
-    class="back-home"
-    href="../index.html"
-  >
-    ← العودة إلى المنصة
-  </a>
-
+  <a class="back-home" href="../index.html">← العودة إلى المنصة</a>
 
   <section class="login-card">
-
     <div class="brand">
-
-      <img
-        src="../images/logo.png.png"
-        alt="زاد المعرفة"
-      >
-
-      <h1>
-        إنشاء حساب
-      </h1>
-
-      <p>
-        انضم إلى منصة زاد المعرفة
-      </p>
-
+      <img src="../images/logo.png.png" alt="زاد المعرفة">
+      <h1>إنشاء حساب</h1>
+      <p>انضم إلى منصة زاد المعرفة 👋</p>
     </div>
 
+    <p id="message" class="message" role="alert" aria-live="polite"></p>
 
-    <div>
+    <div class="register-options">
+      <div class="field">
+        <label for="role">نوع الحساب</label>
+        <select id="role" class="role-select">
+          <option value="student">🎓 طالب</option>
+          <option value="teacher">👨‍🏫 معلم</option>
+        </select>
+      </div>
 
-      <label for="role">
-        نوع الحساب
-      </label>
+      <form id="emailRegisterForm">
+        <div class="field">
+          <label for="fullName">الاسم بالكامل</label>
+          <input id="fullName" type="text" placeholder="اكتب اسمك بالكامل" autocomplete="name" required>
+        </div>
 
+        <div class="field">
+          <label for="registerEmail">البريد الإلكتروني</label>
+          <input id="registerEmail" type="email" placeholder="example@email.com" autocomplete="email" required>
+        </div>
 
-      <select
-        id="role"
-        required
-        style="
-          width:100%;
-          margin-top:8px;
-          margin-bottom:18px;
-        "
-      >
+        <div class="field">
+          <label for="registerPassword">كلمة المرور</label>
+          <div class="password-wrap">
+            <input id="registerPassword" type="password" placeholder="6 أحرف على الأقل" autocomplete="new-password" minlength="6" required>
+            <button id="togglePassword" type="button" aria-label="إظهار كلمة المرور">👁</button>
+          </div>
+        </div>
 
-        <option value="student">
-          🎓 طالب
-        </option>
+        <button id="emailRegisterBtn" class="submit-btn" type="submit">إنشاء الحساب بالبريد الإلكتروني</button>
+      </form>
 
-        <option value="teacher">
-          👨‍🏫 معلم
-        </option>
+      <p class="small-note">يمكنك أيضًا إنشاء الحساب بسرعة باستخدام Google.</p>
 
-      </select>
-
-
-      <button
-        id="googleRegister"
-        class="submit-btn"
-        type="button"
-      >
-
-        <span class="google-icon">
-          G
-        </span>
-
-        إنشاء الحساب باستخدام Google
-
+      <button id="googleRegister" class="provider-btn" type="button" style="margin-top:12px;">
+        <span class="google-icon">G</span>
+        <span>إنشاء الحساب باستخدام Google</span>
       </button>
-
-
-      <p
-        id="message"
-        class="message"
-        role="alert"
-      ></p>
-
     </div>
 
-
-    <div class="divider">
-      <span>أو</span>
-    </div>
-
+    <div class="divider"><span>أو</span></div>
 
     <p class="register">
-
       لديك حساب بالفعل؟
-
-      <a href="index.html">
-        تسجيل الدخول
-      </a>
-
+      <a href="index.html">تسجيل الدخول</a>
     </p>
-
   </section>
-
 </main>
-
-
-<script
-  type="module"
-  src="register.js"
-></script>
-
+<script type="module" src="register.js"></script>
 </body>
 </html>
