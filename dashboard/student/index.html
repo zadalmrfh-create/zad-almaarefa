@@ -6,6 +6,9 @@
     <title>لوحة الطالب | زاد المعرفة</title>
     <link rel="icon" href="../../images/logo.png.png">
     <link rel="stylesheet" href="../dashboard.css">
+<style>
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:18px}.stat-card{display:flex;align-items:center;gap:12px}.stat-card span{font-size:25px}.stat-card strong{font-size:28px;color:var(--gold2)}.stat-card small{color:var(--muted);font-size:13px}@media(max-width:760px){.stats-grid{grid-template-columns:1fr}.actions{width:100%}.actions .btn{flex:1;text-align:center}.card{padding:18px}.top{gap:18px}}
+</style>
 </head>
 <body>
 <div class="wrap">
@@ -31,7 +34,13 @@
             <p data-email></p>
         </section>
 
-        <section class="grid">
+        <section class="stats-grid">
+  <div class="card stat-card"><span>📚</span><strong id="favCount">0</strong><small>كتب مفضلة</small></div>
+  <div class="card stat-card"><span>✅</span><strong id="readCount">0</strong><small>كتب تمت قراءتها</small></div>
+  <div class="card stat-card"><span>🕘</span><strong id="recentCount">0</strong><small>آخر الكتب المفتوحة</small></div>
+</section>
+
+<section class="grid">
             <div class="card">
                 <h3>📚 دروسي</h3>
                 <p>تابع المواد والدروس الخاصة بك.</p>
@@ -43,8 +52,18 @@
                 <a class="btn gold" href="../../sections/Quran/quran.html">فتح القسم</a>
             </div>
             <div class="card">
-                <h3>🗓️ الحجوزات</h3>
-                <p>سيتم ربط حجوزات الدروس بحسابك في المرحلة التالية.</p>
+                <h3>⭐ كتبي المفضلة</h3>
+                <p>الوصول السريع إلى الكتب التي حفظتها.</p>
+                <a class="btn gold" href="../../sections/library.html">عرض المفضلة</a>
+            </div>
+            <div class="card">
+                <h3>📈 متابعة القراءة</h3>
+                <p>راجع الكتب التي أنهيت قراءتها وآخر ما فتحته.</p>
+                <a class="btn gold" href="../../sections/library.html">متابعة التعلم</a>
+            </div>
+            <div class="card">
+                <h3>🔔 الإعلانات</h3>
+                <p>تابع أحدث أخبار الحصص والملفات الجديدة من جرس الإشعارات بالأعلى.</p>
             </div>
         </section>
     </main>
@@ -80,6 +99,16 @@ onAuthStateChanged(auth, async (user) => {
         if (loadingElem) loadingElem.style.display = 'none';
     }
 });
+
+function updateLocalStats(){
+  const read=JSON.parse(localStorage.getItem('zadReadBooks')||'[]');
+  const fav=JSON.parse(localStorage.getItem('zadFavorites')||'[]');
+  const recent=JSON.parse(localStorage.getItem('zadRecentBooks')||'[]');
+  document.getElementById('readCount').textContent=read.length;
+  document.getElementById('favCount').textContent=fav.length;
+  document.getElementById('recentCount').textContent=recent.length;
+}
+updateLocalStats();
 
 // زر تسجيل الخروج
 document.getElementById('logout').addEventListener('click', async () => {

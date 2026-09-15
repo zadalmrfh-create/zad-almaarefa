@@ -2,7 +2,24 @@
 <html lang="ar" dir="rtl" class="h-full">
 
 <head>
-<style>html{visibility:hidden}</style>
+<style>html{visibility:hidden}
+    .book-tools{display:flex;gap:8px;margin-top:10px}
+    .book-tool{flex:1;border:1px solid rgba(240,192,64,.35);background:transparent;color:inherit;border-radius:10px;padding:9px;cursor:pointer;font-weight:700;font-size:12px}
+    .book-tool:hover{background:rgba(240,192,64,.12)}
+    .book-tool.favorite-active{background:rgba(240,192,64,.2);color:#f0c040}
+    .progress-line{height:6px;border-radius:99px;background:rgba(148,163,184,.2);overflow:hidden;margin-top:10px}
+    .progress-line span{display:block;height:100%;width:0;background:#f0c040;transition:width .3s}
+
+    @media (max-width: 640px){
+      #app{overflow-x:hidden}
+      .hero{padding:28px 14px}
+      .search-box{font-size:14px!important}
+      #books-grid{grid-template-columns:1fr!important}
+      .book-card{padding:16px!important}
+      .book-tools{gap:6px}
+      .book-tool{font-size:11px;padding:8px 5px}
+    }
+</style>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
@@ -2242,25 +2259,22 @@ function renderBooks(filtered) {
           href="${book.url}"
           target="_blank"
           rel="noopener noreferrer"
-          class="download-btn w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-bold"
+          class="download-btn book-open w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-bold"
+          data-book-key="${encodeURIComponent(book.title + "|" + book.url)}"
           style="
             background-color:${titleColor};
             color:${isDarkMode ? "#0f172a" : "#ffffff"};
             text-decoration:none;
           "
         >
-
-          <i
-            data-lucide="download"
-            style="
-              width:18px;
-              height:18px;
-            "
-          ></i>
-
-          تحميل الكتاب
-
+          <i data-lucide="download" style="width:18px;height:18px;"></i>
+          فتح الكتاب
         </a>
+        <div class="book-tools">
+          <button type="button" class="book-tool favorite-btn" data-book-key="${encodeURIComponent(book.title + "|" + book.url)}">☆ المفضلة</button>
+          <button type="button" class="book-tool read-btn" data-book-key="${encodeURIComponent(book.title + "|" + book.url)}">✓ تمت القراءة</button>
+        </div>
+        <div class="progress-line"><span></span></div>
 
       `;
 
@@ -2276,6 +2290,7 @@ function renderBooks(filtered) {
     lucide.createIcons();
 
   }
+  initBookTools();
 
 }
 
@@ -2694,6 +2709,28 @@ if (window.elementSdk) {
 
 }
 
+
+function getStoredList(name){try{return JSON.parse(localStorage.getItem(name)||'[]')}catch(e){return []}}
+function setStoredList(name,list){localStorage.setItem(name,JSON.stringify(list))}
+function bookKeyFrom(el){return decodeURIComponent(el.dataset.bookKey||'')}
+function initBookTools(){
+  const favs=getStoredList('zadFavorites');
+  const reads=getStoredList('zadReadBooks');
+  document.querySelectorAll('.favorite-btn').forEach(btn=>{
+    const key=bookKeyFrom(btn);
+    const active=favs.includes(key);
+    btn.classList.toggle('favorite-active',active); btn.textContent=active?'★ في المفضلة':'☆ المفضلة';
+    btn.onclick=()=>{const list=getStoredList('zadFavorites');const i=list.indexOf(key);if(i>=0)list.splice(i,1);else list.push(key);setStoredList('zadFavorites',list);btn.classList.toggle('favorite-active',i<0);btn.textContent=i<0?'★ في المفضلة':'☆ المفضلة';};
+  });
+  document.querySelectorAll('.read-btn').forEach(btn=>{
+    const key=bookKeyFrom(btn); const done=reads.includes(key); btn.textContent=done?'✓ تمت القراءة':'○ لم أقرأه بعد';
+    const line=btn.closest('.book-card')?.querySelector('.progress-line span'); if(line)line.style.width=done?'100%':'0%';
+    btn.onclick=()=>{const list=getStoredList('zadReadBooks');const i=list.indexOf(key);if(i>=0)list.splice(i,1);else list.push(key);setStoredList('zadReadBooks',list);const doneNow=i<0;btn.textContent=doneNow?'✓ تمت القراءة':'○ لم أقرأه بعد';if(line)line.style.width=doneNow?'100%':'0%';};
+  });
+  document.querySelectorAll('.book-open').forEach(a=>a.addEventListener('click',()=>{
+    const key=bookKeyFrom(a); const list=getStoredList('zadRecentBooks').filter(x=>x!==key); list.unshift(key); setStoredList('zadRecentBooks',list.slice(0,10));
+  }));
+}
 
 /* =========================================================
    INITIALIZE

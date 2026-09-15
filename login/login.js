@@ -101,7 +101,7 @@ function redirectAfterLogin() {
     sessionStorage.removeItem('redirectAfterLogin');
     window.location.replace('../sections/library.html');
   } else {
-    window.location.replace('../index.html');
+    window.location.replace('../student/dashboard.html');
   }
 }
 

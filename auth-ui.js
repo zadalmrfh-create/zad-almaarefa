@@ -10,9 +10,9 @@ import {
 // أزرار الحساب في الهيدر
 // ═══════════════════════════════════════
 
-const links = document.querySelectorAll(
-  '.login-nav-btn, .login-mobile-btn'
-);
+const links = document.querySelectorAll('.login-nav-btn, .login-mobile-btn');
+const dashboardLinks = document.querySelectorAll('.account-dashboard-link');
+const TEACHER_EMAIL = 'maleksameh121@gmail.com';
 
 if (FIREBASE_READY && links.length) {
 
@@ -23,6 +23,11 @@ if (FIREBASE_READY && links.length) {
     // ─────────────────────────────────────
 
     if (!user) {
+
+      dashboardLinks.forEach(link => {
+        link.href = './login/index.html';
+        link.innerHTML = '<i class="fa-solid fa-user-graduate"></i> لوحة الطالب';
+      });
 
       links.forEach(link => {
         link.href = 'login/index.html';
@@ -40,6 +45,18 @@ if (FIREBASE_READY && links.length) {
     // ─────────────────────────────────────
     // المستخدم مسجل الدخول
     // ─────────────────────────────────────
+
+    const isTeacherAccount = user.email?.toLowerCase() === TEACHER_EMAIL.toLowerCase();
+
+    // تغيير زر لوحة الحساب حسب نوع الحساب
+    dashboardLinks.forEach(link => {
+      link.href = isTeacherAccount
+        ? './dashboard/teacher/index.html'
+        : './student/dashboard.html';
+      link.innerHTML = isTeacherAccount
+        ? '<i class="fa-solid fa-chalkboard-user"></i> لوحة المعلم'
+        : '<i class="fa-solid fa-user-graduate"></i> لوحة الطالب';
+    });
 
     let userName =
       user.displayName ||

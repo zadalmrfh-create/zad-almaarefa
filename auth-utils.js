@@ -11,7 +11,7 @@ export function firebaseReadyOrMessage(messageEl) {
 export async function getUserProfile(user) {
   if (!user) return null;
   if (user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
-    return { name: 'مدير المنصة', email: user.email, role: 'admin', status: 'active' };
+    return { name: user.displayName || 'مالك سامح', email: user.email, role: 'teacher', status: 'active' };
   }
   const snap = await getDoc(doc(db, 'users', user.uid));
   return snap.exists() ? snap.data() : null;
