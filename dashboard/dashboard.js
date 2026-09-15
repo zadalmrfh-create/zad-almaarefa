@@ -9,17 +9,10 @@ export function guard(requiredRole, onReady){
     if(!user){ location.href='../../login/index.html'; return; }
     let profile=null;
 
-    // الأدمن الحقيقي يتم التحقق منه من admins/{uid}
     const adminSnap = await getDoc(doc(db, 'admins', user.uid));
-
-    if (adminSnap.exists() || (ADMIN_EMAIL && user.email && user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase())) {
+    if (adminSnap.exists()) {
       const adminData = adminSnap.data() || {};
-      profile = {
-        role: 'admin',
-        name: adminData.name || 'مدير المنصة',
-        email: user.email || adminData.email || '',
-        status: 'active'
-      };
+      profile = {role:'admin', name:adminData.name || user.displayName || 'مدير المنصة', email:user.email || '', status:'active'};
     } else {
       const snap = await getDoc(doc(db, 'users', user.uid));
       profile = snap.exists() ? snap.data() : null;

@@ -46,16 +46,19 @@ if (FIREBASE_READY && links.length) {
     // المستخدم مسجل الدخول
     // ─────────────────────────────────────
 
-    const isTeacherAccount = user.email?.toLowerCase() === TEACHER_EMAIL.toLowerCase();
+    let accountRole = 'student';
+    try {
+      const adminSnap = await getDoc(doc(db, 'admins', user.uid));
+      if (adminSnap.exists()) accountRole = 'admin';
+      else {
+        const profileSnap = await getDoc(doc(db, 'users', user.uid));
+        if (profileSnap.exists() && profileSnap.data().role === 'teacher') accountRole = 'teacher';
+      }
+    } catch (error) { console.warn('تعذر تحديد نوع الحساب:', error); }
 
-    // تغيير زر لوحة الحساب حسب نوع الحساب
     dashboardLinks.forEach(link => {
-      link.href = isTeacherAccount
-        ? './dashboard/teacher/index.html'
-        : './student/dashboard.html';
-      link.innerHTML = isTeacherAccount
-        ? '<i class="fa-solid fa-chalkboard-user"></i> لوحة المعلم'
-        : '<i class="fa-solid fa-user-graduate"></i> لوحة الطالب';
+      link.href = accountRole === 'admin' ? './dashboard/admin/index.html' : accountRole === 'teacher' ? './dashboard/teacher/index.html' : './student/dashboard.html';
+      link.innerHTML = accountRole === 'admin' ? '<i class="fa-solid fa-user-shield"></i> لوحة الإدارة' : accountRole === 'teacher' ? '<i class="fa-solid fa-chalkboard-user"></i> لوحة المعلم' : '<i class="fa-solid fa-user-graduate"></i> لوحة الطالب';
     });
 
     let userName =

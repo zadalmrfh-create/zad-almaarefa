@@ -155,6 +155,16 @@ async function checkUserAndContinue(user) {
         msg(profile.status === 'banned' ? '⛔ هذا الحساب محظور حاليًا.' : '🚫 هذا الحساب معطل حاليًا.');
         return;
       }
+      if (profile.role === 'teacher' && profile.status === 'pending') {
+        msg('تم تسجيل الدخول، لكن حساب المعلم ما زال في انتظار اعتماد الإدارة.', 'success');
+        setTimeout(() => window.location.replace('../dashboard/teacher/index.html'), 300);
+        return;
+      }
+      if (profile.role === 'teacher') {
+        msg('تم تسجيل الدخول كمعلم، جارٍ فتح لوحة المعلم...', 'success');
+        setTimeout(() => window.location.replace('../dashboard/teacher/index.html'), 300);
+        return;
+      }
     }
   } catch (firestoreError) {
     // تسجيل الدخول في Firebase Auth ناجح حتى لو كانت Firestore Rules تمنع القراءة/الكتابة.

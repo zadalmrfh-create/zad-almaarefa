@@ -21,7 +21,12 @@ service cloud.firestore {
           && request.resource.data.role == resource.data.role
           && request.resource.data.status == resource.data.status);
 
-      allow delete: if isAdmin();
+      allow delete: if isAdmin() || isOwner(uid);
+    }
+
+    // بيانات المكتبة الخاصة بكل طالب: المفضلة والكتب المقروءة والكتب الأخيرة.
+    match /users/{uid}/library/{documentId} {
+      allow read, create, update, delete: if isOwner(uid) || isAdmin();
     }
 
     // ملف صلاحية الأدمن: القراءة لصاحب الحساب الأدمن فقط.
