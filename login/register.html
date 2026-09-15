@@ -28,7 +28,9 @@
       font-size:18px;
     }
     .small-note { color:var(--muted); font-size:12px; margin:8px 0 0; line-height:1.7; }
-  </style>
+  
+    .hidden-field { display:none !important; }
+</style>
 </head>
 <body>
 <main class="login-page">
@@ -56,6 +58,16 @@
         <div class="field">
           <label for="fullName">الاسم بالكامل</label>
           <input id="fullName" type="text" placeholder="اكتب اسمك بالكامل" autocomplete="name" required>
+        </div>
+
+        <div class="field">
+          <label for="phone">رقم الهاتف</label>
+          <input id="phone" type="tel" placeholder="مثال: 01012345678" autocomplete="tel" required>
+        </div>
+
+        <div class="field">
+          <label for="grade" id="gradeLabel">الصف الدراسي</label>
+          <input id="grade" type="text" placeholder="مثال: أولى ثانوي أزهري" autocomplete="off" required>
         </div>
 
         <div class="field">

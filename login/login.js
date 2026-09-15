@@ -94,13 +94,32 @@ function clearMsg() {
 ========================================================= */
 
 
-function redirectAfterLogin() {
+async function redirectAfterLogin(user) {
   const target = sessionStorage.getItem('redirectAfterLogin');
-
   if (target && target.includes('/sections/library.html')) {
     sessionStorage.removeItem('redirectAfterLogin');
     window.location.replace('../sections/library.html');
-  } else {
+    return;
+  }
+
+  // الأدمن الأساسي دائمًا يذهب إلى لوحة الإدارة
+  if (user?.email?.toLowerCase() === 'maleksameh121@gmail.com') {
+    window.location.replace('../dashboard/admin/index.html');
+    return;
+  }
+
+  try {
+    const snap = await getDoc(doc(db, 'users', user.uid));
+    const profile = snap.exists() ? snap.data() : {};
+    if (profile.role === 'admin') {
+      window.location.replace('../dashboard/admin/index.html');
+    } else if (profile.role === 'teacher' && profile.status === 'active') {
+      window.location.replace('../dashboard/teacher/index.html');
+    } else {
+      window.location.replace('../student/dashboard.html');
+    }
+  } catch (e) {
+    console.error('تعذر تحديد لوحة الحساب:', e);
     window.location.replace('../student/dashboard.html');
   }
 }
@@ -150,19 +169,11 @@ async function checkUserAndContinue(user) {
       });
     } else {
       const profile = userSnap.data();
-      if (profile.status === 'banned' || profile.status === 'disabled') {
+      // الحساب المحظور فقط يُمنع من الدخول.
+      // الحساب المعطل يُعامل كطالب، وتُفتح له لوحة الطالب.
+      if (profile.status === 'banned') {
         await signOut(auth);
-        msg(profile.status === 'banned' ? '⛔ هذا الحساب محظور حاليًا.' : '🚫 هذا الحساب معطل حاليًا.');
-        return;
-      }
-      if (profile.role === 'teacher' && profile.status === 'pending') {
-        msg('تم تسجيل الدخول، لكن حساب المعلم ما زال في انتظار اعتماد الإدارة.', 'success');
-        setTimeout(() => window.location.replace('../dashboard/teacher/index.html'), 300);
-        return;
-      }
-      if (profile.role === 'teacher') {
-        msg('تم تسجيل الدخول كمعلم، جارٍ فتح لوحة المعلم...', 'success');
-        setTimeout(() => window.location.replace('../dashboard/teacher/index.html'), 300);
+        msg('⛔ هذا الحساب محظور حاليًا.');
         return;
       }
     }
@@ -172,7 +183,7 @@ async function checkUserAndContinue(user) {
   }
 
   msg('تم تسجيل الدخول بنجاح، جارٍ فتح المنصة...', 'success');
-  setTimeout(() => redirectAfterLogin(), 300);
+  setTimeout(() => redirectAfterLogin(user), 300);
 }
 
 

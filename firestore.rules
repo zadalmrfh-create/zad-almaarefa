@@ -1,67 +1,18 @@
 rules_version = '2';
 service cloud.firestore {
-  match /databases/{database}/documents {
-    function signedIn() { return request.auth != null; }
-    function isAdmin() {
-      return signedIn() && request.auth.token.email == 'maleksameh121@gmail.com';
-    }
-    function isOwner(uid) { return signedIn() && request.auth.uid == uid; }
-
-    match /users/{uid} {
-      allow create: if isOwner(uid)
-        && request.resource.data.email == request.auth.token.email
-        && request.resource.data.role in ['student', 'teacher']
-        && request.resource.data.status == (request.resource.data.role == 'teacher' ? 'pending' : 'active');
-
-      allow read: if isOwner(uid) || isAdmin();
-
-      allow update: if isAdmin()
-        || (isOwner(uid)
-          && request.resource.data.email == resource.data.email
-          && request.resource.data.role == resource.data.role
-          && request.resource.data.status == resource.data.status);
-
-      allow delete: if isAdmin() || isOwner(uid);
-    }
-
-    // بيانات المكتبة الخاصة بكل طالب: المفضلة والكتب المقروءة والكتب الأخيرة.
-    match /users/{uid}/library/{documentId} {
-      allow read, create, update, delete: if isOwner(uid) || isAdmin();
-    }
-
-    // ملف صلاحية الأدمن: القراءة لصاحب الحساب الأدمن فقط.
-    match /admins/{uid} {
-      allow read: if isAdmin() && isOwner(uid);
-      allow create, update, delete: if false;
-    }
-
-    // الإشعارات: الأدمن ينشئ ويحذف، والمستخدم يقرأ العامة أو الموجهة إليه.
-    // الاستعلامات في notifications.js تقيّد audience لتوافق هذه القاعدة.
-    match /notifications/{notificationId} {
-      allow read: if isAdmin()
-        || (signedIn() && (
-          resource.data.audience == 'all'
-          || (resource.data.audience == 'user' && resource.data.targetUid == request.auth.uid)
-        ));
-
-      allow create: if isAdmin()
-        && request.resource.data.title is string
-        && request.resource.data.message is string
-        && request.resource.data.audience in ['all', 'user']
-        && request.resource.data.readBy is list
-        && (request.resource.data.audience == 'all'
-          || (request.resource.data.audience == 'user' && request.resource.data.targetUid is string));
-
-      allow update: if isAdmin()
-        || (signedIn()
-          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['readBy'])
-          && request.resource.data.readBy is list
-          && resource.data.readBy is list
-          && request.resource.data.readBy.hasAll(resource.data.readBy)
-          && request.resource.data.readBy.size() == resource.data.readBy.size() + 1
-          && request.resource.data.readBy.hasAll([request.auth.uid]));
-
-      allow delete: if isAdmin();
-    }
+ match /databases/{database}/documents {
+  function signedIn(){return request.auth != null;}
+  function isOwner(uid){return signedIn() && request.auth.uid==uid;}
+  function isAdmin(){return signedIn() && (request.auth.token.email=='maleksameh121@gmail.com' || exists(/databases/$(database)/documents/admins/$(request.auth.uid)));}
+  function isTeacher(){return signedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid)) && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role=='teacher' && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.status=='active';}
+  match /users/{uid} {
+   allow create: if isOwner(uid) && request.resource.data.email==request.auth.token.email && request.resource.data.role in ['student','teacher'] && request.resource.data.status==(request.resource.data.role=='teacher'?'pending':'active');
+   allow read: if isOwner(uid) || isAdmin() || isTeacher();
+   allow update: if isAdmin() || (isOwner(uid) && request.resource.data.email==resource.data.email && request.resource.data.role==resource.data.role && request.resource.data.status==resource.data.status);
+   allow delete: if isOwner(uid) || isAdmin();
   }
+  match /users/{uid}/library/{documentId} {allow read,create,update,delete: if isOwner(uid);}
+  match /admins/{uid} {allow read: if isAdmin(); allow create,update,delete: if false;}
+  match /notifications/{notificationId} {allow read: if isAdmin() || (signedIn() && (resource.data.audience=='all' || (resource.data.audience=='user' && resource.data.targetUid==request.auth.uid))); allow create,delete: if isAdmin(); allow update: if isAdmin() || (signedIn() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['readBy']));}
+ }
 }

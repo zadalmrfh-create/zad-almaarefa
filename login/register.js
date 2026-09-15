@@ -61,7 +61,22 @@ function getRole() {
   return roleSelect?.value === 'teacher' ? 'teacher' : 'student';
 }
 
-async function saveUserProfile(user, role, provider) {
+function updateRoleFields() {
+  const isTeacher = getRole() === 'teacher';
+  const label = document.getElementById('gradeLabel');
+  const input = document.getElementById('grade');
+  if (!label || !input) return;
+
+  label.textContent = isTeacher ? 'المادة التي يدرسها' : 'الصف الدراسي';
+  input.placeholder = isTeacher
+    ? 'مثال: اللغة العربية أو القرآن الكريم'
+    : 'مثال: أولى ثانوي أزهري';
+}
+
+roleSelect?.addEventListener('change', updateRoleFields);
+updateRoleFields();
+
+async function saveUserProfile(user, role, provider, extraData = {}) {
   const userRef = doc(db, 'users', user.uid);
   const existingUser = await getDoc(userRef);
 
@@ -82,6 +97,9 @@ async function saveUserProfile(user, role, provider) {
     fullName: name,
     email: user.email || '',
     photoURL: user.photoURL || '',
+    phone: extraData.phone || '',
+    grade: role === 'student' ? (extraData.grade || '') : '',
+    subject: role === 'teacher' ? (extraData.grade || '') : '',
     role,
     status: role === 'teacher' ? 'pending' : 'active',
     provider,
@@ -96,8 +114,8 @@ function goHome() {
   window.location.replace('../index.html');
 }
 
-async function finishRegistration(user, role, provider) {
-  const created = await saveUserProfile(user, role, provider);
+async function finishRegistration(user, role, provider, extraData = {}) {
+  const created = await saveUserProfile(user, role, provider, extraData);
 
   if (created) {
     msg(
@@ -178,6 +196,8 @@ emailRegisterForm?.addEventListener('submit', async (event) => {
   const name = document.getElementById('fullName')?.value.trim() || '';
   const email = document.getElementById('registerEmail')?.value.trim() || '';
   const password = document.getElementById('registerPassword')?.value || '';
+  const phone = document.getElementById('phone')?.value.trim() || '';
+  const grade = document.getElementById('grade')?.value.trim() || '';
   const role = getRole();
 
   if (name.length < 2) {
@@ -186,6 +206,14 @@ emailRegisterForm?.addEventListener('submit', async (event) => {
   }
   if (!email) {
     msg('اكتب البريد الإلكتروني.');
+    return;
+  }
+  if (!phone) {
+    msg('اكتب رقم الهاتف.');
+    return;
+  }
+  if (!grade) {
+    msg(role === 'teacher' ? 'اكتب المادة التي يدرسها المعلم.' : 'اكتب الصف الدراسي.');
     return;
   }
   if (password.length < 6) {
@@ -200,7 +228,7 @@ emailRegisterForm?.addEventListener('submit', async (event) => {
 
     const result = await createUserWithEmailAndPassword(auth, email, password);
     await updateProfile(result.user, { displayName: name });
-    await finishRegistration(result.user, role, 'password');
+    await finishRegistration(result.user, role, 'password', { phone, grade });
   } catch (error) {
     console.error('Email Register Error:', error);
     msg(firebaseError(error));

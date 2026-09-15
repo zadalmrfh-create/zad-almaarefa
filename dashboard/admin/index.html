@@ -103,6 +103,12 @@
 
               <th>البريد</th>
 
+              <th>الهاتف</th>
+
+              <th>واتساب</th>
+
+              <th>الصف الدراسي / المادة</th>
+
               <th>النوع</th>
 
               <th>الحالة</th>
@@ -117,7 +123,7 @@
           <tbody id="users">
 
             <tr>
-              <td colspan="5">
+              <td colspan="8">
                 جارٍ التحميل…
               </td>
             </tr>
@@ -277,6 +283,20 @@ function escapeHtml(value) {
 }
 
 
+/* تحويل رقم الهاتف إلى صيغة واتساب الدولية */
+function whatsappNumber(value) {
+  let phone = String(value || '').replace(/\D/g, '');
+
+  // رقم مصري يبدأ بـ 0: 01012345678 -> 201012345678
+  if (phone.startsWith('0')) {
+    phone = '20' + phone.slice(1);
+  }
+
+  // إذا كان الرقم مكتوبًا بصيغة +20 أو 20 نتركه كما هو
+  return phone;
+}
+
+
 /* ═══════════════════════════════════════
    تحويل حالة الحساب إلى نص
 ═══════════════════════════════════════ */
@@ -304,55 +324,41 @@ function getStatusText(status) {
    عرض بيانات المستخدم
 ═══════════════════════════════════════ */
 
+function formatDate(value) {
+  if (!value) return 'غير متوفر';
+  try {
+    const date = typeof value.toDate === 'function' ? value.toDate() : new Date(value);
+    if (Number.isNaN(date.getTime())) return 'غير متوفر';
+    return new Intl.DateTimeFormat('ar-EG', { dateStyle: 'medium', timeStyle: 'short' }).format(date);
+  } catch {
+    return 'غير متوفر';
+  }
+}
+
 function showUser(user) {
+  const fields = [
+    ['الاسم بالكامل', user.fullName || user.name || user.displayName || 'غير متوفر'],
+    ['البريد الإلكتروني', user.email || 'غير متوفر'],
+    ['رقم الهاتف', user.phone || user.phoneNumber || 'غير متوفر'],
+    ['الصف الدراسي / المادة', user.role === 'teacher' ? (user.subject || user.grade || 'غير متوفر') : (user.grade || user.studyGrade || user.className || 'غير متوفر')],
+    ['نوع الحساب', user.role === 'teacher' ? '👨‍🏫 معلم' : '🎓 طالب'],
+    ['حالة الحساب', getStatusText(user.status)],
+    ['طريقة التسجيل', user.provider === 'google.com' ? 'Google' : user.provider === 'password' ? 'البريد الإلكتروني' : (user.provider || 'غير متوفر')],
+    ['معرّف الحساب UID', user.uid || 'غير متوفر'],
+    ['تاريخ إنشاء الحساب', formatDate(user.createdAt)],
+    ['آخر تسجيل دخول', formatDate(user.lastLoginAt)]
+  ];
 
-  userInfo.innerHTML = `
-
+  userInfo.innerHTML = fields.map(([label, value]) => `
     <div class="info-row">
-      <strong>الاسم</strong>
-      <span>
-        ${escapeHtml(
-          user.fullName ||
-          user.name ||
-          user.displayName ||
-          'بدون اسم'
-        )}
-      </span>
+      <strong>${escapeHtml(label)}</strong>
+      <span>${escapeHtml(value)}</span>
     </div>
-
-    <div class="info-row">
-      <strong>البريد الإلكتروني</strong>
-      <span>
-        ${escapeHtml(
-          user.email ||
-          'بدون بريد'
-        )}
-      </span>
-    </div>
-
-    <div class="info-row">
-      <strong>النوع</strong>
-      <span>
-        ${
-          user.role === 'teacher'
-            ? '👨‍🏫 معلم'
-            : '🎓 طالب'
-        }
-      </span>
-    </div>
-
-    <div class="info-row">
-      <strong>الحالة</strong>
-      <span>
-        ${getStatusText(user.status)}
-      </span>
-    </div>
-
-  `;
+  `).join('');
 
   modal.classList.add('show');
-
 }
+
 
 
 /* ═══════════════════════════════════════
@@ -786,7 +792,7 @@ async function load() {
 
   tbody.innerHTML = `
     <tr>
-      <td colspan="5">
+      <td colspan="8">
         جارٍ تحميل المستخدمين…
       </td>
     </tr>
@@ -808,7 +814,7 @@ async function load() {
 
       tbody.innerHTML = `
         <tr>
-          <td colspan="5">
+          <td colspan="8">
             لا يوجد مستخدمون بعد.
           </td>
         </tr>
@@ -1063,6 +1069,20 @@ async function load() {
 
         <td>
           ${escapeHtml(email)}
+        </td>
+
+        <td>
+          ${escapeHtml(user.phone || user.phoneNumber || '-')}
+        </td>
+
+        <td>
+          ${(user.phone || user.phoneNumber)
+            ? `<a class="action-btn action-whatsapp" target="_blank" rel="noopener" href="https://wa.me/${whatsappNumber(user.phone || user.phoneNumber)}">واتساب</a>`
+            : '-'}
+        </td>
+
+        <td>
+          ${escapeHtml(user.role === 'teacher' ? (user.subject || user.grade || '-') : (user.grade || user.studyGrade || user.className || '-'))}
         </td>
 
         <td>

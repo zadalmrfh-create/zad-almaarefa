@@ -12,7 +12,7 @@ import {
 
 const links = document.querySelectorAll('.login-nav-btn, .login-mobile-btn');
 const dashboardLinks = document.querySelectorAll('.account-dashboard-link');
-const TEACHER_EMAIL = 'maleksameh121@gmail.com';
+const ADMIN_EMAIL = 'maleksameh121@gmail.com';
 
 if (FIREBASE_READY && links.length) {
 
@@ -46,19 +46,15 @@ if (FIREBASE_READY && links.length) {
     // المستخدم مسجل الدخول
     // ─────────────────────────────────────
 
-    let accountRole = 'student';
-    try {
-      const adminSnap = await getDoc(doc(db, 'admins', user.uid));
-      if (adminSnap.exists()) accountRole = 'admin';
-      else {
-        const profileSnap = await getDoc(doc(db, 'users', user.uid));
-        if (profileSnap.exists() && profileSnap.data().role === 'teacher') accountRole = 'teacher';
-      }
-    } catch (error) { console.warn('تعذر تحديد نوع الحساب:', error); }
+    let accountRole = user.email?.toLowerCase() === ADMIN_EMAIL ? 'admin' : 'student';
+    let userData = {};
+    try { const profileSnap = await getDoc(doc(db, 'users', user.uid)); if (profileSnap.exists()) { userData = profileSnap.data(); accountRole = user.email?.toLowerCase() === ADMIN_EMAIL ? 'admin' : (userData.role || 'student'); } } catch(e) {}
+    const isTeacherAccount = accountRole === 'teacher' && userData.status === 'active';
 
+    // تغيير زر لوحة الحساب حسب نوع الحساب
     dashboardLinks.forEach(link => {
-      link.href = accountRole === 'admin' ? './dashboard/admin/index.html' : accountRole === 'teacher' ? './dashboard/teacher/index.html' : './student/dashboard.html';
-      link.innerHTML = accountRole === 'admin' ? '<i class="fa-solid fa-user-shield"></i> لوحة الإدارة' : accountRole === 'teacher' ? '<i class="fa-solid fa-chalkboard-user"></i> لوحة المعلم' : '<i class="fa-solid fa-user-graduate"></i> لوحة الطالب';
+      link.href = accountRole === 'admin' ? './dashboard/admin/index.html' : (isTeacherAccount ? './dashboard/teacher/index.html' : './student/dashboard.html');
+      link.innerHTML = accountRole === 'admin' ? '<i class="fa-solid fa-crown"></i> لوحة الإدارة' : (isTeacherAccount ? '<i class="fa-solid fa-chalkboard-user"></i> لوحة المعلم' : '<i class="fa-solid fa-user-graduate"></i> لوحة الطالب');
     });
 
     let userName =
@@ -153,7 +149,7 @@ if (FIREBASE_READY && links.length) {
 
         try {
           await signOut(auth);
-          window.location.href = 'index.html';
+          window.location.href = userData?.role === 'admin' ? './dashboard/admin/index.html' : (userData?.role === 'teacher' ? './dashboard/teacher/index.html' : './student/dashboard.html');
         } catch (error) {
           console.error('خطأ أثناء تسجيل الخروج:', error);
           link.dataset.loggingOut = 'false';
@@ -175,6 +171,6 @@ if (FIREBASE_READY && links.length) {
 export function redirectAfterLogin(userData) {
 
   // الجميع يعود للصفحة الرئيسية بعد الدخول
-  window.location.href = 'index.html';
+  window.location.href = userData?.role === 'admin' ? './dashboard/admin/index.html' : (userData?.role === 'teacher' ? './dashboard/teacher/index.html' : './student/dashboard.html');
 
 }

@@ -9,16 +9,42 @@ export function guard(requiredRole, onReady){
     if(!user){ location.href='../../login/index.html'; return; }
     let profile=null;
 
-    const adminSnap = await getDoc(doc(db, 'admins', user.uid));
+    // الأدمن الأساسي يتم التعرف عليه من البريد مباشرة
+    // أو من خلال مستند admins/{uid}
+    const isPrimaryAdmin =
+      user.email &&
+      user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+
+    const adminSnap = isPrimaryAdmin
+      ? { exists: () => true, data: () => ({ name: 'مالك سامح', email: user.email }) }
+      : await getDoc(doc(db, 'admins', user.uid));
+
     if (adminSnap.exists()) {
       const adminData = adminSnap.data() || {};
-      profile = {role:'admin', name:adminData.name || user.displayName || 'مدير المنصة', email:user.email || '', status:'active'};
+      profile = {
+        role: 'admin',
+        name: adminData.name || user.displayName || 'مدير المنصة',
+        email: user.email || adminData.email || '',
+        status: 'active'
+      };
     } else {
       const snap = await getDoc(doc(db, 'users', user.uid));
       profile = snap.exists() ? snap.data() : null;
     }
-    if(!profile || (requiredRole && profile.role!==requiredRole)){
-      location.href=requiredRole==='admin'?'../../index.html':'../../dashboard/'+(profile?.role||'student')+'/index.html'; return;
+    // المعلم غير المعتمد أو المعطل يُعامل كطالب.
+    const effectiveRole = profile?.role === 'teacher' && profile?.status !== 'active'
+      ? 'student'
+      : (profile?.role || 'student');
+
+    if(!profile || (requiredRole && effectiveRole!==requiredRole)){
+      if (effectiveRole === 'admin') {
+        location.href = '../../dashboard/admin/index.html';
+      } else if (effectiveRole === 'teacher') {
+        location.href = '../../dashboard/teacher/index.html';
+      } else {
+        location.href = '../../student/dashboard.html';
+      }
+      return;
     }
     document.querySelectorAll('[data-name]').forEach(x=>x.textContent=profile.name||user.displayName||'مستخدم');
     document.querySelectorAll('[data-email]').forEach(x=>x.textContent=user.email||'');
