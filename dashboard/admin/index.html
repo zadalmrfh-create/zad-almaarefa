@@ -37,6 +37,10 @@
         الرئيسية
       </a>
 
+      <a class="btn gold" href="#contentManagement" id="contentManagementBtn">
+        ⚙️ إدارة محتوى المنصة
+      </a>
+
       <button id="logout" class="btn danger">
         تسجيل الخروج
       </button>
@@ -64,6 +68,10 @@
       <p>
         إدارة الحسابات واعتماد المعلمين.
       </p>
+
+      <a class="btn gold" href="#contentManagement" style="display:inline-block;margin-top:12px">
+        ⚙️ الانتقال إلى إدارة محتوى المنصة
+      </a>
 
     </section>
 
@@ -139,7 +147,26 @@
 
 
     <!-- ═════════════ NOTIFICATIONS ═════════════ -->
-    <section class="card notifications-admin-card">
+  
+    <section class="card" id="contentManagement">
+      <h2>إدارة محتوى المنصة</h2>
+      <p>إضافة وتعديل وحذف وإظهار أو إخفاء الأحداث وطاقم التدريس والطلاب المتميزين.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin:15px 0">
+        <button class="btn" data-content-tab="events">الأحداث</button>
+        <button class="btn" data-content-tab="teachers">طاقم التدريس</button>
+        <button class="btn" data-content-tab="featuredStudents">الطلاب المتميزون</button>
+      </div>
+      <form id="contentForm" style="display:grid;gap:10px;margin:15px 0">
+        <input type="hidden" id="contentId">
+        <input type="hidden" id="contentType" value="events">
+        <div id="contentFields" style="display:grid;gap:10px"></div>
+        <label><input type="checkbox" id="contentVisible" checked> ظاهر للزوار</label>
+        <div><button class="btn" type="submit">حفظ</button> <button class="btn" type="button" id="contentCancel">إلغاء التعديل</button></div>
+      </form>
+      <div class="table-wrap"><table class="table"><thead><tr><th>النوع</th><th>العنوان</th><th>التفاصيل</th><th>الحالة</th><th>إجراءات</th></tr></thead><tbody id="contentRows"></tbody></table></div>
+    </section>
+
+  <section class="card notifications-admin-card">
       <div class="actions" style="justify-content:space-between">
         <h3>🔔 الإشعارات</h3>
       </div>
@@ -1491,6 +1518,145 @@ document
 }
 
 </style>
+
+
+<script type="module">
+import { auth, db } from '../../firebase-config.js';
+import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
+
+const types = {events:'الأحداث', teachers:'طاقم التدريس', featuredStudents:'الطلاب المتميزون'};
+// البيانات القديمة الموجودة داخل المشروع — لا يتم حذفها عند إضافة بيانات جديدة.
+const LEGACY = {
+  events: [
+    {title:'رحلة تعليمية وترفيهية',category:'trip',icon:'🛫',date:'قريباً',time:'',location:'يُعلَن لاحقاً',description:'رحلة ترفيهية وتعليمية لأعضاء المنصة',status:'upcoming'},
+    {title:'مباراة ودية',category:'match',icon:'⚽',date:'قريباً',time:'',location:'ملعب المعهد',description:'مباراة كرة قدم ودية بين طلاب المنصة',status:'upcoming'},
+    {title:'مسابقة حفظ القرآن',category:'competition',icon:'🏆',date:'قريباً',time:'',location:'قاعة المعهد',description:'sdfda',status:'upcoming'},
+    {title:'ورشة عمل: مهارات التعلم',category:'workshop',icon:'📝',date:'قريباً',time:'',location:'عن بُعد',description:'ورشة تفاعلية في مهارات الدراسة والتنظيم الذاتي',status:'upcoming'}
+  ],
+  teachers: [
+    {name:'الأستاذ ضياء نبيل',subject:'اللغة العربية',role:'معلم متعدد التخصصات',image:'../images/معلم الللغة العربية.png',bio:'معلم متميز في اللغة العربية، يجمع بين العلم الشرعي الأصيل والإتقان في تعليم القرآن الكريم والمواد الشرعية بأسلوب مبسط وممتع.',whatsapp:'201515474939'},
+    {name:'الأستاذ ضياء نبيل',subject:'الخط العربي',role:'معلم الخط العربي والزخرفة الإسلامية',image:'../images/الخط العربي.png',bio:'معلم متخصص في تعليم الخط العربي بأنواعه المختلفة مثل النسخ والرقعة والثلث، مع التركيز على تنمية مهارات الجمال الفني في الكتابة والزخرفة الإسلامية.',whatsapp:'201515474939'},
+    {name:'الأستاذ ضياء نبيل',subject:'القرآن الكريم',role:'معلم القرآن الكريم وعلوم التجويد',image:'../images/القرآن.png',bio:'معلم متخصص في تحفيظ القرآن الكريم وتعليم أحكام التجويد، مع الاهتمام بتصحيح التلاوة وتدريب الطلاب على القراءة الصحيحة بأسلوب سهل ومبسط.',whatsapp:'201515474939'},
+    {name:'مالك سامح',subject:'البرمجة والذكاء الاصطناعي',role:'معلم تقني متميز',image:'../images/teacher-malek.png',bio:'معلم متخصص في علوم الحاسوب والبرمجة، يقدم دورات شاملة في البرمجة والذكاء الاصطناعي بأحدث التقنيات وأفضل الممارسات العالمية.',whatsapp:'201515474939'}
+  ],
+  featuredStudents: [
+    {name:'مالك سامح سيد',grade:'الصف الثالث الثانوي — الأزهر',tags:'الأول على الفصل, حافظ القرآن',achievement:'طالب متميز في مواد اللغة العربية والمواد الشرعية، حقق أعلى الدرجات وأتم حفظ القرآن الكريم كاملاً.',percentage:'100%',memorized:'30 جزءاً محفوظاً',certificates:'3'},
+    {name:'اسم الطالبة',grade:'الصف الثاني الثانوي — الأزهر',tags:'متفوقة, الخط العربي',achievement:'طالبة متميزة في الخط العربي والمواد الأدبية، حاصلة على جائزة التميز في مسابقة الخط على مستوى المعهد.',percentage:'98%',memorized:'2 جوائز',certificates:'2'},
+    {name:'اسم الطالب',grade:'الصف الأول الثانوي — الأزهر',tags:'مسابقات, التجويد',achievement:'طالب متميز في التجويد والمسابقات القرآنية، حقق المركز الأول في مسابقة التجويد على مستوى المحافظة.',percentage:'95%',memorized:'1 مركز أول',certificates:'2'}
+  ]
+};
+let active = 'events';
+let editing = null;
+const $ = id => document.getElementById(id);
+const rows = $('contentRows');
+
+function esc(v){
+  return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function setStatus(message, error=false){
+  let box = $('contentStatus');
+  if(!box){
+    box=document.createElement('div'); box.id='contentStatus'; box.style.cssText='margin:10px 0;padding:10px;border-radius:8px;';
+    $('contentForm').before(box);
+  }
+  box.textContent=message; box.style.background=error?'#5b1f1f':'#174b35'; box.style.color='#fff'; box.style.display='block';
+}
+const fieldSets={
+ events:[['title','عنوان الحدث','text'],['category','نوع الحدث: trip أو match أو competition أو workshop أو celebration','text'],['icon','الأيقونة','text'],['date','التاريخ','text'],['time','الوقت','text'],['location','المكان','text'],['description','وصف الحدث','textarea'],['link','رابط الحجز أو واتساب (اختياري)','text']],
+ teachers:[['name','اسم المعلم','text'],['subject','المادة / التخصص','text'],['role','المسمى الوظيفي (اختياري)','text'],['image','رابط صورة المعلم (اختياري)','text'],['bio','نبذة عن المعلم','textarea'],['whatsapp','رقم أو رابط واتساب (اختياري)','text']],
+ featuredStudents:[['name','اسم الطالب','text'],['grade','الصف / المرحلة','text'],['image','رابط صورة الطالب (اختياري)','text'],['tags','الإنجازات مفصولة بفاصلة','text'],['achievement','نبذة والإنجاز','textarea'],['percentage','نسبة التفوق (اختياري)','text'],['memorized','الأجزاء/الجوائز (اختياري)','text'],['certificates','عدد الشهادات (اختياري)','text'],['certificateLink','رابط الشهادة PDF (اختياري)','text']]
+};
+function renderFields(){
+ const box=$('contentFields'); box.innerHTML='';
+ (fieldSets[active]||[]).forEach(([key,label,type])=>{
+   const el=document.createElement(type==='textarea'?'textarea':'input'); el.id='field_'+key; el.name=key; el.placeholder=label; if(type!=='textarea') el.type='text'; box.appendChild(el);
+ });
+}
+function val(key){const el=$('field_'+key); return el?el.value.trim():'';}
+function fill(d={}){
+ renderFields(); $('contentId').value=d.id||''; $('contentVisible').checked=d.visible!==false;
+ (fieldSets[active]||[]).forEach(([key])=>{const el=$('field_'+key); if(el) el.value=d[key]??'';});
+}
+async function load(){
+  rows.innerHTML='<tr><td colspan="5">جارٍ التحميل...</td></tr>';
+  try{
+    const snap=await getDocs(collection(db, active));
+    rows.innerHTML='';
+    const legacy = (LEGACY[active]||[]).map((d,i)=>({id:`legacy_${active}_${i}`, d:{...d, visible:true}, legacy:true}));
+    const cloud = snap.docs.map(x=>({id:x.id,d:x.data(),legacy:false}));
+    const all = [...legacy, ...cloud];
+    if(all.length===0){rows.innerHTML='<tr><td colspan="5">لا توجد بيانات مضافة حتى الآن.</td></tr>';return;}
+    all.forEach(({id,d,legacy})=>{
+      const title=d.title||d.name||'';
+      const details=d.subtitle||d.subject||d.grade||d.date||'';
+      const actions = legacy
+        ? '<span style="color:#94a3b8">بيانات أساسية</span>'
+        : `<button class="btn edit" data-id="${id}">تعديل</button> <button class="btn toggle" data-id="${id}" data-visible="${d.visible!==false}">${d.visible===false?'إظهار':'إخفاء'}</button> <button class="btn danger del" data-id="${id}">حذف</button>`;
+      rows.insertAdjacentHTML('beforeend', `<tr><td>${types[active]}</td><td>${esc(title)}</td><td>${esc(details)}</td><td>${d.visible===false?'مخفي':'ظاهر'}</td><td>${actions}</td></tr>`);
+    });
+  }catch(err){
+    console.error('Content load error:',err);
+    rows.innerHTML='<tr><td colspan="5">تعذر تحميل البيانات. راجع صلاحيات Firestore.</td></tr>';
+    setStatus('خطأ في تحميل المحتوى: '+(err.code||err.message),true);
+  }
+}
+
+document.querySelectorAll('[data-content-tab]').forEach(b=>b.addEventListener('click',()=>{
+  active=b.dataset.contentTab; $('contentType').value=active; editing=null; fill({}); load();
+}));
+
+$('contentForm').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const requiredKey=active==='events'?'title':'name';
+  const title=val(requiredKey);
+  if(!title){setStatus('اكتب البيانات الأساسية أولًا.',true);return;}
+  const data={visible:$('contentVisible').checked,updatedAt:serverTimestamp()};
+  (fieldSets[active]||[]).forEach(([key])=>{data[key]=val(key);});
+  if(active==='events'){data.title=val('title'); data.status=data.status||'upcoming';}
+  if(active==='featuredStudents'){data.title=data.name;}
+  try{
+    if(editing){
+      await updateDoc(doc(db,active,editing),data);
+      setStatus('تم تعديل العنصر وحفظه بنجاح.');
+    }else{
+      data.createdAt=serverTimestamp();
+      const ref=await addDoc(collection(db,active),data);
+      console.log('Added document:',ref.id);
+      setStatus('تمت إضافة العنصر وحفظه في Firestore بنجاح.');
+    }
+    editing=null; fill({}); await load();
+  }catch(err){
+    console.error('Content save error:',err);
+    setStatus('لم يتم الحفظ: '+(err.code||err.message),true);
+  }
+});
+
+$('contentCancel').onclick=()=>{editing=null;fill({});setStatus('تم إلغاء التعديل.');};
+rows.addEventListener('click',async e=>{
+  const b=e.target.closest('button'); if(!b)return;
+  const id=b.dataset.id;
+  try{
+    if(b.classList.contains('del')){
+      if(confirm('حذف هذا العنصر؟')){await deleteDoc(doc(db,active,id));setStatus('تم الحذف بنجاح.');}
+    }else if(b.classList.contains('toggle')){
+      await updateDoc(doc(db,active,id),{visible:b.dataset.visible==='false',updatedAt:serverTimestamp()});
+      setStatus('تم تغيير حالة الظهور.');
+    }else if(b.classList.contains('edit')){
+      const snap=await getDocs(collection(db,active));
+      const hit=snap.docs.find(z=>z.id===id);
+      if(hit){editing=id;fill({id,...hit.data()});window.scrollTo({top:$('contentForm').offsetTop-80,behavior:'smooth'});}
+    }
+    await load();
+  }catch(err){console.error(err);setStatus('تعذر تنفيذ العملية: '+(err.code||err.message),true);}
+});
+
+renderFields();
+onAuthStateChanged(auth,u=>{
+  if(u) load();
+  else rows.innerHTML='<tr><td colspan="5">يجب تسجيل الدخول بحساب الأدمن.</td></tr>';
+});
+</script>
 
 </body>
 </html>

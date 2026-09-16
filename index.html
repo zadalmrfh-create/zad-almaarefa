@@ -68,7 +68,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
 
       <!-- طاقم التدريس -->
       <a
-        href="./طاقم التدريس"
+        href="./teacher/index.html"
         class="nav-link"
       >
         طاقم التدريس
@@ -137,14 +137,20 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
 
 
     <!-- الوضع الليلي -->
-<button
-  class="theme-toggle"
-  id="themeToggle"
-  aria-label="تبديل الوضع الليلي"
-  title="الوضع الليلي"
->
-  ☾
-</button>
+<label class="theme-toggle" aria-label="تغيير الوضع">
+  <input type="checkbox" id="themeToggle">
+
+  <span class="toggle-track">
+    <span class="toggle-sky">
+      <span class="cloud cloud-one"></span>
+      <span class="cloud cloud-two"></span>
+      <span class="stars">✦ ✧</span>
+    </span>
+
+    <span class="toggle-sun">☀</span>
+    <span class="toggle-moon">☾</span>
+  </span>
+</label>
 
     <!-- قائمة الهاتف -->
     <button
@@ -201,7 +207,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
   </a>
 
   <a
-    href="./طاقم التدريس/index.html"
+    href="./teacher/index.html"
     class="mob-btn"
     onclick="closeMob()"
   >
@@ -453,11 +459,11 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
               <div class="dash-grid">
                 <div class="dash-widget">
                   <div class="dw-label">الدروس المتاحة</div>
-                  <div class="dw-val">+200</div>
+                  <div class="dw-val" id="availableBooksCount">—</div>
                 </div>
                 <div class="dash-widget">
                   <div class="dw-label">التصنيفات</div>
-                  <div class="dw-val">12</div>
+                  <div class="dw-val" id="categoriesCount">—</div>
                 </div>
               </div>
               <div class="dash-bar2">
@@ -474,25 +480,25 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
                   تقدّمك هذا الأسبوع
                 </div>
                 <div class="dbar-row">
-                  <span class="dbar-label">العقيدة</span
-                  ><span class="dbar-pct">٧٨٪</span>
+                  <span class="dbar-label">الكتب المقروءة</span
+                  ><span class="dbar-pct" id="readBooksPercent">٠٪</span>
                 </div>
-                <div class="dbar-track" style="margin-bottom: 14px; width: 78%">
-                  <div class="dbar-fill" data-w="78%"></div>
-                </div>
-                <div class="dbar-row">
-                  <span class="dbar-label">السيرة</span
-                  ><span class="dbar-pct">٥٤٪</span>
-                </div>
-                <div class="dbar-track" style="margin-bottom: 14px; width: 54%">
-                  <div class="dbar-fill" data-w="54%"></div>
+                <div class="dbar-track" style="margin-bottom: 14px; width: 0%">
+                  <div class="dbar-fill" id="readBooksBar" data-w="0%"></div>
                 </div>
                 <div class="dbar-row">
-                  <span class="dbar-label">الفقه</span
-                  ><span class="dbar-pct">٣٢٪</span>
+                  <span class="dbar-label">المفضلة</span
+                  ><span class="dbar-pct" id="favoriteBooksPercent">٠٪</span>
                 </div>
-                <div class="dbar-track" style="width: 38%">
-                  <div class="dbar-fill" data-w="32%"></div>
+                <div class="dbar-track" style="margin-bottom: 14px; width: 0%">
+                  <div class="dbar-fill" id="favoriteBooksBar" data-w="0%"></div>
+                </div>
+                <div class="dbar-row">
+                  <span class="dbar-label">النشاط الأخير</span
+                  ><span class="dbar-pct" id="recentActivityPercent">٠٪</span>
+                </div>
+                <div class="dbar-track" style="width: 0%">
+                  <div class="dbar-fill" id="recentActivityBar" data-w="0%"></div>
                 </div>
               </div>
               <div class="dash-list">
@@ -507,36 +513,12 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
                 >
                   آخر الدروس
                 </div>
-                <div class="dl-row">
-                  <div class="dl-icon">🌙</div>
-                  <span class="dl-text">أركان الإيمان الستة</span>
-                  <span class="dl-badge">مكتمل</span>
-                </div>
-                <div class="dl-row">
-                  <div class="dl-icon">📖</div>
-                  <span class="dl-text">أسباب النزول</span>
-                  <span
-                    class="dl-badge"
-                    style="
-                      background: rgba(124, 111, 205, 0.15);
-                      color: var(--accent2);
-                      border-color: rgba(124, 111, 205, 0.2);
-                    "
-                    >جارٍ</span
-                  >
-                </div>
-                <div class="dl-row">
-                  <div class="dl-icon">⚖️</div>
-                  <span class="dl-text">أركان الإسلام الخمسة</span>
-                  <span
-                    class="dl-badge"
-                    style="
-                      background: rgba(255, 255, 255, 0.04);
-                      color: var(--muted);
-                      border-color: var(--border);
-                    "
-                    >قريبًا</span
-                  >
+                <div id="recentLessonsList">
+                  <div class="dl-row">
+                    <div class="dl-icon">📚</div>
+                    <span class="dl-text">لا توجد دروس تمت مشاهدتها بعد</span>
+                    <span class="dl-badge">—</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -589,7 +571,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
           <h4>روابط</h4>
           <a href="#hero">الرئيسية</a>
           <a href="#categories">الأقسام</a>
-          <a href="طاقم التدريس/index.html" target="_self">طاقم التدريس</a>
+          <a href="teacher/index.html" target="_self">طاقم التدريس</a>
           <a href="sections/services/services.html" target="_self">خدماتنا</a>
           <a href="events/events.html" target="_self"
             >أحداث المنصة</a
@@ -881,6 +863,127 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
         { threshold: 0.3 },
       );
 
+
+      /* ── REAL PLATFORM PROGRESS ── */
+      function parseStoredValue(key) {
+        try {
+          const raw = localStorage.getItem(key);
+          if (!raw) return null;
+          return JSON.parse(raw);
+        } catch (_) {
+          return null;
+        }
+      }
+
+      function asArray(value) {
+        if (Array.isArray(value)) return value;
+        if (value && typeof value === "object") {
+          if (Array.isArray(value.items)) return value.items;
+          if (Array.isArray(value.books)) return value.books;
+          if (Array.isArray(value.documents)) return value.documents;
+          return Object.values(value).filter((v) => v && typeof v === "object");
+        }
+        return [];
+      }
+
+      function findStoredArrays(keyPattern) {
+        const result = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i) || "";
+          if (!keyPattern.test(key)) continue;
+          const value = parseStoredValue(key);
+          const arr = asArray(value);
+          if (arr.length) result.push(...arr);
+        }
+        return result;
+      }
+
+      function itemTitle(item) {
+        if (typeof item === "string") return item.trim();
+        if (!item || typeof item !== "object") return "";
+        return String(
+          item.title || item.name || item.bookTitle || item.lessonTitle ||
+          item.documentTitle || item.text || ""
+        ).trim();
+      }
+
+      function uniqueItems(items) {
+        const map = new Map();
+        items.forEach((item) => {
+          const title = itemTitle(item);
+          if (!title) return;
+          const id = String(item.id || item.uid || item.bookId || item.lessonId || title);
+          if (!map.has(id)) map.set(id, item);
+        });
+        return [...map.values()];
+      }
+
+      function getRealProgressData() {
+        const allBooks = uniqueItems(findStoredArrays(/book|library|document/i));
+        const readBooks = uniqueItems(findStoredArrays(/read|completed|finished|progress/i));
+        const favorites = uniqueItems(findStoredArrays(/favorite|favourite|مفضل/i));
+        let recent = findStoredArrays(/recent|history|last|activity|viewed|visited/i)
+          .filter((item) => itemTitle(item));
+
+        // بعض صفحات المكتبة تحفظ سجل القراءة داخل كائن واحد باسم readingHistory.
+        if (!recent.length) {
+          recent = readBooks.slice();
+        }
+
+        recent = uniqueItems(recent).sort((a, b) => {
+          const ta = new Date(a.updatedAt || a.lastOpened || a.createdAt || a.timestamp || 0).getTime();
+          const tb = new Date(b.updatedAt || b.lastOpened || b.createdAt || b.timestamp || 0).getTime();
+          return tb - ta;
+        });
+
+        return { allBooks, readBooks, favorites, recent };
+      }
+
+      function setProgressValue(percentId, barId, percent) {
+        const safe = Math.max(0, Math.min(100, Math.round(percent || 0)));
+        const label = document.getElementById(percentId);
+        const bar = document.getElementById(barId);
+        if (label) label.textContent = `${safe}٪`;
+        if (bar) {
+          bar.dataset.w = `${safe}%`;
+          bar.style.width = `${safe}%`;
+        }
+        const track = bar?.parentElement;
+        if (track) track.style.width = `${safe}%`;
+      }
+
+      function renderRealProgress() {
+        const { allBooks, readBooks, favorites, recent } = getRealProgressData();
+        const available = allBooks.length;
+        const readPercent = available ? (readBooks.length / available) * 100 : 0;
+        const favoritePercent = available ? (favorites.length / available) * 100 : 0;
+        const activityPercent = available ? Math.min(100, (recent.length / available) * 100) : 0;
+
+        const availableEl = document.getElementById("availableBooksCount");
+        if (availableEl) availableEl.textContent = available ? `+${available}` : "٠";
+
+        const categoriesEl = document.getElementById("categoriesCount");
+        if (categoriesEl) categoriesEl.textContent = CATS.length;
+
+        setProgressValue("readBooksPercent", "readBooksBar", readPercent);
+        setProgressValue("favoriteBooksPercent", "favoriteBooksBar", favoritePercent);
+        setProgressValue("recentActivityPercent", "recentActivityBar", activityPercent);
+
+        const list = document.getElementById("recentLessonsList");
+        if (!list) return;
+        const latest = recent.slice(0, 3);
+        if (!latest.length) {
+          list.innerHTML = `<div class="dl-row"><div class="dl-icon">📚</div><span class="dl-text">لا توجد دروس تمت مشاهدتها بعد</span><span class="dl-badge">—</span></div>`;
+          return;
+        }
+        list.innerHTML = latest.map((item, index) => {
+          const title = itemTitle(item);
+          const status = item.completed || item.status === "completed" || item.read ? "مكتمل" : (index === 0 ? "جارٍ" : "مُشاهد");
+          const icon = item.icon || ["📖", "🌙", "⚖️"][index] || "📚";
+          return `<div class="dl-row"><div class="dl-icon">${icon}</div><span class="dl-text">${title.replace(/[<>&"']/g, "")}</span><span class="dl-badge">${status}</span></div>`;
+        }).join("");
+      }
+
       /* ── INIT ── */
       document.addEventListener("DOMContentLoaded", () => {
         renderCats();
@@ -888,6 +991,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
         document
           .querySelectorAll(".dash-mockup")
           .forEach((m) => pbObs.observe(m));
+        renderRealProgress();
       });
 
       function goTo(link) {
@@ -948,6 +1052,29 @@ document.addEventListener("DOMContentLoaded", function () {
 });
     </script>
  
+
+ <script>
+  const themeToggle = document.getElementById("themeToggle");
+
+  // استرجاع الوضع المحفوظ
+  const savedTheme = localStorage.getItem("theme");
+
+  if (savedTheme === "dark") {
+    document.documentElement.classList.add("dark-mode");
+    themeToggle.checked = true;
+  }
+
+  themeToggle.addEventListener("change", function () {
+    if (this.checked) {
+      document.documentElement.classList.add("dark-mode");
+      localStorage.setItem("theme", "dark");
+    } else {
+      document.documentElement.classList.remove("dark-mode");
+      localStorage.setItem("theme", "light");
+    }
+  });
+</script>
+
 <!-- Floating Share Button -->
 <button id="shareBtn" class="floating-share" title="مشاركة المنصة">
     <i class="fas fa-share-alt"></i>

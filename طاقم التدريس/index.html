@@ -865,5 +865,10 @@
 
   </main>
 
-</body>
+<script type="module">
+import { db } from "../firebase-config.js";
+import { collection, getDocs } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+const grid=document.querySelector('.teachers-grid'); const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+(async()=>{try{const snap=await getDocs(collection(db,'teachers'));const rows=snap.docs.map(d=>d.data()).filter(x=>x.visible!==false);if(!rows.length)return;grid.innerHTML=rows.map(x=>`<article class="card"><div>${x.image?`<img class="card-photo" src="${esc(x.image)}" alt="${esc(x.name)}">`:`<div class="card-no-photo">👨‍🏫</div>`}</div><div class="card-body"><h3 class="teacher-name">${esc(x.name||'معلم')}</h3><div class="teacher-role">${esc(x.role||x.subject||'')}</div>${x.subject?`<div class="subjects"><span class="subject">${esc(x.subject)}</span></div>`:''}${x.bio?`<p class="bio">${esc(x.bio)}</p>`:''}</div>${x.whatsapp?`<a class="wa-btn" href="${esc(x.whatsapp.startsWith('http')?x.whatsapp:'https://wa.me/'+x.whatsapp.replace(/\D/g,''))}" target="_blank">تواصل مع المعلم ←</a>`:''}</article>`).join('')}catch(e){console.error(e)}})();
+</script></body>
 </html>

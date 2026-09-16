@@ -199,7 +199,22 @@ function renderGallery(categoryFilter = "all") {
 /* ---------------------------------------------------------
    INITIALIZE PAGE
 --------------------------------------------------------- */
-document.addEventListener("DOMContentLoaded", function () {
+async function loadFirestoreEvents() {
+  try {
+    const { db } = await import('../firebase-config.js');
+    const { collection, getDocs } = await import('https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js');
+    const snap = await getDocs(collection(db, 'events'));
+    const cloud = snap.docs.map(d => ({ id:d.id, ...d.data() })).filter(e => e.visible !== false);
+    const legacy = EVENTS_DATA.events.map((e,i) => ({...e, _legacy:true, _key:`legacy_${i}`}));
+    const keys = new Set(legacy.map(e => [e.title,e.date,e.location].join('|')));
+    EVENTS_DATA.events = [...legacy, ...cloud.filter(e => !keys.has([e.title,e.date,e.location].join('|')))];
+  } catch (err) {
+    console.warn('تعذر تحميل أحداث Firestore، سيتم عرض البيانات الأساسية:', err);
+  }
+}
+
+document.addEventListener("DOMContentLoaded", async function () {
+  await loadFirestoreEvents();
   buildFilterTabs();
   renderEvents(activeCategory);
   buildGalleryTabs();
