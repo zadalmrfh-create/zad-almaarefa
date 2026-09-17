@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>طلاب المنصة المتميزون — زاد المعرفة</title>
-    <link rel="icon" type="image/png" href="../images/logo.png.png" />
+    <link rel="icon" type="image/png" href="../images/logo.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link
       href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap"
@@ -13,17 +13,15 @@
     <link rel="stylesheet" href="students.css">
 
     
-  <style id="final-nav-fixes">
-.back-link{display:inline-flex!important;align-items:center;justify-content:center;gap:8px;min-width:135px;min-height:46px;padding:10px 18px!important;background:#0a1628!important;color:#fff!important;border:2px solid #d4a843!important;border-radius:12px!important;font-weight:800!important;text-decoration:none!important;box-shadow:0 4px 14px rgba(0,0,0,.2);z-index:20;}
-.back-link:hover{background:#d4a843!important;color:#0a1628!important;}
-.page-header{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:16px!important;flex-wrap:wrap!important;}
-@media(max-width:700px){.page-header{padding:14px!important}.back-link{order:5;width:100%;}.header-title{font-size:1.2rem!important;}}
-</style>
+  
+<link rel="stylesheet" href="../assets/translation.css">
+<script src="../assets/translation.js"></script>
+<script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 </head>
   <body>
     <header class="page-header">
       <div class="header-icon">
-        <img src="../images/logo.png.png" alt="logo" class="logo-img" />
+        <img src="../images/logo.png" alt="logo" class="logo-img" />
       </div>
         <div class="header-title">طلاب المنصة المتميزون</div>
         <div class="header-sub">نفخر بمسيرة طلابنا وإنجازاتهم</div>
@@ -306,26 +304,26 @@
           title: "شهادات القرآن الكريم",
           students: [
             { img: "../images/hero-bg.webp" },
-            {img: "../images/youssef.png" },
+            {img: "../images/image-not-available.svg" },
           ],
         },
         tajweed: {
           title: "شهادات التجويد",
           students: [
-            { img: "../images/omar.png" },
-            { img: "../images/sara.png" },
+            { img: "../images/image-not-available.svg" },
+            { img: "../images/image-not-available.svg" },
           ],
         },
         arabic: {
           title: "شهادات اللغة العربية",
-          students: [{ img: "../images/fatma.png" }],
+          students: [{ img: "../images/image-not-available.svg" }],
         },
         sharia: {
           title: "شهادات العلوم الشرعية",
           students: [
-            { img: "../images/ibrahim.png" },
-            { img: "../images/mona.png" },
-            { img: "../images/ahmed.png" },
+            { img: "../images/image-not-available.svg" },
+            { img: "../images/image-not-available.svg" },
+            { img: "../images/image-not-available.svg" },
           ],
         },
       };
@@ -381,7 +379,7 @@
         row.className = "cert-student-row";
 
         row.innerHTML =
-            '<img src="' + s.img + '" class="cert-image" onclick="openImage(\'' + s.img + '\')">';
+            '<img src="' + s.img + '" class="cert-image" onerror="this.onerror=null;this.src=\'../images/image-not-available.svg\';" onclick="openImage(\'' + s.img + '\')">';
 
         grid.appendChild(row);
     });
@@ -400,13 +398,16 @@
       function closeImage() {
         document.getElementById("imageModal").style.display = "none";
       }
-      document
-        .getElementById("imageModal")
-        .addEventListener("click", function (e) {
-          if (e.target === this) {
-            closeImage();
-          }
-        });
+      (function () {
+        var imageModal = document.getElementById("imageModal");
+        if (imageModal) {
+          imageModal.addEventListener("click", function (e) {
+            if (e.target === this) {
+              closeImage();
+            }
+          });
+        }
+      })();
 
         function searchStarStudents(val) {
   val = val.trim().toLowerCase();
@@ -426,15 +427,5 @@
 
       <img id="modalImage" class="modal-image" />
     </div>
-  <script type="module">
-import { db } from "../firebase-config.js";
-import { collection, getDocs } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
-const grid=document.querySelector('.students-grid');
-function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
-(async()=>{try{const snap=await getDocs(collection(db,'featuredStudents'));const rows=snap.docs.map(d=>d.data()).filter(x=>x.visible!==false);if(!rows.length)return;grid.innerHTML=rows.map(x=>`<div class="card">${x.image?`<img class="card-photo" src="${esc(x.image)}" alt="${esc(x.name)}">`:'<div class="card-no-photo">👨‍🎓</div>'}<div class="card-body"><div><div class="student-name">${esc(x.name||'طالب')}</div><div class="student-level">${esc(x.level||x.grade||'')}</div></div><div class="tags">${esc(x.tags||'')}</div><p class="student-bio">${esc(x.bio||x.description||'')}</p></div></div>`).join('')}catch(e){console.error(e)}})();
-</script><script type="module">
-import { db } from "../firebase-config.js"; import { collection,getDocs } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js"; const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
-(async()=>{try{const snap=await getDocs(collection(db,'featuredStudents'));const rows=snap.docs.map(d=>d.data()).filter(x=>x.visible!==false);if(!rows.length)return;document.querySelector('.students-grid').innerHTML=rows.map(x=>{const tags=String(x.tags||'').split(/[,،]/).map(t=>t.trim()).filter(Boolean);return `<div class="card">${x.image?`<img class="card-photo" src="${esc(x.image)}" alt="${esc(x.name)}">`:`<div class="card-no-photo">👨‍🎓</div>`}<div class="card-body"><div><div class="student-name">${esc(x.name||'طالب')}</div><div class="student-level">${esc(x.grade||'')}</div></div><div class="tags">${tags.map(t=>`<span class="tag">🏆 ${esc(t)}</span>`).join('')}</div><p class="student-bio">${esc(x.achievement||'')}</p><div class="stats"><div class="stat"><div class="stat-val">${esc(x.percentage||'—')}</div><div class="stat-lbl">معدل التفوق</div></div><div class="stat"><div class="stat-val">${esc(x.memorized||'—')}</div><div class="stat-lbl">إنجازات</div></div><div class="stat"><div class="stat-val">${esc(x.certificates||'—')}</div><div class="stat-lbl">شهادات</div></div></div></div>${x.certificateLink?`<a class="cert-btn" href="${esc(x.certificateLink)}" target="_blank" download>⬇ تحميل الشهادة</a>`:''}</div>`}).join('')}catch(e){console.error(e)}})();
-</script>
-</body>
+  </body>
 </html>
