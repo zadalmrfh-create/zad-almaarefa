@@ -1,38 +1,64 @@
 <!doctype html>
 <html lang="ar" dir="rtl">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>زاد المعرفة — منصة تعليمية إسلامية</title>
-    <link rel="icon" type="image/png" href="images/logo.png.png" />
-    <link rel="stylesheet" href="style.css" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&family=Cairo:wght@300;400;500;600;700;800;900&display=swap"
-      rel="stylesheet"
-    />
-    <!-- Google Fonts: Cairo for modern Arabic typography -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap"
-      rel="stylesheet"
-    />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
-    />
-    <!-- FontAwesome for Icons -->
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    />
-<link rel="stylesheet"
-href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-  </head>
+<head>
+  <meta charset="UTF-8" />
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+
+  <meta
+    name="description"
+    content="زاد المعرفة — منصة تعليمية إسلامية تقدم التعليم الشرعي والعربي والقرآن الكريم والعلوم المختلفة."
+  />
+
+  <meta
+    name="theme-color"
+    content="#c9a84c"
+  />
+
+  <title>زاد المعرفة — منصة تعليمية إسلامية</title>
+
+  <!-- Favicon -->
+  <link
+    rel="icon"
+    type="image/png"
+    href="images/logo.png.png"
+  />
+
+  <!-- Main CSS -->
+  <link
+    rel="stylesheet"
+    href="style.css"
+  />
+
+  <!-- Google Fonts -->
+  <link
+    rel="preconnect"
+    href="https://fonts.googleapis.com"
+  />
+
+  <link
+    rel="preconnect"
+    href="https://fonts.gstatic.com"
+    crossorigin
+  />
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=Tajawal:wght@300;400;500;700;800;900&display=swap"
+    rel="stylesheet"
+  />
+
+  <!-- Font Awesome 6.7.2 -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+  />
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
   <body>
 
 <!-- ═══════════ NAVBAR ═══════════ -->
@@ -68,7 +94,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
 
       <!-- طاقم التدريس -->
       <a
-        href="./طاقم التدريس"
+        href="./طاقم التدريس/index.html"
         class="nav-link"
       >
         طاقم التدريس
@@ -998,31 +1024,11 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
         window.location.href = link;
       }
 
-      const toggle = document.getElementById("themeToggle");
-
-// استرجاع الوضع المحفوظ
-if (localStorage.getItem("theme") === "dark") {
-    document.body.classList.add("dark");
-    toggle.innerHTML = '☀';
-}
-
-if (toggle) {
-toggle.onclick = () => {
-    document.body.classList.toggle("dark");
-
-    if (document.body.classList.contains("dark")) {
-        localStorage.setItem("theme", "dark");
-        toggle.innerHTML = '☀';
-    } else {
-        localStorage.setItem("theme", "light");
-        toggle.innerHTML = '☾';
-    }
-};
-}
-
 document.addEventListener("DOMContentLoaded", function () {
 
     const shareBtn = document.getElementById("shareBtn");
+
+    if (!shareBtn) return;
 
     shareBtn.addEventListener("click", async function () {
 
@@ -1036,52 +1042,63 @@ document.addEventListener("DOMContentLoaded", function () {
             try {
                 await navigator.share(shareData);
             } catch (err) {
-                console.log(err);
+                if (err.name !== "AbortError") {
+                    console.log("Share error:", err);
+                }
             }
-        } else {
-            try {
-                await navigator.clipboard.writeText(window.location.href);
-                alert("✅ تم نسخ رابط المنصة");
-            } catch (err) {
-                prompt("انسخ الرابط:", window.location.href);
-            }
+            return;
         }
 
+        try {
+            await navigator.clipboard.writeText(window.location.href);
+            alert("✅ تم نسخ رابط المنصة");
+        } catch (err) {
+            prompt("انسخ رابط المنصة:", window.location.href);
+        }
     });
 
 });
-    </script>
- 
+document.addEventListener("DOMContentLoaded", function () {
+    const themeToggle = document.getElementById("themeToggle");
 
- <script>
-  const themeToggle = document.getElementById("themeToggle");
+    if (!themeToggle) return;
 
-  // استرجاع الوضع المحفوظ
-  const savedTheme = localStorage.getItem("theme");
+    const savedTheme = localStorage.getItem("theme");
 
-  if (savedTheme === "dark") {
-    document.documentElement.classList.add("dark-mode");
-    themeToggle.checked = true;
-  }
-
-  themeToggle.addEventListener("change", function () {
-    if (this.checked) {
-      document.documentElement.classList.add("dark-mode");
-      localStorage.setItem("theme", "dark");
+    if (savedTheme === "dark") {
+        document.body.classList.add("dark");
+        themeToggle.checked = true;
     } else {
-      document.documentElement.classList.remove("dark-mode");
-      localStorage.setItem("theme", "light");
+        document.body.classList.remove("dark");
+        themeToggle.checked = false;
     }
-  });
+
+    themeToggle.addEventListener("change", function () {
+        if (this.checked) {
+            document.body.classList.add("dark");
+            localStorage.setItem("theme", "dark");
+        } else {
+            document.body.classList.remove("dark");
+            localStorage.setItem("theme", "light");
+        }
+    });
+});
 </script>
 
 <!-- Floating Share Button -->
-<button id="shareBtn" class="floating-share" title="مشاركة المنصة">
-    <i class="fas fa-share-alt"></i>
+<button
+  id="shareBtn"
+  class="floating-share"
+  title="مشاركة المنصة"
+  type="button"
+  aria-label="مشاركة المنصة"
+>
+  <i class="fas fa-share-alt"></i>
 </button>
+
 <script type="module" src="auth-ui.js"></script>
 <script type="module" src="notifications.js"></script>
-<script type="module" src="/push-notifications.js"></script>
+<script type="module" src="push-notifications.js"></script>
 
 </body>
 </html>

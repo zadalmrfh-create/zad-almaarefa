@@ -2541,3 +2541,683 @@ img, video, iframe { max-width: 100%; height: auto; }
 .site-footer,.footer{background:#0a1628;color:#fff;}
 html.light .site-footer,body.light .site-footer,html.light .footer,body.light .footer{background:#f3f4f6;color:#111827;}
 html.light .site-footer a,body.light .site-footer a,html.light .footer a,body.light .footer a{color:#111827;}
+
+/* =========================================================
+   ZAD ALMAAREFA — FINAL RESPONSIVE FIX
+   ========================================================= */
+
+html {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+}
+
+body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* منع الصور والعناصر من كسر عرض الشاشة */
+img,
+svg,
+video,
+canvas {
+  max-width: 100%;
+}
+
+img {
+  height: auto;
+}
+
+/* =========================================================
+   NAVBAR
+   ========================================================= */
+
+#navbar {
+  width: 100%;
+  max-width: 100vw;
+}
+
+.nav-inner {
+  width: 100%;
+  max-width: 1500px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+.logo {
+  flex-shrink: 0;
+}
+
+.logo-text {
+  white-space: nowrap;
+}
+
+.nav-links {
+  min-width: 0;
+}
+
+.nav-link {
+  white-space: nowrap;
+}
+
+/* الشاشات المتوسطة */
+@media (max-width: 1250px) {
+
+  .nav-inner {
+    padding-left: 18px !important;
+    padding-right: 18px !important;
+  }
+
+  .nav-links {
+    gap: 10px !important;
+  }
+
+  .nav-link {
+    font-size: 0.82rem !important;
+  }
+
+  .btn-nav {
+    white-space: nowrap;
+    font-size: 0.82rem !important;
+  }
+
+  .logo-text {
+    font-size: 1rem !important;
+  }
+}
+
+/* =========================================================
+   TABLET
+   ========================================================= */
+
+@media (max-width: 1024px) {
+
+  .nav-links,
+  .login-nav-btn {
+    display: none !important;
+  }
+
+  .nav-inner {
+    min-height: 70px;
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+
+  .hamburger {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* لا تجعل ابدأ التعلم يضغط الـnavbar */
+  #navbar > .nav-inner > .btn-nav {
+    display: none !important;
+  }
+
+  /* Hero */
+  #hero {
+    min-height: auto !important;
+  }
+
+  .hero-container {
+    grid-template-columns: 1fr !important;
+    text-align: center;
+    gap: 35px !important;
+    padding: 90px 30px 60px !important;
+  }
+
+  .hero-text {
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .hero-actions {
+    justify-content: center !important;
+    flex-wrap: wrap;
+  }
+
+  .hero-image {
+    width: min(100%, 600px);
+    margin: 0 auto;
+  }
+
+  /* Mission */
+  #mission .grid {
+    grid-template-columns: 1fr !important;
+    gap: 40px !important;
+  }
+
+  #mission img {
+    max-height: 550px;
+  }
+
+  .mission-content {
+    width: 100%;
+  }
+
+  /* About */
+  .about-inner {
+    grid-template-columns: 1fr !important;
+    gap: 45px !important;
+  }
+
+  .about-visual {
+    width: 100%;
+  }
+
+  /* Categories */
+  .cats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  /* Footer */
+  .footer-container {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 767px) {
+
+  /* Navbar */
+  .nav-inner {
+    min-height: 64px;
+    padding: 8px 12px !important;
+    gap: 8px;
+  }
+
+  .logo {
+    gap: 8px !important;
+  }
+
+  .logo > div {
+    width: 43px !important;
+    height: 43px !important;
+  }
+
+  .logo-img {
+    width: 43px !important;
+    height: 43px !important;
+  }
+
+  .logo-text {
+    font-size: 0.95rem !important;
+  }
+
+  .hamburger {
+    width: 42px !important;
+    height: 42px !important;
+    min-width: 42px;
+  }
+
+  .theme-toggle {
+    flex-shrink: 0;
+    transform: scale(0.82);
+    transform-origin: center;
+  }
+
+  /* =====================================================
+     MOBILE MENU
+     ===================================================== */
+
+  #mobile-overlay {
+    width: 100%;
+    max-width: 100vw;
+    box-sizing: border-box;
+    padding: 80px 18px 30px !important;
+    overflow-y: auto;
+  }
+
+  .mob-btn {
+    width: min(100%, 420px) !important;
+    max-width: 100% !important;
+    box-sizing: border-box;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .login-mobile-btn,
+  #mobile-overlay > .btn-primary {
+    width: min(100%, 420px) !important;
+    max-width: 100% !important;
+    box-sizing: border-box;
+  }
+
+  /* =====================================================
+     HERO
+     ===================================================== */
+
+  .hero-container {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 105px 18px 55px !important;
+    gap: 28px !important;
+  }
+
+  .hero-text {
+    width: 100%;
+  }
+
+  .hero-badge {
+    display: inline-block;
+    max-width: 100%;
+    box-sizing: border-box;
+    font-size: 0.78rem !important;
+    line-height: 1.6;
+  }
+
+  .hero-title {
+    font-size: clamp(2rem, 10vw, 3rem) !important;
+    line-height: 1.25 !important;
+    overflow-wrap: anywhere;
+  }
+
+  .hero-desc {
+    width: 100%;
+    font-size: 0.95rem !important;
+    line-height: 2 !important;
+  }
+
+  .hero-actions {
+    width: 100%;
+    display: flex !important;
+    flex-direction: column;
+    align-items: stretch !important;
+    gap: 12px !important;
+  }
+
+  .hero-actions a,
+  .hero-actions .btn-primary,
+  .hero-actions .btn-nav {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    text-align: center;
+  }
+
+  .hero-image {
+    width: 100%;
+  }
+
+  .hero-image img {
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+    display: block;
+  }
+
+  .hero-stats {
+    display: none !important;
+  }
+
+  /* =====================================================
+     MISSION
+     ===================================================== */
+
+  #mission {
+    padding-top: 55px !important;
+    padding-bottom: 55px !important;
+  }
+
+  #mission .max-w-7xl {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  #mission .grid {
+    display: flex !important;
+    flex-direction: column;
+    gap: 32px !important;
+  }
+
+  #mission .relative.reveal {
+    width: 100%;
+  }
+
+  #mission img {
+    width: 100%;
+    height: auto !important;
+    min-height: 280px;
+    max-height: 500px;
+    object-fit: cover;
+  }
+
+  .mission-title {
+    font-size: 1.8rem !important;
+    line-height: 1.5 !important;
+  }
+
+  .mission-text {
+    font-size: 0.95rem !important;
+    line-height: 2 !important;
+  }
+
+  #mission .grid-cols-2 {
+    grid-template-columns: 1fr !important;
+    gap: 15px !important;
+  }
+
+  /* =====================================================
+     CATEGORIES
+     ===================================================== */
+
+  #categories {
+    padding-top: 55px !important;
+    padding-bottom: 55px !important;
+  }
+
+  .cats-inner {
+    width: 100%;
+    box-sizing: border-box;
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+
+  .section-title {
+    font-size: 1.8rem !important;
+    line-height: 1.5 !important;
+  }
+
+  .section-sub {
+    font-size: 0.9rem !important;
+    line-height: 1.9 !important;
+  }
+
+  .cats-grid {
+    grid-template-columns: 1fr !important;
+    gap: 18px !important;
+  }
+
+  .cat-card {
+    min-width: 0 !important;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .cat-name {
+    font-size: 1.15rem !important;
+  }
+
+  .cat-desc {
+    font-size: 0.88rem !important;
+    line-height: 1.8 !important;
+  }
+
+  .cat-topics {
+    flex-wrap: wrap !important;
+  }
+
+  /* =====================================================
+     ABOUT
+     ===================================================== */
+
+  #about {
+    padding-top: 55px !important;
+    padding-bottom: 55px !important;
+  }
+
+  .about-inner {
+    width: 100%;
+    box-sizing: border-box;
+    padding-left: 18px !important;
+    padding-right: 18px !important;
+  }
+
+  .about-features {
+    width: 100%;
+  }
+
+  .afeature {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .afeature-desc {
+    line-height: 1.8 !important;
+  }
+
+  .dash-mockup {
+    width: 100% !important;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  .dash-grid {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .dash-widget {
+    min-width: 0;
+  }
+
+  .dw-label {
+    font-size: 0.72rem !important;
+  }
+
+  .dw-val {
+    font-size: 1.3rem !important;
+  }
+
+  /* =====================================================
+     FOOTER
+     ===================================================== */
+
+  #footer {
+    width: 100%;
+    overflow: hidden;
+  }
+
+  .footer-container {
+    grid-template-columns: 1fr !important;
+    gap: 32px !important;
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+  }
+
+  .footer-brand,
+  .footer-links-col,
+  .footer-contact {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .footer-links-col a {
+    display: block;
+  }
+
+  .footer-socials {
+    flex-wrap: wrap;
+  }
+
+  .footer-bottom-inner {
+    flex-direction: column;
+    gap: 8px;
+    text-align: center;
+    padding-left: 15px !important;
+    padding-right: 15px !important;
+  }
+
+  /* =====================================================
+     MODAL
+     ===================================================== */
+
+  #modal-overlay {
+    padding: 15px !important;
+    box-sizing: border-box;
+  }
+
+  #modal-box {
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: 90vh;
+    box-sizing: border-box;
+  }
+
+  .modal-head {
+    padding: 18px !important;
+  }
+
+  .modal-title {
+    font-size: 1.2rem !important;
+  }
+
+  .modal-content {
+    font-size: 0.9rem !important;
+    line-height: 1.9 !important;
+  }
+
+  .modal-footer {
+    flex-wrap: wrap;
+    gap: 8px !important;
+  }
+
+  .modal-footer button {
+    flex: 1 1 140px;
+  }
+
+  /* =====================================================
+     SHARE BUTTON
+     ===================================================== */
+
+  .floating-share {
+    right: 15px !important;
+    left: auto !important;
+    bottom: 18px !important;
+    width: 48px !important;
+    height: 48px !important;
+    z-index: 9998 !important;
+  }
+
+  /* أي badges جانبية */
+  .float-badge {
+    max-width: calc(100vw - 30px);
+  }
+}
+
+/* =========================================================
+   SMALL PHONES
+   ========================================================= */
+
+@media (max-width: 400px) {
+
+  .nav-inner {
+    padding-left: 9px !important;
+    padding-right: 9px !important;
+  }
+
+  .logo-text {
+    font-size: 0.85rem !important;
+  }
+
+  .logo > div,
+  .logo-img {
+    width: 39px !important;
+    height: 39px !important;
+  }
+
+  .hamburger {
+    width: 38px !important;
+    height: 38px !important;
+    min-width: 38px;
+  }
+
+  .theme-toggle {
+    transform: scale(0.72);
+  }
+
+  .hero-container {
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+  }
+
+  .hero-title {
+    font-size: 2rem !important;
+  }
+
+  .hero-desc {
+    font-size: 0.88rem !important;
+  }
+
+  .cats-inner,
+  .about-inner {
+    padding-left: 13px !important;
+    padding-right: 13px !important;
+  }
+
+  .dash-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* =========================================================
+   VERY SMALL PHONES
+   ========================================================= */
+
+@media (max-width: 340px) {
+
+  .logo-text {
+    display: none;
+  }
+
+  .theme-toggle {
+    transform: scale(0.65);
+    margin-left: -5px;
+    margin-right: -5px;
+  }
+
+  .hero-title {
+    font-size: 1.8rem !important;
+  }
+
+  .hero-badge {
+    font-size: 0.7rem !important;
+  }
+
+  .section-title {
+    font-size: 1.6rem !important;
+  }
+}
+
+/* =========================================================
+   TOUCH DEVICES
+   ========================================================= */
+
+@media (hover: none) {
+
+  .nav-link:hover,
+  .cat-card:hover,
+  .afeature:hover {
+    transform: none;
+  }
+
+  .cat-card {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+/* =========================================================
+   ACCESSIBILITY / SAFE SIZING
+   ========================================================= */
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button {
+  max-width: 100%;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
