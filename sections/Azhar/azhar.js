@@ -1,3 +1,5 @@
+import { auth, db } from "../../firebase-config.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
 /* =========================================================
    AZHAR EDUCATION PAGE — BEHAVIOR
    Organized in 3 independent parts:
@@ -27,7 +29,16 @@ document.querySelectorAll(".acc-trigger").forEach(function (trigger) {
 /* ---------------------------------------------------------
    2) CTA SCROLL
 --------------------------------------------------------- */
+let currentUser = null;
+onAuthStateChanged(auth, u => { currentUser = u; });
+function requireLogin(message) {
+  if (currentUser) return true;
+  alert(message || "يجب تسجيل الدخول أولاً.");
+  window.location.href = "../../login/index.html";
+  return false;
+}
 document.getElementById("ctaStart").addEventListener("click", function () {
+  if (!requireLogin("يجب تسجيل الدخول أولاً لبدء التعلم.")) return;
   document.getElementById("flowSection").scrollIntoView({ behavior: "smooth" });
 });
 
@@ -680,6 +691,7 @@ function renderGrades(stageKey) {
 --------------------------------------------------------- */
 document.querySelectorAll(".resource-card").forEach(function (card) {
   card.addEventListener("click", function () {
+    if (!requireLogin("يجب تسجيل الدخول أولاً للوصول إلى هذا المحتوى.")) return;
     state.resource = card.dataset.resource;
     openSearchStep();
   });

@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>حجز حصة | زاد المعرفة</title>
+  <link rel="icon" type="image/png" href="../../images/logo.png.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="booking.css">
+</head>
+<body>
+  <main class="booking-page">
+    <div class="booking-box">
+      <a class="back-link" href="../../index.html">← العودة للرئيسية</a>
+      <div class="brand">
+        <img src="../../images/logo.png.png" alt="زاد المعرفة">
+        <div>
+          <h1>احجز حصتك الآن</h1>
+          <p>اختر القسم والمجال الذي تريد الدراسة فيه، ثم أرسل طلبك وسيتم مراجعته من الإدارة والمعلم المختص.</p>
+        </div>
+      </div>
+
+      <form id="bookingForm" class="booking-form">
+        <div class="booking-two">
+          <label>القسم المطلوب
+            <select name="section" id="bookingSection" required>
+              <option value="">اختر القسم</option>
+              <option value="القرآن الكريم">القرآن الكريم</option>
+              <option value="التزكية والتربية">التزكية والتربية</option>
+              <option value="اللغة العربية">اللغة العربية</option>
+              <option value="العلوم الشرعية">العلوم الشرعية</option>
+              <option value="التعليم الأزهري">التعليم الأزهري</option>
+            </select>
+          </label>
+
+          <label>نظام التعليم (اختياري)
+            <select name="educationType">
+              <option value="غير مرتبط بنظام تعليمي">غير مرتبط بنظام تعليمي</option>
+              <option value="أزهري">أزهري</option>
+              <option value="عام">عام</option>
+            </select>
+          </label>
+        </div>
+
+        <label>الاسم بالكامل
+          <input name="fullName" required maxlength="100" autocomplete="name">
+        </label>
+
+        <div class="booking-two">
+          <label>رقم الهاتف / واتساب
+            <input name="phone" required inputmode="tel" autocomplete="tel">
+          </label>
+          <label>البريد الإلكتروني
+            <input name="email" type="email" required autocomplete="email">
+          </label>
+        </div>
+
+        <div class="booking-two">
+          <label>المرحلة / المستوى (اختياري)
+            <input name="stage" placeholder="مثال: إعدادي، ثانوي، طالب علم">
+          </label>
+          <label>الصف الدراسي (اختياري)
+            <input name="grade" placeholder="مثال: أولى ثانوي أزهري">
+          </label>
+        </div>
+
+        <label>المادة أو المجال المطلوب
+          <input name="subject" required maxlength="150"
+                 placeholder="مثال: حفظ القرآن، التجويد، النحو، الفقه، التزكية...">
+        </label>
+
+        <div class="booking-two">
+          <label>نوع الحصة
+            <select name="lessonType" required>
+              <option value="حصة فردية">حصة فردية</option>
+              <option value="مراجعة">مراجعة</option>
+              <option value="حل تدريبات / امتحانات">حل تدريبات / امتحانات</option>
+              <option value="تأسيس">تأسيس</option>
+              <option value="متابعة">متابعة</option>
+              <option value="تحفيظ">تحفيظ</option>
+            </select>
+          </label>
+
+          <label>المعلم المفضل (اختياري)
+            <select name="teacherUid" id="bookingTeacher">
+              <option value="">رشّح لي معلمًا</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="booking-two">
+          <label>اليوم الأول المناسب
+            <select name="preferredDay1" required>
+              <option value="">اختر اليوم</option>
+              <option>السبت</option><option>الأحد</option><option>الإثنين</option>
+              <option>الثلاثاء</option><option>الأربعاء</option><option>الخميس</option>
+              <option>الجمعة</option>
+            </select>
+          </label>
+          <label>اليوم الثاني المناسب
+            <select name="preferredDay2" required>
+              <option value="">اختر اليوم</option>
+              <option>السبت</option><option>الأحد</option><option>الإثنين</option>
+              <option>الثلاثاء</option><option>الأربعاء</option><option>الخميس</option>
+              <option>الجمعة</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="booking-two">
+          <label>الفترة المناسبة
+            <select name="preferredPeriod" required>
+              <option>صباحًا</option><option>ظهرًا</option><option>مساءً</option>
+            </select>
+          </label>
+          <label>طريقة الحصة
+            <select name="lessonMode" required>
+              <option>أونلاين</option><option>حضوري</option>
+            </select>
+          </label>
+        </div>
+
+        <label>ملاحظات إضافية (اختياري)
+          <textarea name="notes" rows="4" maxlength="500"
+                    placeholder="اكتب أي تفاصيل تساعدنا على ترشيح الحصة والمعلم المناسبين."></textarea>
+        </label>
+
+        <button class="submit-btn" type="submit">إرسال طلب الحجز</button>
+        <div id="bookingStatus" class="booking-status" aria-live="polite"></div>
+      </form>
+    </div>
+  </main>
+  <script type="module" src="./booking.js"></script>
+</body>
+</html>

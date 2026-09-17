@@ -42,7 +42,7 @@ export function guard(requiredRole, onReady){
       } else if (effectiveRole === 'teacher') {
         location.href = '../../dashboard/teacher/index.html';
       } else {
-        location.href = '../../student/dashboard.html';
+        location.href = '../../dashboard/student/index.html';
       }
       return;
     }

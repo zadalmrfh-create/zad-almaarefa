@@ -16,6 +16,50 @@ service cloud.firestore {
   match /events/{id} { allow read: if true; allow create,update,delete: if isAdmin(); }
   match /teachers/{id} { allow read: if true; allow create,update,delete: if isAdmin(); }
   match /featuredStudents/{id} { allow read: if true; allow create,update,delete: if isAdmin(); }
-  match /notifications/{notificationId} {allow read: if isAdmin() || (signedIn() && (resource.data.audience=='all' || (resource.data.audience=='user' && resource.data.targetUid==request.auth.uid))); allow create,delete: if isAdmin(); allow update: if isAdmin() || (signedIn() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['readBy']));}
+  // طلبات حجز الحصص
+  match /bookings/{bookingId} {
+    // الطالب ينشئ طلبًا باسمه فقط
+    allow create: if signedIn()
+      && request.resource.data.studentUid == request.auth.uid;
+
+    // الطالب يقرأ طلباته فقط ليعرف حالة الموافقة
+    allow read: if signedIn()
+      && resource.data.studentUid == request.auth.uid;
+
+    // الأدمن يقرأ ويعدل ويحذف كل الطلبات
+    allow read, update, delete: if isAdmin();
+
+    // المعلم المعتمد يقرأ ويعدل الطلبات المعيّنة له فقط
+    allow read, update: if isTeacher()
+      && resource.data.teacherUid == request.auth.uid;
+  }
+
+  match /notifications/{notificationId} {
+    // الأدمن يقرأ إشعاراته وإشعارات جميع المستخدمين
+    // والمستخدم يقرأ الإشعارات العامة أو الموجهة إليه
+    allow read: if isAdmin()
+      || (signedIn() && (
+        resource.data.audience == 'all'
+        || (resource.data.audience == 'user' && resource.data.targetUid == request.auth.uid)
+      ));
+
+    // الأدمن ينشئ ويحذف الإشعارات، والطالب ينشئ إشعار حجز للأدمن فقط
+    allow create: if isAdmin()
+      || (signedIn()
+        && request.resource.data.audience == 'admin'
+        && request.resource.data.targetRole == 'admin'
+        && request.resource.data.type == 'booking'
+        && request.resource.data.studentUid == request.auth.uid
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.bookingId is string
+        && get(/databases/$(database)/documents/bookings/$(request.resource.data.bookingId)).data.studentUid == request.auth.uid
+      );
+
+    allow delete: if isAdmin();
+
+    // السماح بتحديث readBy فقط للمستخدم، أو للأدمن
+    allow update: if isAdmin()
+      || (signedIn() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['readBy']));
+  }
  }
 }

@@ -2,46 +2,89 @@
 <html lang="ar" dir="rtl">
 
 <head>
+
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1"
+  >
 
   <title>لوحة الإدارة | زاد المعرفة</title>
 
-  <link rel="icon" href="../../images/logo.png.png">
-  <link rel="stylesheet" href="../dashboard.css">
-  <link rel="stylesheet" href="notifications-admin.css">
+  <link
+    rel="icon"
+    href="../../images/logo.png.png"
+  >
+
+  <link
+    rel="stylesheet"
+    href="../dashboard.css"
+  >
+
+  <link
+    rel="stylesheet"
+    href="notifications-admin.css"
+  >
+
 </head>
+
 
 <body>
 
 <div class="wrap">
 
-  <!-- ═════════════ HEADER ═════════════ -->
+
+  <!-- =====================================================
+       HEADER
+  ====================================================== -->
 
   <header class="top">
 
     <div class="brand">
 
-      <img src="../../images/logo.png.png" alt="زاد المعرفة">
+      <img
+        src="../../images/logo.png.png"
+        alt="زاد المعرفة"
+      >
 
       <div>
+
         <h1>زاد المعرفة</h1>
-        <small>لوحة تحكم الإدارة</small>
+
+        <small>
+          لوحة تحكم الإدارة
+        </small>
+
       </div>
 
     </div>
 
+
     <div class="actions">
 
-      <a class="btn" href="../../index.html">
+      <a
+        class="btn"
+        href="../../index.html"
+      >
         الرئيسية
       </a>
 
-      <a class="btn gold" href="#contentManagement" id="contentManagementBtn">
+
+      <a
+        class="btn gold"
+        href="#contentManagement"
+        id="contentManagementBtn"
+      >
         ⚙️ إدارة محتوى المنصة
       </a>
 
-      <button id="logout" class="btn danger">
+
+      <button
+        id="logout"
+        class="btn danger"
+        type="button"
+      >
         تسجيل الخروج
       </button>
 
@@ -50,14 +93,26 @@
   </header>
 
 
+
+  <!-- =====================================================
+       MAIN
+  ====================================================== -->
+
   <main>
 
-    <div id="loading" class="notice">
+
+    <div
+      id="loading"
+      class="notice"
+    >
       جارٍ التحقق من صلاحية الأدمن…
     </div>
 
 
-    <!-- ═════════════ HERO ═════════════ -->
+
+    <!-- =====================================================
+         HERO
+    ====================================================== -->
 
     <section class="hero">
 
@@ -69,14 +124,22 @@
         إدارة الحسابات واعتماد المعلمين.
       </p>
 
-      <a class="btn gold" href="#contentManagement" style="display:inline-block;margin-top:12px">
+
+      <a
+        class="btn gold"
+        href="#contentManagement"
+        style="display:inline-block;margin-top:12px"
+      >
         ⚙️ الانتقال إلى إدارة محتوى المنصة
       </a>
 
     </section>
 
 
-    <!-- ═════════════ USERS ═════════════ -->
+
+    <!-- =====================================================
+         USERS
+    ====================================================== -->
 
     <section class="card">
 
@@ -89,14 +152,17 @@
           👥 المستخدمون
         </h3>
 
+
         <button
           id="refresh"
           class="btn gold"
+          type="button"
         >
           تحديث
         </button>
 
       </div>
+
 
 
       <div class="table-wrap">
@@ -131,9 +197,11 @@
           <tbody id="users">
 
             <tr>
+
               <td colspan="8">
                 جارٍ التحميل…
               </td>
+
             </tr>
 
           </tbody>
@@ -146,73 +214,415 @@
 
 
 
-    <!-- ═════════════ NOTIFICATIONS ═════════════ -->
-  
-    <section class="card" id="contentManagement">
-      <h2>إدارة محتوى المنصة</h2>
-      <p>إضافة وتعديل وحذف وإظهار أو إخفاء الأحداث وطاقم التدريس والطلاب المتميزين.</p>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin:15px 0">
-        <button class="btn" data-content-tab="events">الأحداث</button>
-        <button class="btn" data-content-tab="teachers">طاقم التدريس</button>
-        <button class="btn" data-content-tab="featuredStudents">الطلاب المتميزون</button>
+    <!-- =====================================================
+         CONTENT MANAGEMENT
+    ====================================================== -->
+
+    <section
+      class="card"
+      id="contentManagement"
+    >
+
+      <h2>
+        إدارة محتوى المنصة
+      </h2>
+
+
+      <p>
+        إضافة وتعديل وحذف وإظهار أو إخفاء الأحداث
+        وطاقم التدريس والطلاب المتميزين.
+      </p>
+
+
+
+      <div
+        style="
+          display:flex;
+          gap:8px;
+          flex-wrap:wrap;
+          margin:15px 0;
+        "
+      >
+
+        <button
+          class="btn"
+          data-content-tab="events"
+          type="button"
+        >
+          الأحداث
+        </button>
+
+
+        <button
+          class="btn"
+          data-content-tab="teachers"
+          type="button"
+        >
+          طاقم التدريس
+        </button>
+
+
+        <button
+          class="btn"
+          data-content-tab="featuredStudents"
+          type="button"
+        >
+          الطلاب المتميزون
+        </button>
+
       </div>
-      <form id="contentForm" style="display:grid;gap:10px;margin:15px 0">
-        <input type="hidden" id="contentId">
-        <input type="hidden" id="contentType" value="events">
-        <div id="contentFields" style="display:grid;gap:10px"></div>
-        <label><input type="checkbox" id="contentVisible" checked> ظاهر للزوار</label>
-        <div><button class="btn" type="submit">حفظ</button> <button class="btn" type="button" id="contentCancel">إلغاء التعديل</button></div>
+
+
+
+      <form
+        id="contentForm"
+        style="
+          display:grid;
+          gap:10px;
+          margin:15px 0;
+        "
+      >
+
+        <input
+          type="hidden"
+          id="contentId"
+        >
+
+
+        <input
+          type="hidden"
+          id="contentType"
+          value="events"
+        >
+
+
+        <div
+          id="contentFields"
+          style="
+            display:grid;
+            gap:10px;
+          "
+        ></div>
+
+
+        <label>
+
+          <input
+            type="checkbox"
+            id="contentVisible"
+            checked
+          >
+
+          ظاهر للزوار
+
+        </label>
+
+
+        <div>
+
+          <button
+            class="btn"
+            type="submit"
+          >
+            حفظ
+          </button>
+
+
+          <button
+            class="btn"
+            type="button"
+            id="contentCancel"
+          >
+            إلغاء التعديل
+          </button>
+
+        </div>
+
       </form>
-      <div class="table-wrap"><table class="table"><thead><tr><th>النوع</th><th>العنوان</th><th>التفاصيل</th><th>الحالة</th><th>إجراءات</th></tr></thead><tbody id="contentRows"></tbody></table></div>
+
+
+
+      <div class="table-wrap">
+
+        <table class="table">
+
+          <thead>
+
+            <tr>
+
+              <th>النوع</th>
+
+              <th>العنوان</th>
+
+              <th>التفاصيل</th>
+
+              <th>الحالة</th>
+
+              <th>إجراءات</th>
+
+            </tr>
+
+          </thead>
+
+
+          <tbody id="contentRows"></tbody>
+
+        </table>
+
+      </div>
+
     </section>
 
-  <section class="card notifications-admin-card">
-      <div class="actions" style="justify-content:space-between">
-        <h3>🔔 الإشعارات</h3>
+
+
+    <!-- =====================================================
+         BOOKINGS
+    ====================================================== -->
+
+    <section
+      class="card"
+      id="bookingsManagement"
+    >
+
+      <h2>
+        طلبات حجز الحصص
+      </h2>
+
+
+      <p>
+        طلبات الطلاب المرسلة من نموذج التعليم الأزهري.
+      </p>
+
+
+      <div class="table-wrap">
+
+        <table class="table">
+
+          <thead>
+
+            <tr>
+
+              <th>الطالب</th>
+
+              <th>التواصل</th>
+
+              <th>المرحلة/الصف</th>
+
+              <th>المادة</th>
+
+              <th>اليومان</th>
+
+              <th>المعلم</th>
+
+              <th>الحالة</th>
+
+              <th>إجراء</th>
+
+            </tr>
+
+          </thead>
+
+
+          <tbody id="bookingRows">
+
+            <tr>
+
+              <td colspan="8">
+                جارٍ التحميل...
+              </td>
+
+            </tr>
+
+          </tbody>
+
+        </table>
+
       </div>
-      <p class="admin-muted">أرسل إشعارًا لجميع المستخدمين أو لمستخدم محدد.</p>
-      <form id="notificationForm" class="notification-form">
+
+    </section>
+
+
+
+    <!-- =====================================================
+         NOTIFICATIONS
+    ====================================================== -->
+
+    <section
+      class="card notifications-admin-card"
+    >
+
+      <div
+        class="actions"
+        style="justify-content:space-between"
+      >
+
+        <h3>
+          🔔 الإشعارات
+        </h3>
+
+      </div>
+
+
+      <p class="admin-muted">
+        أرسل إشعارًا لجميع المستخدمين أو لمستخدم محدد.
+      </p>
+
+
+
+      <form
+        id="notificationForm"
+        class="notification-form"
+      >
+
         <div class="notification-grid">
+
+
           <label>
+
             عنوان الإشعار
-            <input id="notificationTitle" maxlength="100" required placeholder="مثال: تم إضافة كتب جديدة">
+
+            <input
+              id="notificationTitle"
+              maxlength="100"
+              required
+              placeholder="مثال: تم إضافة كتب جديدة"
+            >
+
           </label>
+
+
+
           <label>
+
             نوع الإشعار
+
             <select id="notificationType">
-              <option value="info">معلومة</option>
-              <option value="book">📚 كتب جديدة</option>
-              <option value="event">📢 حدث / إعلان</option>
-              <option value="important">⚠️ مهم</option>
+
+              <option value="info">
+                معلومة
+              </option>
+
+              <option value="book">
+                📚 كتب جديدة
+              </option>
+
+              <option value="event">
+                📢 حدث / إعلان
+              </option>
+
+              <option value="important">
+                ⚠️ مهم
+              </option>
+
             </select>
+
           </label>
+
         </div>
+
+
+
         <label>
+
           نص الإشعار
-          <textarea id="notificationMessage" rows="4" maxlength="500" required placeholder="اكتب رسالة الإشعار هنا..."></textarea>
+
+          <textarea
+            id="notificationMessage"
+            rows="4"
+            maxlength="500"
+            required
+            placeholder="اكتب رسالة الإشعار هنا..."
+          ></textarea>
+
         </label>
+
+
+
         <div class="notification-grid">
+
+
           <label>
+
             المستلمون
+
             <select id="notificationAudience">
-              <option value="all">👥 جميع المستخدمين</option>
-              <option value="user">👤 مستخدم محدد</option>
+
+              <option value="all">
+                👥 جميع المستخدمين
+              </option>
+
+              <option value="user">
+                👤 مستخدم محدد
+              </option>
+
             </select>
+
           </label>
-          <label id="notificationUserWrap" style="display:none">
+
+
+
+          <label
+            id="notificationUserWrap"
+            style="display:none"
+          >
+
             المستخدم
+
             <select id="notificationUser"></select>
+
           </label>
+
         </div>
-        <button class="btn gold" id="sendNotification" type="submit">إرسال الإشعار 🔔</button>
-        <div id="notificationStatus" class="notice" style="display:none;margin-top:12px"></div>
+
+
+
+        <button
+          class="btn gold"
+          id="sendNotification"
+          type="submit"
+        >
+          إرسال الإشعار 🔔
+        </button>
+
+
+        <div
+          id="notificationStatus"
+          class="notice"
+          style="
+            display:none;
+            margin-top:12px;
+          "
+        ></div>
+
       </form>
 
+
+
       <div class="notification-history-head">
-        <h4>آخر الإشعارات</h4>
-        <button id="refreshNotifications" class="btn" type="button">تحديث</button>
+
+        <h4>
+          آخر الإشعارات
+        </h4>
+
+
+        <button
+          id="refreshNotifications"
+          class="btn"
+          type="button"
+        >
+          تحديث
+        </button>
+
       </div>
-      <div id="notificationHistory" class="notification-history">جارٍ التحميل…</div>
+
+
+      <div
+        id="notificationHistory"
+        class="notification-history"
+      >
+        جارٍ التحميل…
+      </div>
+
     </section>
 
   </main>
@@ -220,11 +630,18 @@
 </div>
 
 
-<!-- ═════════════ USER MODAL ═════════════ -->
 
-<div id="userModal" class="modal">
+<!-- =====================================================
+     USER MODAL
+====================================================== -->
+
+<div
+  id="userModal"
+  class="modal"
+>
 
   <div class="modal-box">
+
 
     <div class="modal-header">
 
@@ -232,9 +649,11 @@
         بيانات المستخدم
       </h3>
 
+
       <button
         id="closeModal"
         class="modal-close"
+        type="button"
       >
         ×
       </button>
@@ -242,14 +661,52 @@
     </div>
 
 
-    <div id="userInfo" class="user-info"></div>
+    <div
+      id="userInfo"
+      class="user-info"
+    ></div>
 
   </div>
 
 </div>
 
 
+
+<!-- =====================================================
+     STATUS STYLE
+====================================================== -->
+
+<style>
+
+.status-banned {
+  background: #4a1f25;
+  color: #fca5a5;
+}
+
+.action-ban {
+  border-color: #ef4444;
+  color: #fca5a5;
+}
+
+.action-ban:hover {
+  background: #7f1d1d;
+  border-color: #ef4444;
+  color: #fff;
+}
+
+</style>
+
+
+
+<!-- =====================================================
+     SINGLE MODULE SCRIPT
+====================================================== -->
+
 <script type="module">
+
+/* =====================================================
+   FIREBASE
+===================================================== */
 
 import { guard } from '../dashboard.js';
 
@@ -259,7 +716,8 @@ import {
 } from '../../firebase-config.js';
 
 import {
-  signOut
+  signOut,
+  onAuthStateChanged
 } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
 
 import {
@@ -276,28 +734,19 @@ import {
 } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 
 
-const tbody =
-  document.getElementById('users');
 
-const modal =
-  document.getElementById('userModal');
+/* =====================================================
+   HELPERS
+===================================================== */
 
-const userInfo =
-  document.getElementById('userInfo');
+const $ = id =>
+  document.getElementById(id);
 
-const closeModal =
-  document.getElementById('closeModal');
-
-
-/* ═══════════════════════════════════════
-   حماية النصوص
-═══════════════════════════════════════ */
 
 function escapeHtml(value) {
 
   return String(value ?? '').replace(
     /[&<>'"]/g,
-
     char => ({
       '&': '&amp;',
       '<': '&lt;',
@@ -310,87 +759,213 @@ function escapeHtml(value) {
 }
 
 
-/* تحويل رقم الهاتف إلى صيغة واتساب الدولية */
 function whatsappNumber(value) {
-  let phone = String(value || '').replace(/\D/g, '');
 
-  // رقم مصري يبدأ بـ 0: 01012345678 -> 201012345678
+  let phone =
+    String(value || '')
+      .replace(/\D/g, '');
+
+
   if (phone.startsWith('0')) {
-    phone = '20' + phone.slice(1);
+
+    phone =
+      '20' +
+      phone.slice(1);
+
   }
 
-  // إذا كان الرقم مكتوبًا بصيغة +20 أو 20 نتركه كما هو
+
   return phone;
+
 }
 
 
-/* ═══════════════════════════════════════
-   تحويل حالة الحساب إلى نص
-═══════════════════════════════════════ */
+function formatDate(value) {
+
+  if (!value)
+    return 'غير متوفر';
+
+
+  try {
+
+    const date =
+      typeof value.toDate === 'function'
+        ? value.toDate()
+        : new Date(value);
+
+
+    if (
+      Number.isNaN(
+        date.getTime()
+      )
+    ) {
+
+      return 'غير متوفر';
+
+    }
+
+
+    return new Intl.DateTimeFormat(
+      'ar-EG',
+      {
+        dateStyle: 'medium',
+        timeStyle: 'short'
+      }
+    ).format(date);
+
+  }
+
+  catch {
+
+    return 'غير متوفر';
+
+  }
+
+}
+
 
 function getStatusText(status) {
 
-  if (status === 'pending') {
+  if (status === 'pending')
     return '⏳ في انتظار الاعتماد';
-  }
 
-  if (status === 'disabled') {
+
+  if (status === 'disabled')
     return '🚫 معطل';
-  }
 
-  if (status === 'banned') {
+
+  if (status === 'banned')
     return '⛔ محظور';
-  }
+
 
   return '🟢 نشط';
 
 }
 
 
-/* ═══════════════════════════════════════
-   عرض بيانات المستخدم
-═══════════════════════════════════════ */
 
-function formatDate(value) {
-  if (!value) return 'غير متوفر';
-  try {
-    const date = typeof value.toDate === 'function' ? value.toDate() : new Date(value);
-    if (Number.isNaN(date.getTime())) return 'غير متوفر';
-    return new Intl.DateTimeFormat('ar-EG', { dateStyle: 'medium', timeStyle: 'short' }).format(date);
-  } catch {
-    return 'غير متوفر';
-  }
-}
+/* =====================================================
+   USER MODAL
+===================================================== */
+
+const modal =
+  $('userModal');
+
+const userInfo =
+  $('userInfo');
+
+const closeModal =
+  $('closeModal');
+
 
 function showUser(user) {
+
   const fields = [
-    ['الاسم بالكامل', user.fullName || user.name || user.displayName || 'غير متوفر'],
-    ['البريد الإلكتروني', user.email || 'غير متوفر'],
-    ['رقم الهاتف', user.phone || user.phoneNumber || 'غير متوفر'],
-    ['الصف الدراسي / المادة', user.role === 'teacher' ? (user.subject || user.grade || 'غير متوفر') : (user.grade || user.studyGrade || user.className || 'غير متوفر')],
-    ['نوع الحساب', user.role === 'teacher' ? '👨‍🏫 معلم' : '🎓 طالب'],
-    ['حالة الحساب', getStatusText(user.status)],
-    ['طريقة التسجيل', user.provider === 'google.com' ? 'Google' : user.provider === 'password' ? 'البريد الإلكتروني' : (user.provider || 'غير متوفر')],
-    ['معرّف الحساب UID', user.uid || 'غير متوفر'],
-    ['تاريخ إنشاء الحساب', formatDate(user.createdAt)],
-    ['آخر تسجيل دخول', formatDate(user.lastLoginAt)]
+
+    [
+      'الاسم بالكامل',
+      user.fullName ||
+      user.name ||
+      user.displayName ||
+      'غير متوفر'
+    ],
+
+    [
+      'البريد الإلكتروني',
+      user.email ||
+      'غير متوفر'
+    ],
+
+    [
+      'رقم الهاتف',
+      user.phone ||
+      user.phoneNumber ||
+      'غير متوفر'
+    ],
+
+    [
+      'الصف الدراسي / المادة',
+      user.role === 'teacher'
+        ? (
+            user.subject ||
+            user.grade ||
+            'غير متوفر'
+          )
+        : (
+            user.grade ||
+            user.studyGrade ||
+            user.className ||
+            'غير متوفر'
+          )
+    ],
+
+    [
+      'نوع الحساب',
+      user.role === 'teacher'
+        ? '👨‍🏫 معلم'
+        : '🎓 طالب'
+    ],
+
+    [
+      'حالة الحساب',
+      getStatusText(user.status)
+    ],
+
+    [
+      'طريقة التسجيل',
+      user.provider === 'google.com'
+        ? 'Google'
+        : user.provider === 'password'
+          ? 'البريد الإلكتروني'
+          : (
+              user.provider ||
+              'غير متوفر'
+            )
+    ],
+
+    [
+      'معرّف الحساب UID',
+      user.uid ||
+      'غير متوفر'
+    ],
+
+    [
+      'تاريخ إنشاء الحساب',
+      formatDate(user.createdAt)
+    ],
+
+    [
+      'آخر تسجيل دخول',
+      formatDate(user.lastLoginAt)
+    ]
+
   ];
 
-  userInfo.innerHTML = fields.map(([label, value]) => `
-    <div class="info-row">
-      <strong>${escapeHtml(label)}</strong>
-      <span>${escapeHtml(value)}</span>
-    </div>
-  `).join('');
+
+  userInfo.innerHTML =
+    fields.map(
+      ([label, value]) => `
+
+        <div class="info-row">
+
+          <strong>
+            ${escapeHtml(label)}
+          </strong>
+
+          <span>
+            ${escapeHtml(value)}
+          </span>
+
+        </div>
+
+      `
+    ).join('');
+
 
   modal.classList.add('show');
+
 }
 
-
-
-/* ═══════════════════════════════════════
-   إغلاق النافذة
-═══════════════════════════════════════ */
 
 closeModal.onclick = () => {
 
@@ -399,111 +974,821 @@ closeModal.onclick = () => {
 };
 
 
-modal.addEventListener('click', event => {
+modal.addEventListener(
+  'click',
+  event => {
 
-  if (event.target === modal) {
+    if (
+      event.target === modal
+    ) {
 
-    modal.classList.remove('show');
+      modal.classList.remove('show');
+
+    }
+
+  }
+);
+
+
+
+/* =====================================================
+   USERS
+===================================================== */
+
+const tbody =
+  $('users');
+
+
+async function loadUsers() {
+
+  tbody.innerHTML = `
+
+    <tr>
+      <td colspan="8">
+        جارٍ تحميل المستخدمين…
+      </td>
+    </tr>
+
+  `;
+
+
+  try {
+
+    const snap =
+      await getDocs(
+        collection(db, 'users')
+      );
+
+
+    populateNotificationUsers(snap);
+
+
+    if (snap.empty) {
+
+      tbody.innerHTML = `
+
+        <tr>
+
+          <td colspan="8">
+            لا يوجد مستخدمون بعد.
+          </td>
+
+        </tr>
+
+      `;
+
+      return;
+
+    }
+
+
+    tbody.innerHTML = '';
+
+
+    snap.forEach(
+      userDoc => {
+
+        const user =
+          userDoc.data();
+
+
+        const name =
+          user.fullName ||
+          user.name ||
+          user.displayName ||
+          'بدون اسم';
+
+
+        const email =
+          user.email ||
+          'بدون بريد';
+
+
+        const isTeacher =
+          user.role === 'teacher';
+
+
+        const status =
+          user.status || 'active';
+
+
+        const isPending =
+          status === 'pending';
+
+
+        const isDisabled =
+          status === 'disabled';
+
+
+        const isBanned =
+          status === 'banned';
+
+
+        const roleText =
+          isTeacher
+            ? 'معلم'
+            : 'طالب';
+
+
+        let statusClass =
+          'status status-active';
+
+
+        if (isPending) {
+
+          statusClass =
+            'status status-pending';
+
+        }
+
+        else if (isDisabled) {
+
+          statusClass =
+            'status status-disabled';
+
+        }
+
+        else if (isBanned) {
+
+          statusClass =
+            'status status-banned';
+
+        }
+
+
+        let buttons = `
+
+          <button
+            class="action-btn action-view"
+            title="عرض البيانات"
+            data-action="view"
+            type="button"
+          >
+            👁️
+          </button>
+
+        `;
+
+
+        /* اعتماد المعلم */
+
+        if (
+          isTeacher &&
+          isPending
+        ) {
+
+          buttons += `
+
+            <button
+              class="action-btn action-approve"
+              title="اعتماد المعلم"
+              data-action="approve"
+              type="button"
+            >
+              👨‍🏫 اعتماد
+            </button>
+
+          `;
+
+        }
+
+
+        /* الحظر */
+
+        if (isBanned) {
+
+          buttons += `
+
+            <button
+              class="action-btn action-toggle"
+              title="إلغاء الحظر"
+              data-action="ban"
+              type="button"
+            >
+              🟢 إلغاء الحظر
+            </button>
+
+          `;
+
+        }
+
+        else {
+
+          buttons += `
+
+            <button
+              class="action-btn action-ban"
+              title="حظر الحساب"
+              data-action="ban"
+              type="button"
+            >
+              ⛔ حظر
+            </button>
+
+          `;
+
+        }
+
+
+        /* تعطيل */
+
+        if (!isBanned) {
+
+          if (isDisabled) {
+
+            buttons += `
+
+              <button
+                class="action-btn action-toggle"
+                title="تفعيل الحساب"
+                data-action="toggle"
+                type="button"
+              >
+                🟢 تفعيل
+              </button>
+
+            `;
+
+          }
+
+          else {
+
+            buttons += `
+
+              <button
+                class="action-btn action-toggle"
+                title="تعطيل الحساب"
+                data-action="toggle"
+                type="button"
+              >
+                🚫 تعطيل
+              </button>
+
+            `;
+
+          }
+
+        }
+
+
+        /* حذف */
+
+        buttons += `
+
+          <button
+            class="action-btn action-delete"
+            title="حذف المستخدم"
+            data-action="delete"
+            type="button"
+          >
+            🗑️
+          </button>
+
+        `;
+
+
+        const tr =
+          document.createElement('tr');
+
+
+        const phone =
+          user.phone ||
+          user.phoneNumber ||
+          '';
+
+
+        const studyInfo =
+          isTeacher
+            ? (
+                user.subject ||
+                user.grade ||
+                '-'
+              )
+            : (
+                user.grade ||
+                user.studyGrade ||
+                user.className ||
+                '-'
+              );
+
+
+        tr.innerHTML = `
+
+          <td>
+            ${escapeHtml(name)}
+          </td>
+
+
+          <td>
+            ${escapeHtml(email)}
+          </td>
+
+
+          <td>
+            ${escapeHtml(phone || '-')}
+          </td>
+
+
+          <td>
+
+            ${
+              phone
+
+                ? `
+
+                  <a
+                    class="action-btn action-whatsapp"
+                    target="_blank"
+                    rel="noopener"
+                    href="https://wa.me/${whatsappNumber(phone)}"
+                  >
+                    واتساب
+                  </a>
+
+                `
+
+                : '-'
+            }
+
+          </td>
+
+
+          <td>
+            ${escapeHtml(studyInfo)}
+          </td>
+
+
+          <td>
+            ${roleText}
+          </td>
+
+
+          <td>
+
+            <span class="${statusClass}">
+              ${getStatusText(status)}
+            </span>
+
+          </td>
+
+
+          <td>
+
+            <div class="user-actions">
+
+              ${buttons}
+
+            </div>
+
+          </td>
+
+        `;
+
+
+        /* عرض */
+
+        tr
+          .querySelector(
+            '[data-action="view"]'
+          )
+          ?.addEventListener(
+            'click',
+            () => showUser(user)
+          );
+
+
+        /* اعتماد المعلم */
+
+        tr
+          .querySelector(
+            '[data-action="approve"]'
+          )
+          ?.addEventListener(
+            'click',
+            async event => {
+
+              const button =
+                event.currentTarget;
+
+
+              try {
+
+                button.disabled = true;
+
+                button.textContent =
+                  'جارٍ الاعتماد…';
+
+
+                await updateDoc(
+                  doc(
+                    db,
+                    'users',
+                    userDoc.id
+                  ),
+                  {
+                    status: 'active'
+                  }
+                );
+
+
+                await loadUsers();
+
+              }
+
+              catch (error) {
+
+                console.error(
+                  'خطأ في اعتماد المعلم:',
+                  error
+                );
+
+
+                alert(
+                  'حدث خطأ أثناء اعتماد المعلم.'
+                );
+
+
+                button.disabled =
+                  false;
+
+                button.textContent =
+                  '👨‍🏫 اعتماد';
+
+              }
+
+            }
+          );
+
+
+        /* حظر / إلغاء حظر */
+
+        tr
+          .querySelector(
+            '[data-action="ban"]'
+          )
+          ?.addEventListener(
+            'click',
+            async event => {
+
+              const button =
+                event.currentTarget;
+
+
+              const banning =
+                !isBanned;
+
+
+              const confirmed =
+                confirm(
+
+                  banning
+
+                    ? `هل أنت متأكد من حظر حساب ${name}؟\n\nبعد الحظر لن يستطيع تسجيل الدخول بهذا الحساب.`
+
+                    : `هل تريد إلغاء حظر حساب ${name}؟`
+
+                );
+
+
+              if (!confirmed)
+                return;
+
+
+              try {
+
+                button.disabled =
+                  true;
+
+
+                button.textContent =
+                  banning
+                    ? 'جارٍ الحظر…'
+                    : 'جارٍ إلغاء الحظر…';
+
+
+                await updateDoc(
+                  doc(
+                    db,
+                    'users',
+                    userDoc.id
+                  ),
+                  {
+                    status:
+                      banning
+                        ? 'banned'
+                        : 'active'
+                  }
+                );
+
+
+                await loadUsers();
+
+              }
+
+              catch (error) {
+
+                console.error(
+                  'خطأ في الحظر:',
+                  error
+                );
+
+
+                alert(
+                  'حدث خطأ أثناء تغيير حالة الحظر.'
+                );
+
+
+                button.disabled =
+                  false;
+
+              }
+
+            }
+          );
+
+
+        /* تعطيل / تفعيل */
+
+        tr
+          .querySelector(
+            '[data-action="toggle"]'
+          )
+          ?.addEventListener(
+            'click',
+            async () => {
+
+              const newStatus =
+                isDisabled
+                  ? 'active'
+                  : 'disabled';
+
+
+              const actionText =
+                isDisabled
+                  ? 'تفعيل'
+                  : 'تعطيل';
+
+
+              const confirmed =
+                confirm(
+                  `هل أنت متأكد من ${actionText} هذا الحساب؟`
+                );
+
+
+              if (!confirmed)
+                return;
+
+
+              try {
+
+                await updateDoc(
+                  doc(
+                    db,
+                    'users',
+                    userDoc.id
+                  ),
+                  {
+                    status: newStatus
+                  }
+                );
+
+
+                await loadUsers();
+
+              }
+
+              catch (error) {
+
+                console.error(
+                  'خطأ في تغيير حالة المستخدم:',
+                  error
+                );
+
+
+                alert(
+                  'حدث خطأ أثناء تغيير حالة الحساب.'
+                );
+
+              }
+
+            }
+          );
+
+
+        /* حذف */
+
+        tr
+          .querySelector(
+            '[data-action="delete"]'
+          )
+          ?.addEventListener(
+            'click',
+            async () => {
+
+              const confirmed =
+                confirm(
+                  `هل أنت متأكد من حذف حساب ${name} من قائمة المستخدمين؟\n\nسيتم حذف بياناته من Firestore فقط، وليس حساب Firebase Authentication.`
+                );
+
+
+              if (!confirmed)
+                return;
+
+
+              try {
+
+                await deleteDoc(
+                  doc(
+                    db,
+                    'users',
+                    userDoc.id
+                  )
+                );
+
+
+                await loadUsers();
+
+              }
+
+              catch (error) {
+
+                console.error(
+                  'خطأ في حذف المستخدم:',
+                  error
+                );
+
+
+                alert(
+                  'حدث خطأ أثناء حذف المستخدم.'
+                );
+
+              }
+
+            }
+          );
+
+
+        tbody.appendChild(tr);
+
+      }
+    );
 
   }
 
-});
+  catch (error) {
+
+    console.error(
+      'خطأ في تحميل المستخدمين:',
+      error
+    );
 
 
-/* ═══════════════════════════════════════
-   تحميل المستخدمين
-═══════════════════════════════════════ */
+    tbody.innerHTML = `
+
+      <tr>
+
+        <td colspan="8">
+
+          ❌ حدث خطأ أثناء تحميل المستخدمين.
+
+          <br>
+
+          ${escapeHtml(
+            error.code ||
+            error.message
+          )}
+
+        </td>
+
+      </tr>
+
+    `;
+
+  }
+
+}
 
 
 
-/* ═══════════════════════════════════════
-   نظام إرسال الإشعارات من لوحة الأدمن
-═══════════════════════════════════════ */
+/* =====================================================
+   NOTIFICATION USERS
+===================================================== */
 
 const notificationForm =
-  document.getElementById('notificationForm');
+  $('notificationForm');
 
 const notificationTitle =
-  document.getElementById('notificationTitle');
+  $('notificationTitle');
 
 const notificationType =
-  document.getElementById('notificationType');
+  $('notificationType');
 
 const notificationMessage =
-  document.getElementById('notificationMessage');
+  $('notificationMessage');
 
 const notificationAudience =
-  document.getElementById('notificationAudience');
+  $('notificationAudience');
 
 const notificationUserWrap =
-  document.getElementById('notificationUserWrap');
+  $('notificationUserWrap');
 
 const notificationUser =
-  document.getElementById('notificationUser');
+  $('notificationUser');
 
 const sendNotification =
-  document.getElementById('sendNotification');
+  $('sendNotification');
 
 const notificationStatus =
-  document.getElementById('notificationStatus');
+  $('notificationStatus');
 
 const notificationHistory =
-  document.getElementById('notificationHistory');
+  $('notificationHistory');
 
 const refreshNotifications =
-  document.getElementById('refreshNotifications');
+  $('refreshNotifications');
 
 
-function showNotificationStatus(message, type = 'success') {
+function showNotificationStatus(
+  message,
+  type = 'success'
+) {
 
-  notificationStatus.textContent = message;
+  notificationStatus.textContent =
+    message;
 
-  notificationStatus.style.display = 'block';
+
+  notificationStatus.style.display =
+    'block';
+
 
   notificationStatus.style.background =
     type === 'error'
       ? 'rgba(127,29,29,.45)'
       : 'rgba(22,101,52,.45)';
 
-  notificationStatus.style.color = '#fff';
+
+  notificationStatus.style.color =
+    '#fff';
+
 
   notificationStatus.style.border =
     '1px solid ' +
-    (type === 'error' ? '#ef4444' : '#22c55e');
+    (
+      type === 'error'
+        ? '#ef4444'
+        : '#22c55e'
+    );
 
 }
 
 
-function populateNotificationUsers(snapshot) {
+function populateNotificationUsers(
+  snapshot
+) {
 
   notificationUser.innerHTML =
     '<option value="">اختر المستخدم</option>';
 
-  snapshot.forEach(userDoc => {
 
-    const user = userDoc.data();
+  snapshot.forEach(
+    userDoc => {
 
-    const name =
-      user.fullName ||
-      user.name ||
-      user.displayName ||
-      'بدون اسم';
+      const user =
+        userDoc.data();
 
-    const email =
-      user.email ||
-      'بدون بريد';
 
-    const option =
-      document.createElement('option');
+      const name =
+        user.fullName ||
+        user.name ||
+        user.displayName ||
+        'بدون اسم';
 
-    option.value = userDoc.id;
 
-    option.textContent =
-      `${name} — ${email}`;
+      const email =
+        user.email ||
+        'بدون بريد';
 
-    notificationUser.appendChild(option);
 
-  });
+      const option =
+        document.createElement(
+          'option'
+        );
+
+
+      option.value =
+        userDoc.id;
+
+
+      option.textContent =
+        `${name} — ${email}`;
+
+
+      notificationUser.appendChild(
+        option
+      );
+
+    }
+  );
 
 }
 
@@ -513,10 +1798,15 @@ function toggleNotificationAudience() {
   const isUser =
     notificationAudience.value === 'user';
 
-  notificationUserWrap.style.display =
-    isUser ? 'grid' : 'none';
 
-  notificationUser.required = isUser;
+  notificationUserWrap.style.display =
+    isUser
+      ? 'grid'
+      : 'none';
+
+
+  notificationUser.required =
+    isUser;
 
 }
 
@@ -527,21 +1817,33 @@ notificationAudience.addEventListener(
 );
 
 
-async function sendNotificationFromAdmin(event) {
+
+/* =====================================================
+   SEND NOTIFICATION
+===================================================== */
+
+async function sendNotificationFromAdmin(
+  event
+) {
 
   event.preventDefault();
+
 
   const title =
     notificationTitle.value.trim();
 
+
   const message =
     notificationMessage.value.trim();
+
 
   const type =
     notificationType.value;
 
+
   const audience =
     notificationAudience.value;
+
 
   const targetUid =
     notificationUser.value;
@@ -576,13 +1878,12 @@ async function sendNotificationFromAdmin(event) {
 
   try {
 
-    sendNotification.disabled = true;
+    sendNotification.disabled =
+      true;
+
 
     sendNotification.textContent =
       'جارٍ إرسال الإشعار…';
-
-    notificationStatus.style.display =
-      'none';
 
 
     const data = {
@@ -597,29 +1898,39 @@ async function sendNotificationFromAdmin(event) {
 
       readBy: [],
 
-      createdAt: serverTimestamp(),
+      createdAt:
+        serverTimestamp(),
 
-      createdBy: auth.currentUser?.uid || null
+      createdBy:
+        auth.currentUser?.uid ||
+        null
 
     };
 
 
-    if (audience === 'user') {
+    if (
+      audience === 'user'
+    ) {
 
-      data.targetUid = targetUid;
+      data.targetUid =
+        targetUid;
 
     }
 
 
     await addDoc(
-      collection(db, 'notifications'),
+      collection(
+        db,
+        'notifications'
+      ),
       data
     );
 
 
     notificationForm.reset();
 
-    notificationAudience.value = 'all';
+    notificationAudience.value =
+      'all';
 
     toggleNotificationAudience();
 
@@ -641,6 +1952,7 @@ async function sendNotificationFromAdmin(event) {
       error
     );
 
+
     showNotificationStatus(
       '❌ تعذر إرسال الإشعار. راجع Firestore Rules.',
       'error'
@@ -650,7 +1962,9 @@ async function sendNotificationFromAdmin(event) {
 
   finally {
 
-    sendNotification.disabled = false;
+    sendNotification.disabled =
+      false;
+
 
     sendNotification.textContent =
       'إرسال الإشعار 🔔';
@@ -659,6 +1973,17 @@ async function sendNotificationFromAdmin(event) {
 
 }
 
+
+notificationForm.addEventListener(
+  'submit',
+  sendNotificationFromAdmin
+);
+
+
+
+/* =====================================================
+   NOTIFICATION HISTORY
+===================================================== */
 
 async function loadNotificationHistory() {
 
@@ -670,49 +1995,79 @@ async function loadNotificationHistory() {
 
     const snap =
       await getDocs(
+
         query(
-          collection(db, 'notifications'),
+          collection(
+            db,
+            'notifications'
+          ),
           limit(50)
         )
+
       );
+
 
     const items = [];
 
-    snap.forEach(item => {
 
-      items.push({
-        id: item.id,
-        ...item.data()
-      });
+    snap.forEach(
+      item => {
 
-    });
+        items.push({
+          id: item.id,
+          ...item.data()
+        });
+
+      }
+    );
 
 
-    items.sort((a, b) => {
+    function getTime(value) {
 
-      const getTime = value => {
+      if (!value)
+        return 0;
 
-        if (!value) return 0;
 
-        if (typeof value.toMillis === 'function') {
-          return value.toMillis();
-        }
+      if (
+        typeof value.toMillis ===
+        'function'
+      ) {
 
-        if (typeof value.toDate === 'function') {
-          return value.toDate().getTime();
-        }
+        return value.toMillis();
 
-        const date = new Date(value);
+      }
 
-        return Number.isNaN(date.getTime())
-          ? 0
-          : date.getTime();
 
-      };
+      if (
+        typeof value.toDate ===
+        'function'
+      ) {
 
-      return getTime(b.createdAt) - getTime(a.createdAt);
+        return value
+          .toDate()
+          .getTime();
 
-    });
+      }
+
+
+      const date =
+        new Date(value);
+
+
+      return Number.isNaN(
+        date.getTime()
+      )
+        ? 0
+        : date.getTime();
+
+    }
+
+
+    items.sort(
+      (a, b) =>
+        getTime(b.createdAt) -
+        getTime(a.createdAt)
+    );
 
 
     if (!items.length) {
@@ -726,39 +2081,83 @@ async function loadNotificationHistory() {
 
 
     notificationHistory.innerHTML =
-      items.map(item => {
+      items
+        .map(item => {
 
-        const audienceText =
-          item.audience === 'all'
-            ? '👥 للجميع'
-            : '👤 لمستخدم محدد';
+          const audienceText =
+            item.audience === 'all'
+              ? '👥 للجميع'
+              : '👤 لمستخدم محدد';
 
-        const time =
-          item.createdAt &&
-          typeof item.createdAt.toDate === 'function'
-            ? item.createdAt.toDate()
-            : null;
 
-        const timeText =
-          time
-            ? new Intl.DateTimeFormat('ar-EG', {
-                dateStyle: 'medium',
-                timeStyle: 'short'
-              }).format(time)
-            : 'منذ قليل';
+          const time =
+            item.createdAt &&
+            typeof item.createdAt.toDate ===
+            'function'
+              ? item.createdAt.toDate()
+              : null;
 
-        return `
-          <div class="notification-history-item" data-notification-id="${escapeHtml(item.id)}">
-            <div>
-              <strong>${escapeHtml(item.title || 'بدون عنوان')}</strong>
-              <p>${escapeHtml(item.message || '')}</p>
-              <small>${audienceText} · ${escapeHtml(timeText)}</small>
+
+          const timeText =
+            time
+              ? new Intl.DateTimeFormat(
+                  'ar-EG',
+                  {
+                    dateStyle: 'medium',
+                    timeStyle: 'short'
+                  }
+                ).format(time)
+              : 'منذ قليل';
+
+
+          return `
+
+            <div
+              class="notification-history-item"
+              data-notification-id="${escapeHtml(item.id)}"
+            >
+
+              <div>
+
+                <strong>
+                  ${escapeHtml(
+                    item.title ||
+                    'بدون عنوان'
+                  )}
+                </strong>
+
+
+                <p>
+                  ${escapeHtml(
+                    item.message ||
+                    ''
+                  )}
+                </p>
+
+
+                <small>
+                  ${audienceText}
+                  ·
+                  ${escapeHtml(timeText)}
+                </small>
+
+              </div>
+
+
+              <button
+                type="button"
+                class="btn danger notification-delete-btn"
+                data-id="${escapeHtml(item.id)}"
+              >
+                حذف الإشعار 🗑️
+              </button>
+
             </div>
-            <button type="button" class="btn danger notification-delete-btn" data-id="${escapeHtml(item.id)}">حذف الإشعار 🗑️</button>
-          </div>
-        `;
 
-      }).join('');
+          `;
+
+        })
+        .join('');
 
   }
 
@@ -769,6 +2168,7 @@ async function loadNotificationHistory() {
       error
     );
 
+
     notificationHistory.innerHTML =
       '<div class="notification-empty">❌ تعذر تحميل سجل الإشعارات.</div>';
 
@@ -777,28 +2177,83 @@ async function loadNotificationHistory() {
 }
 
 
-async function deleteNotificationFromAdmin(id) {
-  if (!id) return;
-  if (!confirm('هل تريد حذف هذا الإشعار نهائيًا؟')) return;
-  try {
-    await deleteDoc(doc(db, 'notifications', id));
-    await loadNotificationHistory();
-    showNotificationStatus('تم حذف الإشعار بنجاح.', 'success');
-  } catch (error) {
-    console.error('خطأ في حذف الإشعار:', error);
-    showNotificationStatus('تعذر حذف الإشعار. تأكد من Firestore Rules.', 'error');
+async function deleteNotificationFromAdmin(
+  id
+) {
+
+  if (!id)
+    return;
+
+
+  if (
+    !confirm(
+      'هل تريد حذف هذا الإشعار نهائيًا؟'
+    )
+  ) {
+
+    return;
+
   }
+
+
+  try {
+
+    await deleteDoc(
+      doc(
+        db,
+        'notifications',
+        id
+      )
+    );
+
+
+    await loadNotificationHistory();
+
+
+    showNotificationStatus(
+      'تم حذف الإشعار بنجاح.',
+      'success'
+    );
+
+  }
+
+  catch (error) {
+
+    console.error(
+      'خطأ في حذف الإشعار:',
+      error
+    );
+
+
+    showNotificationStatus(
+      'تعذر حذف الإشعار. تأكد من Firestore Rules.',
+      'error'
+    );
+
+  }
+
 }
 
-notificationHistory.addEventListener('click', event => {
-  const button = event.target.closest('.notification-delete-btn');
-  if (!button) return;
-  deleteNotificationFromAdmin(button.dataset.id);
-});
 
-notificationForm.addEventListener(
-  'submit',
-  sendNotificationFromAdmin
+notificationHistory.addEventListener(
+  'click',
+  event => {
+
+    const button =
+      event.target.closest(
+        '.notification-delete-btn'
+      );
+
+
+    if (!button)
+      return;
+
+
+    deleteNotificationFromAdmin(
+      button.dataset.id
+    );
+
+  }
 );
 
 
@@ -808,21 +2263,376 @@ refreshNotifications.addEventListener(
 );
 
 
-/* ═══════════════════════════════════════
-   تحميل سجل الإشعارات عند فتح الصفحة
-═══════════════════════════════════════ */
 
-loadNotificationHistory();
+/* =====================================================
+   CONTENT MANAGEMENT
+===================================================== */
+
+const contentTypes = {
+
+  events:
+    'الأحداث',
+
+  teachers:
+    'طاقم التدريس',
+
+  featuredStudents:
+    'الطلاب المتميزون'
+
+};
 
 
-async function load() {
+let activeContentType =
+  'events';
 
-  tbody.innerHTML = `
+
+let editingContentId =
+  null;
+
+
+const contentRows =
+  $('contentRows');
+
+
+const fieldSets = {
+
+  events: [
+
+    [
+      'title',
+      'عنوان الحدث',
+      'text'
+    ],
+
+    [
+      'category',
+      'نوع الحدث: trip أو match أو competition أو workshop أو celebration',
+      'text'
+    ],
+
+    [
+      'icon',
+      'الأيقونة',
+      'text'
+    ],
+
+    [
+      'date',
+      'التاريخ',
+      'text'
+    ],
+
+    [
+      'time',
+      'الوقت',
+      'text'
+    ],
+
+    [
+      'location',
+      'المكان',
+      'text'
+    ],
+
+    [
+      'description',
+      'وصف الحدث',
+      'textarea'
+    ],
+
+    [
+      'link',
+      'رابط الحجز أو واتساب (اختياري)',
+      'text'
+    ]
+
+  ],
+
+
+  teachers: [
+
+    [
+      'name',
+      'اسم المعلم',
+      'text'
+    ],
+
+    [
+      'subject',
+      'المادة / التخصص',
+      'text'
+    ],
+
+    [
+      'role',
+      'المسمى الوظيفي (اختياري)',
+      'text'
+    ],
+
+    [
+      'image',
+      'رابط صورة المعلم (اختياري)',
+      'text'
+    ],
+
+    [
+      'bio',
+      'نبذة عن المعلم',
+      'textarea'
+    ],
+
+    [
+      'whatsapp',
+      'رقم أو رابط واتساب (اختياري)',
+      'text'
+    ]
+
+  ],
+
+
+  featuredStudents: [
+
+    [
+      'name',
+      'اسم الطالب',
+      'text'
+    ],
+
+    [
+      'grade',
+      'الصف / المرحلة',
+      'text'
+    ],
+
+    [
+      'image',
+      'رابط صورة الطالب (اختياري)',
+      'text'
+    ],
+
+    [
+      'tags',
+      'الإنجازات مفصولة بفاصلة',
+      'text'
+    ],
+
+    [
+      'achievement',
+      'نبذة والإنجاز',
+      'textarea'
+    ],
+
+    [
+      'percentage',
+      'نسبة التفوق (اختياري)',
+      'text'
+    ],
+
+    [
+      'memorized',
+      'الأجزاء/الجوائز (اختياري)',
+      'text'
+    ],
+
+    [
+      'certificates',
+      'عدد الشهادات (اختياري)',
+      'text'
+    ],
+
+    [
+      'certificateLink',
+      'رابط الشهادة PDF (اختياري)',
+      'text'
+    ]
+
+  ]
+
+};
+
+
+
+function renderContentFields() {
+
+  const box =
+    $('contentFields');
+
+
+  box.innerHTML =
+    '';
+
+
+  (
+    fieldSets[
+      activeContentType
+    ] || []
+  )
+    .forEach(
+      ([key, label, type]) => {
+
+        const element =
+          document.createElement(
+            type === 'textarea'
+              ? 'textarea'
+              : 'input'
+          );
+
+
+        element.id =
+          'field_' + key;
+
+
+        element.name =
+          key;
+
+
+        element.placeholder =
+          label;
+
+
+        if (
+          type !== 'textarea'
+        ) {
+
+          element.type =
+            'text';
+
+        }
+
+
+        box.appendChild(
+          element
+        );
+
+      }
+    );
+
+}
+
+
+function contentValue(key) {
+
+  const element =
+    $('field_' + key);
+
+
+  return element
+    ? element.value.trim()
+    : '';
+
+}
+
+
+function fillContentForm(
+  data = {}
+) {
+
+  renderContentFields();
+
+
+  $('contentId').value =
+    data.id || '';
+
+
+  $('contentVisible').checked =
+    data.visible !== false;
+
+
+  (
+    fieldSets[
+      activeContentType
+    ] || []
+  )
+    .forEach(
+      ([key]) => {
+
+        const element =
+          $('field_' + key);
+
+
+        if (element) {
+
+          element.value =
+            data[key] ?? '';
+
+        }
+
+      }
+    );
+
+}
+
+
+function setContentStatus(
+  message,
+  error = false
+) {
+
+  let box =
+    $('contentStatus');
+
+
+  if (!box) {
+
+    box =
+      document.createElement(
+        'div'
+      );
+
+
+    box.id =
+      'contentStatus';
+
+
+    box.style.cssText =
+      `
+        margin:10px 0;
+        padding:10px;
+        border-radius:8px;
+      `;
+
+
+    $('contentForm')
+      .before(box);
+
+  }
+
+
+  box.textContent =
+    message;
+
+
+  box.style.background =
+    error
+      ? '#5b1f1f'
+      : '#174b35';
+
+
+  box.style.color =
+    '#fff';
+
+
+  box.style.display =
+    'block';
+
+}
+
+
+
+/* تحميل المحتوى */
+
+async function loadContent() {
+
+  contentRows.innerHTML = `
+
     <tr>
-      <td colspan="8">
-        جارٍ تحميل المستخدمين…
+
+      <td colspan="5">
+        جارٍ التحميل...
       </td>
+
     </tr>
+
   `;
 
 
@@ -830,21 +2640,29 @@ async function load() {
 
     const snap =
       await getDocs(
-        collection(db, 'users')
+        collection(
+          db,
+          activeContentType
+        )
       );
 
 
-    populateNotificationUsers(snap);
+    contentRows.innerHTML =
+      '';
 
 
     if (snap.empty) {
 
-      tbody.innerHTML = `
+      contentRows.innerHTML = `
+
         <tr>
-          <td colspan="8">
-            لا يوجد مستخدمون بعد.
+
+          <td colspan="5">
+            لا توجد بيانات مضافة حتى الآن.
           </td>
+
         </tr>
+
       `;
 
       return;
@@ -852,600 +2670,1034 @@ async function load() {
     }
 
 
-    tbody.innerHTML = '';
+    snap.forEach(
+      item => {
 
+        const data =
+          item.data();
 
-    snap.forEach(userDoc => {
 
-      const user =
-        userDoc.data();
+        const title =
+          data.title ||
+          data.name ||
+          '';
 
 
-      const name =
-        user.fullName ||
-        user.name ||
-        user.displayName ||
-        'بدون اسم';
+        const details =
+          data.subtitle ||
+          data.subject ||
+          data.grade ||
+          data.date ||
+          '';
 
 
-      const email =
-        user.email ||
-        'بدون بريد';
+        contentRows.insertAdjacentHTML(
+          'beforeend',
+          `
 
+            <tr>
 
-      const isTeacher =
-        user.role === 'teacher';
+              <td>
+                ${contentTypes[activeContentType]}
+              </td>
 
+              <td>
+                ${escapeHtml(title)}
+              </td>
 
-      const status =
-        user.status || 'active';
+              <td>
+                ${escapeHtml(details)}
+              </td>
 
-
-      const isPending =
-        status === 'pending';
-
-
-      const isDisabled =
-        status === 'disabled';
-
-
-      const isBanned =
-        status === 'banned';
-
-
-      const roleText =
-        isTeacher
-          ? 'معلم'
-          : 'طالب';
-
-
-      /* ═══════════════════════════════════════
-         حالة الحساب
-      ═══════════════════════════════════════ */
-
-      let statusText =
-        '🟢 نشط';
-
-      let statusClass =
-        'status status-active';
-
-
-      if (isPending) {
-
-        statusText =
-          '⏳ في انتظار الاعتماد';
-
-        statusClass =
-          'status status-pending';
-
-      }
-
-      else if (isDisabled) {
-
-        statusText =
-          '🚫 معطل';
-
-        statusClass =
-          'status status-disabled';
-
-      }
-
-      else if (isBanned) {
-
-        statusText =
-          '⛔ محظور';
-
-        /*
-         * لو dashboard.css القديم لا يحتوي
-         * status-banned سنضيفه تلقائيًا
-         * بشكل بسيط من خلال style.
-         */
-
-        statusClass =
-          'status status-banned';
-
-      }
-
-
-      /* ═══════════════════════════════════════
-         أزرار الإجراءات
-      ═══════════════════════════════════════ */
-
-      let buttons = `
-
-        <button
-          class="action-btn action-view"
-          title="عرض البيانات"
-          data-action="view"
-        >
-          👁️
-        </button>
-
-      `;
-
-
-      /* ═══════════════════════════════════════
-         اعتماد المعلم
-      ═══════════════════════════════════════ */
-
-      if (isTeacher && isPending) {
-
-        buttons += `
-
-          <button
-            class="action-btn action-approve"
-            title="اعتماد المعلم"
-            data-action="approve"
-          >
-            👨‍🏫 اعتماد
-          </button>
-
-        `;
-
-      }
-
-
-      /* ═══════════════════════════════════════
-         الحظر / إلغاء الحظر
-      ═══════════════════════════════════════ */
-
-      if (isBanned) {
-
-        buttons += `
-
-          <button
-            class="action-btn action-toggle"
-            title="إلغاء الحظر"
-            data-action="ban"
-          >
-            🟢 إلغاء الحظر
-          </button>
-
-        `;
-
-      }
-
-      else {
-
-        buttons += `
-
-          <button
-            class="action-btn action-ban"
-            title="حظر الحساب"
-            data-action="ban"
-          >
-            ⛔ حظر
-          </button>
-
-        `;
-
-      }
-
-
-      /* ═══════════════════════════════════════
-         تعطيل / تفعيل
-      ═══════════════════════════════════════ */
-
-      if (!isBanned) {
-
-        if (isDisabled) {
-
-          buttons += `
-
-            <button
-              class="action-btn action-toggle"
-              title="تفعيل الحساب"
-              data-action="toggle"
-            >
-              🟢 تفعيل
-            </button>
-
-          `;
-
-        }
-
-        else {
-
-          buttons += `
-
-            <button
-              class="action-btn action-toggle"
-              title="تعطيل الحساب"
-              data-action="toggle"
-            >
-              🚫 تعطيل
-            </button>
-
-          `;
-
-        }
-
-      }
-
-
-      /* ═══════════════════════════════════════
-         حذف سجل المستخدم
-      ═══════════════════════════════════════ */
-
-      buttons += `
-
-        <button
-          class="action-btn action-delete"
-          title="حذف المستخدم"
-          data-action="delete"
-        >
-          🗑️
-        </button>
-
-      `;
-
-
-      /* ═══════════════════════════════════════
-         إنشاء الصف
-      ═══════════════════════════════════════ */
-
-      const tr =
-        document.createElement('tr');
-
-
-      tr.innerHTML = `
-
-        <td>
-          ${escapeHtml(name)}
-        </td>
-
-        <td>
-          ${escapeHtml(email)}
-        </td>
-
-        <td>
-          ${escapeHtml(user.phone || user.phoneNumber || '-')}
-        </td>
-
-        <td>
-          ${(user.phone || user.phoneNumber)
-            ? `<a class="action-btn action-whatsapp" target="_blank" rel="noopener" href="https://wa.me/${whatsappNumber(user.phone || user.phoneNumber)}">واتساب</a>`
-            : '-'}
-        </td>
-
-        <td>
-          ${escapeHtml(user.role === 'teacher' ? (user.subject || user.grade || '-') : (user.grade || user.studyGrade || user.className || '-'))}
-        </td>
-
-        <td>
-          ${roleText}
-        </td>
-
-        <td>
-
-          <span class="${statusClass}">
-            ${statusText}
-          </span>
-
-        </td>
-
-        <td>
-
-          <div class="user-actions">
-
-            ${buttons}
-
-          </div>
-
-        </td>
-
-      `;
-
-
-      /* ═══════════════════════════════════════
-         عرض البيانات
-      ═══════════════════════════════════════ */
-
-      tr
-        .querySelector('[data-action="view"]')
-        ?.addEventListener(
-          'click',
-          () => {
-
-            showUser(user);
-
-          }
-        );
-
-
-      /* ═══════════════════════════════════════
-         اعتماد المعلم
-      ═══════════════════════════════════════ */
-
-      tr
-        .querySelector('[data-action="approve"]')
-        ?.addEventListener(
-          'click',
-          async buttonEvent => {
-
-            const button =
-              buttonEvent.currentTarget;
-
-
-            try {
-
-              button.disabled = true;
-
-              button.textContent =
-                'جارٍ الاعتماد…';
-
-
-              await updateDoc(
-                doc(
-                  db,
-                  'users',
-                  userDoc.id
-                ),
-                {
-                  status: 'active'
+              <td>
+                ${
+                  data.visible === false
+                    ? 'مخفي'
+                    : 'ظاهر'
                 }
-              );
+              </td>
+
+              <td>
+
+                <button
+                  class="btn edit"
+                  data-id="${escapeHtml(item.id)}"
+                  type="button"
+                >
+                  تعديل
+                </button>
 
 
-              await load();
+                <button
+                  class="btn toggle"
+                  data-id="${escapeHtml(item.id)}"
+                  data-visible="${data.visible !== false}"
+                  type="button"
+                >
+                  ${
+                    data.visible === false
+                      ? 'إظهار'
+                      : 'إخفاء'
+                  }
+                </button>
 
 
-            } catch (error) {
+                <button
+                  class="btn danger del"
+                  data-id="${escapeHtml(item.id)}"
+                  type="button"
+                >
+                  حذف
+                </button>
 
-              console.error(
-                'خطأ في اعتماد المعلم:',
-                error
-              );
+              </td>
 
+            </tr>
 
-              alert(
-                'حدث خطأ أثناء اعتماد المعلم.'
-              );
-
-
-              button.disabled = false;
-
-              button.textContent =
-                '👨‍🏫 اعتماد';
-
-            }
-
-          }
+          `
         );
 
+      }
+    );
 
-      /* ═══════════════════════════════════════
-         حظر / إلغاء حظر
-      ═══════════════════════════════════════ */
+  }
 
-      tr
-        .querySelector('[data-action="ban"]')
-        ?.addEventListener(
-          'click',
-          async buttonEvent => {
-
-            const button =
-              buttonEvent.currentTarget;
-
-
-            const banning =
-              !isBanned;
-
-
-            const actionText =
-              banning
-                ? 'حظر'
-                : 'إلغاء الحظر';
-
-
-            const confirmed =
-              confirm(
-                banning
-
-                  ? `هل أنت متأكد من حظر حساب ${name}؟\n\nبعد الحظر لن يستطيع تسجيل الدخول بهذا الحساب، ولن يستطيع استخدام نفس البريد لإنشاء حساب جديد.`
-
-                  : `هل تريد إلغاء حظر حساب ${name}؟\n\nسيتمكن من تسجيل الدخول مرة أخرى.`
-              );
-
-
-            if (!confirmed) return;
-
-
-            try {
-
-              button.disabled = true;
-
-              button.textContent =
-                banning
-                  ? 'جارٍ الحظر…'
-                  : 'جارٍ إلغاء الحظر…';
-
-
-              await updateDoc(
-                doc(
-                  db,
-                  'users',
-                  userDoc.id
-                ),
-                {
-                  status:
-                    banning
-                      ? 'banned'
-                      : 'active'
-                }
-              );
-
-
-              await load();
-
-
-            } catch (error) {
-
-              console.error(
-                'خطأ في الحظر:',
-                error
-              );
-
-
-              alert(
-                `حدث خطأ أثناء ${actionText} الحساب.`
-              );
-
-
-              button.disabled = false;
-
-              button.textContent =
-                banning
-                  ? '⛔ حظر'
-                  : '🟢 إلغاء الحظر';
-
-            }
-
-          }
-        );
-
-
-      /* ═══════════════════════════════════════
-         تعطيل / تفعيل
-      ═══════════════════════════════════════ */
-
-      tr
-        .querySelector('[data-action="toggle"]')
-        ?.addEventListener(
-          'click',
-          async () => {
-
-            const newStatus =
-              isDisabled
-                ? 'active'
-                : 'disabled';
-
-
-            const actionText =
-              isDisabled
-                ? 'تفعيل'
-                : 'تعطيل';
-
-
-            const confirmed =
-              confirm(
-                `هل أنت متأكد من ${actionText} هذا الحساب؟`
-              );
-
-
-            if (!confirmed) return;
-
-
-            try {
-
-              await updateDoc(
-                doc(
-                  db,
-                  'users',
-                  userDoc.id
-                ),
-                {
-                  status: newStatus
-                }
-              );
-
-
-              await load();
-
-
-            } catch (error) {
-
-              console.error(
-                'خطأ في تغيير حالة المستخدم:',
-                error
-              );
-
-
-              alert(
-                'حدث خطأ أثناء تغيير حالة الحساب.'
-              );
-
-            }
-
-          }
-        );
-
-
-      /* ═══════════════════════════════════════
-         حذف المستخدم
-      ═══════════════════════════════════════ */
-
-      tr
-        .querySelector('[data-action="delete"]')
-        ?.addEventListener(
-          'click',
-          async () => {
-
-            const confirmed =
-              confirm(
-                `هل أنت متأكد من حذف حساب ${name} من قائمة المستخدمين؟\n\nهذا سيحذف بياناته من Firestore فقط، وليس حساب Firebase Authentication.`
-              );
-
-
-            if (!confirmed) return;
-
-
-            try {
-
-              await deleteDoc(
-                doc(
-                  db,
-                  'users',
-                  userDoc.id
-                )
-              );
-
-
-              await load();
-
-
-            } catch (error) {
-
-              console.error(
-                'خطأ في حذف المستخدم:',
-                error
-              );
-
-
-              alert(
-                'حدث خطأ أثناء حذف المستخدم.'
-              );
-
-            }
-
-          }
-        );
-
-
-      tbody.appendChild(tr);
-
-    });
-
-
-  } catch (error) {
+  catch (error) {
 
     console.error(
-      'خطأ في تحميل المستخدمين:',
+      'Content load error:',
       error
     );
 
 
-    tbody.innerHTML = `
+    contentRows.innerHTML = `
 
       <tr>
 
         <td colspan="5">
 
-          ❌ حدث خطأ أثناء تحميل المستخدمين.
+          تعذر تحميل البيانات.
 
-          <br>
+        </td>
 
-          افتح Console لمعرفة الخطأ.
+      </tr>
+
+    `;
+
+
+    setContentStatus(
+      'خطأ في تحميل المحتوى: ' +
+      (
+        error.code ||
+        error.message
+      ),
+      true
+    );
+
+  }
+
+}
+
+
+
+/* تبديل نوع المحتوى */
+
+document
+  .querySelectorAll(
+    '[data-content-tab]'
+  )
+  .forEach(
+    button => {
+
+      button.addEventListener(
+        'click',
+        () => {
+
+          activeContentType =
+            button.dataset.contentTab;
+
+
+          $('contentType').value =
+            activeContentType;
+
+
+          editingContentId =
+            null;
+
+
+          fillContentForm({});
+
+
+          loadContent();
+
+        }
+      );
+
+    }
+  );
+
+
+
+/* حفظ المحتوى */
+
+$('contentForm')
+  .addEventListener(
+    'submit',
+    async event => {
+
+      event.preventDefault();
+
+
+      const requiredKey =
+        activeContentType === 'events'
+          ? 'title'
+          : 'name';
+
+
+      const title =
+        contentValue(
+          requiredKey
+        );
+
+
+      if (!title) {
+
+        setContentStatus(
+          'اكتب البيانات الأساسية أولًا.',
+          true
+        );
+
+        return;
+
+      }
+
+
+      const data = {
+
+        visible:
+          $('contentVisible').checked,
+
+        updatedAt:
+          serverTimestamp()
+
+      };
+
+
+      (
+        fieldSets[
+          activeContentType
+        ] || []
+      )
+        .forEach(
+          ([key]) => {
+
+            data[key] =
+              contentValue(key);
+
+          }
+        );
+
+
+      if (
+        activeContentType ===
+        'events'
+      ) {
+
+        data.title =
+          contentValue('title');
+
+
+        data.status =
+          'upcoming';
+
+      }
+
+
+      if (
+        activeContentType ===
+        'featuredStudents'
+      ) {
+
+        data.title =
+          contentValue('name');
+
+      }
+
+
+      try {
+
+        if (editingContentId) {
+
+          await updateDoc(
+            doc(
+              db,
+              activeContentType,
+              editingContentId
+            ),
+            data
+          );
+
+
+          setContentStatus(
+            'تم تعديل العنصر وحفظه بنجاح.'
+          );
+
+        }
+
+        else {
+
+          data.createdAt =
+            serverTimestamp();
+
+
+          const ref =
+            await addDoc(
+              collection(
+                db,
+                activeContentType
+              ),
+              data
+            );
+
+
+          console.log(
+            'Added document:',
+            ref.id
+          );
+
+
+          setContentStatus(
+            'تمت إضافة العنصر وحفظه في Firestore بنجاح.'
+          );
+
+        }
+
+
+        editingContentId =
+          null;
+
+
+        fillContentForm({});
+
+
+        await loadContent();
+
+      }
+
+      catch (error) {
+
+        console.error(
+          'Content save error:',
+          error
+        );
+
+
+        setContentStatus(
+          'لم يتم الحفظ: ' +
+          (
+            error.code ||
+            error.message
+          ),
+          true
+        );
+
+      }
+
+    }
+  );
+
+
+
+/* إلغاء التعديل */
+
+$('contentCancel')
+  .onclick = () => {
+
+    editingContentId =
+      null;
+
+
+    fillContentForm({});
+
+
+    setContentStatus(
+      'تم إلغاء التعديل.'
+    );
+
+  };
+
+
+
+/* إجراءات المحتوى */
+
+contentRows.addEventListener(
+  'click',
+  async event => {
+
+    const button =
+      event.target.closest(
+        'button'
+      );
+
+
+    if (!button)
+      return;
+
+
+    const id =
+      button.dataset.id;
+
+
+    if (!id)
+      return;
+
+
+    try {
+
+
+      /* حذف */
+
+      if (
+        button.classList.contains(
+          'del'
+        )
+      ) {
+
+        if (
+          confirm(
+            'حذف هذا العنصر؟'
+          )
+        ) {
+
+          await deleteDoc(
+            doc(
+              db,
+              activeContentType,
+              id
+            )
+          );
+
+
+          setContentStatus(
+            'تم الحذف بنجاح.'
+          );
+
+        }
+
+      }
+
+
+      /* إظهار / إخفاء */
+
+      else if (
+        button.classList.contains(
+          'toggle'
+        )
+      ) {
+
+        await updateDoc(
+          doc(
+            db,
+            activeContentType,
+            id
+          ),
+          {
+            visible:
+              button.dataset.visible ===
+              'false',
+
+            updatedAt:
+              serverTimestamp()
+          }
+        );
+
+
+        setContentStatus(
+          'تم تغيير حالة الظهور.'
+        );
+
+      }
+
+
+      /* تعديل */
+
+      else if (
+        button.classList.contains(
+          'edit'
+        )
+      ) {
+
+        const snap =
+          await getDocs(
+            collection(
+              db,
+              activeContentType
+            )
+          );
+
+
+        const hit =
+          snap.docs.find(
+            item =>
+              item.id === id
+          );
+
+
+        if (hit) {
+
+          editingContentId =
+            id;
+
+
+          fillContentForm({
+            id,
+            ...hit.data()
+          });
+
+
+          window.scrollTo({
+
+            top:
+              $('contentForm')
+                .offsetTop - 80,
+
+            behavior:
+              'smooth'
+
+          });
+
+        }
+
+      }
+
+
+      await loadContent();
+
+    }
+
+    catch (error) {
+
+      console.error(
+        'Content action error:',
+        error
+      );
+
+
+      setContentStatus(
+        'تعذر تنفيذ العملية: ' +
+        (
+          error.code ||
+          error.message
+        ),
+        true
+      );
+
+    }
+
+  }
+);
+
+
+
+/* =====================================================
+   BOOKINGS
+===================================================== */
+
+async function loadBookings() {
+
+  const body =
+    $('bookingRows');
+
+
+  if (!body)
+    return;
+
+
+  body.innerHTML = `
+
+    <tr>
+
+      <td colspan="8">
+        جارٍ تحميل الطلبات...
+      </td>
+
+    </tr>
+
+  `;
+
+
+  try {
+
+    const snap =
+      await getDocs(
+
+        query(
+          collection(
+            db,
+            'bookings'
+          ),
+
+          orderBy(
+            'createdAt',
+            'desc'
+          )
+        )
+
+      );
+
+
+    body.innerHTML =
+      '';
+
+
+    if (snap.empty) {
+
+      body.innerHTML = `
+
+        <tr>
+
+          <td colspan="8">
+            لا توجد طلبات حجز.
+          </td>
+
+        </tr>
+
+      `;
+
+      return;
+
+    }
+
+
+    /*
+     * مهم:
+     * هنا نحتفظ ببيانات كل حجز
+     * داخل الصف نفسه.
+     *
+     * وبالتالي لن نستخدم المتغير b
+     * خارج نطاقه.
+     */
+
+    snap.forEach(
+      bookingDoc => {
+
+        const booking =
+          bookingDoc.data();
+
+
+        const currentStatus =
+          booking.status ||
+          'جديد';
+
+
+        const tr =
+          document.createElement(
+            'tr'
+          );
+
+
+        tr.innerHTML = `
+
+          <td>
+            ${escapeHtml(
+              booking.fullName ||
+              '-'
+            )}
+          </td>
+
+
+          <td>
+
+            ${escapeHtml(
+              booking.email ||
+              '-'
+            )}
+
+            <br>
+
+            ${escapeHtml(
+              booking.phone ||
+              '-'
+            )}
+
+          </td>
+
+
+          <td>
+
+            ${escapeHtml(
+              booking.educationType ||
+              '-'
+            )}
+
+            /
+
+            ${escapeHtml(
+              booking.grade ||
+              '-'
+            )}
+
+          </td>
+
+
+          <td>
+            ${escapeHtml(
+              booking.subject ||
+              '-'
+            )}
+          </td>
+
+
+          <td>
+
+            ${escapeHtml(
+              booking.preferredDay1 ||
+              '-'
+            )}
+
+            —
+
+            ${escapeHtml(
+              booking.preferredDay2 ||
+              '-'
+            )}
+
+            <br>
+
+            ${escapeHtml(
+              booking.preferredPeriod ||
+              ''
+            )}
+
+          </td>
+
+
+          <td>
+
+            ${escapeHtml(
+              booking.teacherName ||
+              'لم يُعيّن'
+            )}
+
+          </td>
+
+
+          <td>
+
+            <select
+              class="booking-status-select"
+              data-id="${escapeHtml(
+                bookingDoc.id
+              )}"
+            >
+
+              <option
+                value="جديد"
+                ${
+                  currentStatus ===
+                  'جديد'
+                    ? 'selected'
+                    : ''
+                }
+              >
+                جديد
+              </option>
+
+
+              <option
+                value="قيد المراجعة"
+                ${
+                  currentStatus ===
+                  'قيد المراجعة'
+                    ? 'selected'
+                    : ''
+                }
+              >
+                قيد المراجعة
+              </option>
+
+
+              <option
+                value="تم التواصل"
+                ${
+                  currentStatus ===
+                  'تم التواصل'
+                    ? 'selected'
+                    : ''
+                }
+              >
+                تم التواصل
+              </option>
+
+
+              <option
+                value="تم الحجز"
+                ${
+                  currentStatus ===
+                  'تم الحجز'
+                    ? 'selected'
+                    : ''
+                }
+              >
+                تم الحجز
+              </option>
+
+
+              <option
+                value="مكتمل"
+                ${
+                  currentStatus ===
+                  'مكتمل'
+                    ? 'selected'
+                    : ''
+                }
+              >
+                مكتمل
+              </option>
+
+
+              <option
+                value="ملغي"
+                ${
+                  currentStatus ===
+                  'ملغي'
+                    ? 'selected'
+                    : ''
+                }
+              >
+                ملغي
+              </option>
+
+            </select>
+
+          </td>
+
+
+          <td>
+
+            <button
+              class="btn booking-save-btn"
+              data-booking-id="${escapeHtml(
+                bookingDoc.id
+              )}"
+              type="button"
+            >
+              حفظ الحالة
+            </button>
+
+          </td>
+
+        `;
+
+
+        body.appendChild(tr);
+
+
+        /*
+         * نحفظ بيانات الحجز في الـ button
+         * نفسه، وبذلك لا يوجد أي b
+         * خارج نطاق snap.forEach.
+         */
+
+        const saveButton =
+          tr.querySelector(
+            '[data-booking-id]'
+          );
+
+
+        saveButton.addEventListener(
+          'click',
+          async () => {
+
+            const select =
+              tr.querySelector(
+                '.booking-status-select'
+              );
+
+
+            const newStatus =
+              select.value;
+
+
+            const oldStatus =
+              currentStatus;
+
+
+            const bookingId =
+              bookingDoc.id;
+
+
+            try {
+
+              saveButton.disabled =
+                true;
+
+
+              saveButton.textContent =
+                'جارٍ الحفظ...';
+
+
+              /*
+               * تحديث حالة الحجز
+               */
+
+              await updateDoc(
+
+                doc(
+                  db,
+                  'bookings',
+                  bookingId
+                ),
+
+                {
+
+                  status:
+                    newStatus,
+
+                  updatedAt:
+                    serverTimestamp()
+
+                }
+
+              );
+
+
+              /*
+               * إرسال إشعار للطالب
+               *
+               * نستخدم booking.studentUid
+               * مباشرة من بيانات الحجز.
+               */
+
+              if (
+
+                booking.studentUid &&
+
+                newStatus !==
+                oldStatus
+
+              ) {
+
+                await addDoc(
+
+                  collection(
+                    db,
+                    'notifications'
+                  ),
+
+                  {
+
+                    audience:
+                      'user',
+
+                    targetUid:
+                      booking.studentUid,
+
+                    type:
+                      'booking',
+
+                    title:
+                      newStatus ===
+                      'تم الحجز'
+
+                        ? '✅ تمت الموافقة على حجزك'
+
+                        : '📅 تحديث طلب حجز الحصة',
+
+                    message:
+                      newStatus ===
+                      'تم الحجز'
+
+                        ? 'تمت الموافقة على طلب حجز الحصة الخاص بك. سيتم التواصل معك لتأكيد التفاصيل.'
+
+                        : `تم تحديث حالة طلب حجز الحصة الخاص بك إلى: ${newStatus}`,
+
+                    bookingId:
+
+                      bookingId,
+
+                    createdBy:
+                      auth.currentUser?.uid ||
+                      null,
+
+                    createdAt:
+                      serverTimestamp(),
+
+                    readBy: []
+
+                  }
+
+                );
+
+              }
+
+
+              saveButton.textContent =
+                '✅ تم الحفظ';
+
+
+              /*
+               * إعادة تحميل الجدول
+               */
+
+              await loadBookings();
+
+            }
+
+            catch (error) {
+
+              console.error(
+                'خطأ في تحديث حالة الحجز:',
+                error
+              );
+
+
+              alert(
+                'تعذر تحديث الحالة: ' +
+                (
+                  error.code ||
+                  error.message
+                )
+              );
+
+
+              saveButton.disabled =
+                false;
+
+
+              saveButton.textContent =
+                'حفظ الحالة';
+
+            }
+
+          }
+        );
+
+      }
+    );
+
+  }
+
+  catch (error) {
+
+    console.error(
+      'خطأ في تحميل طلبات الحجز:',
+      error
+    );
+
+
+    body.innerHTML = `
+
+      <tr>
+
+        <td colspan="8">
+
+          تعذر تحميل الطلبات:
+
+          ${escapeHtml(
+            error.code ||
+            error.message
+          )}
 
         </td>
 
@@ -1458,205 +3710,121 @@ async function load() {
 }
 
 
-/* ═══════════════════════════════════════
-   تشغيل الحماية
-═══════════════════════════════════════ */
+
+/* =====================================================
+   INITIALIZATION
+===================================================== */
+
+renderContentFields();
+
+fillContentForm({});
+
+
+loadNotificationHistory();
+
+
+
+/*
+ * حماية لوحة الإدارة
+ *
+ * guard هو المسؤول عن التأكد
+ * أن المستخدم أدمن.
+ */
 
 guard(
   'admin',
-  load
+  async () => {
+
+    await loadUsers();
+
+    await loadContent();
+
+    await loadBookings();
+
+  }
 );
 
 
-/* ═══════════════════════════════════════
-   تحديث
-═══════════════════════════════════════ */
 
-document
-  .getElementById('refresh')
-  .onclick = load;
+/* =====================================================
+   REFRESH BUTTON
+===================================================== */
+
+$('refresh').onclick =
+  loadUsers;
 
 
-/* ═══════════════════════════════════════
-   تسجيل الخروج
-═══════════════════════════════════════ */
 
-document
-  .getElementById('logout')
-  .onclick = async () => {
+/* =====================================================
+   LOGOUT
+===================================================== */
 
-    await signOut(auth);
+$('logout').onclick =
+  async () => {
 
-    location.href =
-      '../../index.html';
+    try {
+
+      await signOut(auth);
+
+      location.href =
+        '../../index.html';
+
+    }
+
+    catch (error) {
+
+      console.error(
+        'Logout error:',
+        error
+      );
+
+      alert(
+        'تعذر تسجيل الخروج.'
+      );
+
+    }
 
   };
 
-</script>
 
 
-<!-- ═══════════════════════════════════════
-     تنسيق حالة الحظر
-═══════════════════════════════════════ -->
+/* =====================================================
+   AUTH STATE
+===================================================== */
 
-<style>
+onAuthStateChanged(
+  auth,
+  user => {
 
-.status-banned {
-  background: #4a1f25;
-  color: #fca5a5;
-}
+    if (!user) {
 
-.action-ban {
-  border-color: #ef4444;
-  color: #fca5a5;
-}
-
-.action-ban:hover {
-  background: #7f1d1d;
-  border-color: #ef4444;
-  color: #fff;
-}
-
-</style>
+      const body =
+        $('bookingRows');
 
 
-<script type="module">
-import { auth, db } from '../../firebase-config.js';
-import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
-import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
+      if (body) {
 
-const types = {events:'الأحداث', teachers:'طاقم التدريس', featuredStudents:'الطلاب المتميزون'};
-// البيانات القديمة الموجودة داخل المشروع — لا يتم حذفها عند إضافة بيانات جديدة.
-const LEGACY = {
-  events: [
-    {title:'رحلة تعليمية وترفيهية',category:'trip',icon:'🛫',date:'قريباً',time:'',location:'يُعلَن لاحقاً',description:'رحلة ترفيهية وتعليمية لأعضاء المنصة',status:'upcoming'},
-    {title:'مباراة ودية',category:'match',icon:'⚽',date:'قريباً',time:'',location:'ملعب المعهد',description:'مباراة كرة قدم ودية بين طلاب المنصة',status:'upcoming'},
-    {title:'مسابقة حفظ القرآن',category:'competition',icon:'🏆',date:'قريباً',time:'',location:'قاعة المعهد',description:'sdfda',status:'upcoming'},
-    {title:'ورشة عمل: مهارات التعلم',category:'workshop',icon:'📝',date:'قريباً',time:'',location:'عن بُعد',description:'ورشة تفاعلية في مهارات الدراسة والتنظيم الذاتي',status:'upcoming'}
-  ],
-  teachers: [
-    {name:'الأستاذ ضياء نبيل',subject:'اللغة العربية',role:'معلم متعدد التخصصات',image:'../images/معلم الللغة العربية.png',bio:'معلم متميز في اللغة العربية، يجمع بين العلم الشرعي الأصيل والإتقان في تعليم القرآن الكريم والمواد الشرعية بأسلوب مبسط وممتع.',whatsapp:'201515474939'},
-    {name:'الأستاذ ضياء نبيل',subject:'الخط العربي',role:'معلم الخط العربي والزخرفة الإسلامية',image:'../images/الخط العربي.png',bio:'معلم متخصص في تعليم الخط العربي بأنواعه المختلفة مثل النسخ والرقعة والثلث، مع التركيز على تنمية مهارات الجمال الفني في الكتابة والزخرفة الإسلامية.',whatsapp:'201515474939'},
-    {name:'الأستاذ ضياء نبيل',subject:'القرآن الكريم',role:'معلم القرآن الكريم وعلوم التجويد',image:'../images/القرآن.png',bio:'معلم متخصص في تحفيظ القرآن الكريم وتعليم أحكام التجويد، مع الاهتمام بتصحيح التلاوة وتدريب الطلاب على القراءة الصحيحة بأسلوب سهل ومبسط.',whatsapp:'201515474939'},
-    {name:'مالك سامح',subject:'البرمجة والذكاء الاصطناعي',role:'معلم تقني متميز',image:'../images/teacher-malek.png',bio:'معلم متخصص في علوم الحاسوب والبرمجة، يقدم دورات شاملة في البرمجة والذكاء الاصطناعي بأحدث التقنيات وأفضل الممارسات العالمية.',whatsapp:'201515474939'}
-  ],
-  featuredStudents: [
-    {name:'مالك سامح سيد',grade:'الصف الثالث الثانوي — الأزهر',tags:'الأول على الفصل, حافظ القرآن',achievement:'طالب متميز في مواد اللغة العربية والمواد الشرعية، حقق أعلى الدرجات وأتم حفظ القرآن الكريم كاملاً.',percentage:'100%',memorized:'30 جزءاً محفوظاً',certificates:'3'},
-    {name:'اسم الطالبة',grade:'الصف الثاني الثانوي — الأزهر',tags:'متفوقة, الخط العربي',achievement:'طالبة متميزة في الخط العربي والمواد الأدبية، حاصلة على جائزة التميز في مسابقة الخط على مستوى المعهد.',percentage:'98%',memorized:'2 جوائز',certificates:'2'},
-    {name:'اسم الطالب',grade:'الصف الأول الثانوي — الأزهر',tags:'مسابقات, التجويد',achievement:'طالب متميز في التجويد والمسابقات القرآنية، حقق المركز الأول في مسابقة التجويد على مستوى المحافظة.',percentage:'95%',memorized:'1 مركز أول',certificates:'2'}
-  ]
-};
-let active = 'events';
-let editing = null;
-const $ = id => document.getElementById(id);
-const rows = $('contentRows');
+        body.innerHTML = `
 
-function esc(v){
-  return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-}
-function setStatus(message, error=false){
-  let box = $('contentStatus');
-  if(!box){
-    box=document.createElement('div'); box.id='contentStatus'; box.style.cssText='margin:10px 0;padding:10px;border-radius:8px;';
-    $('contentForm').before(box);
-  }
-  box.textContent=message; box.style.background=error?'#5b1f1f':'#174b35'; box.style.color='#fff'; box.style.display='block';
-}
-const fieldSets={
- events:[['title','عنوان الحدث','text'],['category','نوع الحدث: trip أو match أو competition أو workshop أو celebration','text'],['icon','الأيقونة','text'],['date','التاريخ','text'],['time','الوقت','text'],['location','المكان','text'],['description','وصف الحدث','textarea'],['link','رابط الحجز أو واتساب (اختياري)','text']],
- teachers:[['name','اسم المعلم','text'],['subject','المادة / التخصص','text'],['role','المسمى الوظيفي (اختياري)','text'],['image','رابط صورة المعلم (اختياري)','text'],['bio','نبذة عن المعلم','textarea'],['whatsapp','رقم أو رابط واتساب (اختياري)','text']],
- featuredStudents:[['name','اسم الطالب','text'],['grade','الصف / المرحلة','text'],['image','رابط صورة الطالب (اختياري)','text'],['tags','الإنجازات مفصولة بفاصلة','text'],['achievement','نبذة والإنجاز','textarea'],['percentage','نسبة التفوق (اختياري)','text'],['memorized','الأجزاء/الجوائز (اختياري)','text'],['certificates','عدد الشهادات (اختياري)','text'],['certificateLink','رابط الشهادة PDF (اختياري)','text']]
-};
-function renderFields(){
- const box=$('contentFields'); box.innerHTML='';
- (fieldSets[active]||[]).forEach(([key,label,type])=>{
-   const el=document.createElement(type==='textarea'?'textarea':'input'); el.id='field_'+key; el.name=key; el.placeholder=label; if(type!=='textarea') el.type='text'; box.appendChild(el);
- });
-}
-function val(key){const el=$('field_'+key); return el?el.value.trim():'';}
-function fill(d={}){
- renderFields(); $('contentId').value=d.id||''; $('contentVisible').checked=d.visible!==false;
- (fieldSets[active]||[]).forEach(([key])=>{const el=$('field_'+key); if(el) el.value=d[key]??'';});
-}
-async function load(){
-  rows.innerHTML='<tr><td colspan="5">جارٍ التحميل...</td></tr>';
-  try{
-    const snap=await getDocs(collection(db, active));
-    rows.innerHTML='';
-    const legacy = (LEGACY[active]||[]).map((d,i)=>({id:`legacy_${active}_${i}`, d:{...d, visible:true}, legacy:true}));
-    const cloud = snap.docs.map(x=>({id:x.id,d:x.data(),legacy:false}));
-    const all = [...legacy, ...cloud];
-    if(all.length===0){rows.innerHTML='<tr><td colspan="5">لا توجد بيانات مضافة حتى الآن.</td></tr>';return;}
-    all.forEach(({id,d,legacy})=>{
-      const title=d.title||d.name||'';
-      const details=d.subtitle||d.subject||d.grade||d.date||'';
-      const actions = legacy
-        ? '<span style="color:#94a3b8">بيانات أساسية</span>'
-        : `<button class="btn edit" data-id="${id}">تعديل</button> <button class="btn toggle" data-id="${id}" data-visible="${d.visible!==false}">${d.visible===false?'إظهار':'إخفاء'}</button> <button class="btn danger del" data-id="${id}">حذف</button>`;
-      rows.insertAdjacentHTML('beforeend', `<tr><td>${types[active]}</td><td>${esc(title)}</td><td>${esc(details)}</td><td>${d.visible===false?'مخفي':'ظاهر'}</td><td>${actions}</td></tr>`);
-    });
-  }catch(err){
-    console.error('Content load error:',err);
-    rows.innerHTML='<tr><td colspan="5">تعذر تحميل البيانات. راجع صلاحيات Firestore.</td></tr>';
-    setStatus('خطأ في تحميل المحتوى: '+(err.code||err.message),true);
-  }
-}
+          <tr>
 
-document.querySelectorAll('[data-content-tab]').forEach(b=>b.addEventListener('click',()=>{
-  active=b.dataset.contentTab; $('contentType').value=active; editing=null; fill({}); load();
-}));
+            <td colspan="8">
+              يجب تسجيل الدخول بحساب الأدمن.
+            </td>
 
-$('contentForm').addEventListener('submit', async e=>{
-  e.preventDefault();
-  const requiredKey=active==='events'?'title':'name';
-  const title=val(requiredKey);
-  if(!title){setStatus('اكتب البيانات الأساسية أولًا.',true);return;}
-  const data={visible:$('contentVisible').checked,updatedAt:serverTimestamp()};
-  (fieldSets[active]||[]).forEach(([key])=>{data[key]=val(key);});
-  if(active==='events'){data.title=val('title'); data.status=data.status||'upcoming';}
-  if(active==='featuredStudents'){data.title=data.name;}
-  try{
-    if(editing){
-      await updateDoc(doc(db,active,editing),data);
-      setStatus('تم تعديل العنصر وحفظه بنجاح.');
-    }else{
-      data.createdAt=serverTimestamp();
-      const ref=await addDoc(collection(db,active),data);
-      console.log('Added document:',ref.id);
-      setStatus('تمت إضافة العنصر وحفظه في Firestore بنجاح.');
+          </tr>
+
+        `;
+
+      }
+
     }
-    editing=null; fill({}); await load();
-  }catch(err){
-    console.error('Content save error:',err);
-    setStatus('لم يتم الحفظ: '+(err.code||err.message),true);
+
   }
-});
+);
 
-$('contentCancel').onclick=()=>{editing=null;fill({});setStatus('تم إلغاء التعديل.');};
-rows.addEventListener('click',async e=>{
-  const b=e.target.closest('button'); if(!b)return;
-  const id=b.dataset.id;
-  try{
-    if(b.classList.contains('del')){
-      if(confirm('حذف هذا العنصر؟')){await deleteDoc(doc(db,active,id));setStatus('تم الحذف بنجاح.');}
-    }else if(b.classList.contains('toggle')){
-      await updateDoc(doc(db,active,id),{visible:b.dataset.visible==='false',updatedAt:serverTimestamp()});
-      setStatus('تم تغيير حالة الظهور.');
-    }else if(b.classList.contains('edit')){
-      const snap=await getDocs(collection(db,active));
-      const hit=snap.docs.find(z=>z.id===id);
-      if(hit){editing=id;fill({id,...hit.data()});window.scrollTo({top:$('contentForm').offsetTop-80,behavior:'smooth'});}
-    }
-    await load();
-  }catch(err){console.error(err);setStatus('تعذر تنفيذ العملية: '+(err.code||err.message),true);}
-});
-
-renderFields();
-onAuthStateChanged(auth,u=>{
-  if(u) load();
-  else rows.innerHTML='<tr><td colspan="5">يجب تسجيل الدخول بحساب الأدمن.</td></tr>';
-});
 </script>
 
 </body>
+
 </html>

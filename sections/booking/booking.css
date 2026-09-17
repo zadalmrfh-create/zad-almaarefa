@@ -1,0 +1,45 @@
+:root{
+  --gold:#c9a84c;
+  --gold-light:#e8c96d;
+  --bg:#f7f7f5;
+  --card:#fff;
+  --text:#172033;
+  --muted:#68758a;
+  --border:#d9dee8;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Cairo,Arial,sans-serif;background:linear-gradient(135deg,#f8f5ec,#eef1f6);color:var(--text)}
+.booking-page{min-height:100vh;padding:30px 16px;display:flex;align-items:center;justify-content:center}
+.booking-box{width:min(820px,100%);background:var(--card);border-radius:24px;padding:28px;box-shadow:0 20px 70px rgba(0,0,0,.12)}
+.back-link{display:inline-block;color:var(--text);text-decoration:none;font-weight:700;margin-bottom:22px}
+.back-link:hover{color:var(--gold)}
+.brand{display:flex;gap:16px;align-items:center;margin-bottom:24px}
+.brand img{width:70px;height:70px;object-fit:contain}
+.brand h1{margin:0 0 6px;color:var(--gold);font-size:30px}
+.brand p{margin:0;color:var(--muted);line-height:1.8}
+.booking-form{display:grid;gap:15px}
+.booking-form label{display:grid;gap:7px;font-weight:700}
+.booking-form input,.booking-form select,.booking-form textarea{
+  width:100%;padding:12px 13px;border:1px solid var(--border);border-radius:11px;
+  background:#fff;color:var(--text);font:inherit;outline:none;transition:.2s
+}
+.booking-form input:focus,.booking-form select:focus,.booking-form textarea:focus{
+  border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,168,76,.14)
+}
+.booking-two{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+.submit-btn{
+  border:0;border-radius:12px;padding:13px 18px;background:var(--gold);color:#fff;
+  font:inherit;font-weight:800;cursor:pointer;transition:.2s
+}
+.submit-btn:hover{background:#b49338;transform:translateY(-1px)}
+.booking-status{min-height:26px;font-weight:700;text-align:center}
+.booking-status.success{color:#16834b}
+.booking-status.error{color:#c0392b}
+@media(max-width:650px){
+  .booking-page{padding:15px 10px}
+  .booking-box{padding:20px 14px;border-radius:18px}
+  .booking-two{grid-template-columns:1fr}
+  .brand{align-items:flex-start}
+  .brand img{width:55px;height:55px}
+  .brand h1{font-size:23px}
+}

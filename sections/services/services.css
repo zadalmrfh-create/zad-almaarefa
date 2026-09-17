@@ -955,3 +955,10 @@ main {
     padding: 36px 20px;
   }
 }
+
+
+/* وضوح زر الرئيسية واستجابة الخدمات المصغرة */
+.back-link { display:inline-flex !important; align-items:center; justify-content:center; min-width:135px; min-height:46px; background:#0a1628 !important; color:#fff !important; border:2px solid #d4a843 !important; border-radius:12px !important; font-weight:800 !important; text-decoration:none !important; box-shadow:0 5px 16px rgba(0,0,0,.2); }
+.back-link:hover { background:#d4a843 !important; color:#0a1628 !important; }
+html,body { max-width:100%; overflow-x:hidden; }
+@media (max-width:768px){ .page-header{display:flex; flex-wrap:wrap; gap:12px; padding:14px !important;} .page-header .back-link{margin-inline-start:auto;} .hero-container{padding:28px 16px !important;} .services-grid{grid-template-columns:1fr !important;} }

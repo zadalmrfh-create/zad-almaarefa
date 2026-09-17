@@ -1,3 +1,27 @@
+
+import { db } from "../firebase-config.js";
+import { collection, getDocs } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+async function loadFirestoreEvents(){
+  if (typeof EVENTS_DATA === "undefined") { console.error("EVENTS_DATA غير موجود"); return; }
+  try {
+    const snap = await getDocs(collection(db, 'events'));
+    const cloud = snap.docs
+      .map(d => ({ id: d.id, ...d.data() }))
+      .filter(x => x.visible !== false);
+    // Keep all original events and append/update Firestore events.
+    const originals = Array.isArray(EVENTS_DATA.events) ? EVENTS_DATA.events : [];
+    const cloudKeys = new Set(cloud.map(x => x.id || x.title));
+    const merged = [...originals];
+    cloud.forEach(item => {
+      const index = merged.findIndex(old => (old.id && item.id && old.id === item.id) || (old.title && item.title && old.title === item.title));
+      if (index >= 0) merged[index] = { ...merged[index], ...item };
+      else merged.push(item);
+    });
+    EVENTS_DATA.events = merged;
+  } catch (e) {
+    console.error('Firestore events:', e);
+  }
+}
 /* =========================================================
    EVENTS PAGE — BEHAVIOR
 ========================================================= */
@@ -67,10 +91,10 @@ function renderEvents(categoryFilter) {
     card.innerHTML =
       '<div class="event-card-top">' +
       '<div class="event-emoji">' +
-      event.icon +
+      (event.icon || "📌") +
       "</div>" +
       '<span class="event-badge badge-' +
-      event.category +
+      (event.category || "other") +
       '">' +
       catInfo.icon +
       " " +
@@ -82,25 +106,25 @@ function renderEvents(categoryFilter) {
       event.title +
       "</h3>" +
       '<p class="event-desc">' +
-      event.description +
+      (event.description || "") +
       "</p>" +
       '<div class="event-details">' +
       '<span class="event-detail"><span>📅</span>' +
-      event.date +
+      (event.date || "") +
       "</span>" +
       timeHtml +
       '<span class="event-detail"><span>📍</span>' +
-      event.location +
+      (event.location || "") +
       "</span>" +
       "</div>" +
       "</div>" +
       '<div class="event-card-footer">' +
       '<span class="event-status status-' +
-      event.status +
+      (event.status || "upcoming") +
       '">' +
-      (event.status === "upcoming" ? "⏳ قادم" : "✅ انتهى") +
+      ((event.status || "upcoming") === "upcoming" ? "⏳ قادم" : "✅ انتهى") +
       "</span>" +
-      (event.status === "upcoming"
+      ((event.status || "upcoming") === "upcoming"
         ? '<a href="https://wa.me/201515474939?text=عايز%20أحجز%20معاكم" target="_blank" class="whatsapp-btn">📲 احجز الآن</a>'
         : "") +
       "</div>";
@@ -199,20 +223,6 @@ function renderGallery(categoryFilter = "all") {
 /* ---------------------------------------------------------
    INITIALIZE PAGE
 --------------------------------------------------------- */
-async function loadFirestoreEvents() {
-  try {
-    const { db } = await import('../firebase-config.js');
-    const { collection, getDocs } = await import('https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js');
-    const snap = await getDocs(collection(db, 'events'));
-    const cloud = snap.docs.map(d => ({ id:d.id, ...d.data() })).filter(e => e.visible !== false);
-    const legacy = EVENTS_DATA.events.map((e,i) => ({...e, _legacy:true, _key:`legacy_${i}`}));
-    const keys = new Set(legacy.map(e => [e.title,e.date,e.location].join('|')));
-    EVENTS_DATA.events = [...legacy, ...cloud.filter(e => !keys.has([e.title,e.date,e.location].join('|')))];
-  } catch (err) {
-    console.warn('تعذر تحميل أحداث Firestore، سيتم عرض البيانات الأساسية:', err);
-  }
-}
-
 document.addEventListener("DOMContentLoaded", async function () {
   await loadFirestoreEvents();
   buildFilterTabs();

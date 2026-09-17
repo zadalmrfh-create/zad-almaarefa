@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>صفحة الأحداث — زاد المعرفة</title>
-    <link rel="icon" type="image/png" href="../images/logo.png" />
+    <link rel="icon" type="image/png" href="../images/logo.png.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link
       href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap"
@@ -18,45 +18,58 @@
     ============================================= -->
     <header class="page-header">
       <div class="header-icon">
-        <img src="../../images/logo.png" alt="logo" class="logo-img" />
+        <img src="../images/logo.png.png" alt="logo" class="logo-img" />
       </div>
       <div class="header-title">صفحة الأحداث</div>
       <div class="header-sub">زاد المعرفة — فعاليات معرفية تفاعلية</div>
       <a href="../index.html" class="back-link">← الرئيسية</a>
     </header>
 
-    <main>
-      <!-- ============================================
-         HERO SECTION
-      ============================================= -->
-      <section class="hero-section">
-        <div class="hero-badge">فعاليات معرفية تفاعلية</div>
-        <h1 class="hero-title">اكتشف الفعاليات القادمة</h1>
-        <p class="hero-sub">
-          ورش العمل، واللقاءات الفكرية — لا تفوّت فرصة التعلّم والتواصل مع مجتمع
-          زاد المعرفة.
-        </p>
+    <!-- ═══════════ HERO ═══════════ -->
+    <section id="hero">
+      <!-- Overlay -->
+      <div class="hero-overlay"></div>
 
-        <div class="hero-pills">
-          <div class="hero-pill">
-            <span class="pill-icon">🧠</span>
-            <span>من مجتمع تفاعلي</span>
+      <div class="hero-container">
+        <!-- النص (يمين) -->
+        <div class="hero-text">
+          <span class="hero-badge"> زاد المعرفة </span>
+
+          <h1 class="hero-title">فعاليات معرفية تفاعلية</h1>
+
+          <p class="hero-desc">
+            اكتشف الفعاليات القادمة من ورش العمل، واللقاءات الفكرية — لا تفوّت
+            فرصة التعلّم والتواصل مع مجتمع زاد المعرفة.
+          </p>
+
+          <div class="hero-btns">
+            <a href="#events-section" class="btn-primary" target="_self"
+              >الاحداث القادمة
+            </a>
+            <a href="#gallerySection" class="btn-outline" target="_self">
+              معرض التوثيق</a
+            >
           </div>
-          <div class="hero-pill">
-            <span class="pill-icon">🎙️</span>
-            <span>ورش ومحاضرات</span>
-          </div>
-          <div class="hero-pill">
-            <span class="pill-icon">🎉</span>
-            <span>فعاليات وأنشطة ممتعة</span>
+
+          <div class="hero-stats">
+            <div>
+              <span class="num" style="display: none">20+</span>
+              <span class="label" style="display: none">دورة</span>
+            </div>
+            <div>
+              <span class="num" style="display: none">6+</span>
+              <span class="label" style="display: none">أقسام</span>
+            </div>
           </div>
         </div>
-      </section>
+      </div>
+    </section>
 
+    <main>
       <!-- ============================================
          SECTION 1 — UPCOMING EVENTS
       ============================================= -->
-      <section class="events-section">
+      <section id="events-section" class="events-section">
         <div class="section-label">الأحداث القادمة</div>
         <h2 class="section-title">ماذا ينتظرك قريباً؟</h2>
 
@@ -121,6 +134,5 @@
     </div>
 
     <script src="events-data.js"></script>
-    <script src="events.js"></script>
-  </body>
+    <script type="module" src="events.js"></script></body>
 </html>

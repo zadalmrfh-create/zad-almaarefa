@@ -228,6 +228,17 @@
     }
 
   </style>
+<style id="final-ui-fixes">
+/* وضوح أزرار التنقل والأدوات */
+.back-link,.btn-nav{display:inline-flex!important;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:10px 18px!important;background:#0a1628!important;color:#fff!important;border:2px solid #d4a843!important;border-radius:12px!important;font-weight:800!important;text-decoration:none!important;box-shadow:0 4px 14px rgba(0,0,0,.18);}
+.back-link:hover,.btn-nav:hover{background:#d4a843!important;color:#0a1628!important;}
+.favorite-btn,.read-btn{display:inline-flex!important;align-items:center;justify-content:center;min-height:44px;padding:9px 14px!important;border:1px solid #c9a84c!important;border-radius:10px!important;background:#17243a!important;color:#fff!important;font-weight:800!important;}
+.favorite-btn.favorite-active,.read-btn.read-active{background:#c9a84c!important;color:#111827!important;}
+/* الوضع الفاتح */
+html.light .favorite-btn,body.light .favorite-btn,html.light .read-btn,body.light .read-btn{background:#fff!important;color:#111827!important;border-color:#b58a25!important;}
+html.light .favorite-btn.favorite-active,body.light .favorite-btn.favorite-active,html.light .read-btn.read-active,body.light .read-btn.read-active{background:#c9a84c!important;color:#111827!important;}
+@media(max-width:768px){.back-link,.btn-nav{min-height:44px;padding:9px 14px!important;font-size:.9rem!important}.favorite-btn,.read-btn{font-size:.82rem!important;padding:8px 9px!important}.book-tools{gap:6px!important}.book-tools>*{min-width:0!important;}}
+</style>
 </head>
 
 
@@ -2768,11 +2779,13 @@ document.addEventListener(
   import { auth } from '../firebase-config.js';
   import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
 
+  // لا نعتمد على auth.currentUser فورًا؛ Firebase قد يحتاج لحظات لاستعادة الجلسة.
   onAuthStateChanged(auth, (user) => {
     if (user) {
       document.documentElement.style.visibility = 'visible';
     } else {
-      sessionStorage.setItem('redirectAfterLogin', window.location.pathname);
+      alert('يجب تسجيل الدخول أولاً للوصول إلى المكتبة.');
+      sessionStorage.setItem('redirectAfterLogin', window.location.pathname + window.location.search);
       window.location.replace('../login/index.html');
     }
   });

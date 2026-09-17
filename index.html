@@ -68,7 +68,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
 
       <!-- طاقم التدريس -->
       <a
-        href="./teacher/index.html"
+        href="./طاقم التدريس"
         class="nav-link"
       >
         طاقم التدريس
@@ -100,7 +100,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
 
       <!-- لوحة الطالب -->
       <a
-        href="./student/dashboard.html"
+        href="./dashboard/student/index.html"
         class="nav-link account-dashboard-link"
       >
         لوحة الطالب
@@ -207,7 +207,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
   </a>
 
   <a
-    href="./teacher/index.html"
+    href="./طاقم التدريس/index.html"
     class="mob-btn"
     onclick="closeMob()"
   >
@@ -239,7 +239,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
   </a>
 
   <a
-    href="./student/dashboard.html"
+    href="./dashboard/student/index.html"
     class="mob-btn account-dashboard-link"
     onclick="closeMob()"
   >
@@ -283,12 +283,12 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
             واللغة العربية، لتكون رفيقك في رحلة طلب العلم
           </p>
           <div class="hero-actions">
-            <button class="btn-primary" onclick="smoothTo('categories')">
-              استكشف الأقسام
-            </button>
-            <button class="btn-nav" onclick="smoothTo('categories')">
+            <a class="btn-primary" href="sections/booking/index.html">
+              احجز حصتك
+            </a>
+            <a class="btn-nav" href="login/index.html">
               ابدأ الآن
-            </button>
+            </a>
           </div>
           <div class="hero-stats">
             <div>
@@ -571,7 +571,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
           <h4>روابط</h4>
           <a href="#hero">الرئيسية</a>
           <a href="#categories">الأقسام</a>
-          <a href="teacher/index.html" target="_self">طاقم التدريس</a>
+          <a href="طاقم التدريس/index.html" target="_self">طاقم التدريس</a>
           <a href="sections/services/services.html" target="_self">خدماتنا</a>
           <a href="events/events.html" target="_self"
             >أحداث المنصة</a
@@ -583,11 +583,11 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
 
         <div class="footer-links-col">
           <h4>الأقسام</h4>
-          <a href="sections/Quran/quran.html">القرآن الكريم</a>
           <a href="sections/Azhar/azhar.html">التعليم الأزهري</a>
-          <a href="sections/Sharia/">العلوم الشرعية</a>
+          <a href="sections/Quran/quran.html">القرآن</a>
           <a href="sections/Arabic/arabic.html">اللغة العربية</a>
-          <a href="sections/Tazkea/tazkea.html">الإرشاد النفسي</a>
+          <a href="sections/Sharia/sharia.html">المواد الشرعية</a>
+          <a href="sections/Tazkea/tazkea.html">التزكية والتربية</a>
           <a href="sections/services/services.html">الخدمات المصغرة</a>
         </div>
 
@@ -703,7 +703,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
         {
           id: "quran",
           icon: "📖",
-          name: "القرآن الكريم وعلومه",
+          name: "القرآن",
           desc: "حفظ وتفسير وتجويد مع شرح مبسط لكتاب الله.",
           topics: ["التجويد", "التفسير", "القراءات", "الحفظ والتعلم"],
           iconBg: "rgba(201,168,76,0.15)",
@@ -714,7 +714,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
         {
           id: "arabic",
           icon: "🅰️",
-          name: "اللغة العربية وعلومها",
+          name: "اللغة العربية",
           desc: "نحو، صرف، بلاغة، وأدب عربي بأسلوب مبسط ومتدرج.",
           topics: ["النحو", "البلاغة", "الأدب العربي", "الخط العربي"],
           iconBg: "rgba(99,102,241,0.15)",
@@ -725,7 +725,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
         {
           id: "sharia",
           icon: "⚖️",
-          name: "العلوم الشرعية",
+          name: "المواد الشرعية",
           desc: "فقه، حديث، عقيدة وأصول الدين بشكل مبسط.",
           topics: ["الفقه", "الحديث", "العقيدة"],
           iconBg: "rgba(239,68,68,0.15)",
@@ -736,7 +736,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
         {
           id: "self",
           icon: "❤️",
-          name: "التزكية والإرشاد النفسي",
+          name: "التزكية والتربية",
           desc: "تنمية النفس وبناء الشخصية والتوازن الداخلي.",
           topics: ["تزكية", "إرشاد", "تنمية الذات"],
           iconBg: "rgba(236,72,153,0.15)",
@@ -747,7 +747,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
         {
           id: "services",
           icon: "🛠️",
-          name: "الخدمات المصغّرة",
+          name: "الخدمات المصغرة",
           desc: "خدمات تساعدك في الدراسة والعمل.",
           topics: ["تصميم", "كتابة", "ذكاء اصطناعي"],
           iconBg: "rgba(59,130,246,0.15)",

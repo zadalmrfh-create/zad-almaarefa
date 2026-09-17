@@ -22,6 +22,7 @@
         </div>
         <div class="actions">
             <a href="../../index.html" class="btn">الرئيسية</a>
+            <button id="deleteAccount" class="btn danger">حذف الحساب</button>
             <button id="logout" class="btn danger">تسجيل الخروج</button>
         </div>
     </header>
@@ -66,13 +67,50 @@
                 <p>تابع أحدث أخبار الحصص والملفات الجديدة من جرس الإشعارات بالأعلى.</p>
             </div>
         </section>
+
+<section class="card" id="myBookingsCard">
+  <h3>📅 طلبات حجز الحصص</h3>
+  <p>تابع حالة طلبك واعرف هل تمت الموافقة عليه أم لا.</p>
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>المادة</th><th>المعلم</th><th>اليومان</th><th>نوع الحصة</th><th>الحالة</th></tr></thead>
+      <tbody id="myBookingRows"><tr><td colspan="5">جارٍ تحميل الطلبات...</td></tr></tbody>
+    </table>
+  </div>
+</section>
     </main>
 </div>
 
 <script type="module">
 import { auth, db } from '../../firebase-config.js';
-import { signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
-import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
+import { signOut, onAuthStateChanged, deleteUser } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
+import { doc, getDoc, deleteDoc, collection, query, where, getDocs } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
+
+
+async function loadMyBookings(uid) {
+    const body = document.getElementById('myBookingRows');
+    if (!body) return;
+    try {
+        const snap = await getDocs(query(collection(db, 'bookings'), where('studentUid', '==', uid)));
+        body.innerHTML = '';
+        snap.forEach(item => {
+            const b = item.data();
+            const tr = document.createElement('tr');
+            const status = b.status || 'جديد';
+            tr.innerHTML = `
+              <td>${b.subject || '-'}</td>
+              <td>${b.teacherName || 'سيتم ترشيح معلم'}</td>
+              <td>${b.preferredDay1 || '-'} — ${b.preferredDay2 || '-'}<br>${b.preferredPeriod || ''}</td>
+              <td>${b.lessonType || '-'}<br>${b.lessonMode || ''}</td>
+              <td><strong class="booking-status-text">${status}</strong></td>`;
+            body.appendChild(tr);
+        });
+        if (!body.innerHTML) body.innerHTML = '<tr><td colspan="5">لا توجد طلبات حجز حتى الآن.</td></tr>';
+    } catch (err) {
+        console.error(err);
+        body.innerHTML = '<tr><td colspan="5">تعذر تحميل حالة الطلبات.</td></tr>';
+    }
+}
 
 // التحقق من حالة الدخول
 onAuthStateChanged(auth, async (user) => {
@@ -93,6 +131,7 @@ onAuthStateChanged(auth, async (user) => {
             if (nameElem) nameElem.textContent = user.displayName || user.email.split('@')[0];
         }
         if (emailElem) emailElem.textContent = user.email;
+        await loadMyBookings(user.uid);
     } catch (err) {
         console.error("خطأ:", err);
     } finally {
@@ -109,6 +148,42 @@ function updateLocalStats(){
   document.getElementById('recentCount').textContent=recent.length;
 }
 updateLocalStats();
+
+// حذف الحساب نهائيًا
+document.getElementById('deleteAccount').addEventListener('click', async () => {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    const confirmed = confirm('هل أنت متأكد من حذف حسابك نهائيًا؟ سيتم حذف بيانات حسابك ولا يمكن التراجع عن ذلك.');
+    if (!confirmed) return;
+
+    const typed = prompt('للتأكيد، اكتب: حذف الحساب');
+    if (typed !== 'حذف الحساب') {
+        alert('لم يتم حذف الحساب.');
+        return;
+    }
+
+    const button = document.getElementById('deleteAccount');
+    button.disabled = true;
+    button.textContent = 'جارٍ الحذف...';
+
+    try {
+        await deleteDoc(doc(db, 'users', user.uid));
+        await deleteUser(user);
+        alert('تم حذف حسابك بنجاح.');
+        window.location.href = '../../login/index.html';
+    } catch (error) {
+        console.error('خطأ أثناء حذف الحساب:', error);
+        button.disabled = false;
+        button.textContent = 'حذف الحساب';
+
+        if (error.code === 'auth/requires-recent-login') {
+            alert('لأمان حسابك، سجّل الخروج ثم سجّل الدخول مرة أخرى، وبعدها حاول حذف الحساب.');
+        } else {
+            alert('تعذر حذف الحساب. رمز الخطأ: ' + (error.code || error.message));
+        }
+    }
+});
 
 // زر تسجيل الخروج
 document.getElementById('logout').addEventListener('click', async () => {

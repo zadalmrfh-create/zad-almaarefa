@@ -53,7 +53,7 @@ if (FIREBASE_READY && links.length) {
 
     // تغيير زر لوحة الحساب حسب نوع الحساب
     dashboardLinks.forEach(link => {
-      link.href = accountRole === 'admin' ? './dashboard/admin/index.html' : (isTeacherAccount ? './dashboard/teacher/index.html' : './student/dashboard.html');
+      link.href = accountRole === 'admin' ? './dashboard/admin/index.html' : (isTeacherAccount ? './dashboard/teacher/index.html' : './dashboard/student/index.html');
       link.innerHTML = accountRole === 'admin' ? '<i class="fa-solid fa-crown"></i> لوحة الإدارة' : (isTeacherAccount ? '<i class="fa-solid fa-chalkboard-user"></i> لوحة المعلم' : '<i class="fa-solid fa-user-graduate"></i> لوحة الطالب');
     });
 
@@ -149,7 +149,7 @@ if (FIREBASE_READY && links.length) {
 
         try {
           await signOut(auth);
-          window.location.href = userData?.role === 'admin' ? './dashboard/admin/index.html' : (userData?.role === 'teacher' ? './dashboard/teacher/index.html' : './student/dashboard.html');
+          window.location.href = userData?.role === 'admin' ? './dashboard/admin/index.html' : (userData?.role === 'teacher' ? './dashboard/teacher/index.html' : './dashboard/student/index.html');
         } catch (error) {
           console.error('خطأ أثناء تسجيل الخروج:', error);
           link.dataset.loggingOut = 'false';
@@ -171,6 +171,6 @@ if (FIREBASE_READY && links.length) {
 export function redirectAfterLogin(userData) {
 
   // الجميع يعود للصفحة الرئيسية بعد الدخول
-  window.location.href = userData?.role === 'admin' ? './dashboard/admin/index.html' : (userData?.role === 'teacher' ? './dashboard/teacher/index.html' : './student/dashboard.html');
+  window.location.href = userData?.role === 'admin' ? './dashboard/admin/index.html' : (userData?.role === 'teacher' ? './dashboard/teacher/index.html' : './dashboard/student/index.html');
 
 }

@@ -116,11 +116,11 @@ async function redirectAfterLogin(user) {
     } else if (profile.role === 'teacher' && profile.status === 'active') {
       window.location.replace('../dashboard/teacher/index.html');
     } else {
-      window.location.replace('../student/dashboard.html');
+      window.location.replace('../dashboard/student/index.html');
     }
   } catch (e) {
     console.error('تعذر تحديد لوحة الحساب:', e);
-    window.location.replace('../student/dashboard.html');
+    window.location.replace('../dashboard/student/index.html');
   }
 }
 

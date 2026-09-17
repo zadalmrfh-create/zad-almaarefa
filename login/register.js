@@ -9,6 +9,8 @@ import {
   signInWithPopup,
   signInWithRedirect,
   getRedirectResult,
+  EmailAuthProvider,
+  linkWithCredential,
   createUserWithEmailAndPassword,
   updateProfile,
   signOut
@@ -27,6 +29,11 @@ const emailRegisterBtn = document.getElementById('emailRegisterBtn');
 const togglePassword = document.getElementById('togglePassword');
 const message = document.getElementById('message');
 const roleSelect = document.getElementById('role');
+const passwordLinkModal = document.getElementById('passwordLinkModal');
+const googlePasswordForm = document.getElementById('googlePasswordForm');
+const googlePassword = document.getElementById('googlePassword');
+const googlePasswordConfirm = document.getElementById('googlePasswordConfirm');
+const skipGooglePassword = document.getElementById('skipGooglePassword');
 
 function msg(text, type = 'error') {
   if (!message) return;
@@ -133,7 +140,19 @@ async function finishRegistration(user, role, provider, extraData = {}) {
 
 async function handleGoogleResult(result) {
   if (!result?.user) return;
-  await finishRegistration(result.user, getRole(), 'google.com');
+
+  const user = result.user;
+  const created = await saveUserProfile(user, getRole(), 'google.com');
+
+  if (created) {
+    msg('تم إنشاء حساب Google بنجاح. يمكنك الآن إضافة كلمة مرور اختيارية.', 'success');
+    passwordLinkModal?.classList.remove('hidden');
+    window.__googleNewUser = user;
+    return;
+  }
+
+  msg('هذا الحساب موجود بالفعل، جارٍ فتح المنصة…', 'success');
+  setTimeout(goHome, 700);
 }
 
 // معالجة الرجوع من Google Redirect، وهو مفيد على بعض الهواتف والمتصفحات.
@@ -182,6 +201,46 @@ googleRegister?.addEventListener('click', async (event) => {
     googleRegister.innerHTML = googleRegister.dataset.originalHTML || '<span class="google-icon">G</span> إنشاء الحساب باستخدام Google';
     msg(firebaseError(error));
   }
+});
+
+googlePasswordForm?.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const user = window.__googleNewUser || auth.currentUser;
+  const password = googlePassword?.value || '';
+  const confirm = googlePasswordConfirm?.value || '';
+
+  if (!user) {
+    msg('انتهت جلسة التسجيل. أعد التسجيل باستخدام Google.');
+    return;
+  }
+  if (password.length < 6) {
+    msg('كلمة المرور يجب ألا تقل عن 6 أحرف.');
+    return;
+  }
+  if (password !== confirm) {
+    msg('كلمتا المرور غير متطابقتين.');
+    return;
+  }
+
+  try {
+    const credential = EmailAuthProvider.credential(user.email, password);
+    await linkWithCredential(user, credential);
+    msg('تم إنشاء كلمة المرور وربطها بحساب Google. يمكنك الدخول بالطريقتين.', 'success');
+    setTimeout(goHome, 900);
+  } catch (error) {
+    console.error('Link Password Error:', error);
+    if (error?.code === 'auth/provider-already-linked') {
+      msg('هذا الحساب مرتبط بالفعل بكلمة مرور.', 'success');
+      setTimeout(goHome, 700);
+    } else {
+      msg(firebaseError(error));
+    }
+  }
+});
+
+skipGooglePassword?.addEventListener('click', () => {
+  passwordLinkModal?.classList.add('hidden');
+  goHome();
 });
 
 emailRegisterForm?.addEventListener('submit', async (event) => {
