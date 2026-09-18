@@ -32,19 +32,6 @@
     .hidden-field { display:none !important; }
 
     .hidden { display:none !important; }
-    .password-link-modal {
-      position:fixed; inset:0; z-index:1000; display:flex; align-items:center; justify-content:center;
-      padding:20px; background:rgba(0,0,0,.72);
-    }
-    .password-link-card {
-      width:min(440px,100%); background:#101827; border:1px solid rgba(255,255,255,.14);
-      border-radius:20px; padding:24px; box-shadow:0 20px 70px rgba(0,0,0,.35);
-    }
-    .password-link-card h2 { margin-top:0; }
-    .password-link-card input { width:100%; box-sizing:border-box; margin:8px 0; padding:12px; border-radius:10px; border:1px solid var(--border); background:rgba(255,255,255,.06); color:var(--text); }
-    .modal-actions { display:flex; gap:10px; margin-top:12px; }
-    .modal-actions button { flex:1; }
-    .secondary-btn { background:transparent; border:1px solid rgba(255,255,255,.2); color:var(--text); border-radius:12px; padding:12px; cursor:pointer; }
 </style>
 
 <link rel="stylesheet" href="../assets/translation.css">
@@ -102,18 +89,10 @@
           </div>
         </div>
 
-        <button id="emailRegisterBtn" class="submit-btn" type="submit">إنشاء الحساب بالبريد الإلكتروني</button>
+        <button id="emailRegisterBtn" class="submit-btn" type="submit">إنشاء الحساب</button>
       </form>
 
-      <p class="small-note">يمكنك أيضًا إنشاء الحساب بسرعة باستخدام Google.</p>
-
-      <button id="googleRegister" class="provider-btn" type="button" style="margin-top:12px;">
-        <span class="google-icon">G</span>
-        <span>إنشاء الحساب باستخدام Google</span>
-      </button>
     </div>
-
-    <div class="divider"><span>أو</span></div>
 
     <p class="register">
       لديك حساب بالفعل؟
@@ -122,20 +101,6 @@
   </section>
 </main>
 
-<div id="passwordLinkModal" class="password-link-modal hidden">
-  <div class="password-link-card" dir="rtl">
-    <h2>أضف كلمة مرور لحسابك</h2>
-    <p class="small-note">تم إنشاء حسابك باستخدام Google. يمكنك إضافة كلمة مرور اختيارية لتسجيل الدخول لاحقًا بالبريد وكلمة المرور، مع الاحتفاظ بنفس الحساب.</p>
-    <form id="googlePasswordForm">
-      <input id="googlePassword" type="password" minlength="6" placeholder="كلمة المرور الجديدة" required>
-      <input id="googlePasswordConfirm" type="password" minlength="6" placeholder="تأكيد كلمة المرور" required>
-      <div class="modal-actions">
-        <button class="submit-btn" type="submit">حفظ كلمة المرور</button>
-        <button id="skipGooglePassword" class="secondary-btn" type="button">تخطي الآن</button>
-      </div>
-    </form>
-  </div>
-</div>
 <script type="module" src="register.js"></script>
 </body>
 </html>

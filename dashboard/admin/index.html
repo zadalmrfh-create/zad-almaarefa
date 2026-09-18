@@ -458,8 +458,8 @@
       </div>
       <div class="table-wrap" style="margin-top:18px">
         <table class="table">
-          <thead><tr><th>الطالب</th><th>المحاضرة</th><th>النوع</th><th>النتيجة</th><th>الوقت</th></tr></thead>
-          <tbody id="lessonFollowUpRows"><tr><td colspan="5">جارٍ التحميل…</td></tr></tbody>
+          <thead><tr><th>الطالب</th><th>المحاضرة</th><th>النوع</th><th>النتيجة</th><th>الوقت</th><th>إجراء</th></tr></thead>
+          <tbody id="lessonFollowUpRows"><tr><td colspan="6">جارٍ التحميل…</td></tr></tbody>
         </table>
       </div>
     </section>
@@ -481,10 +481,11 @@
               <th>البريد</th>
               <th>طريقة الدخول</th>
               <th>وقت الدخول</th>
+              <th>إجراء</th>
             </tr>
           </thead>
           <tbody id="loginLogRows">
-            <tr><td colspan="4">جارٍ التحميل…</td></tr>
+            <tr><td colspan="5">جارٍ التحميل…</td></tr>
           </tbody>
         </table>
       </div>
@@ -544,7 +545,7 @@
 
             <tr>
 
-              <td colspan="8">
+              <td colspan="9">
                 جارٍ التحميل...
               </td>
 
@@ -1715,16 +1716,34 @@ async function loadUsers() {
 
               try {
 
-                await deleteDoc(
-                  doc(
-                    db,
-                    'users',
-                    userDoc.id
-                  )
-                );
+                const uid = userDoc.id;
 
+                // حذف بيانات المستخدم المرتبطة من المجموعات التي يديرها الأدمن.
+                const [tokensSnap, librarySnap, logsSnap, attemptsSnap, attendanceSnap, bookingsSnap, notificationsSnap] = await Promise.all([
+                  getDocs(collection(db, 'users', uid, 'fcmTokens')),
+                  getDocs(collection(db, 'users', uid, 'library')),
+                  getDocs(query(collection(db, 'loginLogs'), where('uid', '==', uid))),
+                  getDocs(query(collection(db, 'quizAttempts'), where('studentUid', '==', uid))),
+                  getDocs(query(collection(db, 'lessonAttendance'), where('studentUid', '==', uid))),
+                  getDocs(query(collection(db, 'bookings'), where('studentUid', '==', uid))),
+                  getDocs(query(collection(db, 'notifications'), where('targetUid', '==', uid)))
+                ]);
+
+                await Promise.all([
+                  ...tokensSnap.docs.map(d => deleteDoc(d.ref)),
+                  ...librarySnap.docs.map(d => deleteDoc(d.ref)),
+                  ...logsSnap.docs.map(d => deleteDoc(d.ref)),
+                  ...attemptsSnap.docs.map(d => deleteDoc(d.ref)),
+                  ...attendanceSnap.docs.map(d => deleteDoc(d.ref)),
+                  ...bookingsSnap.docs.map(d => deleteDoc(d.ref)),
+                  ...notificationsSnap.docs.map(d => deleteDoc(d.ref)),
+                  deleteDoc(doc(db, 'users', uid))
+                ]);
 
                 await loadUsers();
+                await loadBookings();
+                await loadLessonFollowUp();
+                await loadLoginLogs();
 
               }
 
@@ -2095,6 +2114,8 @@ async function loadLessonFollowUp() {
     attemptsSnap.forEach(d => {
       const x = d.data();
       rows.push({
+        id: d.id,
+        collection: 'quizAttempts',
         uid: x.studentUid,
         lesson: x.lessonTitle || x.lessonId || '-',
         type: '📝 اختبار استعداد',
@@ -2105,6 +2126,8 @@ async function loadLessonFollowUp() {
     attendanceSnap.forEach(d => {
       const x = d.data();
       rows.push({
+        id: d.id,
+        collection: 'lessonAttendance',
         uid: x.studentUid,
         lesson: x.lessonTitle || x.lessonId || '-',
         type: '🎥 دخول Google Meet',
@@ -2118,21 +2141,36 @@ async function loadLessonFollowUp() {
       return tb - ta;
     });
     if (!rows.length) {
-      body.innerHTML = '<tr><td colspan="5">لا توجد بيانات متابعة حتى الآن.</td></tr>';
+      body.innerHTML = '<tr><td colspan="6">لا توجد بيانات متابعة حتى الآن.</td></tr>';
       return;
     }
     body.innerHTML = '';
     rows.slice(0, 100).forEach(row => {
       const user = users[row.uid] || {};
       const tr = document.createElement('tr');
-      tr.innerHTML = `<td>${escapeHtml(user.fullName || user.email || row.uid || '-')}</td><td>${escapeHtml(row.lesson)}</td><td>${escapeHtml(row.type)}</td><td>${escapeHtml(row.result)}</td><td>${escapeHtml(formatDate(row.time))}</td>`;
+      tr.innerHTML = `<td>${escapeHtml(user.fullName || user.email || row.uid || '-')}</td><td>${escapeHtml(row.lesson)}</td><td>${escapeHtml(row.type)}</td><td>${escapeHtml(row.result)}</td><td>${escapeHtml(formatDate(row.time))}</td><td><button class="btn danger followup-delete" data-id="${escapeHtml(row.id)}" data-collection="${escapeHtml(row.collection)}" type="button">🗑️ حذف</button></td>`;
       body.appendChild(tr);
     });
   } catch (e) {
     console.error(e);
-    body.innerHTML = `<tr><td colspan="5">تعذر تحميل المتابعة: ${escapeHtml(e.code || e.message)}</td></tr>`;
+    body.innerHTML = `<tr><td colspan="6">تعذر تحميل المتابعة: ${escapeHtml(e.code || e.message)}</td></tr>`;
   }
 }
+
+$('lessonFollowUpRows')?.addEventListener('click', async (event) => {
+  const button = event.target.closest('.followup-delete');
+  if (!button) return;
+  if (!confirm('هل تريد حذف سجل المتابعة هذا نهائيًا؟')) return;
+  try {
+    button.disabled = true;
+    await deleteDoc(doc(db, button.dataset.collection, button.dataset.id));
+    await loadLessonFollowUp();
+  } catch (error) {
+    console.error('خطأ في حذف سجل المتابعة:', error);
+    alert('تعذر حذف سجل المتابعة: ' + (error.code || error.message));
+    button.disabled = false;
+  }
+});
 
 $('refreshLessonFollowUp')?.addEventListener('click', loadLessonFollowUp);
 loadLessonFollowUp();
@@ -2184,6 +2222,7 @@ async function loadLoginLogs() {
           <td>${escapeHtml(item.email || '-')}</td>
           <td>${escapeHtml(provider)}</td>
           <td>${escapeHtml(formatDate(item.loginAt))}</td>
+          <td><button class="btn danger login-log-delete" data-id="${escapeHtml(item.id)}" type="button">🗑️ حذف</button></td>
         </tr>
       `;
     }).join('');
@@ -2191,11 +2230,26 @@ async function loadLoginLogs() {
     console.error('خطأ في تحميل سجل الدخول:', error);
     loginLogRows.innerHTML = `
       <tr>
-        <td colspan="4">❌ تعذر تحميل سجل الدخول: ${escapeHtml(error.code || error.message || 'خطأ غير معروف')}</td>
+        <td colspan="5">❌ تعذر تحميل سجل الدخول: ${escapeHtml(error.code || error.message || 'خطأ غير معروف')}</td>
       </tr>
     `;
   }
 }
+
+loginLogRows?.addEventListener('click', async (event) => {
+  const button = event.target.closest('.login-log-delete');
+  if (!button) return;
+  if (!confirm('هل تريد حذف سجل تسجيل الدخول هذا نهائيًا؟')) return;
+  try {
+    button.disabled = true;
+    await deleteDoc(doc(db, 'loginLogs', button.dataset.id));
+    await loadLoginLogs();
+  } catch (error) {
+    console.error('خطأ في حذف سجل الدخول:', error);
+    alert('تعذر حذف سجل الدخول: ' + (error.code || error.message));
+    button.disabled = false;
+  }
+});
 
 refreshLoginLogs?.addEventListener('click', loadLoginLogs);
 
@@ -3786,7 +3840,7 @@ async function loadBookings() {
 
         <tr>
 
-          <td colspan="8">
+          <td colspan="9">
             لا توجد طلبات حجز.
           </td>
 
@@ -4015,6 +4069,10 @@ async function loadBookings() {
               حفظ الحالة
             </button>
 
+          </td>
+
+          <td>
+            <button class="btn danger booking-delete-btn" data-booking-delete-id="${escapeHtml(bookingDoc.id)}" type="button">🗑️ حذف</button>
           </td>
 
         `;
@@ -4277,6 +4335,21 @@ guard(
 );
 
 
+
+$('bookingRows')?.addEventListener('click', async (event) => {
+  const button = event.target.closest('.booking-delete-btn');
+  if (!button) return;
+  if (!confirm('هل تريد حذف طلب الحجز هذا نهائيًا؟')) return;
+  try {
+    button.disabled = true;
+    await deleteDoc(doc(db, 'bookings', button.dataset.bookingDeleteId));
+    await loadBookings();
+  } catch (error) {
+    console.error('خطأ في حذف الحجز:', error);
+    alert('تعذر حذف طلب الحجز: ' + (error.code || error.message));
+    button.disabled = false;
+  }
+});
 
 /* =====================================================
    REFRESH BUTTON
