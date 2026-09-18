@@ -218,6 +218,37 @@
 
 
 
+
+    <!-- =====================================================
+         LOGIN LOGS
+    ====================================================== -->
+
+    <section class="card" id="loginLogsSection">
+      <div class="actions" style="justify-content:space-between">
+        <h3>🔐 سجل تسجيلات الدخول</h3>
+        <button id="refreshLoginLogs" class="btn gold" type="button">تحديث</button>
+      </div>
+      <p style="color:#94a3b8;margin:8px 0 14px">
+        آخر عمليات تسجيل الدخول الناجحة المسجلة من المنصة.
+      </p>
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>المستخدم</th>
+              <th>البريد</th>
+              <th>طريقة الدخول</th>
+              <th>وقت الدخول</th>
+              <th>UID</th>
+            </tr>
+          </thead>
+          <tbody id="loginLogs">
+            <tr><td colspan="5">جارٍ تحميل السجل…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
     <!-- =====================================================
          CONTENT MANAGEMENT
     ====================================================== -->
@@ -3716,6 +3747,54 @@ async function loadBookings() {
 
 
 /* =====================================================
+   LOGIN LOGS
+===================================================== */
+
+async function loadLoginLogs() {
+  const body = $('loginLogs');
+  if (!body) return;
+
+  body.innerHTML = '<tr><td colspan="5">جارٍ تحميل سجل الدخول…</td></tr>';
+
+  try {
+    const snap = await getDocs(
+      query(
+        collection(db, 'loginLogs'),
+        orderBy('loginAt', 'desc'),
+        limit(100)
+      )
+    );
+
+    if (snap.empty) {
+      body.innerHTML = '<tr><td colspan="5">لا توجد تسجيلات دخول مسجلة بعد.</td></tr>';
+      return;
+    }
+
+    body.innerHTML = '';
+    snap.forEach(logDoc => {
+      const x = logDoc.data() || {};
+      const provider = x.provider === 'google.com' ? 'Google'
+        : x.provider === 'password' ? 'البريد الإلكتروني'
+        : x.provider === 'apple.com' ? 'Apple'
+        : x.provider || 'غير معروف';
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${escapeHtml(x.name || 'بدون اسم')}</td>
+        <td>${escapeHtml(x.email || 'بدون بريد')}</td>
+        <td>${escapeHtml(provider)}</td>
+        <td>${escapeHtml(formatDate(x.loginAt))}</td>
+        <td style="font-size:11px;direction:ltr;text-align:left">${escapeHtml(x.uid || '-')}</td>
+      `;
+      body.appendChild(tr);
+    });
+  } catch (error) {
+    console.error('تعذر تحميل سجل الدخول:', error);
+    body.innerHTML = `<tr><td colspan="5">تعذر تحميل سجل الدخول: ${escapeHtml(error.code || error.message || 'خطأ غير معروف')}</td></tr>`;
+  }
+}
+
+/* =====================================================
    INITIALIZATION
 ===================================================== */
 
@@ -3741,6 +3820,8 @@ guard(
 
     await loadUsers();
 
+    await loadLoginLogs();
+
     await loadContent();
 
     await loadBookings();
@@ -3756,6 +3837,9 @@ guard(
 
 $('refresh').onclick =
   loadUsers;
+
+$('refreshLoginLogs').onclick =
+  loadLoginLogs;
 
 
 
