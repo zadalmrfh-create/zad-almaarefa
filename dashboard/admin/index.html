@@ -218,37 +218,6 @@
 
 
 
-
-    <!-- =====================================================
-         LOGIN LOGS
-    ====================================================== -->
-
-    <section class="card" id="loginLogsSection">
-      <div class="actions" style="justify-content:space-between">
-        <h3>🔐 سجل تسجيلات الدخول</h3>
-        <button id="refreshLoginLogs" class="btn gold" type="button">تحديث</button>
-      </div>
-      <p style="color:#94a3b8;margin:8px 0 14px">
-        آخر عمليات تسجيل الدخول الناجحة المسجلة من المنصة.
-      </p>
-      <div class="table-wrap">
-        <table class="table">
-          <thead>
-            <tr>
-              <th>المستخدم</th>
-              <th>البريد</th>
-              <th>طريقة الدخول</th>
-              <th>وقت الدخول</th>
-              <th>UID</th>
-            </tr>
-          </thead>
-          <tbody id="loginLogs">
-            <tr><td colspan="5">جارٍ تحميل السجل…</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-
     <!-- =====================================================
          CONTENT MANAGEMENT
     ====================================================== -->
@@ -408,6 +377,119 @@
 
     </section>
 
+
+
+    <!-- =====================================================
+         LOGIN LOGS
+    ====================================================== -->
+
+    <!-- =====================================================
+         LIVE GOOGLE MEET LESSONS
+    ====================================================== -->
+
+    <section class="card" id="liveLessonsManagement">
+      <div class="actions" style="justify-content:space-between">
+        <div>
+          <h3>🎥 المحاضرات المباشرة وGoogle Meet</h3>
+          <p style="margin:6px 0 0;color:var(--muted)">إضافة موعد المحاضرة ورابط Google Meet واختبار الاستعداد قبلها.</p>
+        </div>
+        <button id="refreshLessons" class="btn gold" type="button">تحديث</button>
+      </div>
+
+      <form id="lessonForm" class="admin-form" style="margin-top:18px">
+        <div class="grid" style="margin:0">
+          <label>عنوان المحاضرة<input id="lessonTitle" required placeholder="مثال: النحو — المحاضرة الأولى"></label>
+          <label>المادة<input id="lessonSubject" required placeholder="النحو"></label>
+          <label>الصف الدراسي<input id="lessonGrade" required placeholder="أولى ثانوي"></label>
+          <label>اسم المعلم<input id="lessonTeacher" placeholder="اسم المعلم"></label>
+          <label>موعد المحاضرة<input id="lessonDate" type="datetime-local" required></label>
+          <label>رابط Google Meet<input id="lessonMeetUrl" type="url" required placeholder="https://meet.google.com/..."></label>
+          <div style="grid-column:1/-1;border:1px solid rgba(212,168,67,.25);border-radius:14px;padding:14px">
+            <strong>🎯 المستهدفون بالمحاضرة والإشعار</strong>
+            <p style="color:var(--muted);font-size:13px;margin:6px 0 10px">اختر جميع الطلاب المسجلين أو حدد طلابًا بعينهم.</p>
+            <label style="display:block;margin-bottom:10px">
+              <select id="lessonAudience">
+                <option value="all">👥 جميع الطلاب المسجلين</option>
+                <option value="selected">👤 طلاب محددون</option>
+              </select>
+            </label>
+            <div id="lessonStudentsWrap" style="display:none">
+              <input id="lessonStudentSearch" type="search" placeholder="ابحث باسم الطالب أو البريد الإلكتروني" style="margin-bottom:10px">
+              <div id="lessonStudentsList" style="max-height:260px;overflow:auto;display:grid;gap:8px"></div>
+              <small id="lessonStudentsStatus" style="color:var(--muted)">جارٍ تحميل الحسابات المسجلة…</small>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top:18px">
+          <div class="actions" style="justify-content:space-between">
+            <h4 style="margin:0">📝 اختبار الاستعداد قبل المحاضرة</h4>
+            <button id="addQuestion" class="btn" type="button">+ إضافة سؤال</button>
+          </div>
+          <div id="questionBuilder" style="margin-top:12px"></div>
+          <p style="color:var(--muted);font-size:13px">يمكنك إضافة أي عدد من الأسئلة، ولكل سؤال 4 اختيارات وتحدد الإجابة الصحيحة.</p>
+        </div>
+
+        <div class="actions" style="margin-top:14px">
+          <button class="btn gold" type="submit">💾 حفظ المحاضرة</button>
+          <button id="cancelLessonEdit" class="btn" type="button" style="display:none">إلغاء التعديل</button>
+        </div>
+        <p id="lessonStatus" class="notice" style="display:none;margin-top:12px"></p>
+      </form>
+
+      <div class="table-wrap" style="margin-top:20px">
+        <table class="table">
+          <thead><tr><th>المحاضرة</th><th>المادة</th><th>الصف</th><th>الموعد</th><th>المستهدفون</th><th>الاختبار</th><th>الإجراء</th></tr></thead>
+          <tbody id="lessonRows"><tr><td colspan="7">جارٍ تحميل المحاضرات…</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- =====================================================
+         LIVE LESSON FOLLOW-UP
+    ====================================================== -->
+    <section class="card" id="lessonFollowUpManagement">
+      <div class="actions" style="justify-content:space-between">
+        <div>
+          <h3>👥 متابعة حضور المحاضرات والاختبارات</h3>
+          <p style="margin:6px 0 0;color:var(--muted)">متابعة من حل الاختبار ومن ضغط على دخول Google Meet.</p>
+        </div>
+        <button id="refreshLessonFollowUp" class="btn gold" type="button">تحديث</button>
+      </div>
+      <div class="table-wrap" style="margin-top:18px">
+        <table class="table">
+          <thead><tr><th>الطالب</th><th>المحاضرة</th><th>النوع</th><th>النتيجة</th><th>الوقت</th></tr></thead>
+          <tbody id="lessonFollowUpRows"><tr><td colspan="5">جارٍ التحميل…</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card" id="loginLogsManagement">
+
+      <div class="actions" style="justify-content:space-between">
+        <h3>🔐 سجل تسجيلات الدخول</h3>
+        <button id="refreshLoginLogs" class="btn gold" type="button">تحديث</button>
+      </div>
+
+      <p class="admin-muted">آخر عمليات تسجيل الدخول المسجلة للمستخدمين.</p>
+
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>الاسم</th>
+              <th>البريد</th>
+              <th>طريقة الدخول</th>
+              <th>وقت الدخول</th>
+            </tr>
+          </thead>
+          <tbody id="loginLogRows">
+            <tr><td colspan="4">جارٍ التحميل…</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+    </section>
 
 
     <!-- =====================================================
@@ -765,7 +847,8 @@ import {
   serverTimestamp,
   query,
   orderBy,
-  limit
+  limit,
+  where
 } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 
 
@@ -1703,6 +1786,418 @@ async function loadUsers() {
 
 }
 
+
+
+/* =====================================================
+   LIVE GOOGLE MEET LESSONS
+===================================================== */
+
+const lessonRows = $('lessonRows');
+const lessonForm = $('lessonForm');
+const questionBuilder = $('questionBuilder');
+const lessonStatus = $('lessonStatus');
+let editingLessonId = null;
+
+function showLessonStatus(message, error = false) {
+  lessonStatus.textContent = message;
+  lessonStatus.style.display = 'block';
+  lessonStatus.style.borderColor = error ? '#7f1d1d' : '';
+}
+
+function addQuestionRow(data = {}) {
+  const index = questionBuilder.children.length + 1;
+  const wrap = document.createElement('div');
+  wrap.className = 'card';
+  wrap.style.marginTop = '10px';
+  wrap.innerHTML = `
+    <div class="actions" style="justify-content:space-between">
+      <strong>السؤال ${index}</strong>
+      <button type="button" class="btn danger remove-question">حذف</button>
+    </div>
+    <label style="display:block;margin-top:10px">السؤال
+      <input class="q-text" required value="${escapeHtml(data.text || '')}" placeholder="اكتب السؤال هنا">
+    </label>
+    <div class="grid" style="margin-top:10px">
+      ${[0,1,2,3].map(i => `<label>الاختيار ${i+1}<input class="q-option" required value="${escapeHtml((data.options || [])[i] || '')}" placeholder="الاختيار ${i+1}"></label>`).join('')}
+    </div>
+    <label style="display:block;margin-top:10px">الإجابة الصحيحة
+      <select class="q-answer">
+        <option value="0" ${Number(data.answer)===0?'selected':''}>الاختيار 1</option>
+        <option value="1" ${Number(data.answer)===1?'selected':''}>الاختيار 2</option>
+        <option value="2" ${Number(data.answer)===2?'selected':''}>الاختيار 3</option>
+        <option value="3" ${Number(data.answer)===3?'selected':''}>الاختيار 4</option>
+      </select>
+    </label>`;
+  wrap.querySelector('.remove-question').addEventListener('click', () => {
+    wrap.remove();
+    [...questionBuilder.children].forEach((el, i) => {
+      const title = el.querySelector('strong');
+      if (title) title.textContent = `السؤال ${i + 1}`;
+    });
+  });
+  questionBuilder.appendChild(wrap);
+}
+
+$('addQuestion')?.addEventListener('click', () => addQuestionRow());
+if (questionBuilder && !questionBuilder.children.length) addQuestionRow();
+
+function collectQuestions() {
+  return [...questionBuilder.children].map(card => ({
+    text: card.querySelector('.q-text').value.trim(),
+    options: [...card.querySelectorAll('.q-option')].map(x => x.value.trim()),
+    answer: Number(card.querySelector('.q-answer').value)
+  })).filter(q => q.text && q.options.every(Boolean));
+}
+
+function resetLessonForm() {
+  editingLessonId = null;
+  window.selectedLessonStudentIds = new Set();
+  lessonForm.reset();
+  questionBuilder.innerHTML = '';
+  addQuestionRow();
+  $('cancelLessonEdit').style.display = 'none';
+  $('lessonForm').querySelector('button[type="submit"]').textContent = '💾 حفظ المحاضرة';
+}
+
+$('cancelLessonEdit')?.addEventListener('click', resetLessonForm);
+
+function lessonDateText(value) {
+  if (!value) return '-';
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return value;
+  return d.toLocaleString('ar-EG', { dateStyle: 'medium', timeStyle: 'short' });
+}
+
+async function loadLessons() {
+  if (!lessonRows) return;
+  lessonRows.innerHTML = '<tr><td colspan="7">جارٍ تحميل المحاضرات…</td></tr>';
+  try {
+    const snap = await getDocs(collection(db, 'lessons'));
+    const items = [];
+    snap.forEach(d => items.push({ id: d.id, ...d.data() }));
+    items.sort((a,b) => String(a.date || '').localeCompare(String(b.date || '')));
+    if (!items.length) {
+      lessonRows.innerHTML = '<tr><td colspan="7">لا توجد محاضرات مضافة حتى الآن.</td></tr>';
+      return;
+    }
+    lessonRows.innerHTML = '';
+    items.forEach(item => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${escapeHtml(item.title)}</td>
+        <td>${escapeHtml(item.subject)}</td>
+        <td>${escapeHtml(item.grade)}</td>
+        <td>${escapeHtml(lessonDateText(item.date))}</td>
+        <td>${item.audience === 'selected' ? `👤 ${(item.targetUids || []).length} طالب` : '👥 جميع الطلاب'}</td>
+        <td>${Array.isArray(item.preQuiz) && item.preQuiz.length ? `${item.preQuiz.length} أسئلة` : 'بدون'}</td>
+        <td>
+          <div class="actions">
+            <button class="btn edit-lesson" type="button">تعديل</button>
+            <a class="btn" href="${escapeHtml(item.meetUrl || '#')}" target="_blank" rel="noopener">Meet</a>
+            <button class="btn danger delete-lesson" type="button">حذف</button>
+          </div>
+        </td>`;
+      tr.querySelector('.edit-lesson').addEventListener('click', () => editLesson(item));
+      tr.querySelector('.delete-lesson').addEventListener('click', async () => {
+        if (!confirm('هل تريد حذف هذه المحاضرة؟')) return;
+        try {
+          await deleteDoc(doc(db, 'lessons', item.id));
+          // حذف الكويز المرتبط إن كان محفوظًا كمستند منفصل
+          const qs = await getDocs(query(collection(db, 'quizzes'), where('lessonId', '==', item.id)));
+          await Promise.all(qs.docs.map(qd => deleteDoc(doc(db, 'quizzes', qd.id))));
+          await loadLessons();
+        } catch (e) {
+          console.error(e);
+          alert('تعذر حذف المحاضرة: ' + (e.code || e.message));
+        }
+      });
+      lessonRows.appendChild(tr);
+    });
+  } catch (e) {
+    console.error(e);
+    lessonRows.innerHTML = `<tr><td colspan="7">تعذر تحميل المحاضرات: ${escapeHtml(e.code || e.message)}</td></tr>`;
+  }
+}
+
+function editLesson(item) {
+  editingLessonId = item.id;
+  $('lessonTitle').value = item.title || '';
+  $('lessonSubject').value = item.subject || '';
+  $('lessonGrade').value = item.grade || '';
+  $('lessonTeacher').value = item.teacherName || '';
+  $('lessonDate').value = item.date || '';
+  $('lessonMeetUrl').value = item.meetUrl || '';
+  $('lessonAudience').value = item.audience === 'selected' ? 'selected' : 'all';
+  window.selectedLessonStudentIds = new Set(item.targetUids || []);
+  $('lessonStudentsWrap').style.display = item.audience === 'selected' ? 'block' : 'none';
+  if (item.audience === 'selected') renderLessonStudents();
+  questionBuilder.innerHTML = '';
+  (item.preQuiz || []).forEach(q => addQuestionRow(q));
+  if (!questionBuilder.children.length) addQuestionRow();
+  $('cancelLessonEdit').style.display = 'inline-block';
+  $('lessonForm').querySelector('button[type="submit"]').textContent = '💾 حفظ التعديل';
+  document.getElementById('liveLessonsManagement')?.scrollIntoView({behavior:'smooth'});
+}
+
+
+
+// =====================================================
+// اختيار الطلاب المستهدفين بالمحاضرة
+// =====================================================
+
+const lessonAudience = $('lessonAudience');
+const lessonStudentsWrap = $('lessonStudentsWrap');
+const lessonStudentsList = $('lessonStudentsList');
+const lessonStudentSearch = $('lessonStudentSearch');
+const lessonStudentsStatus = $('lessonStudentsStatus');
+let lessonStudents = [];
+
+function renderLessonStudents() {
+  if (!lessonStudentsList) return;
+  const term = String(lessonStudentSearch?.value || '').trim().toLowerCase();
+  const filtered = lessonStudents.filter(u => {
+    const name = String(u.fullName || u.name || '').toLowerCase();
+    const email = String(u.email || '').toLowerCase();
+    return !term || name.includes(term) || email.includes(term);
+  });
+
+  lessonStudentsList.innerHTML = filtered.length ? filtered.map(u => `
+    <label class="card" style="display:flex;align-items:center;gap:10px;padding:10px;cursor:pointer;margin:0">
+      <input class="lesson-student-check" type="checkbox" value="${escapeHtml(u.id)}" ${window.selectedLessonStudentIds?.has(u.id) ? 'checked' : ''}>
+      <span style="flex:1"><strong>${escapeHtml(u.fullName || u.name || 'بدون اسم')}</strong><br><small style="color:var(--muted)">${escapeHtml(u.email || 'بدون بريد')}</small></span>
+    </label>
+  `).join('') : '<div class="notice">لا توجد حسابات مطابقة.</div>';
+
+  lessonStudentsList.querySelectorAll('.lesson-student-check').forEach(ch => {
+    ch.addEventListener('change', () => {
+      window.selectedLessonStudentIds = window.selectedLessonStudentIds || new Set();
+      if (ch.checked) window.selectedLessonStudentIds.add(ch.value);
+      else window.selectedLessonStudentIds.delete(ch.value);
+    });
+  });
+
+  if (lessonStudentsStatus) lessonStudentsStatus.textContent = `عدد الطلاب المسجلين: ${lessonStudents.length} — المحدد: ${(window.selectedLessonStudentIds || new Set()).size}`;
+}
+
+async function loadLessonStudents() {
+  if (!lessonStudentsList) return;
+  try {
+    const snap = await getDocs(collection(db, 'users'));
+    lessonStudents = snap.docs
+      .map(d => ({id:d.id, ...d.data()}))
+      .filter(u => u.role === 'student');
+    renderLessonStudents();
+  } catch (e) {
+    console.error(e);
+    if (lessonStudentsStatus) lessonStudentsStatus.textContent = 'تعذر تحميل الحسابات: ' + (e.code || e.message);
+  }
+}
+
+lessonAudience?.addEventListener('change', () => {
+  const selected = lessonAudience.value === 'selected';
+  if (lessonStudentsWrap) lessonStudentsWrap.style.display = selected ? 'block' : 'none';
+  if (selected) loadLessonStudents();
+});
+lessonStudentSearch?.addEventListener('input', renderLessonStudents);
+loadLessonStudents();
+lessonForm?.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const meetUrl = $('lessonMeetUrl').value.trim();
+  if (!/^https?:\/\//i.test(meetUrl)) {
+    showLessonStatus('اكتب رابط Google Meet صحيحًا يبدأ بـ https://', true);
+    return;
+  }
+  const questions = collectQuestions();
+  if ($('lessonAudience').value === 'selected' && !(window.selectedLessonStudentIds || new Set()).size) {
+    showLessonStatus('اختر طالبًا واحدًا على الأقل للمحاضرة المحددة.', true);
+    return;
+  }
+  const data = {
+    title: $('lessonTitle').value.trim(),
+    subject: $('lessonSubject').value.trim(),
+    grade: $('lessonGrade').value.trim(),
+    teacherName: $('lessonTeacher').value.trim(),
+    date: $('lessonDate').value,
+    meetUrl,
+    preQuiz: questions,
+    audience: $('lessonAudience').value,
+    targetUids: $('lessonAudience').value === 'selected' ? [...(window.selectedLessonStudentIds || new Set())] : [],
+    updatedAt: serverTimestamp()
+  };
+  try {
+    let savedLessonId = editingLessonId;
+    if (editingLessonId) {
+      await updateDoc(doc(db, 'lessons', editingLessonId), data);
+    } else {
+      data.createdAt = serverTimestamp();
+      const ref = await addDoc(collection(db, 'lessons'), data);
+      savedLessonId = ref.id;
+      if (questions.length) {
+        await addDoc(collection(db, 'quizzes'), {
+          lessonId: savedLessonId,
+          type: 'pre',
+          title: `اختبار الاستعداد — ${data.title}`,
+          questions,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        });
+      }
+
+      // إنشاء إشعار شخصي لكل طالب مستهدف
+      const targets = data.audience === 'selected'
+        ? [...(data.targetUids || [])]
+        : lessonStudents.map(u => u.id);
+
+      if (targets.length) {
+        await Promise.all(targets.map(uid => addDoc(collection(db, 'notifications'), {
+          audience: 'user',
+          targetUid: uid,
+          title: '🎥 تم إضافة محاضرة جديدة',
+          message: `${data.title} — ${data.subject}${data.date ? ' — ' + lessonDateText(data.date) : ''}`,
+          type: 'lesson',
+          lessonId: ref.id,
+          createdAt: serverTimestamp(),
+          readBy: []
+        })));
+      }
+    }
+    showLessonStatus(editingLessonId ? 'تم تعديل المحاضرة بنجاح.' : 'تم حفظ المحاضرة بنجاح.');
+    resetLessonForm();
+    await loadLessons();
+  } catch (e) {
+    console.error(e);
+    showLessonStatus('تعذر حفظ المحاضرة: ' + (e.code || e.message), true);
+  }
+});
+
+$('refreshLessons')?.addEventListener('click', loadLessons);
+
+loadLessons();
+
+
+/* =====================================================
+   LESSON FOLLOW-UP
+===================================================== */
+
+async function loadLessonFollowUp() {
+  const body = $('lessonFollowUpRows');
+  if (!body) return;
+  body.innerHTML = '<tr><td colspan="5">جارٍ التحميل…</td></tr>';
+  try {
+    const [usersSnap, attemptsSnap, attendanceSnap] = await Promise.all([
+      getDocs(collection(db, 'users')),
+      getDocs(collection(db, 'quizAttempts')),
+      getDocs(collection(db, 'lessonAttendance'))
+    ]);
+    const users = {};
+    usersSnap.forEach(d => { users[d.id] = d.data(); });
+    const rows = [];
+    attemptsSnap.forEach(d => {
+      const x = d.data();
+      rows.push({
+        uid: x.studentUid,
+        lesson: x.lessonTitle || x.lessonId || '-',
+        type: '📝 اختبار استعداد',
+        result: (x.correct != null && x.total != null) ? `${x.correct}/${x.total} (${x.score ?? 0}%)` : '-',
+        time: x.createdAt
+      });
+    });
+    attendanceSnap.forEach(d => {
+      const x = d.data();
+      rows.push({
+        uid: x.studentUid,
+        lesson: x.lessonTitle || x.lessonId || '-',
+        type: '🎥 دخول Google Meet',
+        result: 'تم الدخول',
+        time: x.openedAt
+      });
+    });
+    rows.sort((a,b) => {
+      const ta = a.time && typeof a.time.toMillis === 'function' ? a.time.toMillis() : 0;
+      const tb = b.time && typeof b.time.toMillis === 'function' ? b.time.toMillis() : 0;
+      return tb - ta;
+    });
+    if (!rows.length) {
+      body.innerHTML = '<tr><td colspan="5">لا توجد بيانات متابعة حتى الآن.</td></tr>';
+      return;
+    }
+    body.innerHTML = '';
+    rows.slice(0, 100).forEach(row => {
+      const user = users[row.uid] || {};
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${escapeHtml(user.fullName || user.email || row.uid || '-')}</td><td>${escapeHtml(row.lesson)}</td><td>${escapeHtml(row.type)}</td><td>${escapeHtml(row.result)}</td><td>${escapeHtml(formatDate(row.time))}</td>`;
+      body.appendChild(tr);
+    });
+  } catch (e) {
+    console.error(e);
+    body.innerHTML = `<tr><td colspan="5">تعذر تحميل المتابعة: ${escapeHtml(e.code || e.message)}</td></tr>`;
+  }
+}
+
+$('refreshLessonFollowUp')?.addEventListener('click', loadLessonFollowUp);
+loadLessonFollowUp();
+
+
+/* =====================================================
+   LOGIN LOGS
+===================================================== */
+
+const loginLogRows = $('loginLogRows');
+const refreshLoginLogs = $('refreshLoginLogs');
+
+function loginLogTime(value) {
+  if (!value) return 0;
+  if (typeof value.toMillis === 'function') return value.toMillis();
+  if (typeof value.toDate === 'function') return value.toDate().getTime();
+  const d = new Date(value);
+  return Number.isNaN(d.getTime()) ? 0 : d.getTime();
+}
+
+async function loadLoginLogs() {
+  if (!loginLogRows) return;
+
+  loginLogRows.innerHTML = '<tr><td colspan="4">جارٍ تحميل سجل الدخول…</td></tr>';
+
+  try {
+    // لا نستخدم orderBy هنا حتى لا تتأثر السجلات القديمة أو تحتاج إلى index إضافي.
+    const snap = await getDocs(query(collection(db, 'loginLogs'), limit(100)));
+    const items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    items.sort((a, b) => loginLogTime(b.loginAt) - loginLogTime(a.loginAt));
+
+    if (!items.length) {
+      loginLogRows.innerHTML = '<tr><td colspan="4">لا توجد تسجيلات دخول بعد.</td></tr>';
+      return;
+    }
+
+    loginLogRows.innerHTML = items.map(item => {
+      const provider = item.provider === 'google.com'
+        ? 'Google'
+        : item.provider === 'password'
+          ? 'البريد الإلكتروني'
+          : item.provider === 'apple.com'
+            ? 'Apple'
+            : item.provider || 'غير معروف';
+
+      return `
+        <tr>
+          <td>${escapeHtml(item.name || 'بدون اسم')}</td>
+          <td>${escapeHtml(item.email || '-')}</td>
+          <td>${escapeHtml(provider)}</td>
+          <td>${escapeHtml(formatDate(item.loginAt))}</td>
+        </tr>
+      `;
+    }).join('');
+  } catch (error) {
+    console.error('خطأ في تحميل سجل الدخول:', error);
+    loginLogRows.innerHTML = `
+      <tr>
+        <td colspan="4">❌ تعذر تحميل سجل الدخول: ${escapeHtml(error.code || error.message || 'خطأ غير معروف')}</td>
+      </tr>
+    `;
+  }
+}
+
+refreshLoginLogs?.addEventListener('click', loadLoginLogs);
 
 
 /* =====================================================
@@ -3747,54 +4242,6 @@ async function loadBookings() {
 
 
 /* =====================================================
-   LOGIN LOGS
-===================================================== */
-
-async function loadLoginLogs() {
-  const body = $('loginLogs');
-  if (!body) return;
-
-  body.innerHTML = '<tr><td colspan="5">جارٍ تحميل سجل الدخول…</td></tr>';
-
-  try {
-    const snap = await getDocs(
-      query(
-        collection(db, 'loginLogs'),
-        orderBy('loginAt', 'desc'),
-        limit(100)
-      )
-    );
-
-    if (snap.empty) {
-      body.innerHTML = '<tr><td colspan="5">لا توجد تسجيلات دخول مسجلة بعد.</td></tr>';
-      return;
-    }
-
-    body.innerHTML = '';
-    snap.forEach(logDoc => {
-      const x = logDoc.data() || {};
-      const provider = x.provider === 'google.com' ? 'Google'
-        : x.provider === 'password' ? 'البريد الإلكتروني'
-        : x.provider === 'apple.com' ? 'Apple'
-        : x.provider || 'غير معروف';
-
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${escapeHtml(x.name || 'بدون اسم')}</td>
-        <td>${escapeHtml(x.email || 'بدون بريد')}</td>
-        <td>${escapeHtml(provider)}</td>
-        <td>${escapeHtml(formatDate(x.loginAt))}</td>
-        <td style="font-size:11px;direction:ltr;text-align:left">${escapeHtml(x.uid || '-')}</td>
-      `;
-      body.appendChild(tr);
-    });
-  } catch (error) {
-    console.error('تعذر تحميل سجل الدخول:', error);
-    body.innerHTML = `<tr><td colspan="5">تعذر تحميل سجل الدخول: ${escapeHtml(error.code || error.message || 'خطأ غير معروف')}</td></tr>`;
-  }
-}
-
-/* =====================================================
    INITIALIZATION
 ===================================================== */
 
@@ -3837,9 +4284,6 @@ guard(
 
 $('refresh').onclick =
   loadUsers;
-
-$('refreshLoginLogs').onclick =
-  loadLoginLogs;
 
 
 

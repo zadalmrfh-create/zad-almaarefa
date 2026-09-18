@@ -135,32 +135,30 @@ console.log(
 
 
 
-async function recordLogin(user) {
+/* =========================================================
+   فحص حالة الحساب
+========================================================= */
+
+async function recordLogin(user, profile = {}) {
   try {
-    const provider = user.providerData?.[0]?.providerId || 'unknown';
     await addDoc(collection(db, 'loginLogs'), {
       uid: user.uid,
       email: user.email || '',
-      name: user.displayName || 'مستخدم زاد المعرفة',
-      provider,
+      name: profile.fullName || profile.name || user.displayName || 'مستخدم زاد المعرفة',
+      provider: user.providerData?.[0]?.providerId || 'unknown',
       loginAt: serverTimestamp()
     });
   } catch (error) {
-    // لا نفشل تسجيل الدخول إذا تعذر حفظ السجل.
+    // فشل سجل الدخول لا يمنع المستخدم من دخول المنصة.
     console.warn('تعذر حفظ سجل تسجيل الدخول:', error);
   }
 }
 
-/* =========================================================
-   فحص حالة الحساب
-========================================================= */
 
 async function checkUserAndContinue(user) {
   if (!user) throw new Error('لم يتم العثور على المستخدم.');
 
   console.log('تم تسجيل الدخول:', user.email || user.uid);
-
-  await recordLogin(user);
 
   // لا نمنع تسجيل الدخول بسبب قواعد Firestore أو عدم إنشاء ملف المستخدم.
   // يتم فحص بيانات الأدمن/المستخدم إن أمكن، ثم نفتح المنصة مباشرة.
@@ -207,6 +205,8 @@ async function checkUserAndContinue(user) {
     // تسجيل الدخول في Firebase Auth ناجح حتى لو كانت Firestore Rules تمنع القراءة/الكتابة.
     console.warn('تم تسجيل الدخول، لكن تعذر فحص Firestore:', firestoreError);
   }
+
+  await recordLogin(user, {});
 
   msg('تم تسجيل الدخول بنجاح، جارٍ فتح المنصة...', 'success');
   setTimeout(() => redirectAfterLogin(user), 300);

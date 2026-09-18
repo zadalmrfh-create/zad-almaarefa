@@ -6,196 +6,1761 @@
     <title>لوحة الطالب | زاد المعرفة</title>
     <link rel="icon" href="../../images/logo.png">
     <link rel="stylesheet" href="../dashboard.css">
+
 <style>
-.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:18px}.stat-card{display:flex;align-items:center;gap:12px}.stat-card span{font-size:25px}.stat-card strong{font-size:28px;color:var(--gold2)}.stat-card small{color:var(--muted);font-size:13px}@media(max-width:760px){.stats-grid{grid-template-columns:1fr}.actions{width:100%}.actions .btn{flex:1;text-align:center}.card{padding:18px}.top{gap:18px}}
+.stats-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:16px;
+    margin-bottom:18px
+}
+.stat-card{
+    display:flex;
+    align-items:center;
+    gap:12px
+}
+.stat-card span{
+    font-size:25px
+}
+.stat-card strong{
+    font-size:28px;
+    color:var(--gold2)
+}
+.stat-card small{
+    color:var(--muted);
+    font-size:13px
+}
+@media(max-width:760px){
+    .stats-grid{
+        grid-template-columns:1fr
+    }
+    .actions{
+        width:100%
+    }
+    .actions .btn{
+        flex:1;
+        text-align:center
+    }
+    .card{
+        padding:18px
+    }
+    .top{
+        gap:18px
+    }
+}
+</style>
+
+<style>
+.live-lessons-grid{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:16px
+}
+.live-lesson{
+    border:1px solid rgba(212,168,67,.25)
+}
+.live-lesson .lesson-meta{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin:10px 0;
+    color:var(--muted);
+    font-size:13px
+}
+.lesson-actions{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:14px
+}
+.quiz-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.72);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:18px;
+    z-index:9999
+}
+.quiz-overlay.show{
+    display:flex
+}
+.quiz-box{
+    background:#101b30;
+    border:1px solid rgba(212,168,67,.45);
+    border-radius:18px;
+    max-width:700px;
+    width:100%;
+    max-height:90vh;
+    overflow:auto;
+    padding:22px
+}
+.quiz-question{
+    padding:16px;
+    margin:12px 0;
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:14px
+}
+.quiz-option{
+    display:block;
+    padding:8px 0
+}
+@media(max-width:760px){
+    .live-lessons-grid{
+        grid-template-columns:1fr
+    }
+}
 </style>
 
 <link rel="stylesheet" href="../../assets/translation.css">
 <script src="../../assets/translation.js"></script>
 <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
 </head>
+
 <body>
+
 <div class="wrap">
-    <header class="top">
-        <div class="brand">
-            <img src="../../images/logo.png" alt="Logo">
+
+<header class="top">
+
+    <div class="brand">
+        <img src="../../images/logo.png" alt="Logo">
+
+        <div>
+            <h1>زاد المعرفة</h1>
+            <small>لوحة الطالب</small>
+        </div>
+    </div>
+
+    <div class="actions">
+        <a href="../../index.html" class="btn">الرئيسية</a>
+        <button id="deleteAccount" class="btn danger">حذف الحساب</button>
+        <button id="logout" class="btn danger">تسجيل الخروج</button>
+    </div>
+
+</header>
+
+
+<main>
+
+    <div id="loading" class="notice">
+        جارٍ التحقق من الحساب…
+    </div>
+
+
+    <section class="hero">
+
+        <h2>
+            مرحبًا
+            <span data-name>...</span>
+            👋
+        </h2>
+
+        <p data-email></p>
+
+    </section>
+
+
+    <section class="stats-grid">
+
+        <div class="card stat-card">
+            <span>📚</span>
+            <strong id="favCount">0</strong>
+            <small>كتب مفضلة</small>
+        </div>
+
+        <div class="card stat-card">
+            <span>✅</span>
+            <strong id="readCount">0</strong>
+            <small>كتب تمت قراءتها</small>
+        </div>
+
+        <div class="card stat-card">
+            <span>🕘</span>
+            <strong id="recentCount">0</strong>
+            <small>آخر الكتب المفتوحة</small>
+        </div>
+
+    </section>
+
+
+    <section class="grid">
+
+        <div class="card">
+            <h3>📚 دروسي</h3>
+            <p>تابع المواد والدروس الخاصة بك.</p>
+            <a class="btn gold" href="../../sections/library.html">
+                فتح المكتبة
+            </a>
+        </div>
+
+        <div class="card">
+            <h3>📖 القرآن الكريم</h3>
+            <p>انتقل إلى قسم القرآن وعلومه.</p>
+            <a class="btn gold" href="../../sections/Quran/quran.html">
+                فتح القسم
+            </a>
+        </div>
+
+        <div class="card">
+            <h3>⭐ كتبي المفضلة</h3>
+            <p>الوصول السريع إلى الكتب التي حفظتها.</p>
+            <a class="btn gold" href="../../sections/library.html">
+                عرض المفضلة
+            </a>
+        </div>
+
+        <div class="card">
+            <h3>📈 متابعة القراءة</h3>
+            <p>راجع الكتب التي أنهيت قراءتها وآخر ما فتحته.</p>
+            <a class="btn gold" href="../../sections/library.html">
+                متابعة التعلم
+            </a>
+        </div>
+
+        <div class="card">
+            <h3>🔔 الإعلانات</h3>
+            <p>
+                تابع أحدث أخبار الحصص والملفات الجديدة
+                من جرس الإشعارات بالأعلى.
+            </p>
+        </div>
+
+    </section>
+
+
+    <section class="card" id="myBookingsCard">
+
+        <h3>📅 طلبات حجز الحصص</h3>
+
+        <p>
+            تابع حالة طلبك واعرف هل تمت الموافقة عليه أم لا.
+        </p>
+
+        <div class="table-wrap">
+
+            <table class="table">
+
+                <thead>
+                    <tr>
+                        <th>المادة</th>
+                        <th>المعلم</th>
+                        <th>اليومان</th>
+                        <th>نوع الحصة</th>
+                        <th>الحالة</th>
+                    </tr>
+                </thead>
+
+                <tbody id="myBookingRows">
+                    <tr>
+                        <td colspan="5">
+                            جارٍ تحميل الطلبات...
+                        </td>
+                    </tr>
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+
+    <section class="card" id="liveLessonsCard">
+
+        <div class="actions" style="justify-content:space-between">
+
             <div>
-                <h1>زاد المعرفة</h1>
-                <small>لوحة الطالب</small>
+
+                <h3>🎥 المحاضرات المباشرة</h3>
+
+                <p>
+                    حل اختبار الاستعداد أولًا،
+                    ثم ادخل إلى محاضرة Google Meet في موعدها.
+                </p>
+
             </div>
+
+            <button
+                id="refreshLiveLessons"
+                class="btn gold"
+                type="button"
+            >
+                تحديث
+            </button>
+
         </div>
-        <div class="actions">
-            <a href="../../index.html" class="btn">الرئيسية</a>
-            <button id="deleteAccount" class="btn danger">حذف الحساب</button>
-            <button id="logout" class="btn danger">تسجيل الخروج</button>
+
+
+        <div
+            id="liveLessonsList"
+            class="live-lessons-grid"
+            style="margin-top:16px"
+        >
+
+            <div class="card">
+                <p>جارٍ تحميل المحاضرات…</p>
+            </div>
+
         </div>
-    </header>
 
-    <main>
-        <div id="loading" class="notice">جارٍ التحقق من الحساب…</div>
-        
-        <section class="hero">
-            <h2>مرحبًا <span data-name>...</span> 👋</h2>
-            <p data-email></p>
-        </section>
+    </section>
 
-        <section class="stats-grid">
-  <div class="card stat-card"><span>📚</span><strong id="favCount">0</strong><small>كتب مفضلة</small></div>
-  <div class="card stat-card"><span>✅</span><strong id="readCount">0</strong><small>كتب تمت قراءتها</small></div>
-  <div class="card stat-card"><span>🕘</span><strong id="recentCount">0</strong><small>آخر الكتب المفتوحة</small></div>
-</section>
 
-<section class="grid">
-            <div class="card">
-                <h3>📚 دروسي</h3>
-                <p>تابع المواد والدروس الخاصة بك.</p>
-                <a class="btn gold" href="../../sections/library.html">فتح المكتبة</a>
-            </div>
-            <div class="card">
-                <h3>📖 القرآن الكريم</h3>
-                <p>انتقل إلى قسم القرآن وعلومه.</p>
-                <a class="btn gold" href="../../sections/Quran/quran.html">فتح القسم</a>
-            </div>
-            <div class="card">
-                <h3>⭐ كتبي المفضلة</h3>
-                <p>الوصول السريع إلى الكتب التي حفظتها.</p>
-                <a class="btn gold" href="../../sections/library.html">عرض المفضلة</a>
-            </div>
-            <div class="card">
-                <h3>📈 متابعة القراءة</h3>
-                <p>راجع الكتب التي أنهيت قراءتها وآخر ما فتحته.</p>
-                <a class="btn gold" href="../../sections/library.html">متابعة التعلم</a>
-            </div>
-            <div class="card">
-                <h3>🔔 الإعلانات</h3>
-                <p>تابع أحدث أخبار الحصص والملفات الجديدة من جرس الإشعارات بالأعلى.</p>
-            </div>
-        </section>
+    <div
+        id="quizOverlay"
+        class="quiz-overlay"
+        role="dialog"
+        aria-modal="true"
+    >
 
-<section class="card" id="myBookingsCard">
-  <h3>📅 طلبات حجز الحصص</h3>
-  <p>تابع حالة طلبك واعرف هل تمت الموافقة عليه أم لا.</p>
-  <div class="table-wrap">
-    <table class="table">
-      <thead><tr><th>المادة</th><th>المعلم</th><th>اليومان</th><th>نوع الحصة</th><th>الحالة</th></tr></thead>
-      <tbody id="myBookingRows"><tr><td colspan="5">جارٍ تحميل الطلبات...</td></tr></tbody>
-    </table>
-  </div>
-</section>
-    </main>
+        <div class="quiz-box">
+
+            <div
+                class="actions"
+                style="justify-content:space-between"
+            >
+
+                <h3
+                    id="quizTitle"
+                    style="margin:0"
+                >
+                    📝 اختبار الاستعداد
+                </h3>
+
+                <button
+                    id="closeQuiz"
+                    class="btn danger"
+                    type="button"
+                >
+                    إغلاق
+                </button>
+
+            </div>
+
+
+            <p
+                id="quizHint"
+                style="color:var(--muted)"
+            ></p>
+
+
+            <form id="quizForm"></form>
+
+
+            <div
+                class="actions"
+                style="margin-top:14px"
+            >
+
+                <button
+                    id="submitQuiz"
+                    class="btn gold"
+                    type="submit"
+                    form="quizForm"
+                >
+                    إرسال الإجابات
+                </button>
+
+            </div>
+
+
+            <p
+                id="quizResult"
+                class="notice"
+                style="display:none;margin-top:12px"
+            ></p>
+
+        </div>
+
+    </div>
+
+</main>
+
 </div>
 
-<script type="module">
-import { auth, db } from '../../firebase-config.js';
-import { signOut, onAuthStateChanged, deleteUser } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
-import { doc, getDoc, deleteDoc, collection, query, where, getDocs } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 
+<script type="module">
+
+import {
+    auth,
+    db
+} from '../../firebase-config.js';
+
+import {
+    signOut,
+    onAuthStateChanged,
+    deleteUser
+} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
+
+import {
+    doc,
+    getDoc,
+    deleteDoc,
+    collection,
+    query,
+    where,
+    getDocs,
+    addDoc,
+    serverTimestamp
+} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
+
+
+
+/* =========================================================
+   الحجوزات
+========================================================= */
 
 async function loadMyBookings(uid) {
-    const body = document.getElementById('myBookingRows');
+
+    const body =
+        document.getElementById('myBookingRows');
+
     if (!body) return;
+
     try {
-        const snap = await getDocs(query(collection(db, 'bookings'), where('studentUid', '==', uid)));
+
+        const snap = await getDocs(
+            query(
+                collection(db, 'bookings'),
+                where('studentUid', '==', uid)
+            )
+        );
+
         body.innerHTML = '';
+
         snap.forEach(item => {
+
             const b = item.data();
-            const tr = document.createElement('tr');
-            const status = b.status || 'جديد';
+
+            const tr =
+                document.createElement('tr');
+
+            const status =
+                b.status || 'جديد';
+
             tr.innerHTML = `
-              <td>${b.subject || '-'}</td>
-              <td>${b.teacherName || 'سيتم ترشيح معلم'}</td>
-              <td>${b.preferredDay1 || '-'} — ${b.preferredDay2 || '-'}<br>${b.preferredPeriod || ''}</td>
-              <td>${b.lessonType || '-'}<br>${b.lessonMode || ''}</td>
-              <td><strong class="booking-status-text">${status}</strong></td>`;
+
+                <td>${b.subject || '-'}</td>
+
+                <td>
+                    ${b.teacherName || 'سيتم ترشيح معلم'}
+                </td>
+
+                <td>
+                    ${b.preferredDay1 || '-'}
+                    —
+                    ${b.preferredDay2 || '-'}
+                    <br>
+                    ${b.preferredPeriod || ''}
+                </td>
+
+                <td>
+                    ${b.lessonType || '-'}
+                    <br>
+                    ${b.lessonMode || ''}
+                </td>
+
+                <td>
+                    <strong class="booking-status-text">
+                        ${status}
+                    </strong>
+                </td>
+
+            `;
+
             body.appendChild(tr);
+
         });
-        if (!body.innerHTML) body.innerHTML = '<tr><td colspan="5">لا توجد طلبات حجز حتى الآن.</td></tr>';
+
+
+        if (!body.innerHTML) {
+
+            body.innerHTML =
+                '<tr><td colspan="5">لا توجد طلبات حجز حتى الآن.</td></tr>';
+
+        }
+
     } catch (err) {
+
         console.error(err);
-        body.innerHTML = '<tr><td colspan="5">تعذر تحميل حالة الطلبات.</td></tr>';
+
+        body.innerHTML =
+            '<tr><td colspan="5">تعذر تحميل حالة الطلبات.</td></tr>';
+
     }
+
 }
 
-// التحقق من حالة الدخول
-onAuthStateChanged(auth, async (user) => {
-    const loadingElem = document.getElementById('loading');
-    const nameElem = document.querySelector('[data-name]');
-    const emailElem = document.querySelector('[data-email]');
 
-    if (!user) {
-        window.location.href = '../../login/index.html';
-        return;
-    }
+
+/* =========================================================
+   LIVE GOOGLE MEET + PRE QUIZ
+========================================================= */
+
+const liveLessonsList =
+    document.getElementById('liveLessonsList');
+
+const quizOverlay =
+    document.getElementById('quizOverlay');
+
+const quizForm =
+    document.getElementById('quizForm');
+
+const quizTitle =
+    document.getElementById('quizTitle');
+
+const quizHint =
+    document.getElementById('quizHint');
+
+const quizResult =
+    document.getElementById('quizResult');
+
+
+let currentLesson = null;
+let currentQuiz = null;
+let currentStudentUid = null;
+
+
+
+/* =========================================================
+   حماية النصوص
+========================================================= */
+
+function esc(value) {
+
+    return String(value ?? '')
+        .replace(
+            /[&<>'"]/g,
+            c => ({
+                '&':'&amp;',
+                '<':'&lt;',
+                '>':'&gt;',
+                "'":'&#39;',
+                '"':'&quot;'
+            }[c])
+        );
+
+}
+
+
+
+/* =========================================================
+   التاريخ
+========================================================= */
+
+function lessonDate(value) {
+
+    if (!value) return '-';
 
     try {
-        const snap = await getDoc(doc(db, 'users', user.uid));
-        if (snap.exists() && snap.data().fullName) {
-            if (nameElem) nameElem.textContent = snap.data().fullName;
-        } else {
-            if (nameElem) nameElem.textContent = user.displayName || user.email.split('@')[0];
-        }
-        if (emailElem) emailElem.textContent = user.email;
-        await loadMyBookings(user.uid);
-    } catch (err) {
-        console.error("خطأ:", err);
-    } finally {
-        if (loadingElem) loadingElem.style.display = 'none';
-    }
-});
 
-function updateLocalStats(){
-  const read=JSON.parse(localStorage.getItem('zadReadBooks')||'[]');
-  const fav=JSON.parse(localStorage.getItem('zadFavorites')||'[]');
-  const recent=JSON.parse(localStorage.getItem('zadRecentBooks')||'[]');
-  document.getElementById('readCount').textContent=read.length;
-  document.getElementById('favCount').textContent=fav.length;
-  document.getElementById('recentCount').textContent=recent.length;
+        const d =
+            value?.toDate
+                ? value.toDate()
+                : new Date(value);
+
+        return Number.isNaN(d.getTime())
+            ? esc(value)
+            : d.toLocaleString(
+                'ar-EG',
+                {
+                    dateStyle:'medium',
+                    timeStyle:'short'
+                }
+            );
+
+    } catch {
+
+        return esc(value);
+
+    }
+
 }
+
+
+
+/* =========================================================
+   هل الطالب حل الاختبار؟
+========================================================= */
+
+async function hasPassedQuiz(uid, lessonId) {
+
+    const snap =
+        await getDocs(
+            query(
+                collection(db, 'quizAttempts'),
+                where(
+                    'studentUid',
+                    '==',
+                    uid
+                )
+            )
+        );
+
+    return snap.docs.some(d => {
+
+        const x = d.data();
+
+        return (
+            x.lessonId === lessonId &&
+            x.type === 'pre'
+        );
+
+    });
+
+}
+
+
+
+/* =========================================================
+   فتح Google Meet
+========================================================= */
+
+async function openMeet(lesson, uid) {
+
+    const meetUrl =
+        lesson.meetUrl ||
+        lesson.meetLink ||
+        lesson.googleMeetUrl ||
+        lesson.googleMeet;
+
+
+    if (!meetUrl) {
+
+        alert(
+            'رابط Google Meet غير موجود لهذه المحاضرة.'
+        );
+
+        return;
+
+    }
+
+
+    /*
+       مهم:
+       نفتح النافذة مباشرة من ضغطة المستخدم،
+       لأن window.open بعد await قد يتم منعه بواسطة المتصفح.
+    */
+
+    const meetWindow =
+        window.open(
+            'about:blank',
+            '_blank'
+        );
+
+
+    try {
+
+        const preQuiz =
+            Array.isArray(lesson.preQuiz)
+                ? lesson.preQuiz
+                : [];
+
+
+        const passed =
+            preQuiz.length
+                ? await hasPassedQuiz(
+                    uid,
+                    lesson.id
+                )
+                : true;
+
+
+        if (!passed) {
+
+            if (
+                meetWindow &&
+                !meetWindow.closed
+            ) {
+
+                meetWindow.close();
+
+            }
+
+            alert(
+                'يجب حل اختبار الاستعداد قبل دخول المحاضرة.'
+            );
+
+            openQuiz(
+                lesson,
+                uid
+            );
+
+            return;
+
+        }
+
+
+        /*
+           تسجيل دخول الطالب إلى Meet
+        */
+
+        try {
+
+            await addDoc(
+                collection(
+                    db,
+                    'lessonAttendance'
+                ),
+                {
+                    lessonId:
+                        lesson.id,
+
+                    studentUid:
+                        uid,
+
+                    lessonTitle:
+                        lesson.title ||
+                        lesson.name ||
+                        '',
+
+                    action:
+                        'meet_open',
+
+                    openedAt:
+                        serverTimestamp()
+                }
+            );
+
+        } catch (attendanceError) {
+
+            /*
+               تسجيل الحضور ليس شرطًا لفتح Meet.
+            */
+
+            console.warn(
+                'تعذر تسجيل الحضور:',
+                attendanceError
+            );
+
+        }
+
+
+        /*
+           فتح الرابط
+        */
+
+        if (
+            meetWindow &&
+            !meetWindow.closed
+        ) {
+
+            meetWindow.location.href =
+                meetUrl;
+
+        } else {
+
+            window.location.href =
+                meetUrl;
+
+        }
+
+
+    } catch (e) {
+
+        console.error(e);
+
+
+        if (
+            meetWindow &&
+            !meetWindow.closed
+        ) {
+
+            meetWindow.location.href =
+                meetUrl;
+
+        } else {
+
+            window.location.href =
+                meetUrl;
+
+        }
+
+    }
+
+}
+
+
+
+/* =========================================================
+   فتح الاختبار
+========================================================= */
+
+function openQuiz(lesson, uid) {
+
+    currentLesson = lesson;
+
+    currentStudentUid = uid;
+
+    currentQuiz =
+        Array.isArray(lesson.preQuiz)
+            ? lesson.preQuiz
+            : [];
+
+
+    quizTitle.textContent =
+        '📝 اختبار الاستعداد — ' +
+        (
+            lesson.title ||
+            lesson.name ||
+            'المحاضرة'
+        );
+
+
+    quizHint.textContent =
+        `عدد الأسئلة: ${currentQuiz.length}. يجب إرسال الإجابات قبل دخول Google Meet.`;
+
+
+    quizResult.style.display =
+        'none';
+
+    quizResult.textContent =
+        '';
+
+
+    quizForm.innerHTML =
+        currentQuiz.map(
+            (q, i) => `
+
+                <div class="quiz-question">
+
+                    <strong>
+                        ${i + 1}.
+                        ${esc(q.text || q.question || '')}
+                    </strong>
+
+                    ${
+                        (
+                            Array.isArray(q.options)
+                                ? q.options
+                                : []
+                        )
+                        .map(
+                            (op, j) => `
+
+                                <label class="quiz-option">
+
+                                    <input
+                                        type="radio"
+                                        name="q${i}"
+                                        value="${j}"
+                                        required
+                                    >
+
+                                    ${esc(op)}
+
+                                </label>
+
+                            `
+                        )
+                        .join('')
+                    }
+
+                </div>
+
+            `
+        ).join('');
+
+
+    quizOverlay.classList.add('show');
+
+}
+
+
+
+/* =========================================================
+   إغلاق الاختبار
+========================================================= */
+
+document
+    .getElementById('closeQuiz')
+    ?.addEventListener(
+        'click',
+        () => {
+
+            quizOverlay.classList.remove(
+                'show'
+            );
+
+        }
+    );
+
+
+quizOverlay?.addEventListener(
+    'click',
+    e => {
+
+        if (
+            e.target === quizOverlay
+        ) {
+
+            quizOverlay.classList.remove(
+                'show'
+            );
+
+        }
+
+    }
+);
+
+
+
+/* =========================================================
+   إرسال الاختبار
+========================================================= */
+
+quizForm?.addEventListener(
+    'submit',
+    async e => {
+
+        e.preventDefault();
+
+
+        if (
+            !currentLesson ||
+            !currentQuiz.length
+        ) {
+
+            return;
+
+        }
+
+
+        const formData =
+            new FormData(quizForm);
+
+
+        const answers =
+            currentQuiz.map(
+                (q, i) =>
+                    Number(
+                        formData.get(`q${i}`)
+                    )
+            );
+
+
+        const correct =
+            answers.reduce(
+                (n, a, i) => {
+
+                    return (
+                        n +
+                        (
+                            a ===
+                            Number(
+                                currentQuiz[i].answer
+                            )
+                                ? 1
+                                : 0
+                        )
+                    );
+
+                },
+                0
+            );
+
+
+        const score =
+            Math.round(
+                (
+                    correct /
+                    currentQuiz.length
+                ) * 100
+            );
+
+
+        const btn =
+            document.getElementById(
+                'submitQuiz'
+            );
+
+
+        btn.disabled = true;
+
+
+        try {
+
+            await addDoc(
+                collection(
+                    db,
+                    'quizAttempts'
+                ),
+                {
+
+                    studentUid:
+                        currentStudentUid,
+
+                    lessonId:
+                        currentLesson.id,
+
+                    type:
+                        'pre',
+
+                    answers:
+                        answers,
+
+                    correct:
+                        correct,
+
+                    total:
+                        currentQuiz.length,
+
+                    score:
+                        score,
+
+                    createdAt:
+                        serverTimestamp()
+
+                }
+            );
+
+
+            quizResult.style.display =
+                'block';
+
+
+            quizResult.textContent =
+                `تم تسجيل الاختبار: ${correct} من ${currentQuiz.length} (${score}%). يمكنك الآن دخول Google Meet.`;
+
+
+            const meetBtn =
+                document.createElement(
+                    'button'
+                );
+
+
+            meetBtn.type =
+                'button';
+
+            meetBtn.className =
+                'btn gold';
+
+            meetBtn.textContent =
+                '🎥 دخول Google Meet';
+
+
+            meetBtn.addEventListener(
+                'click',
+                () =>
+                    openMeet(
+                        currentLesson,
+                        currentStudentUid
+                    )
+            );
+
+
+            quizResult.appendChild(
+                document.createElement('br')
+            );
+
+
+            quizResult.appendChild(
+                meetBtn
+            );
+
+
+        } catch (err) {
+
+            console.error(err);
+
+            alert(
+                'تعذر حفظ نتيجة الاختبار: ' +
+                (
+                    err.code ||
+                    err.message
+                )
+            );
+
+        } finally {
+
+            btn.disabled = false;
+
+        }
+
+    }
+);
+
+
+
+/* =========================================================
+   تحميل المحاضرات
+========================================================= */
+
+async function loadLiveLessons(
+    uid,
+    grade
+) {
+
+    if (!liveLessonsList) return;
+
+
+    liveLessonsList.innerHTML =
+        '<div class="card"><p>جارٍ تحميل المحاضرات…</p></div>';
+
+
+    try {
+
+        const snap =
+            await getDocs(
+                collection(
+                    db,
+                    'lessons'
+                )
+            );
+
+
+        const lessons = [];
+
+
+        snap.forEach(d => {
+
+            const x = {
+                id: d.id,
+                ...d.data()
+            };
+
+
+            /*
+               لو المحاضرة محددة لصف معين،
+               نظهرها لهذا الصف فقط.
+            */
+
+            const targeted = x.audience === 'selected'
+                ? Array.isArray(x.targetUids) && x.targetUids.includes(uid)
+                : true;
+
+            if (
+                targeted &&
+                (!x.grade || !grade || String(x.grade).trim() === String(grade).trim())
+            ) {
+                lessons.push(x);
+            }
+
+        });
+
+
+        lessons.sort(
+            (a, b) =>
+                String(a.date || '')
+                    .localeCompare(
+                        String(b.date || '')
+                    )
+        );
+
+
+        if (!lessons.length) {
+
+            liveLessonsList.innerHTML =
+                '<div class="card"><p>لا توجد محاضرات مباشرة متاحة لصفك حاليًا.</p></div>';
+
+            return;
+
+        }
+
+
+        liveLessonsList.innerHTML = '';
+
+
+        for (
+            const lesson of lessons
+        ) {
+
+            const hasQuiz =
+                Array.isArray(
+                    lesson.preQuiz
+                ) &&
+                lesson.preQuiz.length > 0;
+
+
+            let passed = false;
+
+
+            if (hasQuiz) {
+
+                try {
+
+                    passed =
+                        await hasPassedQuiz(
+                            uid,
+                            lesson.id
+                        );
+
+                } catch (e) {
+
+                    console.warn(
+                        'تعذر قراءة نتيجة الاختبار:',
+                        e
+                    );
+
+                }
+
+            }
+
+
+            const card =
+                document.createElement(
+                    'article'
+                );
+
+
+            card.className =
+                'card live-lesson';
+
+
+            const title =
+                lesson.title ||
+                lesson.name ||
+                'محاضرة مباشرة';
+
+
+            const subject =
+                lesson.subject ||
+                lesson.section ||
+                '';
+
+
+            const teacher =
+                lesson.teacherName ||
+                lesson.teacher ||
+                '';
+
+
+            const meetUrl =
+                lesson.meetUrl ||
+                lesson.meetLink ||
+                lesson.googleMeetUrl ||
+                lesson.googleMeet ||
+                '';
+
+
+            card.innerHTML = `
+
+                <h3>
+                    🎥 ${esc(title)}
+                </h3>
+
+
+                <div class="lesson-meta">
+
+                    <span>
+                        📚 ${esc(subject)}
+                    </span>
+
+                    <span>
+                        👨‍🏫 ${esc(teacher)}
+                    </span>
+
+                    <span>
+                        📅 ${lessonDate(lesson.date)}
+                    </span>
+
+                </div>
+
+
+                <p>
+
+                    ${
+                        hasQuiz
+                            ? (
+                                passed
+                                    ? '✅ تم حل اختبار الاستعداد.'
+                                    : '📝 يوجد اختبار استعداد قبل المحاضرة.'
+                            )
+                            : 'لا يوجد اختبار استعداد لهذه المحاضرة.'
+                    }
+
+                </p>
+
+
+                <div class="lesson-actions">
+
+                    ${
+                        hasQuiz && !passed
+                            ? `
+                                <button
+                                    class="btn gold quiz-btn"
+                                    type="button"
+                                >
+                                    📝 حل اختبار الاستعداد
+                                </button>
+                              `
+                            : ''
+                    }
+
+
+                    <button
+                        class="btn meet-btn"
+                        type="button"
+                        ${
+                            !meetUrl
+                                ? 'disabled'
+                                : ''
+                        }
+                    >
+
+                        🎥
+                        ${
+                            passed || !hasQuiz
+                                ? 'دخول Google Meet'
+                                : 'حل الاختبار أولًا'
+                        }
+
+                    </button>
+
+                </div>
+
+            `;
+
+
+            const quizBtn =
+                card.querySelector(
+                    '.quiz-btn'
+                );
+
+
+            quizBtn?.addEventListener(
+                'click',
+                () =>
+                    openQuiz(
+                        lesson,
+                        uid
+                    )
+            );
+
+
+            const meetBtn =
+                card.querySelector(
+                    '.meet-btn'
+                );
+
+
+            meetBtn?.addEventListener(
+                'click',
+                () =>
+                    openMeet(
+                        lesson,
+                        uid
+                    )
+            );
+
+
+            liveLessonsList.appendChild(
+                card
+            );
+
+        }
+
+
+    } catch (e) {
+
+        console.error(e);
+
+
+        liveLessonsList.innerHTML =
+            `
+            <div class="card">
+
+                <p>
+                    تعذر تحميل المحاضرات:
+                    ${esc(e.code || e.message)}
+                </p>
+
+            </div>
+            `;
+
+    }
+
+}
+
+
+
+/* =========================================================
+   تحديث المحاضرات
+========================================================= */
+
+document
+    .getElementById(
+        'refreshLiveLessons'
+    )
+    ?.addEventListener(
+        'click',
+        () => {
+
+            if (currentStudentUid) {
+
+                loadLiveLessons(
+                    currentStudentUid,
+                    window.currentStudentGrade || ''
+                );
+
+            }
+
+        }
+    );
+
+
+
+/* =========================================================
+   تسجيل الدخول
+========================================================= */
+
+onAuthStateChanged(
+    auth,
+    async user => {
+
+        const loadingElem =
+            document.getElementById(
+                'loading'
+            );
+
+
+        const nameElem =
+            document.querySelector(
+                '[data-name]'
+            );
+
+
+        const emailElem =
+            document.querySelector(
+                '[data-email]'
+            );
+
+
+        if (!user) {
+
+            window.location.href =
+                '../../login/index.html';
+
+            return;
+
+        }
+
+
+        try {
+
+            const snap =
+                await getDoc(
+                    doc(
+                        db,
+                        'users',
+                        user.uid
+                    )
+                );
+
+
+            const profile =
+                snap.exists()
+                    ? snap.data()
+                    : {};
+
+
+            currentStudentUid =
+                user.uid;
+
+
+            window.currentStudentGrade =
+                profile.grade || '';
+
+
+            if (
+                snap.exists() &&
+                snap.data().fullName
+            ) {
+
+                if (nameElem) {
+
+                    nameElem.textContent =
+                        snap.data().fullName;
+
+                }
+
+            } else {
+
+                if (nameElem) {
+
+                    nameElem.textContent =
+                        user.displayName ||
+                        (
+                            user.email
+                                ? user.email.split('@')[0]
+                                : 'الطالب'
+                        );
+
+                }
+
+            }
+
+
+            if (emailElem) {
+
+                emailElem.textContent =
+                    user.email || '';
+
+            }
+
+
+            await loadMyBookings(
+                user.uid
+            );
+
+
+            await loadLiveLessons(
+                user.uid,
+                window.currentStudentGrade || ''
+            );
+
+
+        } catch (err) {
+
+            console.error(
+                'خطأ:',
+                err
+            );
+
+        } finally {
+
+            if (loadingElem) {
+
+                loadingElem.style.display =
+                    'none';
+
+            }
+
+        }
+
+    }
+);
+
+
+
+/* =========================================================
+   إحصائيات المكتبة
+========================================================= */
+
+function updateLocalStats() {
+
+    const read =
+        JSON.parse(
+            localStorage.getItem(
+                'zadReadBooks'
+            ) || '[]'
+        );
+
+
+    const fav =
+        JSON.parse(
+            localStorage.getItem(
+                'zadFavorites'
+            ) || '[]'
+        );
+
+
+    const recent =
+        JSON.parse(
+            localStorage.getItem(
+                'zadRecentBooks'
+            ) || '[]'
+        );
+
+
+    const readCount =
+        document.getElementById(
+            'readCount'
+        );
+
+
+    const favCount =
+        document.getElementById(
+            'favCount'
+        );
+
+
+    const recentCount =
+        document.getElementById(
+            'recentCount'
+        );
+
+
+    if (readCount)
+        readCount.textContent =
+            read.length;
+
+
+    if (favCount)
+        favCount.textContent =
+            fav.length;
+
+
+    if (recentCount)
+        recentCount.textContent =
+            recent.length;
+
+}
+
+
 updateLocalStats();
 
-// حذف الحساب نهائيًا
-document.getElementById('deleteAccount').addEventListener('click', async () => {
-    const user = auth.currentUser;
-    if (!user) return;
 
-    const confirmed = confirm('هل أنت متأكد من حذف حسابك نهائيًا؟ سيتم حذف بيانات حسابك ولا يمكن التراجع عن ذلك.');
-    if (!confirmed) return;
 
-    const typed = prompt('للتأكيد، اكتب: حذف الحساب');
-    if (typed !== 'حذف الحساب') {
-        alert('لم يتم حذف الحساب.');
-        return;
-    }
+/* =========================================================
+   حذف الحساب
+========================================================= */
 
-    const button = document.getElementById('deleteAccount');
-    button.disabled = true;
-    button.textContent = 'جارٍ الحذف...';
+document
+    .getElementById(
+        'deleteAccount'
+    )
+    ?.addEventListener(
+        'click',
+        async () => {
 
-    try {
-        await deleteDoc(doc(db, 'users', user.uid));
-        await deleteUser(user);
-        alert('تم حذف حسابك بنجاح.');
-        window.location.href = '../../login/index.html';
-    } catch (error) {
-        console.error('خطأ أثناء حذف الحساب:', error);
-        button.disabled = false;
-        button.textContent = 'حذف الحساب';
+            const user =
+                auth.currentUser;
 
-        if (error.code === 'auth/requires-recent-login') {
-            alert('لأمان حسابك، سجّل الخروج ثم سجّل الدخول مرة أخرى، وبعدها حاول حذف الحساب.');
-        } else {
-            alert('تعذر حذف الحساب. رمز الخطأ: ' + (error.code || error.message));
+
+            if (!user) return;
+
+
+            const confirmed =
+                confirm(
+                    'هل أنت متأكد من حذف حسابك نهائيًا؟ سيتم حذف بيانات حسابك ولا يمكن التراجع عن ذلك.'
+                );
+
+
+            if (!confirmed) return;
+
+
+            const typed =
+                prompt(
+                    'للتأكيد، اكتب: حذف الحساب'
+                );
+
+
+            if (
+                typed !==
+                'حذف الحساب'
+            ) {
+
+                alert(
+                    'لم يتم حذف الحساب.'
+                );
+
+                return;
+
+            }
+
+
+            const button =
+                document.getElementById(
+                    'deleteAccount'
+                );
+
+
+            button.disabled = true;
+
+            button.textContent =
+                'جارٍ الحذف...';
+
+
+            try {
+
+                await deleteDoc(
+                    doc(
+                        db,
+                        'users',
+                        user.uid
+                    )
+                );
+
+
+                await deleteUser(
+                    user
+                );
+
+
+                alert(
+                    'تم حذف حسابك بنجاح.'
+                );
+
+
+                window.location.href =
+                    '../../login/index.html';
+
+
+            } catch (error) {
+
+                console.error(
+                    'خطأ أثناء حذف الحساب:',
+                    error
+                );
+
+
+                button.disabled =
+                    false;
+
+
+                button.textContent =
+                    'حذف الحساب';
+
+
+                if (
+                    error.code ===
+                    'auth/requires-recent-login'
+                ) {
+
+                    alert(
+                        'لأمان حسابك، سجّل الخروج ثم سجّل الدخول مرة أخرى، وبعدها حاول حذف الحساب.'
+                    );
+
+                } else {
+
+                    alert(
+                        'تعذر حذف الحساب. رمز الخطأ: ' +
+                        (
+                            error.code ||
+                            error.message
+                        )
+                    );
+
+                }
+
+            }
+
         }
-    }
-});
+    );
 
-// زر تسجيل الخروج
-document.getElementById('logout').addEventListener('click', async () => {
-    await signOut(auth);
-    window.location.href = '../../index.html';
-});
+
+
+/* =========================================================
+   تسجيل الخروج
+========================================================= */
+
+document
+    .getElementById(
+        'logout'
+    )
+    ?.addEventListener(
+        'click',
+        async () => {
+
+            await signOut(auth);
+
+            window.location.href =
+                '../../index.html';
+
+        }
+    );
+
 </script>
-<script type="module" src="../../notifications.js"></script>
+
+
+<script
+    type="module"
+    src="../../notifications.js"
+></script>
 
 </body>
 </html>
