@@ -1,87 +1,6 @@
 <!doctype html>
 <html lang="ar" dir="rtl">
-
 <head>
-
-  <!-- ═══════════ Open Graph - WhatsApp / Facebook / Messenger ═══════════ -->
-  <meta property="og:title" content="زاد المعرفة — منصة تعليمية إسلامية">
-
-  <meta
-    property="og:description"
-    content="منصة تعليمية إسلامية تجمع القرآن الكريم والعلوم الشرعية واللغة العربية."
-  >
-
-  <meta
-    property="og:image"
-    content="https://zadalmrfh-create.github.io/zad-almaarefa/images/logo.png"
-  >
-
-  <meta
-    property="og:image:secure_url"
-    content="https://zadalmrfh-create.github.io/zad-almaarefa/images/logo.png"
-  >
-
-  <meta
-    property="og:image:type"
-    content="image/png"
-  >
-
-  <meta
-    property="og:image:width"
-    content="1200"
-  >
-
-  <meta
-    property="og:image:height"
-    content="630"
-  >
-
-  <meta
-    property="og:url"
-    content="https://zadalmrfh-create.github.io/zad-almaarefa/"
-  >
-
-  <meta
-    property="og:type"
-    content="website"
-  >
-
-  <meta
-    property="og:site_name"
-    content="زاد المعرفة"
-  >
-
-  <meta
-    property="og:locale"
-    content="ar_AR"
-  >
-
-  <!-- ═══════════ Twitter / X Preview ═══════════ -->
-  <meta
-    name="twitter:card"
-    content="summary_large_image"
-  >
-
-  <meta
-    name="twitter:title"
-    content="زاد المعرفة — منصة تعليمية إسلامية"
-  >
-
-  <meta
-    name="twitter:description"
-    content="منصة تعليمية إسلامية تجمع القرآن الكريم والعلوم الشرعية واللغة العربية."
-  >
-
-  <meta
-    name="twitter:image"
-    content="https://zadalmrfh-create.github.io/zad-almaarefa/images/logo.png"
-  >
-
-  <meta
-    name="twitter:image:alt"
-    content="شعار منصة زاد المعرفة"
-  >
-
   <meta charset="UTF-8" />
 
   <meta
@@ -131,7 +50,7 @@
     rel="stylesheet"
   />
 
-  <!-- Font Awesome -->
+  <!-- Font Awesome 6.7.2 -->
   <link
     rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
@@ -140,21 +59,17 @@
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <link rel="stylesheet" href="assets/translation.css">
-  <script src="assets/translation.js"></script>
-  <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
-
+<link rel="stylesheet" href="assets/translation.css">
+<script src="assets/translation.js"></script>
+<script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 </head>
-
-<body>
+  <body>
 
 <!-- ═══════════ NAVBAR ═══════════ -->
 <nav id="navbar">
-
   <div class="nav-inner">
 
     <a href="#" class="logo">
-
       <div
         class="w-12 h-12 rounded-full overflow-hidden border-2 border-yellow-500 shadow-lg shadow-yellow-500/25"
       >
@@ -168,8 +83,8 @@
       <span class="logo-text">
         زاد <span>المعرفة</span>
       </span>
-
     </a>
+
 
     <div class="nav-links">
 
@@ -231,6 +146,7 @@
 
     </div>
 
+
     <!-- تسجيل الدخول -->
     <a
       href="./login/index.html"
@@ -240,6 +156,7 @@
       تسجيل الدخول
     </a>
 
+
     <!-- ابدأ التعلم -->
     <button
       class="btn-nav"
@@ -248,31 +165,22 @@
       ابدأ التعلم
     </button>
 
+
     <!-- الوضع الليلي -->
-    <label
-      class="theme-toggle"
-      aria-label="تغيير الوضع"
-    >
+<label class="theme-toggle" aria-label="تغيير الوضع">
+  <input type="checkbox" id="themeToggle">
 
-      <input
-        type="checkbox"
-        id="themeToggle"
-      >
+  <span class="toggle-track">
+    <span class="toggle-sky">
+      <span class="cloud cloud-one"></span>
+      <span class="cloud cloud-two"></span>
+      <span class="stars">✦ ✧</span>
+    </span>
 
-      <span class="toggle-track">
-
-        <span class="toggle-sky">
-          <span class="cloud cloud-one"></span>
-          <span class="cloud cloud-two"></span>
-          <span class="stars">✦ ✧</span>
-        </span>
-
-        <span class="toggle-sun">☀</span>
-        <span class="toggle-moon">☾</span>
-
-      </span>
-
-    </label>
+    <span class="toggle-sun">☀</span>
+    <span class="toggle-moon">☾</span>
+  </span>
+</label>
 
     <!-- قائمة الهاتف -->
     <button
@@ -298,16 +206,12 @@
     </button>
 
   </div>
-
 </nav>
 
 <!-- ═══════════ MOBILE OVERLAY ═══════════ -->
 <div id="mobile-overlay">
 
-  <button
-    class="mob-close"
-    onclick="closeMob()"
-  >
+  <button class="mob-close" onclick="closeMob()">
     <svg
       width="18"
       height="18"
@@ -324,19 +228,11 @@
     </svg>
   </button>
 
-  <a
-    href="#hero"
-    class="mob-btn"
-    onclick="closeMob()"
-  >
+  <a href="#hero" class="mob-btn" onclick="closeMob()">
     الرئيسية
   </a>
 
-  <a
-    href="#categories"
-    class="mob-btn"
-    onclick="closeMob()"
-  >
+  <a href="#categories" class="mob-btn" onclick="closeMob()">
     الأقسام
   </a>
 
@@ -405,113 +301,50 @@
 
 </div>
 
-<!-- ═══════════ HERO ═══════════ -->
-<section id="hero">
-
-  <div class="hero-overlay"></div>
-
-  <div class="hero-container">
-
-    <div class="hero-text">
-
-      <span class="hero-badge">
-        منصتك التعليمية الشاملة
-      </span>
-
-      <h1 class="hero-title">
-        زاد المعرفة
-      </h1>
-
-      <p class="hero-desc">
-        منصة تعليمية إسلامية شاملة تجمع بين العلوم الشرعية والقرآن الكريم
-        واللغة العربية، لتكون رفيقك في رحلة طلب العلم
-      </p>
-
-      <div class="hero-actions">
-
-        <a
-          class="btn-primary"
-          href="sections/booking/index.html"
-        >
-          احجز حصتك
-        </a>
-
-        <a
-          class="btn-nav"
-          href="login/index.html"
-        >
-          ابدأ الآن
-        </a>
-
-      </div>
-
-      <div class="hero-stats">
-
-        <div>
-          <span
-            class="num"
-            style="display: none"
-          >
-            20+
-          </span>
-
-          <span
-            class="label"
-            style="display: none"
-          >
-            دورة
-          </span>
+    <!-- ═══════════ HERO ═══════════ -->
+    <section id="hero">
+      <div class="hero-overlay"></div>
+      <div class="hero-container">
+        <div class="hero-text">
+          <span class="hero-badge">منصتك التعليمية الشاملة</span>
+          <h1 class="hero-title">زاد المعرفة</h1>
+          <p class="hero-desc">
+            منصة تعليمية إسلامية شاملة تجمع بين العلوم الشرعية والقرآن الكريم
+            واللغة العربية، لتكون رفيقك في رحلة طلب العلم
+          </p>
+          <div class="hero-actions">
+            <a class="btn-primary" href="sections/booking/index.html">
+              احجز حصتك
+            </a>
+            <a class="btn-nav" href="login/index.html">
+              ابدأ الآن
+            </a>
+          </div>
+          <div class="hero-stats">
+            <div>
+              <span class="num" style="display: none">20+</span>
+              <span class="label" style="display: none">دورة</span>
+            </div>
+            <div>
+              <span class="num" style="display: none">6+</span>
+              <span class="label" style="display: none">أقسام</span>
+            </div>
+          </div>
         </div>
-
-        <div>
-          <span
-            class="num"
-            style="display: none"
-          >
-            6+
-          </span>
-
-          <span
-            class="label"
-            style="display: none"
-          >
-            أقسام
-          </span>
+        <div class="hero-image">
+          <img src="images/hero-student.webp" alt="" />
         </div>
-
       </div>
-
-    </div>
-
-    <div class="hero-image">
-
-      <img
-        src="images/hero-student.webp"
-        alt=""
-      />
-
-    </div>
-
-  </div>
-
-</section>
+    </section>
 
 <!-- Mission Section -->
-<section
-  id="mission"
-  class="py-20 relative"
->
-
+<section id="mission" class="py-20 relative">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
     <div class="grid lg:grid-cols-2 gap-16 items-center">
 
       <!-- الصورة -->
       <div class="relative reveal">
-
-        <div
-          class="absolute inset-0 bg-brand-600 rounded-3xl transform rotate-3 opacity-10"
-        ></div>
+        <div class="absolute inset-0 bg-brand-600 rounded-3xl transform rotate-3 opacity-10"></div>
 
         <img
           src="https://picsum.photos/seed/reading/600/700.jpg"
@@ -519,34 +352,25 @@
           class="relative rounded-3xl shadow-xl w-full h-full object-cover"
         />
 
-        <div
-          class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent rounded-3xl flex items-end p-8"
-        >
+        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent rounded-3xl flex items-end p-8">
           <p class="text-white text-xl font-bold">
             "نعمل على غرس القيم والأخلاق إلى جانب التنمية المعرفية"
           </p>
         </div>
-
       </div>
 
       <!-- المحتوى -->
       <div class="reveal delay-200 mission-content">
 
-        <h2 class="text-3xl lg:text-4xl font-bold mission-title mb-6">
-          <span class="text-brand-600">
-            رسالتنا
-          </span>
-          وقيمنا
+<h2 class="text-3xl lg:text-4xl font-bold mission-title mb-6">
+            <span class="text-brand-600">رسالتنا</span> وقيمنا
         </h2>
 
         <div class="w-20 h-1.5 bg-accent-500 rounded-full mb-8"></div>
 
-        <div class="space-y-6 mission-text text-lg leading-loose text-justify">
-
-          <p>
-            تسعى منصة
-            <strong>زاد المعرفة</strong>
-            إلى تقديم محتوى تعليمي
+<div class="space-y-6 mission-text text-lg leading-loose text-justify">
+            <p>
+            تسعى منصة <strong>زاد المعرفة</strong> إلى تقديم محتوى تعليمي
             متميز يجمع بين الجودة والسهولة، بهدف دعم الطلاب في رحلتهم
             التعليمية وتمكينهم من تحقيق التفوق والنجاح.
           </p>
@@ -565,845 +389,265 @@
             الطلاب وأولياء الأمور ومساعدتهم على مواجهة التحديات التعليمية
             والتربوية المختلفة.
           </p>
-
         </div>
 
         <div class="mt-10 grid grid-cols-2 gap-6">
 
           <div class="flex items-start gap-3">
             <i class="fa-solid fa-check-circle text-green-500 text-xl mt-1"></i>
-            <span class="font-semibold mission-item">
-              جودة تعليمية
-            </span>
+            <span class="font-semibold mission-item">جودة تعليمية</span>
           </div>
 
           <div class="flex items-start gap-3">
             <i class="fa-solid fa-check-circle text-green-500 text-xl mt-1"></i>
-            <span class="font-semibold mission-item">
-              دعم مستمر
-            </span>
+           <span class="font-semibold mission-item">دعم مستمر</span>
           </div>
 
           <div class="flex items-start gap-3">
             <i class="fa-solid fa-check-circle text-green-500 text-xl mt-1"></i>
-            <span class="font-semibold mission-item">
-              تقنيات حديثة
-            </span>
+            <span class="font-semibold mission-item">تقنيات حديثة</span>
           </div>
 
           <div class="flex items-start gap-3">
             <i class="fa-solid fa-check-circle text-green-500 text-xl mt-1"></i>
-            <span class="font-semibold mission-item">
-              بناء القيم
-            </span>
+            <span class="font-semibold mission-item">بناء القيم</span>
           </div>
 
         </div>
 
       </div>
-
     </div>
-
   </div>
-
 </section>
 
-<!-- ═══════════ CATEGORIES ═══════════ -->
-<section id="categories">
-
-  <div class="cats-inner">
-
-    <div class="cats-header sr">
-
-      <div class="section-label">
-        استكشف عالم المعرفة
+    <!-- ═══════════ CATEGORIES ═══════════ -->
+    <section id="categories">
+      <div class="cats-inner">
+        <div class="cats-header sr">
+          <div class="section-label">استكشف عالم المعرفة</div>
+          <h2 class="section-title">اقسام المنصة</h2>
+          <p class="section-sub">
+            اختر من بين مجالات العلم الإسلامي والمعرفي المنظّمة بعناية
+          </p>
+        </div>
+        <div class="cats-grid" id="cats-grid"></div>
       </div>
+    </section>
 
-      <h2 class="section-title">
-        اقسام المنصة
-      </h2>
-
-      <p class="section-sub">
-        اختر من بين مجالات العلم الإسلامي والمعرفي المنظّمة بعناية
-      </p>
-
-    </div>
-
-    <div
-      class="cats-grid"
-      id="cats-grid"
-    ></div>
-
-  </div>
-
-</section>
-
-<!-- ═══════════ ABOUT ═══════════ -->
-<section id="about">
-
-  <div class="about-inner">
-
-    <div class="sr">
-
-      <div class="section-label">
-        عن المنصة
-      </div>
-
-      <h2 class="section-title">
-
-        تعلّم بطريقة<br />
-
-        <span style="color: var(--gold)">
-          منظّمة وممتعة
-        </span>
-
-      </h2>
-
-      <p class="section-sub">
-        زاد المعرفة منصة تعليمية تسعى إلى تقديم العلوم الإسلامية والمعرفية
-        بأسلوب عصري وميسّر، مع الحفاظ على الأصالة والدقة.
-      </p>
-
-      <div class="about-features">
-
-        <div class="afeature">
-
-          <div class="afeature-icon">
-            ✅
-          </div>
-
-          <div class="m1">
-
-            <div class="afeature-title">
-              محتوى موثوق ومدقق
-            </div>
-
-            <div class="afeature-desc">
-              كل مقالة مراجعة من متخصصين في الشريعة الإسلامية قبل النشر
-            </div>
-
-          </div>
-
-        </div>
-
-        <div class="afeature">
-
-          <div class="afeature-icon">
-            📚
-          </div>
-
-          <div class="m1">
-
-            <div class="afeature-title">
-              منهج تعليمي منظّم
-            </div>
-
-            <div class="afeature-desc">
-              تسلسل منطقي من المبادئ الأساسية إلى المسائل المتقدمة
-            </div>
-
-          </div>
-
-        </div>
-
-        <div class="afeature">
-
-          <div class="afeature-icon">
-            📱
-          </div>
-
-          <div class="m1">
-
-            <div class="afeature-title">
-              متاح على جميع الأجهزة
-            </div>
-
-            <div class="afeature-desc">
-              تجربة سلسة ومتكاملة على الجوال والحاسوب واللوحي
-            </div>
-
-          </div>
-
-        </div>
-
-      </div>
-
-    </div>
-
-    <div
-      class="about-visual sr sr-delay-2"
-      style="position: relative"
-    >
-
-      <div class="dash-mockup">
-
-        <div class="dash-bar">
-
-          <div
-            class="dash-dot"
-            style="background: #ff5f57"
-          ></div>
-
-          <div
-            class="dash-dot"
-            style="background: #febc2e"
-          ></div>
-
-          <div
-            class="dash-dot"
-            style="background: #28c840"
-          ></div>
-
-        </div>
-
-        <div class="dash-body">
-
-          <div class="dash-grid">
-
-            <div class="dash-widget">
-
-              <div class="dw-label">
-                الدروس المتاحة
-              </div>
-
-              <div
-                class="dw-val"
-                id="availableBooksCount"
-              >
-                —
-              </div>
-
-            </div>
-
-            <div class="dash-widget">
-
-              <div class="dw-label">
-                التصنيفات
-              </div>
-
-              <div
-                class="dw-val"
-                id="categoriesCount"
-              >
-                —
-              </div>
-
-            </div>
-
-          </div>
-
-          <div class="dash-bar2">
-
-            <div
-              class="dbar-label"
-              style="
-                margin-bottom: 16px;
-                font-family: &quot;Cairo&quot;, sans-serif;
-                font-weight: 800;
-                color: var(--text);
-                font-size: 0.85rem;
-              "
+    <!-- ═══════════ ABOUT ═══════════ -->
+    <section id="about">
+      <div class="about-inner">
+        <div class="sr">
+          <div class="section-label">عن المنصة</div>
+          <h2 class="section-title">
+            تعلّم بطريقة<br /><span style="color: var(--gold)"
+              >منظّمة وممتعة</span
             >
-              تقدّمك هذا الأسبوع
-            </div>
-
-            <div class="dbar-row">
-
-              <span class="dbar-label">
-                الكتب المقروءة
-              </span>
-
-              <span
-                class="dbar-pct"
-                id="readBooksPercent"
-              >
-                ٠٪
-              </span>
-
-            </div>
-
-            <div
-              class="dbar-track"
-              style="margin-bottom: 14px; width: 0%"
-            >
-              <div
-                class="dbar-fill"
-                id="readBooksBar"
-                data-w="0%"
-              ></div>
-            </div>
-
-            <div class="dbar-row">
-
-              <span class="dbar-label">
-                المفضلة
-              </span>
-
-              <span
-                class="dbar-pct"
-                id="favoriteBooksPercent"
-              >
-                ٠٪
-              </span>
-
-            </div>
-
-            <div
-              class="dbar-track"
-              style="margin-bottom: 14px; width: 0%"
-            >
-              <div
-                class="dbar-fill"
-                id="favoriteBooksBar"
-                data-w="0%"
-              ></div>
-            </div>
-
-            <div class="dbar-row">
-
-              <span class="dbar-label">
-                النشاط الأخير
-              </span>
-
-              <span
-                class="dbar-pct"
-                id="recentActivityPercent"
-              >
-                ٠٪
-              </span>
-
-            </div>
-
-            <div
-              class="dbar-track"
-              style="width: 0%"
-            >
-              <div
-                class="dbar-fill"
-                id="recentActivityBar"
-                data-w="0%"
-              ></div>
-            </div>
-
-          </div>
-
-          <div class="dash-list">
-
-            <div
-              style="
-                font-family: &quot;Cairo&quot;, sans-serif;
-                font-weight: 800;
-                color: var(--text);
-                font-size: 0.85rem;
-                margin-bottom: 12px;
-              "
-            >
-              آخر الدروس
-            </div>
-
-            <div id="recentLessonsList">
-
-              <div class="dl-row">
-
-                <div class="dl-icon">
-                  📚
+          </h2>
+          <p class="section-sub">
+            زاد المعرفة منصة تعليمية تسعى إلى تقديم العلوم الإسلامية والمعرفية
+            بأسلوب عصري وميسّر، مع الحفاظ على الأصالة والدقة.
+          </p>
+          <div class="about-features">
+            <div class="afeature">
+              <div class="afeature-icon">✅</div>
+              <div class="m1">
+                <div class="afeature-title">محتوى موثوق ومدقق</div>
+                <div class="afeature-desc">
+                  كل مقالة مراجعة من متخصصين في الشريعة الإسلامية قبل النشر
                 </div>
-
-                <span class="dl-text">
-                  لا توجد دروس تمت مشاهدتها بعد
-                </span>
-
-                <span class="dl-badge">
-                  —
-                </span>
-
               </div>
-
             </div>
-
+            <div class="afeature">
+              <div class="afeature-icon">📚</div>
+              <div class="m1">
+                <div class="afeature-title">منهج تعليمي منظّم</div>
+                <div class="afeature-desc">
+                  تسلسل منطقي من المبادئ الأساسية إلى المسائل المتقدمة
+                </div>
+              </div>
+            </div>
+            <div class="afeature">
+              <div class="afeature-icon">📱</div>
+              <div class="m1">
+                <div class="afeature-title">متاح على جميع الأجهزة</div>
+                <div class="afeature-desc">
+                  تجربة سلسة ومتكاملة على الجوال والحاسوب واللوحي
+                </div>
+              </div>
+            </div>
           </div>
-
         </div>
-
-      </div>
-
-    </div>
-
-  </div>
-
-</section>
-
-<!-- ═══════════ FOOTER ═══════════ -->
-<footer id="footer">
-
-  <div class="footer-container">
-
-    <div class="footer-brand">
-
-      <div class="logo">
-
-        <div class="logo-img">
-          <img
-            src="images/logo.png"
-            alt="زاد المعرفة"
-            class="logo-img"
-          />
+        <div class="about-visual sr sr-delay-2" style="position: relative">
+          <div class="dash-mockup">
+            <div class="dash-bar">
+              <div class="dash-dot" style="background: #ff5f57"></div>
+              <div class="dash-dot" style="background: #febc2e"></div>
+              <div class="dash-dot" style="background: #28c840"></div>
+            </div>
+            <div class="dash-body">
+              <div class="dash-grid">
+                <div class="dash-widget">
+                  <div class="dw-label">الدروس المتاحة</div>
+                  <div class="dw-val" id="availableBooksCount">—</div>
+                </div>
+                <div class="dash-widget">
+                  <div class="dw-label">التصنيفات</div>
+                  <div class="dw-val" id="categoriesCount">—</div>
+                </div>
+              </div>
+              <div class="dash-bar2">
+                <div
+                  class="dbar-label"
+                  style="
+                    margin-bottom: 16px;
+                    font-family: &quot;Cairo&quot;, sans-serif;
+                    font-weight: 800;
+                    color: var(--text);
+                    font-size: 0.85rem;
+                  "
+                >
+                  تقدّمك هذا الأسبوع
+                </div>
+                <div class="dbar-row">
+                  <span class="dbar-label">الكتب المقروءة</span
+                  ><span class="dbar-pct" id="readBooksPercent">٠٪</span>
+                </div>
+                <div class="dbar-track" style="margin-bottom: 14px; width: 0%">
+                  <div class="dbar-fill" id="readBooksBar" data-w="0%"></div>
+                </div>
+                <div class="dbar-row">
+                  <span class="dbar-label">المفضلة</span
+                  ><span class="dbar-pct" id="favoriteBooksPercent">٠٪</span>
+                </div>
+                <div class="dbar-track" style="margin-bottom: 14px; width: 0%">
+                  <div class="dbar-fill" id="favoriteBooksBar" data-w="0%"></div>
+                </div>
+                <div class="dbar-row">
+                  <span class="dbar-label">النشاط الأخير</span
+                  ><span class="dbar-pct" id="recentActivityPercent">٠٪</span>
+                </div>
+                <div class="dbar-track" style="width: 0%">
+                  <div class="dbar-fill" id="recentActivityBar" data-w="0%"></div>
+                </div>
+              </div>
+              <div class="dash-list">
+                <div
+                  style="
+                    font-family: &quot;Cairo&quot;, sans-serif;
+                    font-weight: 800;
+                    color: var(--text);
+                    font-size: 0.85rem;
+                    margin-bottom: 12px;
+                  "
+                >
+                  آخر الدروس
+                </div>
+                <div id="recentLessonsList">
+                  <div class="dl-row">
+                    <div class="dl-icon">📚</div>
+                    <span class="dl-text">لا توجد دروس تمت مشاهدتها بعد</span>
+                    <span class="dl-badge">—</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-
-        <span class="logo-text">
-          زاد <span>المعرفة</span>
-        </span>
-
       </div>
+    </section>
 
-      <p>
-        منصة تعليمية إسلامية تهدف إلى نشر العلم النافع وتقديم محتوى متميز
-        بأسلوب عصري بسيط.
-      </p>
-
-      <a
-        href="https://wa.me/201515474939"
-        class="whatsapp-btn"
-        target="_blank"
-      >
-        تواصل عبر واتساب
-      </a>
-
-      <p class="social-title">
-        تابعنا على السوشيال ميديا:
-      </p>
-
-      <div class="footer-socials">
-
-        <a
-          href="https://whatsapp.com/channel/0029VbCKfnI4inokhRHc1k41"
-          class="social-icon"
-          target="_blank"
-        >
-          <i class="fab fa-whatsapp"></i>
-        </a>
-
-        <a
-          href="https://www.facebook.com/share/1BM3MS8mjM/"
-          class="social-icon"
-          target="_blank"
-        >
-          <i class="fab fa-facebook-f"></i>
-        </a>
-
-        <a
-          href="https://t.me/zadelmarefh"
-          class="social-icon"
-          target="_blank"
-        >
-          <i class="fab fa-telegram"></i>
-        </a>
-
-        <a
-          href="https://youtube.com/channel/UC5dMzTXCU61UrYrrc9ol8UA"
-          class="social-icon"
-          target="_blank"
-        >
-          <i class="fab fa-youtube"></i>
-        </a>
-
-      </div>
-
-    </div>
-
-    <div class="footer-links-col">
-
-      <h4>
-        روابط
-      </h4>
-
-      <a href="#hero">
-        الرئيسية
-      </a>
-
-      <a href="#categories">
-        الأقسام
-      </a>
-
-      <a
-        href="طاقم التدريس/index.html"
-        target="_self"
-      >
-        طاقم التدريس
-      </a>
-
-      <a
-        href="sections/services/services.html"
-        target="_self"
-      >
-        خدماتنا
-      </a>
-
-      <a
-        href="events/events.html"
-        target="_self"
-      >
-        أحداث المنصة
-      </a>
-
-      <a
-        href="students/students.html"
-        target="_self"
-      >
-        الطلاب المتميزون
-      </a>
-
-    </div>
-
-    <div class="footer-links-col">
-
-      <h4>
-        الأقسام
-      </h4>
-
-      <a href="sections/Azhar/azhar.html">
-        التعليم الأزهري
-      </a>
-
-      <a href="sections/Quran/quran.html">
-        القرآن
-      </a>
-
-      <a href="sections/Arabic/arabic.html">
-        اللغة العربية
-      </a>
-
-      <a href="sections/Sharia/sharia.html">
-        المواد الشرعية
-      </a>
-
-      <a href="sections/Tazkea/tazkea.html">
-        التزكية والتربية
-      </a>
-
-      <a href="sections/services/services.html">
-        الخدمات المصغرة
-      </a>
-
-    </div>
-
-    <div class="footer-contact">
-
-      <h4>
-        تواصل معنا
-      </h4>
-
-      <p>
-        📧 zadalmarfah@gmail.com
-      </p>
-
-      <p>
-        📱 +201515474939
-      </p>
-
-      <p>
-        📍 مصر - القاهرة
-      </p>
-
-    </div>
-
-  </div>
-
-  <div class="footer-bottom">
-
-    <div class="footer-bottom-inner">
-
-      <span>
-        © 2026 زاد المعرفة — جميع الحقوق محفوظة
-      </span>
-
-      <span class="footer-love">
-        صُنع بـ ❤️ لنشر العلم
-      </span>
-
-    </div>
-
-  </div>
-
-</footer>
-
-<!-- ═══════════ MODAL ═══════════ -->
-<div
-  id="modal-overlay"
-  onclick="handleModalClick(event)"
->
-
-  <div id="modal-box">
-
-    <div class="modal-head">
-
-      <div>
-
-        <div
-          class="modal-badge"
-          id="mBadge"
-        ></div>
-
-        <h2
-          class="modal-title"
-          id="mTitle"
-        ></h2>
-
-        <div class="modal-meta">
-
-          <svg
-            width="13"
-            height="13"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
+    <!--footer-->
+    <footer id="footer">
+      <div class="footer-container">
+        <div class="footer-brand">
+          <div class="logo">
+            <div class="logo-img">
+              <img src="images/logo.png" alt="زاد المعرفة" class="logo-img" />
+            </div>
+            <span class="logo-text">زاد <span>المعرفة</span></span>
+          </div>
+          <p>
+            منصة تعليمية إسلامية تهدف إلى نشر العلم النافع وتقديم محتوى متميز
+            بأسلوب عصري بسيط.
+          </p>
+          <a
+            href="https://wa.me/201515474939"
+            class="whatsapp-btn"
+            target="_blank"
+            >تواصل عبر واتساب</a
           >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
+<p class="social-title">تابعنا على السوشيال ميديا:</p>
+<div class="footer-socials">
+    <a href="https://whatsapp.com/channel/0029VbCKfnI4inokhRHc1k41" class="social-icon" target="_blank">
+        <i class="fab fa-whatsapp"></i>
+    </a>
 
-          <span id="mTime"></span>
+    <a href="https://www.facebook.com/share/1BM3MS8mjM/" class="social-icon" target="_blank">
+        <i class="fab fa-facebook-f"></i>
+    </a>
 
-        </div>
+    <a href="https://t.me/zadelmarefh" class="social-icon" target="_blank">
+        <i class="fab fa-telegram"></i>
+    </a>
 
-      </div>
-
-      <button
-        class="modal-close"
-        onclick="closeModal()"
-      >
-
-        <svg
-          width="16"
-          height="16"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M6 18L18 6M6 6l12 12"
-          />
-        </svg>
-
-      </button>
-
-    </div>
-
-    <div class="modal-body-wrap">
-
-      <div
-        class="modal-content"
-        id="mBody"
-      ></div>
-
-    </div>
-
-    <div class="modal-footer">
-
-      <button
-        class="btn-primary"
-        style="font-size: 0.88rem; padding: 10px 22px"
-        onclick="closeModal()"
-      >
-
-        <svg
-          width="15"
-          height="15"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2.5"
-            d="M5 13l4 4L19 7"
-          />
-        </svg>
-
-        انتهيت من القراءة
-
-      </button>
-
-      <button
-        class="btn-outline"
-        style="font-size: 0.88rem; padding: 10px 22px"
-        onclick="closeModal()"
-      >
-        العودة للقائمة
-      </button>
-
-    </div>
-
-  </div>
-
+    <a href="https://youtube.com/channel/UC5dMzTXCU61UrYrrc9ol8UA" class="social-icon" target="_blank">
+        <i class="fab fa-youtube"></i>
+    </a>
 </div>
+        </div>
 
-<!-- ═══════════ JS ═══════════ -->
-<script>
-
-  /* ── DATA ── */
-
-  const CATS = [
-
-    {
-      id: "azhary",
-      icon: "🎓",
-      name: "التعليم الأزهري",
-      desc: "مناهج الأزهر الشريف لجميع المراحل التعليمية.",
-      topics: ["إعدادي", "ثانوي"],
-      iconBg: "rgba(16,185,129,0.15)",
-      glow: "rgba(16,185,129,0.08)",
-      image: "images/Azher-section-img.webp",
-      link: "sections/Azhar/azhar.html",
-    },
-
-    {
-      id: "quran",
-      icon: "📖",
-      name: "القرآن",
-      desc: "حفظ وتفسير وتجويد مع شرح مبسط لكتاب الله.",
-      topics: ["التجويد", "التفسير", "القراءات", "الحفظ والتعلم"],
-      iconBg: "rgba(201,168,76,0.15)",
-      glow: "rgba(201,168,76,0.08)",
-      image: "images/quran-sec-img.webp",
-      link: "sections/Quran/quran.html",
-    },
-
-    {
-      id: "arabic",
-      icon: "🅰️",
-      name: "اللغة العربية",
-      desc: "نحو، صرف، بلاغة، وأدب عربي بأسلوب مبسط ومتدرج.",
-      topics: ["النحو", "البلاغة", "الأدب العربي", "الخط العربي"],
-      iconBg: "rgba(99,102,241,0.15)",
-      glow: "rgba(99,102,241,0.08)",
-      image: "images/Arabic-sec-img.webp",
-      link: "sections/Arabic/arabic.html",
-    },
-
-    {
-      id: "sharia",
-      icon: "⚖️",
-      name: "المواد الشرعية",
-      desc: "فقه، حديث، عقيدة وأصول الدين بشكل مبسط.",
-      topics: ["الفقه", "الحديث", "العقيدة"],
-      iconBg: "rgba(239,68,68,0.15)",
-      glow: "rgba(239,68,68,0.08)",
-      image: "images/s-sec-img.webp",
-      link: "sections/Sharia/sharia.html",
-    },
-
-    {
-      id: "self",
-      icon: "❤️",
-      name: "التزكية والتربية",
-      desc: "تنمية النفس وبناء الشخصية والتوازن الداخلي.",
-      topics: ["تزكية", "إرشاد", "تنمية الذات"],
-      iconBg: "rgba(236,72,153,0.15)",
-      glow: "rgba(236,72,153,0.08)",
-      image: "images/t-sec-img.webp",
-      link: "sections/Tazkea/tazkea.html",
-    },
-
-    {
-      id: "services",
-      icon: "🛠️",
-      name: "الخدمات المصغرة",
-      desc: "خدمات تساعدك في الدراسة والعمل.",
-      topics: ["تصميم", "كتابة", "ذكاء اصطناعي"],
-      iconBg: "rgba(59,130,246,0.15)",
-      glow: "rgba(59,130,246,0.08)",
-      image: "images/service.sec.img.webp",
-      link: "sections/services/services.html",
-    },
-
-  ];
-
-  const BADGE_STYLES = {
-
-    aqeeda:
-      "background:rgba(201,168,76,.15);color:#e8c96d;border-color:rgba(201,168,76,.25)",
-
-    fiqh:
-      "background:rgba(74,222,128,.12);color:#4ade80;border-color:rgba(74,222,128,.25)",
-
-    seerah:
-      "background:rgba(251,191,36,.12);color:#fbbf24;border-color:rgba(251,191,36,.25)",
-
-    quran:
-      "background:rgba(248,113,113,.12);color:#f87171;border-color:rgba(248,113,113,.25)",
-
-    hadith:
-      "background:rgba(56,189,248,.12);color:#38bdf8;border-color:rgba(56,189,248,.25)",
-
-    akhlaq:
-      "background:rgba(167,139,250,.12);color:#a78bfa;border-color:rgba(167,139,250,.25)",
-
-  };
-
-  /* ── STATE ── */
-
-  let activeFilter = "all",
-      searchQ = "";
-
-  /* ── RENDER CATS ── */
-
-  function renderCats() {
-
-    document.getElementById("cats-grid").innerHTML = CATS.map(
-      (c, i) => `
-
-        <div
-          class="cat-card sr sr-delay-${(i % 3) + 1}"
-          onclick="window.location.href='${c.link}'"
-          style="background-image:url('${c.image}')"
-        >
-
-          <div class="cat-num">
-            ${String(i + 1).padStart(2, "0")}
-          </div>
-
-          <div
-            class="cat-icon"
-            style="background:${c.iconBg}"
+        <div class="footer-links-col">
+          <h4>روابط</h4>
+          <a href="#hero">الرئيسية</a>
+          <a href="#categories">الأقسام</a>
+          <a href="طاقم التدريس/index.html" target="_self">طاقم التدريس</a>
+          <a href="sections/services/services.html" target="_self">خدماتنا</a>
+          <a href="events/events.html" target="_self"
+            >أحداث المنصة</a
           >
-            ${c.icon}
-          </div>
+          <a href="students/students.html" target="_self"
+            >الطلاب المتميزون</a
+          >
+        </div>
 
-          <div class="cat-name">
-            ${c.name}
-          </div>
+        <div class="footer-links-col">
+          <h4>الأقسام</h4>
+          <a href="sections/Azhar/azhar.html">التعليم الأزهري</a>
+          <a href="sections/Quran/quran.html">القرآن</a>
+          <a href="sections/Arabic/arabic.html">اللغة العربية</a>
+          <a href="sections/Sharia/sharia.html">المواد الشرعية</a>
+          <a href="sections/Tazkea/tazkea.html">التزكية والتربية</a>
+          <a href="sections/services/services.html">الخدمات المصغرة</a>
+        </div>
 
-          <div class="cat-desc">
-            ${c.desc}
-          </div>
+        <div class="footer-contact">
+          <h4>تواصل معنا</h4>
+          <p>📧 zadalmarfah@gmail.com</p>
+          <p>📱 +201515474939</p>
+          <p>📍 مصر - القاهرة</p>
+        </div>
+      </div>
 
-          <div class="cat-topics">
+      <div class="footer-bottom">
+        <div class="footer-bottom-inner">
+          <span>© 2026 زاد المعرفة — جميع الحقوق محفوظة</span>
+          <span class="footer-love"> صُنع بـ ❤️ لنشر العلم </span>
+        </div>
+      </div>
+    </footer>
 
-            ${c.topics
-              .map(
-                (t) =>
-                  `<span class="cat-topic-pill">${t}</span>`
-              )
-              .join("")}
-
-          </div>
-
-          <div class="cat-footer">
-
-            <div class="cat-arrow">
-
+    <!-- ═══════════ MODAL ═══════════ -->
+    <div id="modal-overlay" onclick="handleModalClick(event)">
+      <div id="modal-box">
+        <div class="modal-head">
+          <div>
+            <div class="modal-badge" id="mBadge"></div>
+            <h2 class="modal-title" id="mTitle"></h2>
+            <div class="modal-meta">
               <svg
-                width="14"
-                height="14"
+                width="13"
+                height="13"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -1411,751 +655,438 @@
                 <path
                   stroke-linecap="round"
                   stroke-linejoin="round"
-                  stroke-width="2.5"
-                  d="M9 5l7 7-7 7"
+                  stroke-width="2"
+                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
                 />
               </svg>
-
+              <span id="mTime"></span>
             </div>
-
           </div>
-
+          <button class="modal-close" onclick="closeModal()">
+            <svg
+              width="16"
+              height="16"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
         </div>
-      `
-    ).join("");
-
-    observeNewSR();
-
-  }
-
-  /* ── MODAL ── */
-
-  function closeModal() {
-
-    document
-      .getElementById("modal-overlay")
-      .classList.remove("open");
-
-    document.body.style.overflow = "";
-
-  }
-
-  function handleModalClick(e) {
-
-    if (
-      e.target ===
-      document.getElementById("modal-overlay")
-    ) {
-      closeModal();
-    }
-
-  }
-
-  /* ── NAV ── */
-
-  window.addEventListener("scroll", () => {
-
-    document
-      .getElementById("navbar")
-      .classList.toggle(
-        "scrolled",
-        scrollY > 40
-      );
-
-  });
-
-  function smoothTo(id) {
-
-    document
-      .getElementById(id)
-      ?.scrollIntoView({
-        behavior: "smooth"
-      });
-
-  }
-
-  /* ── MOBILE ── */
-
-  function openMob() {
-
-    document
-      .getElementById("mobile-overlay")
-      .classList.add("open");
-
-    document.body.style.overflow = "hidden";
-
-  }
-
-  function closeMob() {
-
-    document
-      .getElementById("mobile-overlay")
-      .classList.remove("open");
-
-    document.body.style.overflow = "";
-
-  }
-
-  document.addEventListener("keydown", (e) => {
-
-    if (e.key === "Escape") {
-
-      closeModal();
-      closeMob();
-
-    }
-
-  });
-
-  /* ── SCROLL REVEAL ── */
-
-  const srObs = new IntersectionObserver(
-    (entries) => {
-
-      entries.forEach((e) => {
-
-        if (e.isIntersecting) {
-
-          e.target.classList.add("vis");
-
-          srObs.unobserve(e.target);
-
-        }
-
-      });
-
-    },
-    {
-      threshold: 0.1
-    }
-  );
-
-  function observeNewSR() {
-
-    document
-      .querySelectorAll(".sr:not(.vis)")
-      .forEach((el) => srObs.observe(el));
-
-  }
-
-  /* ── PROGRESS BARS ── */
-
-  const pbObs = new IntersectionObserver(
-    (entries) => {
-
-      entries.forEach((e) => {
-
-        if (e.isIntersecting) {
-
-          e.target
-            .querySelectorAll(".dbar-fill")
-            .forEach((b) => {
-
-              b.style.width =
-                b.dataset.w || "0%";
-
-            });
-
-          pbObs.unobserve(e.target);
-
-        }
-
-      });
-
-    },
-    {
-      threshold: 0.3
-    }
-  );
-
-  /* ── REAL PLATFORM PROGRESS ── */
-
-  function parseStoredValue(key) {
-
-    try {
-
-      const raw =
-        localStorage.getItem(key);
-
-      if (!raw) return null;
-
-      return JSON.parse(raw);
-
-    } catch (_) {
-
-      return null;
-
-    }
-
-  }
-
-  function asArray(value) {
-
-    if (Array.isArray(value))
-      return value;
-
-    if (
-      value &&
-      typeof value === "object"
-    ) {
-
-      if (Array.isArray(value.items))
-        return value.items;
-
-      if (Array.isArray(value.books))
-        return value.books;
-
-      if (Array.isArray(value.documents))
-        return value.documents;
-
-      return Object.values(value).filter(
-        (v) =>
-          v &&
-          typeof v === "object"
-      );
-
-    }
-
-    return [];
-
-  }
-
-  function findStoredArrays(keyPattern) {
-
-    const result = [];
-
-    for (
-      let i = 0;
-      i < localStorage.length;
-      i++
-    ) {
-
-      const key =
-        localStorage.key(i) || "";
-
-      if (!keyPattern.test(key))
-        continue;
-
-      const value =
-        parseStoredValue(key);
-
-      const arr =
-        asArray(value);
-
-      if (arr.length)
-        result.push(...arr);
-
-    }
-
-    return result;
-
-  }
-
-  function itemTitle(item) {
-
-    if (typeof item === "string")
-      return item.trim();
-
-    if (
-      !item ||
-      typeof item !== "object"
-    )
-      return "";
-
-    return String(
-      item.title ||
-      item.name ||
-      item.bookTitle ||
-      item.lessonTitle ||
-      item.documentTitle ||
-      item.text ||
-      ""
-    ).trim();
-
-  }
-
-  function uniqueItems(items) {
-
-    const map = new Map();
-
-    items.forEach((item) => {
-
-      const title =
-        itemTitle(item);
-
-      if (!title) return;
-
-      const id = String(
-        item.id ||
-        item.uid ||
-        item.bookId ||
-        item.lessonId ||
-        title
-      );
-
-      if (!map.has(id))
-        map.set(id, item);
-
-    });
-
-    return [...map.values()];
-
-  }
-
-  function getRealProgressData() {
-
-    const allBooks =
-      uniqueItems(
-        findStoredArrays(
-          /book|library|document/i
-        )
-      );
-
-    const readBooks =
-      uniqueItems(
-        findStoredArrays(
-          /read|completed|finished|progress/i
-        )
-      );
-
-    const favorites =
-      uniqueItems(
-        findStoredArrays(
-          /favorite|favourite|مفضل/i
-        )
-      );
-
-    let recent =
-      findStoredArrays(
-        /recent|history|last|activity|viewed|visited/i
-      ).filter(
-        (item) =>
-          itemTitle(item)
-      );
-
-    /* بعض صفحات المكتبة تحفظ سجل القراءة داخل كائن واحد باسم readingHistory. */
-
-    if (!recent.length) {
-
-      recent =
-        readBooks.slice();
-
-    }
-
-    recent =
-      uniqueItems(recent).sort(
-        (a, b) => {
-
-          const ta =
-            new Date(
-              a.updatedAt ||
-              a.lastOpened ||
-              a.createdAt ||
-              a.timestamp ||
-              0
-            ).getTime();
-
-          const tb =
-            new Date(
-              b.updatedAt ||
-              b.lastOpened ||
-              b.createdAt ||
-              b.timestamp ||
-              0
-            ).getTime();
-
-          return tb - ta;
-
-        }
-      );
-
-    return {
-      allBooks,
-      readBooks,
-      favorites,
-      recent
-    };
-
-  }
-
-  function setProgressValue(
-    percentId,
-    barId,
-    percent
-  ) {
-
-    const safe =
-      Math.max(
-        0,
-        Math.min(
-          100,
-          Math.round(percent || 0)
-        )
-      );
-
-    const label =
-      document.getElementById(
-        percentId
-      );
-
-    const bar =
-      document.getElementById(
-        barId
-      );
-
-    if (label)
-      label.textContent =
-        `${safe}٪`;
-
-    if (bar) {
-
-      bar.dataset.w =
-        `${safe}%`;
-
-      bar.style.width =
-        `${safe}%`;
-
-    }
-
-    const track =
-      bar?.parentElement;
-
-    if (track)
-      track.style.width =
-        `${safe}%`;
-
-  }
-
-  function renderRealProgress() {
-
-    const {
-      allBooks,
-      readBooks,
-      favorites,
-      recent
-    } =
-      getRealProgressData();
-
-    const available =
-      allBooks.length;
-
-    const readPercent =
-      available
-        ? (readBooks.length / available) * 100
-        : 0;
-
-    const favoritePercent =
-      available
-        ? (favorites.length / available) * 100
-        : 0;
-
-    const activityPercent =
-      available
-        ? Math.min(
-            100,
-            (recent.length / available) *
-              100
-          )
-        : 0;
-
-    const availableEl =
-      document.getElementById(
-        "availableBooksCount"
-      );
-
-    if (availableEl)
-      availableEl.textContent =
-        available
-          ? `+${available}`
-          : "٠";
-
-    const categoriesEl =
-      document.getElementById(
-        "categoriesCount"
-      );
-
-    if (categoriesEl)
-      categoriesEl.textContent =
-        CATS.length;
-
-    setProgressValue(
-      "readBooksPercent",
-      "readBooksBar",
-      readPercent
-    );
-
-    setProgressValue(
-      "favoriteBooksPercent",
-      "favoriteBooksBar",
-      favoritePercent
-    );
-
-    setProgressValue(
-      "recentActivityPercent",
-      "recentActivityBar",
-      activityPercent
-    );
-
-    const list =
-      document.getElementById(
-        "recentLessonsList"
-      );
-
-    if (!list) return;
-
-    const latest =
-      recent.slice(0, 3);
-
-    if (!latest.length) {
-
-      list.innerHTML = `
-        <div class="dl-row">
-          <div class="dl-icon">📚</div>
-          <span class="dl-text">
-            لا توجد دروس تمت مشاهدتها بعد
-          </span>
-          <span class="dl-badge">—</span>
+        <div class="modal-body-wrap">
+          <div class="modal-content" id="mBody"></div>
         </div>
-      `;
+        <div class="modal-footer">
+          <button
+            class="btn-primary"
+            style="font-size: 0.88rem; padding: 10px 22px"
+            onclick="closeModal()"
+          >
+            <svg
+              width="15"
+              height="15"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2.5"
+                d="M5 13l4 4L19 7"
+              />
+            </svg>
+            انتهيت من القراءة
+          </button>
+          <button
+            class="btn-outline"
+            style="font-size: 0.88rem; padding: 10px 22px"
+            onclick="closeModal()"
+          >
+            العودة للقائمة
+          </button>
+        </div>
+      </div>
+    </div>
 
-      return;
+    <!-- ═══════════ JS ═══════════ -->
+    <script>
+      /* ── DATA ── */
+      const CATS = [
+        {
+          id: "azhary",
+          icon: "🎓",
+          name: "التعليم الأزهري",
+          desc: "مناهج الأزهر الشريف لجميع المراحل التعليمية.",
+          topics: ["إعدادي", "ثانوي"],
+          iconBg: "rgba(16,185,129,0.15)",
+          glow: "rgba(16,185,129,0.08)",
+          image: "images/Azher-section-img.webp",
+          link: "sections/Azhar/azhar.html",
+        },
+        {
+          id: "quran",
+          icon: "📖",
+          name: "القرآن",
+          desc: "حفظ وتفسير وتجويد مع شرح مبسط لكتاب الله.",
+          topics: ["التجويد", "التفسير", "القراءات", "الحفظ والتعلم"],
+          iconBg: "rgba(201,168,76,0.15)",
+          glow: "rgba(201,168,76,0.08)",
+          image: "images/quran-sec-img.webp",
+          link: "sections/Quran/quran.html",
+        },
+        {
+          id: "arabic",
+          icon: "🅰️",
+          name: "اللغة العربية",
+          desc: "نحو، صرف، بلاغة، وأدب عربي بأسلوب مبسط ومتدرج.",
+          topics: ["النحو", "البلاغة", "الأدب العربي", "الخط العربي"],
+          iconBg: "rgba(99,102,241,0.15)",
+          glow: "rgba(99,102,241,0.08)",
+          image: "images/Arabic-sec-img.webp",
+          link: "sections/Arabic/arabic.html",
+        },
+        {
+          id: "sharia",
+          icon: "⚖️",
+          name: "المواد الشرعية",
+          desc: "فقه، حديث، عقيدة وأصول الدين بشكل مبسط.",
+          topics: ["الفقه", "الحديث", "العقيدة"],
+          iconBg: "rgba(239,68,68,0.15)",
+          glow: "rgba(239,68,68,0.08)",
+          image: "images/s-sec-img.webp",
+          link: "sections/Sharia/sharia.html",
+        },
+        {
+          id: "self",
+          icon: "❤️",
+          name: "التزكية والتربية",
+          desc: "تنمية النفس وبناء الشخصية والتوازن الداخلي.",
+          topics: ["تزكية", "إرشاد", "تنمية الذات"],
+          iconBg: "rgba(236,72,153,0.15)",
+          glow: "rgba(236,72,153,0.08)",
+          image: "images/t-sec-img.webp",
+          link: "sections/Tazkea/tazkea.html",
+        },
+        {
+          id: "services",
+          icon: "🛠️",
+          name: "الخدمات المصغرة",
+          desc: "خدمات تساعدك في الدراسة والعمل.",
+          topics: ["تصميم", "كتابة", "ذكاء اصطناعي"],
+          iconBg: "rgba(59,130,246,0.15)",
+          glow: "rgba(59,130,246,0.08)",
+          image: "images/service.sec.img.webp",
+          link: "sections/services/services.html",
+        },
+      ];
 
-    }
+      const BADGE_STYLES = {
+        aqeeda:
+          "background:rgba(201,168,76,.15);color:#e8c96d;border-color:rgba(201,168,76,.25)",
+        fiqh: "background:rgba(74,222,128,.12);color:#4ade80;border-color:rgba(74,222,128,.25)",
+        seerah:
+          "background:rgba(251,191,36,.12);color:#fbbf24;border-color:rgba(251,191,36,.25)",
+        quran:
+          "background:rgba(248,113,113,.12);color:#f87171;border-color:rgba(248,113,113,.25)",
+        hadith:
+          "background:rgba(56,189,248,.12);color:#38bdf8;border-color:rgba(56,189,248,.25)",
+        akhlaq:
+          "background:rgba(167,139,250,.12);color:#a78bfa;border-color:rgba(167,139,250,.25)",
+      };
 
-    list.innerHTML =
-      latest
-        .map((item, index) => {
+      /* ── STATE ── */
+      let activeFilter = "all",
+        searchQ = "";
 
-          const title =
-            itemTitle(item);
-
-          const status =
-            item.completed ||
-            item.status === "completed" ||
-            item.read
-              ? "مكتمل"
-              : index === 0
-                ? "جارٍ"
-                : "مُشاهد";
-
-          const icon =
-            item.icon ||
-            ["📖", "🌙", "⚖️"][index] ||
-            "📚";
-
-          return `
-            <div class="dl-row">
-
-              <div class="dl-icon">
-                ${icon}
-              </div>
-
-              <span class="dl-text">
-                ${title.replace(
-                  /[<>&"']/g,
-                  ""
-                )}
-              </span>
-
-              <span class="dl-badge">
-                ${status}
-              </span>
-
-            </div>
-          `;
-
-        })
-        .join("");
-
-  }
-
-  /* ── INIT ── */
-
-  document.addEventListener(
-    "DOMContentLoaded",
-    () => {
-
-      renderCats();
-
-      observeNewSR();
-
-      document
-        .querySelectorAll(
-          ".dash-mockup"
-        )
-        .forEach((m) =>
-          pbObs.observe(m)
-        );
-
-      renderRealProgress();
-
-    }
-  );
-
-  function goTo(link) {
-
-    window.location.href =
-      link;
-
-  }
-
-  /* ── SHARE ── */
-
-  document.addEventListener(
-    "DOMContentLoaded",
-    function () {
-
-      const shareBtn =
-        document.getElementById(
-          "shareBtn"
-        );
-
-      if (!shareBtn)
-        return;
-
-      shareBtn.addEventListener(
-        "click",
-        async function () {
-
-          const shareData = {
-
-            title:
-              "زاد المعرفة",
-
-            text:
-              "📚 انضم إلى منصة زاد المعرفة.",
-
-            url:
-              window.location.href
-
-          };
-
-          if (navigator.share) {
-
-            try {
-
-              await navigator.share(
-                shareData
-              );
-
-            } catch (err) {
-
-              if (
-                err.name !==
-                "AbortError"
-              ) {
-
-                console.log(
-                  "Share error:",
-                  err
-                );
-
-              }
-
-            }
-
-            return;
-
-          }
-
-          try {
-
-            await navigator.clipboard.writeText(
-              window.location.href
-            );
-
-            alert(
-              "✅ تم نسخ رابط المنصة"
-            );
-
-          } catch (err) {
-
-            prompt(
-              "انسخ رابط المنصة:",
-              window.location.href
-            );
-
-          }
-
-        }
-      );
-
-    }
-  );
-
-  /* ── DARK MODE ── */
-
-  document.addEventListener(
-    "DOMContentLoaded",
-    function () {
-
-      const themeToggle =
-        document.getElementById(
-          "themeToggle"
-        );
-
-      if (!themeToggle)
-        return;
-
-      const savedTheme =
-        localStorage.getItem(
-          "theme"
-        );
-
-      if (savedTheme === "dark") {
-
-        document.body.classList.add(
-          "dark"
-        );
-
-        themeToggle.checked =
-          true;
-
-      } else {
-
-        document.body.classList.remove(
-          "dark"
-        );
-
-        themeToggle.checked =
-          false;
-
+      /* ── RENDER CATS ── */
+      function renderCats() {
+        document.getElementById("cats-grid").innerHTML = CATS.map(
+          (c, i) => `
+             <div class="cat-card sr sr-delay-${(i % 3) + 1}" onclick="window.location.href='${c.link}'" style="background-image:url('${c.image}')">
+                <div class="cat-num">${String(i + 1).padStart(2, "0")}</div>
+                <div class="cat-icon" style="background:${c.iconBg}">${c.icon}</div>
+                <div class="cat-name">${c.name}</div>
+                <div class="cat-desc">${c.desc}</div>
+                 <div class="cat-topics">${c.topics.map((t) => `<span class="cat-topic-pill">${t}</span>`).join("")}</div>
+                <div class="cat-footer">
+                  <div class="cat-arrow">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                  </div>
+                </div>
+              </div>`,
+        ).join("");
+        observeNewSR();
       }
 
-      themeToggle.addEventListener(
-        "change",
-        function () {
+      /* ── MODAL ── */
+      function closeModal() {
+        document.getElementById("modal-overlay").classList.remove("open");
+        document.body.style.overflow = "";
+      }
+      function handleModalClick(e) {
+        if (e.target === document.getElementById("modal-overlay")) closeModal();
+      }
 
-          if (this.checked) {
+      /* ── NAV ── */
+      window.addEventListener("scroll", () => {
+        document
+          .getElementById("navbar")
+          .classList.toggle("scrolled", scrollY > 40);
+      });
+      function smoothTo(id) {
+        document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+      }
 
-            document.body.classList.add(
-              "dark"
-            );
-
-            localStorage.setItem(
-              "theme",
-              "dark"
-            );
-
-          } else {
-
-            document.body.classList.remove(
-              "dark"
-            );
-
-            localStorage.setItem(
-              "theme",
-              "light"
-            );
-
-          }
-
+      /* ── MOBILE ── */
+      function openMob() {
+        document.getElementById("mobile-overlay").classList.add("open");
+        document.body.style.overflow = "hidden";
+      }
+      function closeMob() {
+        document.getElementById("mobile-overlay").classList.remove("open");
+        document.body.style.overflow = "";
+      }
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+          closeModal();
+          closeMob();
         }
+      });
+
+      /* ── SCROLL REVEAL ── */
+      const srObs = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((e) => {
+            if (e.isIntersecting) {
+              e.target.classList.add("vis");
+              srObs.unobserve(e.target);
+            }
+          });
+        },
+        { threshold: 0.1 },
+      );
+      function observeNewSR() {
+        document
+          .querySelectorAll(".sr:not(.vis)")
+          .forEach((el) => srObs.observe(el));
+      }
+
+      /* ── PROGRESS BARS ── */
+      const pbObs = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((e) => {
+            if (e.isIntersecting) {
+              e.target.querySelectorAll(".dbar-fill").forEach((b) => {
+                b.style.width = b.dataset.w || "0%";
+              });
+              pbObs.unobserve(e.target);
+            }
+          });
+        },
+        { threshold: 0.3 },
       );
 
-    }
-  );
 
+      /* ── REAL PLATFORM PROGRESS ── */
+      function parseStoredValue(key) {
+        try {
+          const raw = localStorage.getItem(key);
+          if (!raw) return null;
+          return JSON.parse(raw);
+        } catch (_) {
+          return null;
+        }
+      }
+
+      function asArray(value) {
+        if (Array.isArray(value)) return value;
+        if (value && typeof value === "object") {
+          if (Array.isArray(value.items)) return value.items;
+          if (Array.isArray(value.books)) return value.books;
+          if (Array.isArray(value.documents)) return value.documents;
+          return Object.values(value).filter((v) => v && typeof v === "object");
+        }
+        return [];
+      }
+
+      function findStoredArrays(keyPattern) {
+        const result = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i) || "";
+          if (!keyPattern.test(key)) continue;
+          const value = parseStoredValue(key);
+          const arr = asArray(value);
+          if (arr.length) result.push(...arr);
+        }
+        return result;
+      }
+
+      function itemTitle(item) {
+        if (typeof item === "string") return item.trim();
+        if (!item || typeof item !== "object") return "";
+        return String(
+          item.title || item.name || item.bookTitle || item.lessonTitle ||
+          item.documentTitle || item.text || ""
+        ).trim();
+      }
+
+      function uniqueItems(items) {
+        const map = new Map();
+        items.forEach((item) => {
+          const title = itemTitle(item);
+          if (!title) return;
+          const id = String(item.id || item.uid || item.bookId || item.lessonId || title);
+          if (!map.has(id)) map.set(id, item);
+        });
+        return [...map.values()];
+      }
+
+      function getRealProgressData() {
+        const allBooks = uniqueItems(findStoredArrays(/book|library|document/i));
+        const readBooks = uniqueItems(findStoredArrays(/read|completed|finished|progress/i));
+        const favorites = uniqueItems(findStoredArrays(/favorite|favourite|مفضل/i));
+        let recent = findStoredArrays(/recent|history|last|activity|viewed|visited/i)
+          .filter((item) => itemTitle(item));
+
+        // بعض صفحات المكتبة تحفظ سجل القراءة داخل كائن واحد باسم readingHistory.
+        if (!recent.length) {
+          recent = readBooks.slice();
+        }
+
+        recent = uniqueItems(recent).sort((a, b) => {
+          const ta = new Date(a.updatedAt || a.lastOpened || a.createdAt || a.timestamp || 0).getTime();
+          const tb = new Date(b.updatedAt || b.lastOpened || b.createdAt || b.timestamp || 0).getTime();
+          return tb - ta;
+        });
+
+        return { allBooks, readBooks, favorites, recent };
+      }
+
+      function setProgressValue(percentId, barId, percent) {
+        const safe = Math.max(0, Math.min(100, Math.round(percent || 0)));
+        const label = document.getElementById(percentId);
+        const bar = document.getElementById(barId);
+        if (label) label.textContent = `${safe}٪`;
+        if (bar) {
+          bar.dataset.w = `${safe}%`;
+          bar.style.width = `${safe}%`;
+        }
+        const track = bar?.parentElement;
+        if (track) track.style.width = `${safe}%`;
+      }
+
+      function renderRealProgress() {
+        const { allBooks, readBooks, favorites, recent } = getRealProgressData();
+        const available = allBooks.length;
+        const readPercent = available ? (readBooks.length / available) * 100 : 0;
+        const favoritePercent = available ? (favorites.length / available) * 100 : 0;
+        const activityPercent = available ? Math.min(100, (recent.length / available) * 100) : 0;
+
+        const availableEl = document.getElementById("availableBooksCount");
+        if (availableEl) availableEl.textContent = available ? `+${available}` : "٠";
+
+        const categoriesEl = document.getElementById("categoriesCount");
+        if (categoriesEl) categoriesEl.textContent = CATS.length;
+
+        setProgressValue("readBooksPercent", "readBooksBar", readPercent);
+        setProgressValue("favoriteBooksPercent", "favoriteBooksBar", favoritePercent);
+        setProgressValue("recentActivityPercent", "recentActivityBar", activityPercent);
+
+        const list = document.getElementById("recentLessonsList");
+        if (!list) return;
+        const latest = recent.slice(0, 3);
+        if (!latest.length) {
+          list.innerHTML = `<div class="dl-row"><div class="dl-icon">📚</div><span class="dl-text">لا توجد دروس تمت مشاهدتها بعد</span><span class="dl-badge">—</span></div>`;
+          return;
+        }
+        list.innerHTML = latest.map((item, index) => {
+          const title = itemTitle(item);
+          const status = item.completed || item.status === "completed" || item.read ? "مكتمل" : (index === 0 ? "جارٍ" : "مُشاهد");
+          const icon = item.icon || ["📖", "🌙", "⚖️"][index] || "📚";
+          return `<div class="dl-row"><div class="dl-icon">${icon}</div><span class="dl-text">${title.replace(/[<>&"']/g, "")}</span><span class="dl-badge">${status}</span></div>`;
+        }).join("");
+      }
+
+      /* ── INIT ── */
+      document.addEventListener("DOMContentLoaded", () => {
+        renderCats();
+        observeNewSR();
+        document
+          .querySelectorAll(".dash-mockup")
+          .forEach((m) => pbObs.observe(m));
+        renderRealProgress();
+      });
+
+      function goTo(link) {
+        window.location.href = link;
+      }
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const shareBtn = document.getElementById("shareBtn");
+
+    if (!shareBtn) return;
+
+    shareBtn.addEventListener("click", async function () {
+
+        const shareData = {
+            title: "زاد المعرفة",
+            text: "📚 انضم إلى منصة زاد المعرفة.",
+            url: window.location.href
+        };
+
+        if (navigator.share) {
+            try {
+                await navigator.share(shareData);
+            } catch (err) {
+                if (err.name !== "AbortError") {
+                    console.log("Share error:", err);
+                }
+            }
+            return;
+        }
+
+        try {
+            await navigator.clipboard.writeText(window.location.href);
+            alert("✅ تم نسخ رابط المنصة");
+        } catch (err) {
+            prompt("انسخ رابط المنصة:", window.location.href);
+        }
+    });
+
+});
+document.addEventListener("DOMContentLoaded", function () {
+    const themeToggle = document.getElementById("themeToggle");
+
+    if (!themeToggle) return;
+
+    const savedTheme = localStorage.getItem("theme");
+
+    if (savedTheme === "dark") {
+        document.body.classList.add("dark");
+        themeToggle.checked = true;
+    } else {
+        document.body.classList.remove("dark");
+        themeToggle.checked = false;
+    }
+
+    themeToggle.addEventListener("change", function () {
+        if (this.checked) {
+            document.body.classList.add("dark");
+            localStorage.setItem("theme", "dark");
+        } else {
+            document.body.classList.remove("dark");
+            localStorage.setItem("theme", "light");
+        }
+    });
+});
 </script>
 
 <!-- Floating Share Button -->
@@ -2169,20 +1100,9 @@
   <i class="fas fa-share-alt"></i>
 </button>
 
-<script
-  type="module"
-  src="auth-ui.js"
-></script>
-
-<script
-  type="module"
-  src="notifications.js"
-></script>
-
-<script
-  type="module"
-  src="push-notifications.js"
-></script>
+<script type="module" src="auth-ui.js"></script>
+<script type="module" src="notifications.js"></script>
+<script type="module" src="push-notifications.js"></script>
 
 </body>
 </html>

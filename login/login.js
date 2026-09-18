@@ -156,19 +156,25 @@ async function checkUserAndContinue(user) {
     const userSnap = await getDoc(userRef);
 
     if (!userSnap.exists()) {
+      const displayName = user.displayName || 'مستخدم زاد المعرفة';
       await setDoc(userRef, {
         uid: user.uid,
-        name: user.displayName || 'مستخدم',
+        name: displayName,
+        fullName: displayName,
         email: user.email || '',
         photoURL: user.photoURL || '',
+        phone: '',
+        grade: '',
+        subject: '',
         role: 'student',
         status: 'active',
-        provider: 'google.com',
+        provider: user.providerData?.[0]?.providerId || 'google.com',
         createdAt: serverTimestamp(),
         lastLoginAt: serverTimestamp()
       });
     } else {
       const profile = userSnap.data();
+      await setDoc(userRef, { lastLoginAt: serverTimestamp() }, { merge: true });
       // الحساب المحظور فقط يُمنع من الدخول.
       // الحساب المعطل يُعامل كطالب، وتُفتح له لوحة الطالب.
       if (profile.status === 'banned') {

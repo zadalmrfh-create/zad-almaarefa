@@ -112,7 +112,7 @@ async function saveUserProfile(user, role, provider, extraData = {}) {
     provider,
     createdAt: serverTimestamp(),
     lastLoginAt: serverTimestamp()
-  });
+  }, { merge: true });
 
   return true;
 }
