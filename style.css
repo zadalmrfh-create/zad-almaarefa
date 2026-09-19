@@ -3416,3 +3416,89 @@ button {
   #navbar .logo > div { width: 40px !important; height: 40px !important; }
   #navbar label.theme-toggle { width: 43px !important; min-width: 43px !important; }
 }
+
+/* عداد الطلاب العام */
+.student-counter-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 190px;
+  padding: 14px 22px;
+  border: 1px solid rgba(212, 175, 55, .42);
+  border-radius: 18px;
+  background: rgba(212, 175, 55, .08);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .12);
+}
+
+.student-counter-card .num {
+  color: var(--gold, #d4af37);
+  font-size: clamp(2rem, 4vw, 2.8rem);
+  font-weight: 900;
+  line-height: 1.1;
+}
+
+.student-counter-card .label {
+  color: inherit;
+  font-size: .95rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+
+/* ===== تحسين عداد الطلاب العام ===== */
+.student-counter-card {
+  position: relative;
+  z-index: 5;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  min-width: 210px;
+  min-height: 135px;
+  padding: 18px 24px !important;
+  text-align: center;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.student-counter-card .counter-icon {
+  display: block !important;
+  font-size: 1.65rem;
+  line-height: 1;
+}
+
+.student-counter-card .num {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  color: #e8c96d !important;
+  font-size: clamp(2.2rem, 4vw, 3.1rem) !important;
+  font-weight: 900 !important;
+  line-height: 1.05 !important;
+  min-height: 1.1em;
+  direction: rtl;
+}
+
+.student-counter-card .label {
+  display: block !important;
+  visibility: visible !important;
+  color: #ffffff !important;
+  font-size: .95rem !important;
+  font-weight: 800 !important;
+}
+
+@media (max-width: 768px) {
+  .hero-stats {
+    display: flex !important;
+    justify-content: center;
+    width: 100%;
+  }
+
+  .student-counter-card {
+    min-width: 180px;
+    width: min(100%, 280px);
+  }
+}

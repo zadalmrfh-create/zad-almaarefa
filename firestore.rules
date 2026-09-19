@@ -194,6 +194,38 @@ service cloud.firestore {
       allow read, update, delete: if isAdmin();
     }
 
+    // عداد عام لعدد الطلاب فقط، دون كشف بيانات المستخدمين.
+    match /publicStats/{statId} {
+      allow read: if true;
+
+      // الأدمن يستطيع مزامنة العدد الحقيقي للطلاب القدامى مرة واحدة أو عند الحاجة.
+      allow create, update: if isAdmin() && statId == 'students';
+
+      // أول طالب ينشئ المستند ويبدأ العداد من 1.
+      allow create: if statId == 'students'
+        && signedIn()
+        && request.resource.data.total == 1
+        && getAfter(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'student'
+        && getAfter(/databases/$(database)/documents/studentCounterClaims/$(request.auth.uid)).data.uid == request.auth.uid;
+
+      // كل طالب يستطيع زيادة العداد مرة واحدة فقط عبر claim غير قابل للتعديل.
+      allow update: if statId == 'students'
+        && signedIn()
+        && request.resource.data.total == resource.data.total + 1
+        && getAfter(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'student'
+        && getAfter(/databases/$(database)/documents/studentCounterClaims/$(request.auth.uid)).data.uid == request.auth.uid;
+
+      allow delete: if isAdmin();
+    }
+
+    match /studentCounterClaims/{uid} {
+      allow create: if isOwner(uid)
+        && request.resource.data.uid == request.auth.uid
+        && getAfter(/databases/$(database)/documents/users/$(uid)).data.role == 'student';
+      allow read: if isOwner(uid) || isAdmin();
+      allow update, delete: if isAdmin();
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }

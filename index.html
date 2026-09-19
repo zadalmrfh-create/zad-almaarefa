@@ -321,13 +321,10 @@
             </a>
           </div>
           <div class="hero-stats">
-            <div>
-              <span class="num" style="display: none">20+</span>
-              <span class="label" style="display: none">دورة</span>
-            </div>
-            <div>
-              <span class="num" style="display: none">6+</span>
-              <span class="label" style="display: none">أقسام</span>
+            <div class="student-counter-card" aria-live="polite" aria-label="إجمالي الطلاب المسجلين">
+              <span class="counter-icon" aria-hidden="true">👨‍🎓</span>
+              <span class="num" id="studentCount">0</span>
+              <span class="label">إجمالي الطلاب المسجلين</span>
             </div>
           </div>
         </div>
@@ -1100,6 +1097,10 @@ document.addEventListener("DOMContentLoaded", function () {
   <i class="fas fa-share-alt"></i>
 </button>
 
+<script type="module">
+  import { watchStudentCount } from './student-counter.js';
+  watchStudentCount('studentCount');
+</script>
 <script type="module" src="auth-ui.js"></script>
 <script type="module" src="notifications.js"></script>
 <script type="module" src="push-notifications.js"></script>

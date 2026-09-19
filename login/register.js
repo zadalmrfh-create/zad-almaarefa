@@ -14,6 +14,9 @@ import {
   doc,
   getDoc,
   setDoc,
+  writeBatch,
+  runTransaction,
+  increment,
   serverTimestamp
 } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 
@@ -83,7 +86,7 @@ async function saveUserProfile(user, role, provider, extraData = {}) {
 
   const name = user.displayName || 'مستخدم زاد المعرفة';
 
-  await setDoc(userRef, {
+  const profileData = {
     uid: user.uid,
     name,
     fullName: name,
@@ -97,7 +100,36 @@ async function saveUserProfile(user, role, provider, extraData = {}) {
     provider,
     createdAt: serverTimestamp(),
     lastLoginAt: serverTimestamp()
-  }, { merge: true });
+  };
+
+  if (role === 'student') {
+    // تُكتب بيانات الحساب وطلب زيادة العداد في عملية ذرّية واحدة.
+    const claimRef = doc(db, 'studentCounterClaims', user.uid);
+    const statsRef = doc(db, 'publicStats', 'students');
+
+    // تسجيل الطالب وزيادة العداد في معاملة واحدة.
+    // إذا كان مستند العداد غير موجود يبدأ من 1، وإلا يزيد بمقدار واحد.
+    await runTransaction(db, async (transaction) => {
+      const statsSnap = await transaction.get(statsRef);
+      const claimSnap = await transaction.get(claimRef);
+
+      if (claimSnap.exists()) {
+        transaction.set(userRef, profileData, { merge: true });
+        return;
+      }
+
+      transaction.set(userRef, profileData, { merge: true });
+      transaction.create(claimRef, { uid: user.uid, createdAt: serverTimestamp() });
+
+      const currentTotal = statsSnap.exists() && Number.isFinite(statsSnap.data().total)
+        ? Number(statsSnap.data().total)
+        : 0;
+
+      transaction.set(statsRef, { total: currentTotal + 1 }, { merge: true });
+    });
+  } else {
+    await setDoc(userRef, profileData, { merge: true });
+  }
 
   return true;
 }

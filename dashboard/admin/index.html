@@ -219,6 +219,17 @@
 
 
     <!-- =====================================================
+         STUDENT COUNTER
+    ====================================================== -->
+    <section class="card" id="studentCounterManagement">
+      <h3>📊 عداد الطلاب المسجلين</h3>
+      <p style="margin:8px 0;color:var(--muted)">اضغط مرة واحدة لحساب الطلاب القدامى من مجموعة users وتحديث العداد الظاهر للزوار.</p>
+      <button id="syncStudentCounter" class="btn gold" type="button">🔄 مزامنة عدد الطلاب الحاليين</button>
+      <span id="studentCounterSyncStatus" style="display:block;margin-top:10px"></span>
+    </section>
+
+
+    <!-- =====================================================
          CONTENT MANAGEMENT
     ====================================================== -->
 
@@ -842,6 +853,7 @@ import {
   collection,
   getDocs,
   doc,
+  setDoc,
   updateDoc,
   deleteDoc,
   addDoc,
@@ -4297,6 +4309,36 @@ async function loadBookings() {
 
 }
 
+
+
+
+
+/* =====================================================
+   SYNC EXISTING STUDENTS COUNTER
+===================================================== */
+const syncStudentCounterButton = $('syncStudentCounter');
+const studentCounterSyncStatus = $('studentCounterSyncStatus');
+
+syncStudentCounterButton?.addEventListener('click', async () => {
+  if (!confirm('سيتم حساب كل الحسابات التي role فيها student وتحديث العداد العام. هل تريد المتابعة؟')) return;
+  syncStudentCounterButton.disabled = true;
+  studentCounterSyncStatus.textContent = 'جارٍ حساب الطلاب...';
+  try {
+    const snapshot = await getDocs(collection(db, 'users'));
+    const totalStudents = snapshot.docs.filter(item => item.data()?.role === 'student').length;
+    await setDoc(doc(db, 'publicStats', 'students'), {
+      total: totalStudents,
+      updatedAt: serverTimestamp(),
+      source: 'admin-sync'
+    }, { merge: true });
+    studentCounterSyncStatus.textContent = `✅ تم تحديث العداد إلى ${totalStudents.toLocaleString('ar-EG')} طالب.`;
+  } catch (error) {
+    console.error('Student counter sync error:', error);
+    studentCounterSyncStatus.textContent = '❌ تعذر تحديث العداد: ' + (error.code || error.message);
+  } finally {
+    syncStudentCounterButton.disabled = false;
+  }
+});
 
 
 /* =====================================================

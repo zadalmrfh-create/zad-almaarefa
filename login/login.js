@@ -26,6 +26,8 @@ import {
   setDoc,
   addDoc,
   collection,
+  writeBatch,
+  increment,
   serverTimestamp
 } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 
@@ -175,7 +177,7 @@ async function checkUserAndContinue(user) {
 
     if (!userSnap.exists()) {
       const displayName = user.displayName || 'مستخدم زاد المعرفة';
-      await setDoc(userRef, {
+      const profileData = {
         uid: user.uid,
         name: displayName,
         fullName: displayName,
@@ -189,6 +191,22 @@ async function checkUserAndContinue(user) {
         provider: user.providerData?.[0]?.providerId || 'google.com',
         createdAt: serverTimestamp(),
         lastLoginAt: serverTimestamp()
+      };
+      const claimRef = doc(db, 'studentCounterClaims', user.uid);
+      const statsRef = doc(db, 'publicStats', 'students');
+
+      await runTransaction(db, async (transaction) => {
+        const statsSnap = await transaction.get(statsRef);
+        const claimSnap = await transaction.get(claimRef);
+
+        transaction.set(userRef, profileData);
+        if (claimSnap.exists()) return;
+
+        transaction.create(claimRef, { uid: user.uid, createdAt: serverTimestamp() });
+        const currentTotal = statsSnap.exists() && Number.isFinite(statsSnap.data().total)
+          ? Number(statsSnap.data().total)
+          : 0;
+        transaction.set(statsRef, { total: currentTotal + 1 }, { merge: true });
       });
     } else {
       const profile = userSnap.data();
