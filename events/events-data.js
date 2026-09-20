@@ -54,49 +54,17 @@ const EVENTS_DATA = {
   ------------------------------------------------------- */
   gallery: [
     {
-      title: "حجز الكورة في المعهد",
-      date: "أكتوبر 2026",
+      title: "لقطات من أنشطة زاد المعرفة",
+      date: "معرض الصور",
       type: "photos",
-      category: "match",
+      category: "photos",
       items: [
-        {
-          type: "image",
-          src: "https://drive.google.com/uc?export=view&id=YOUR_ID_HERE",
-          caption: "صورة من الرحلة",
-        },
-        {
-          type: "image",
-          src: "https://drive.google.com/uc?export=view&id=YOUR_ID_HERE",
-          caption: "صورة من الرحلة",
-        },
-        {
-          type: "image",
-          src: "https://drive.google.com/uc?export=view&id=YOUR_ID_HERE",
-          caption: "صورة من الرحلة",
-        },
-        {
-          type: "video",
-          src: "https://www.youtube.com/embed/VIDEO_ID",
-          caption: "مقطع فيديو",
-        },
-      ],
-    },
-    {
-      title: "مسابقة حفظ القرآن",
-      date: "أكتوبر 2026",
-      type: "photos",
-      category: "competition",
-      items: [
-        {
-          type: "image",
-          src: "https://drive.google.com/uc?export=view&id=YOUR_ID_HERE",
-          caption: "صورة من الرحلة",
-        },
-        {
-          type: "video",
-          src: "https://www.youtube.com/embed/VIDEO_ID",
-          caption: "مقطع فيديو",
-        },
+        { type: "image", src: "../images/gallery/gallery-1.jpg", caption: "جانب من جلسة تعليمية" },
+        { type: "image", src: "../images/gallery/gallery-2.jpg", caption: "ركن القرآن والكتب" },
+        { type: "image", src: "../images/gallery/gallery-3.jpg", caption: "فعالية تكريم تعليمية" },
+        { type: "image", src: "../images/gallery/gallery-4.jpg", caption: "مذاكرة ومطالعة" },
+        { type: "image", src: "../images/gallery/gallery-5.jpg", caption: "أجواء علمية إسلامية" },
+        { type: "image", src: "../images/gallery/gallery-6.jpg", caption: "نماذج شهادات وتكريم" },
       ],
     },
   ],
