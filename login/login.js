@@ -27,6 +27,7 @@ import {
   addDoc,
   collection,
   writeBatch,
+  runTransaction,
   increment,
   serverTimestamp
 } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
@@ -142,18 +143,15 @@ console.log(
 ========================================================= */
 
 async function recordLogin(user, profile = {}) {
-  try {
-    await addDoc(collection(db, 'loginLogs'), {
-      uid: user.uid,
-      email: user.email || '',
-      name: profile.fullName || profile.name || user.displayName || 'مستخدم زاد المعرفة',
-      provider: user.providerData?.[0]?.providerId || 'unknown',
-      loginAt: serverTimestamp()
-    });
-  } catch (error) {
-    // فشل سجل الدخول لا يمنع المستخدم من دخول المنصة.
-    console.warn('تعذر حفظ سجل تسجيل الدخول:', error);
-  }
+  // لا ننشئ سجل دخول لمستخدم عادي إلا بعد نجاح إنشاء/قراءة ملفه في users.
+  // هذا يمنع ظهور أشخاص في "سجل تسجيلات الدخول" دون وجودهم في "المستخدمين".
+  await addDoc(collection(db, 'loginLogs'), {
+    uid: user.uid,
+    email: user.email || '',
+    name: profile.fullName || profile.name || user.displayName || 'مستخدم زاد المعرفة',
+    provider: profile.provider || user.providerData?.[0]?.providerId || 'unknown',
+    loginAt: serverTimestamp()
+  });
 }
 
 
@@ -162,74 +160,111 @@ async function checkUserAndContinue(user) {
 
   console.log('تم تسجيل الدخول:', user.email || user.uid);
 
-  // لا نمنع تسجيل الدخول بسبب قواعد Firestore أو عدم إنشاء ملف المستخدم.
-  // يتم فحص بيانات الأدمن/المستخدم إن أمكن، ثم نفتح المنصة مباشرة.
-  try {
+  let profile = null;
+  let isAdminAccount = false;
+
+  // الأدمن الرئيسي أو الأدمن الموجود في admins لا يحتاج أن يكون طالبًا في users.
+  const isPrimaryAdmin =
+    user?.email?.toLowerCase() === 'maleksameh121@gmail.com';
+
+  if (!isPrimaryAdmin) {
     const adminSnap = await getDoc(doc(db, 'admins', user.uid));
-    if (adminSnap.exists()) {
-      msg('تم تسجيل الدخول كمسؤول، جارٍ فتح لوحة التحكم...', 'success');
-      setTimeout(() => window.location.replace('../dashboard/admin/index.html'), 300);
+    isAdminAccount = adminSnap.exists();
+  } else {
+    isAdminAccount = true;
+  }
+
+  if (isAdminAccount) {
+    // سجل دخول الأدمن أيضًا، لكن لا نضعه في قائمة الطلاب/المستخدمين تلقائيًا.
+    await recordLogin(user, {
+      name: user.displayName || 'مدير المنصة',
+      fullName: user.displayName || 'مدير المنصة',
+      provider: user.providerData?.[0]?.providerId || 'unknown'
+    });
+
+    msg('تم تسجيل الدخول كمسؤول، جارٍ فتح لوحة التحكم...', 'success');
+    setTimeout(() => window.location.replace('../dashboard/admin/index.html'), 300);
+    return;
+  }
+
+  const userRef = doc(db, 'users', user.uid);
+  const userSnap = await getDoc(userRef);
+
+  if (!userSnap.exists()) {
+    const displayName = user.displayName || 'مستخدم زاد المعرفة';
+    profile = {
+      uid: user.uid,
+      name: displayName,
+      fullName: displayName,
+      email: user.email || '',
+      photoURL: user.photoURL || '',
+      phone: '',
+      grade: '',
+      subject: '',
+      role: 'student',
+      status: 'active',
+      provider: user.providerData?.[0]?.providerId || 'google.com',
+      createdAt: serverTimestamp(),
+      lastLoginAt: serverTimestamp()
+    };
+
+    const claimRef = doc(db, 'studentCounterClaims', user.uid);
+    const statsRef = doc(db, 'publicStats', 'students');
+
+    // إنشاء المستخدم + claim + تحديث العداد في معاملة واحدة.
+    // إذا فشلت المعاملة لأي سبب، لن نكتب loginLogs ولن نفتح الحساب.
+    await runTransaction(db, async (transaction) => {
+      const statsSnap = await transaction.get(statsRef);
+      const claimSnap = await transaction.get(claimRef);
+
+      transaction.set(userRef, profile);
+
+      if (claimSnap.exists()) return;
+
+      transaction.create(claimRef, {
+        uid: user.uid,
+        createdAt: serverTimestamp()
+      });
+
+      const rawTotal = statsSnap.exists() ? statsSnap.data().total : 0;
+      const currentTotal = Number.isFinite(Number(rawTotal))
+        ? Number(rawTotal)
+        : 0;
+
+      transaction.set(
+        statsRef,
+        { total: currentTotal + 1 },
+        { merge: true }
+      );
+    });
+  } else {
+    profile = userSnap.data();
+
+    if (profile.status === 'banned') {
+      await signOut(auth);
+      msg('⛔ هذا الحساب محظور حاليًا.');
       return;
     }
 
-    const userRef = doc(db, 'users', user.uid);
-    const userSnap = await getDoc(userRef);
+    // تحديث آخر دخول فقط بعد التأكد أن الحساب موجود فعلًا.
+    await setDoc(
+      userRef,
+      { lastLoginAt: serverTimestamp() },
+      { merge: true }
+    );
 
-    if (!userSnap.exists()) {
-      const displayName = user.displayName || 'مستخدم زاد المعرفة';
-      const profileData = {
-        uid: user.uid,
-        name: displayName,
-        fullName: displayName,
-        email: user.email || '',
-        photoURL: user.photoURL || '',
-        phone: '',
-        grade: '',
-        subject: '',
-        role: 'student',
-        status: 'active',
-        provider: user.providerData?.[0]?.providerId || 'google.com',
-        createdAt: serverTimestamp(),
-        lastLoginAt: serverTimestamp()
-      };
-      const claimRef = doc(db, 'studentCounterClaims', user.uid);
-      const statsRef = doc(db, 'publicStats', 'students');
-
-      await runTransaction(db, async (transaction) => {
-        const statsSnap = await transaction.get(statsRef);
-        const claimSnap = await transaction.get(claimRef);
-
-        transaction.set(userRef, profileData);
-        if (claimSnap.exists()) return;
-
-        transaction.create(claimRef, { uid: user.uid, createdAt: serverTimestamp() });
-        const currentTotal = statsSnap.exists() && Number.isFinite(statsSnap.data().total)
-          ? Number(statsSnap.data().total)
-          : 0;
-        transaction.set(statsRef, { total: currentTotal + 1 }, { merge: true });
-      });
-    } else {
-      const profile = userSnap.data();
-      await setDoc(userRef, { lastLoginAt: serverTimestamp() }, { merge: true });
-      // الحساب المحظور فقط يُمنع من الدخول.
-      // الحساب المعطل يُعامل كطالب، وتُفتح له لوحة الطالب.
-      if (profile.status === 'banned') {
-        await signOut(auth);
-        msg('⛔ هذا الحساب محظور حاليًا.');
-        return;
-      }
-    }
-  } catch (firestoreError) {
-    // تسجيل الدخول في Firebase Auth ناجح حتى لو كانت Firestore Rules تمنع القراءة/الكتابة.
-    console.warn('تم تسجيل الدخول، لكن تعذر فحص Firestore:', firestoreError);
+    profile = {
+      ...profile,
+      lastLoginAt: serverTimestamp()
+    };
   }
 
-  await recordLogin(user, {});
+  // مهم: تسجيل الدخول في loginLogs يأتي بعد نجاح users فقط.
+  await recordLogin(user, profile);
 
   msg('تم تسجيل الدخول بنجاح، جارٍ فتح المنصة...', 'success');
   setTimeout(() => redirectAfterLogin(user), 300);
 }
-
 
 
 /* =========================================================

@@ -157,13 +157,10 @@
         </h3>
 
 
-        <button
-          id="refresh"
-          class="btn gold"
-          type="button"
-        >
-          تحديث
-        </button>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <button id="syncMissingUsers" class="btn gold" type="button">🔄 استعادة المستخدمين الناقصين</button>
+          <button id="refresh" class="btn gold" type="button">تحديث</button>
+        </div>
 
       </div>
 
@@ -213,6 +210,8 @@
         </table>
 
       </div>
+
+      <div id="syncMissingUsersStatus" class="admin-muted" style="margin-top:10px"></div>
 
     </section>
 
@@ -1129,6 +1128,56 @@ modal.addEventListener(
 const tbody =
   $('users');
 
+
+const syncMissingUsersButton = $('syncMissingUsers');
+const syncMissingUsersStatus = $('syncMissingUsersStatus');
+
+async function syncMissingUsersFromLoginLogs() {
+  if (!syncMissingUsersButton) return;
+  if (!confirm('سيتم فحص سجل تسجيلات الدخول وإنشاء حسابات users الناقصة فقط. لن يتم حذف أو تعديل الحسابات الموجودة. هل تريد المتابعة؟')) return;
+  syncMissingUsersButton.disabled = true;
+  if (syncMissingUsersStatus) syncMissingUsersStatus.textContent = 'جارٍ فحص سجل الدخول واستعادة الحسابات الناقصة…';
+  try {
+    const [usersSnap, logsSnap] = await Promise.all([
+      getDocs(collection(db, 'users')),
+      getDocs(query(collection(db, 'loginLogs'), limit(1000)))
+    ]);
+    const existingUids = new Set(usersSnap.docs.map(d => d.id));
+    const missing = new Map();
+    logsSnap.docs.forEach(logDoc => {
+      const log = logDoc.data() || {};
+      const uid = String(log.uid || '').trim();
+      if (!uid || existingUids.has(uid) || missing.has(uid)) return;
+      missing.set(uid, {
+        uid, name: log.name || 'مستخدم زاد المعرفة', fullName: log.name || 'مستخدم زاد المعرفة',
+        email: log.email || '', photoURL: '', phone: '', whatsapp: '', grade: '', subject: '',
+        role: 'student', status: 'active', provider: log.provider || 'unknown',
+        restoredFromLoginLog: true, restoredAt: serverTimestamp(),
+        lastLoginAt: log.loginAt || serverTimestamp(), createdAt: log.loginAt || serverTimestamp()
+      });
+    });
+    if (!missing.size) {
+      if (syncMissingUsersStatus) syncMissingUsersStatus.textContent = '✅ لا توجد حسابات ناقصة في آخر 1000 سجل دخول.';
+      return;
+    }
+    const entries = [...missing.values()];
+    let restored = 0;
+    for (let i = 0; i < entries.length; i += 400) {
+      const batchItems = entries.slice(i, i + 400);
+      await Promise.all(batchItems.map(item => setDoc(doc(db, 'users', item.uid), item, { merge: false })));
+      restored += batchItems.length;
+    }
+    if (syncMissingUsersStatus) syncMissingUsersStatus.textContent = `✅ تم استعادة ${restored.toLocaleString('ar-EG')} حسابًا. يتم تحديث القائمة…`;
+    await loadUsers();
+  } catch (error) {
+    console.error('Sync missing users error:', error);
+    if (syncMissingUsersStatus) syncMissingUsersStatus.textContent = '❌ تعذر استعادة الحسابات: ' + (error.code || error.message);
+  } finally {
+    syncMissingUsersButton.disabled = false;
+  }
+}
+
+syncMissingUsersButton?.addEventListener('click', syncMissingUsersFromLoginLogs);
 
 async function loadUsers() {
 
