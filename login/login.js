@@ -27,7 +27,6 @@ import {
   addDoc,
   collection,
   writeBatch,
-  runTransaction,
   increment,
   serverTimestamp
 } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
@@ -143,15 +142,18 @@ console.log(
 ========================================================= */
 
 async function recordLogin(user, profile = {}) {
-  // لا ننشئ سجل دخول لمستخدم عادي إلا بعد نجاح إنشاء/قراءة ملفه في users.
-  // هذا يمنع ظهور أشخاص في "سجل تسجيلات الدخول" دون وجودهم في "المستخدمين".
-  await addDoc(collection(db, 'loginLogs'), {
-    uid: user.uid,
-    email: user.email || '',
-    name: profile.fullName || profile.name || user.displayName || 'مستخدم زاد المعرفة',
-    provider: profile.provider || user.providerData?.[0]?.providerId || 'unknown',
-    loginAt: serverTimestamp()
-  });
+  try {
+    await addDoc(collection(db, 'loginLogs'), {
+      uid: user.uid,
+      email: user.email || '',
+      name: profile.fullName || profile.name || user.displayName || 'مستخدم زاد المعرفة',
+      provider: user.providerData?.[0]?.providerId || 'unknown',
+      loginAt: serverTimestamp()
+    });
+  } catch (error) {
+    // فشل سجل الدخول لا يمنع المستخدم من دخول المنصة.
+    console.warn('تعذر حفظ سجل تسجيل الدخول:', error);
+  }
 }
 
 
@@ -160,85 +162,34 @@ async function checkUserAndContinue(user) {
 
   console.log('تم تسجيل الدخول:', user.email || user.uid);
 
-  let profile = null;
-  let isAdminAccount = false;
-
-  // الأدمن الرئيسي أو الأدمن الموجود في admins لا يحتاج أن يكون طالبًا في users.
-  const isPrimaryAdmin =
-    user?.email?.toLowerCase() === 'maleksameh121@gmail.com';
-
-  if (!isPrimaryAdmin) {
-    const adminSnap = await getDoc(doc(db, 'admins', user.uid));
-    isAdminAccount = adminSnap.exists();
-  } else {
-    isAdminAccount = true;
-  }
-
-  if (isAdminAccount) {
-    // سجل دخول الأدمن أيضًا، لكن لا نضعه في قائمة الطلاب/المستخدمين تلقائيًا.
-    await recordLogin(user, {
-      name: user.displayName || 'مدير المنصة',
-      fullName: user.displayName || 'مدير المنصة',
-      provider: user.providerData?.[0]?.providerId || 'unknown'
-    });
-
-    msg('تم تسجيل الدخول كمسؤول، جارٍ فتح لوحة التحكم...', 'success');
-    setTimeout(() => window.location.replace('../dashboard/admin/index.html'), 300);
+  // الأدمن الأساسي دائمًا يذهب إلى لوحة الإدارة.
+  if (user?.email?.toLowerCase() === 'maleksameh121@gmail.com') {
+    window.location.replace('../dashboard/admin/index.html');
     return;
   }
 
-  const userRef = doc(db, 'users', user.uid);
-  const userSnap = await getDoc(userRef);
+  try {
+    // الأدمن الموجود في admins/{uid}.
+    const adminSnap = await getDoc(doc(db, 'admins', user.uid));
+    if (adminSnap.exists()) {
+      msg('تم تسجيل الدخول كمسؤول، جارٍ فتح لوحة التحكم...', 'success');
+      setTimeout(() => window.location.replace('../dashboard/admin/index.html'), 300);
+      return;
+    }
 
-  if (!userSnap.exists()) {
-    const displayName = user.displayName || 'مستخدم زاد المعرفة';
-    profile = {
-      uid: user.uid,
-      name: displayName,
-      fullName: displayName,
-      email: user.email || '',
-      photoURL: user.photoURL || '',
-      phone: '',
-      grade: '',
-      subject: '',
-      role: 'student',
-      status: 'active',
-      provider: user.providerData?.[0]?.providerId || 'google.com',
-      createdAt: serverTimestamp(),
-      lastLoginAt: serverTimestamp()
-    };
+    // لا ننشئ users تلقائيًا عند تسجيل الدخول.
+    // وجود Auth account وحده لا يعني أن الطالب أنشأ حسابًا على المنصة.
+    const userSnap = await getDoc(doc(db, 'users', user.uid));
 
-    const claimRef = doc(db, 'studentCounterClaims', user.uid);
-    const statsRef = doc(db, 'publicStats', 'students');
+    if (!userSnap.exists()) {
+      sessionStorage.setItem('needsProfileRegistration', '1');
+      sessionStorage.setItem('pendingRegistrationEmail', user.email || '');
+      sessionStorage.setItem('pendingRegistrationName', user.displayName || '');
+      window.location.replace('register.html?required=1');
+      return;
+    }
 
-    // إنشاء المستخدم + claim + تحديث العداد في معاملة واحدة.
-    // إذا فشلت المعاملة لأي سبب، لن نكتب loginLogs ولن نفتح الحساب.
-    await runTransaction(db, async (transaction) => {
-      const statsSnap = await transaction.get(statsRef);
-      const claimSnap = await transaction.get(claimRef);
-
-      transaction.set(userRef, profile);
-
-      if (claimSnap.exists()) return;
-
-      transaction.create(claimRef, {
-        uid: user.uid,
-        createdAt: serverTimestamp()
-      });
-
-      const rawTotal = statsSnap.exists() ? statsSnap.data().total : 0;
-      const currentTotal = Number.isFinite(Number(rawTotal))
-        ? Number(rawTotal)
-        : 0;
-
-      transaction.set(
-        statsRef,
-        { total: currentTotal + 1 },
-        { merge: true }
-      );
-    });
-  } else {
-    profile = userSnap.data();
+    const profile = userSnap.data();
 
     if (profile.status === 'banned') {
       await signOut(auth);
@@ -246,25 +197,16 @@ async function checkUserAndContinue(user) {
       return;
     }
 
-    // تحديث آخر دخول فقط بعد التأكد أن الحساب موجود فعلًا.
-    await setDoc(
-      userRef,
-      { lastLoginAt: serverTimestamp() },
-      { merge: true }
-    );
+    await recordLogin(user, profile);
+    msg('تم تسجيل الدخول بنجاح، جارٍ فتح المنصة...', 'success');
+    setTimeout(() => redirectAfterLogin(user), 300);
 
-    profile = {
-      ...profile,
-      lastLoginAt: serverTimestamp()
-    };
+  } catch (firestoreError) {
+    console.error('تعذر فحص حساب المستخدم:', firestoreError);
+    msg('تعذر التحقق من حسابك. حاول مرة أخرى.', 'error');
   }
-
-  // مهم: تسجيل الدخول في loginLogs يأتي بعد نجاح users فقط.
-  await recordLogin(user, profile);
-
-  msg('تم تسجيل الدخول بنجاح، جارٍ فتح المنصة...', 'success');
-  setTimeout(() => redirectAfterLogin(user), 300);
 }
+
 
 
 /* =========================================================
@@ -609,6 +551,12 @@ emailLoginForm?.addEventListener(
         error
       );
 
+      if (error?.code === 'auth/user-not-found') {
+        sessionStorage.setItem('needsProfileRegistration', '1');
+        sessionStorage.setItem('pendingRegistrationEmail', email);
+        window.location.replace('register.html?required=1');
+        return;
+      }
 
       msg(
         firebaseError(error)
