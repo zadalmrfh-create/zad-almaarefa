@@ -184,6 +184,10 @@
 
               <th>الهاتف</th>
 
+              <th>البلد</th>
+
+              <th>المدينة</th>
+
               <th>واتساب</th>
 
               <th>الصف الدراسي / المادة</th>
@@ -203,7 +207,7 @@
 
             <tr>
 
-              <td colspan="8">
+              <td colspan="10">
                 جارٍ التحميل…
               </td>
 
@@ -277,7 +281,7 @@
             </tr>
           </thead>
           <tbody id="subscriptionRows">
-            <tr><td colspan="8">جارٍ تحميل الطلبات...</td></tr>
+            <tr><td colspan="10">جارٍ تحميل الطلبات...</td></tr>
           </tbody>
         </table>
       </div>
@@ -1071,6 +1075,18 @@ function showUser(user) {
     ],
 
     [
+      'البلد',
+      user.country ||
+      'غير متوفر'
+    ],
+
+    [
+      'المدينة',
+      user.city ||
+      'غير متوفر'
+    ],
+
+    [
       'الصف الدراسي / المادة',
       user.role === 'teacher'
         ? (
@@ -1191,7 +1207,7 @@ async function loadUsers() {
   tbody.innerHTML = `
 
     <tr>
-      <td colspan="8">
+      <td colspan="10">
         جارٍ تحميل المستخدمين…
       </td>
     </tr>
@@ -1216,7 +1232,7 @@ async function loadUsers() {
 
         <tr>
 
-          <td colspan="8">
+          <td colspan="10">
             لا يوجد مستخدمون بعد.
           </td>
 
@@ -1231,8 +1247,16 @@ async function loadUsers() {
 
     tbody.innerHTML = '';
 
+    // عرض الأحدث أولًا حتى تظهر الحسابات الجديدة مباشرة في أعلى القائمة.
+    const userDocs = [...snap.docs].sort((a, b) => {
+      const av = a.data().createdAt;
+      const bv = b.data().createdAt;
+      const at = av?.toMillis ? av.toMillis() : 0;
+      const bt = bv?.toMillis ? bv.toMillis() : 0;
+      return bt - at;
+    });
 
-    snap.forEach(
+    userDocs.forEach(
       userDoc => {
 
         const user =
@@ -1475,6 +1499,13 @@ async function loadUsers() {
             ${escapeHtml(phone || '-')}
           </td>
 
+          <td>
+            ${escapeHtml(user.country || '-')}
+          </td>
+
+          <td>
+            ${escapeHtml(user.city || '-')}
+          </td>
 
           <td>
 
@@ -1852,7 +1883,7 @@ async function loadUsers() {
 
       <tr>
 
-        <td colspan="8">
+        <td colspan="10">
 
           ❌ حدث خطأ أثناء تحميل المستخدمين.
 
@@ -3869,7 +3900,7 @@ async function loadBookings() {
 
     <tr>
 
-      <td colspan="8">
+      <td colspan="10">
         جارٍ تحميل الطلبات...
       </td>
 
@@ -4346,7 +4377,7 @@ async function loadBookings() {
 
       <tr>
 
-        <td colspan="8">
+        <td colspan="10">
 
           تعذر تحميل الطلبات:
 
@@ -4449,11 +4480,11 @@ function subscriptionStatusText(status){
 
 async function loadSubscriptionRequests(){
   if(!subscriptionRows) return;
-  subscriptionRows.innerHTML='<tr><td colspan="8">جارٍ تحميل طلبات الاشتراك...</td></tr>';
+  subscriptionRows.innerHTML='<tr><td colspan="10">جارٍ تحميل طلبات الاشتراك...</td></tr>';
   try{
     const snap=await getDocs(query(collection(db,'subscriptionRequests'),orderBy('createdAt','desc')));
     if(snap.empty){
-      subscriptionRows.innerHTML='<tr><td colspan="8">لا توجد طلبات اشتراك.</td></tr>';
+      subscriptionRows.innerHTML='<tr><td colspan="10">لا توجد طلبات اشتراك.</td></tr>';
       return;
     }
     subscriptionRows.innerHTML='';
@@ -4479,7 +4510,7 @@ async function loadSubscriptionRequests(){
     });
   }catch(error){
     console.error(error);
-    subscriptionRows.innerHTML=`<tr><td colspan="8">تعذر تحميل الطلبات: ${escapeHtml(error.code || error.message)}</td></tr>`;
+    subscriptionRows.innerHTML=`<tr><td colspan="10">تعذر تحميل الطلبات: ${escapeHtml(error.code || error.message)}</td></tr>`;
   }
 }
 
@@ -4698,7 +4729,7 @@ onAuthStateChanged(
 
           <tr>
 
-            <td colspan="8">
+            <td colspan="10">
               يجب تسجيل الدخول بحساب الأدمن.
             </td>
 

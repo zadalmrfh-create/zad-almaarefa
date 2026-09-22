@@ -67,7 +67,7 @@ service cloud.firestore {
           && request.resource.data.status == resource.data.status
           && request.resource.data.email == resource.data.email
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
-            'name', 'fullName', 'phone', 'grade', 'studyGrade', 'className',
+            'name', 'fullName', 'phone', 'country', 'city', 'grade', 'studyGrade', 'className',
             'subject', 'photoURL', 'displayName', 'lastLoginAt', 'updatedAt'
           ])
         );

@@ -138,38 +138,44 @@ async function saveUserProfile(user, role, provider, extraData = {}) {
     lastLoginAt: serverTimestamp()
   };
 
+  // المهم: إنشاء ملف users أولًا.
+  // عداد الطلاب خدمة إضافية؛ إذا فشل لا نفشل إنشاء الحساب نفسه.
+  await setDoc(userRef, profileData, { merge: true });
+
   if (role === 'student') {
-    // تُكتب بيانات الحساب وطلب زيادة العداد في عملية ذرّية واحدة.
-    const claimRef = doc(db, 'studentCounterClaims', user.uid);
-    const statsRef = doc(db, 'publicStats', 'students');
+    try {
+      const claimRef = doc(db, 'studentCounterClaims', user.uid);
+      const statsRef = doc(db, 'publicStats', 'students');
 
-    // تسجيل الطالب وزيادة العداد في معاملة واحدة.
-    // إذا كان مستند العداد غير موجود يبدأ من 1، وإلا يزيد بمقدار واحد.
-    await runTransaction(db, async (transaction) => {
-      const statsSnap = await transaction.get(statsRef);
-      const claimSnap = await transaction.get(claimRef);
+      await runTransaction(db, async (transaction) => {
+        const statsSnap = await transaction.get(statsRef);
+        const claimSnap = await transaction.get(claimRef);
 
-      if (claimSnap.exists()) {
-        transaction.set(userRef, profileData, { merge: true });
-        return;
-      }
+        if (claimSnap.exists()) return;
 
-      transaction.set(userRef, profileData, { merge: true });
-      transaction.set(claimRef, { uid: user.uid, createdAt: serverTimestamp() }, { merge: true });
+        const currentTotal = statsSnap.exists() && Number.isFinite(Number(statsSnap.data().total))
+          ? Number(statsSnap.data().total)
+          : 0;
 
-      const currentTotal = statsSnap.exists() && Number.isFinite(statsSnap.data().total)
-        ? Number(statsSnap.data().total)
-        : 0;
+        transaction.set(claimRef, {
+          uid: user.uid,
+          createdAt: serverTimestamp()
+        }, { merge: true });
 
-      transaction.set(statsRef, { total: currentTotal + 1 }, { merge: true });
-    });
-  } else {
-    await setDoc(userRef, profileData, { merge: true });
+        transaction.set(
+          statsRef,
+          { total: currentTotal + 1 },
+          { merge: true }
+        );
+      });
+    } catch (counterError) {
+      // لا نحذف/نفشل الحساب إذا كانت مشكلة العداد هي السبب.
+      console.warn('تم إنشاء الحساب، لكن تعذر تحديث عداد الطلاب:', counterError);
+    }
   }
 
   return true;
 }
-
 function goHome() {
   window.location.replace('../index.html');
 }
@@ -221,16 +227,16 @@ emailRegisterForm?.addEventListener('submit', async (event) => {
     msg('اكتب رقم الهاتف.');
     return;
   }
-  if (!grade) {
-    msg(role === 'teacher' ? 'اكتب المادة التي يدرسها المعلم.' : 'اكتب الصف الدراسي.');
-    return;
-  }
   if (!country) {
     msg('اكتب البلد.');
     return;
   }
   if (!city) {
     msg('اكتب المدينة.');
+    return;
+  }
+  if (!grade) {
+    msg(role === 'teacher' ? 'اكتب المادة التي يدرسها المعلم.' : 'اكتب الصف الدراسي.');
     return;
   }
   const currentAuthUser = auth.currentUser;
@@ -261,7 +267,7 @@ emailRegisterForm?.addEventListener('submit', async (event) => {
       await updateProfile(registrationUser, { displayName: name });
     }
 
-    await finishRegistration(registrationUser, role, registrationUser.providerData?.[0]?.providerId || 'password', { phone, grade, country, city });
+    await finishRegistration(registrationUser, role, registrationUser.providerData?.[0]?.providerId || 'password', { phone, country, city, grade });
     sessionStorage.removeItem('needsProfileRegistration');
     sessionStorage.removeItem('pendingRegistrationEmail');
     sessionStorage.removeItem('pendingRegistrationName');
