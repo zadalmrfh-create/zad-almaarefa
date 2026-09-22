@@ -1,0 +1,35 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return signedIn() && (
+        request.auth.token.email == 'maleksameh121@gmail.com'
+        ||
+        firestore.exists(/databases/(default)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    // إثباتات الدفع: كل طالب يرفع ملفاته داخل مجلده فقط.
+    match /subscriptionProofs/{uid}/{fileName} {
+      allow read: if isAdmin() || (signedIn() && request.auth.uid == uid);
+
+      allow create, update: if signedIn()
+        && request.auth.uid == uid
+        && request.resource.size < 10 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+
+      allow delete: if isAdmin() || (signedIn() && request.auth.uid == uid);
+    }
+
+    // أي ملفات أخرى تظل مغلقة حتى نضيف قواعد مخصصة لها.
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

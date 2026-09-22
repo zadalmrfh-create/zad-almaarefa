@@ -34,6 +34,14 @@ service cloud.firestore {
         && getUser(request.auth.uid).data.status == 'active';
     }
 
+    function activeSubscriber(uid) {
+      return signedIn()
+        && exists(/databases/$(database)/documents/users/$(uid))
+        && getUser(uid).data.subscriptionStatus == 'active'
+        && getUser(uid).data.subscriptionEnd is timestamp
+        && getUser(uid).data.subscriptionEnd > request.time;
+    }
+
     match /users/{uid} {
       allow create: if isOwner(uid)
         && request.resource.data.uid == request.auth.uid
@@ -49,6 +57,8 @@ service cloud.firestore {
       allow read: if isOwner(uid) || isAdmin()
         || (isTeacher() && resource.data.role == 'student');
 
+      // المستخدم يستطيع تعديل بياناته الأساسية فقط.
+      // بيانات الاشتراك لا يمكن للمستخدم تزويرها؛ الإدارة فقط هي التي تغيّرها.
       allow update: if isAdmin()
         || (
           isOwner(uid)
@@ -56,6 +66,10 @@ service cloud.firestore {
           && request.resource.data.role == resource.data.role
           && request.resource.data.status == resource.data.status
           && request.resource.data.email == resource.data.email
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'name', 'fullName', 'phone', 'grade', 'studyGrade', 'className',
+            'subject', 'photoURL', 'displayName', 'lastLoginAt', 'updatedAt'
+          ])
         );
 
       allow delete: if isOwner(uid) || isAdmin();
@@ -69,15 +83,12 @@ service cloud.firestore {
       allow read, create, update, delete: if isOwner(uid);
     }
 
-    // سجل الدخول: المستخدم ينشئ سجله فقط، والأدمن يقرأه.
     match /loginLogs/{logId} {
       allow create: if signedIn()
         && request.resource.data.uid == request.auth.uid;
       allow read, update, delete: if isAdmin();
     }
 
-    // الأدمنز تتم إدارتهم من Firebase Console.
-    // الأدمن الرئيسي لا يحتاج هذا المستند أصلًا.
     match /admins/{uid} {
       allow read: if signedIn() && request.auth.uid == uid;
       allow create, update, delete: if false;
@@ -158,7 +169,32 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
-    // هذه المجموعات محجوزة لنظام المحاضرات والكويزات إذا تم تفعيلها في المشروع.
+    match /subscriptionSettings/{settingId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /subscriptionRequests/{requestId} {
+      // الطالب ينشئ طلبًا باسمه فقط، ويبدأ دائمًا قيد المراجعة.
+      allow create: if signedIn()
+        && request.resource.data.studentUid == request.auth.uid
+        && request.resource.data.status == 'pending'
+        && request.resource.data.planId is string
+        && request.resource.data.planName is string
+        && request.resource.data.amount is number
+        && request.resource.data.paymentMethod in ['Vodafone Cash', 'منفذ دفع / سوبر ماركت']
+        && request.resource.data.proofPath is string
+        && request.resource.data.createdAt == request.time;
+
+      allow read: if isAdmin()
+        || (signedIn() && resource.data.studentUid == request.auth.uid);
+
+      // الإدارة فقط تستطيع اعتماد/رفض الطلب وتحديد مدة الاشتراك.
+      allow update: if isAdmin();
+      allow delete: if isAdmin()
+        || (signedIn() && resource.data.studentUid == request.auth.uid && resource.data.status == 'pending');
+    }
+
     match /lessons/{lessonId} {
       allow read: if signedIn();
       allow create, update, delete: if isAdmin();
@@ -178,37 +214,24 @@ service cloud.firestore {
       allow update, delete: if isAdmin();
     }
 
-    // =====================================================
-    // LESSON ATTENDANCE / GOOGLE MEET
-    // =====================================================
-
     match /lessonAttendance/{attendanceId} {
-      allow create: if
-        signedIn()
+      allow create: if signedIn()
         && request.resource.data.studentUid == request.auth.uid;
-
-      allow read: if
-        signedIn()
+      allow read: if signedIn()
         && resource.data.studentUid == request.auth.uid;
-
       allow read, update, delete: if isAdmin();
     }
 
-    // عداد عام لعدد الطلاب فقط، دون كشف بيانات المستخدمين.
     match /publicStats/{statId} {
       allow read: if true;
-
-      // الأدمن يستطيع مزامنة العدد الحقيقي للطلاب القدامى مرة واحدة أو عند الحاجة.
       allow create, update: if isAdmin() && statId == 'students';
 
-      // أول طالب ينشئ المستند ويبدأ العداد من 1.
       allow create: if statId == 'students'
         && signedIn()
         && request.resource.data.total == 1
         && getAfter(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'student'
         && getAfter(/databases/$(database)/documents/studentCounterClaims/$(request.auth.uid)).data.uid == request.auth.uid;
 
-      // كل طالب يستطيع زيادة العداد مرة واحدة فقط عبر claim غير قابل للتعديل.
       allow update: if statId == 'students'
         && signedIn()
         && request.resource.data.total == resource.data.total + 1

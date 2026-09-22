@@ -3,6 +3,7 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js';
 import { getAuth } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
 import { getFirestore } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
+import { getStorage } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-storage.js';
 
 const firebaseConfig = {
   apiKey: "AIzaSyB0RRPsezMpT1t7SPKAGC2nD7e5JI46Epo",
@@ -20,3 +21,4 @@ export const FIREBASE_READY = !Object.values(firebaseConfig).some(v => String(v)
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
+export const storage = getStorage(app);

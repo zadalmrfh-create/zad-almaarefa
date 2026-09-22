@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>الاشتراك | زاد المعرفة</title>
+<link rel="icon" href="../../images/logo.png">
+<link rel="stylesheet" href="../../dashboard/dashboard.css">
+<style>
+body{background:#0a1628;color:#fff}
+.subscription-wrap{max-width:900px;margin:30px auto;padding:0 16px}
+.subscription-card{background:#101d33;border:1px solid rgba(212,168,67,.3);border-radius:22px;padding:26px;box-shadow:0 18px 45px rgba(0,0,0,.2)}
+.payment-box,.upload-box{border:1px solid rgba(212,168,67,.25);border-radius:16px;padding:18px;margin-top:16px}
+.payment-number{font-size:24px;font-weight:900;color:#f0c040;direction:ltr;text-align:center;margin:12px 0;word-break:break-all}
+label{display:block;margin-top:14px;font-weight:700}
+input,select,textarea{width:100%;margin-top:7px;padding:12px;border-radius:11px;border:1px solid #334155;background:#0f172a;color:#fff}
+input[type=file]{padding:10px}
+.notice{padding:12px 14px;border-radius:12px;background:rgba(212,168,67,.1);border:1px solid rgba(212,168,67,.25);margin-top:14px}
+.success{background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.35)}
+.error{background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.35)}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.btn{display:inline-flex;align-items:center;justify-content:center;padding:11px 17px;border-radius:12px;border:1px solid #d4a843;background:#0a1628;color:#fff;text-decoration:none;font-weight:800;cursor:pointer}
+.btn.gold{background:#d4a843;color:#0a1628}
+.btn:disabled{opacity:.6;cursor:not-allowed}
+</style>
+</head>
+<body>
+<div class="subscription-wrap">
+  <div class="subscription-card">
+    <div style="text-align:center">
+      <img src="../../images/logo.png" alt="زاد المعرفة" style="width:70px;height:70px;object-fit:contain">
+      <h1 style="color:#f0c040">الاشتراك في زاد المعرفة</h1>
+      <p style="color:#94a3b8">ادفع يدويًا ثم ارفع صورة إيصال الدفع وانتظر مراجعة الإدارة.</p>
+    </div>
+
+    <div id="loginNotice" class="notice" style="display:none">
+      يجب تسجيل الدخول أولًا حتى نستطيع ربط طلب الاشتراك بحسابك.
+    </div>
+
+    <div class="payment-box">
+      <h3>💳 بيانات الاشتراك</h3>
+      <p>الباقة: <strong id="planName">عضوية المكتبة</strong></p>
+      <p>قيمة الاشتراك: <strong id="amount">جارٍ التحميل...</strong></p>
+      <p style="color:#94a3b8">حوّل قيمة الاشتراك إلى رقم الدفع التالي، ثم اختر صورة الإيصال وأرسلها عبر واتساب.</p>
+      <div class="payment-number" id="paymentNumber">جارٍ التحميل...</div>
+      <p id="paymentNote" style="color:#94a3b8;text-align:center"></p>
+    </div>
+
+    <form id="subscriptionForm" class="upload-box">
+      <h3>📸 بعد الدفع</h3>
+      <p style="color:#94a3b8">اختر صورة واضحة لإيصال الدفع، ثم اضغط الزر لإرسال الطلب والإيصال عبر واتساب. لا ترسل بيانات بطاقتك أو كلمة مرورك.</p>
+
+      <label>طريقة الدفع
+        <select id="paymentMethod" required>
+          <option value="Vodafone Cash">Vodafone Cash</option>
+          <option value="منفذ دفع / سوبر ماركت">منفذ دفع / سوبر ماركت</option>
+        </select>
+      </label>
+
+      <label>رقم العملية / المرجع (إن وجد)
+        <input id="transactionRef" maxlength="100" placeholder="اختياري">
+      </label>
+
+      <label>صورة إيصال الدفع
+        <input id="proofFile" type="file" accept="image/*" required>
+      </label>
+
+      <label>ملاحظات (اختياري)
+        <textarea id="notes" rows="3" maxlength="500" placeholder="أي ملاحظة تريد إرسالها للإدارة"></textarea>
+      </label>
+
+      <div class="actions">
+        <button id="submitBtn" class="btn gold" type="submit">📲 إرسال الإيصال عبر واتساب</button>
+        <a class="btn" href="../../dashboard/student/index.html">لوحة الطالب</a>
+      </div>
+      <div id="status" class="notice" style="display:none"></div>
+    </form>
+  </div>
+</div>
+
+<script type="module">
+import { auth, db } from '../../firebase-config.js';
+import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
+import { doc, getDoc, addDoc, collection, serverTimestamp } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
+
+const PAYMENT_NUMBER = '01034011322';
+const WHATSAPP_NUMBER = '01154015353';
+
+let currentUser = null;
+let settings = {
+  planName: 'عضوية المكتبة',
+  amount: 100,
+  durationDays: 30,
+  paymentNote: 'بعد التحويل اختر صورة الإيصال واضغط إرسال عبر واتساب.'
+};
+
+const $ = id => document.getElementById(id);
+
+function showStatus(text, type='notice'){
+  $('status').style.display='block';
+  $('status').className='notice '+type;
+  $('status').textContent=text;
+}
+
+async function loadSettings(){
+  try{
+    const snap = await getDoc(doc(db,'subscriptionSettings','library'));
+    if(snap.exists()) settings = {...settings, ...snap.data()};
+  }catch(e){ console.warn('تعذر تحميل إعدادات الاشتراك',e); }
+
+  $('planName').textContent = settings.planName || 'عضوية المكتبة';
+  $('amount').textContent = `${Number(settings.amount || 0).toLocaleString('ar-EG')} جنيه`;
+  $('paymentNumber').textContent = PAYMENT_NUMBER;
+  $('paymentNote').textContent = settings.paymentNote || '';
+}
+loadSettings();
+
+onAuthStateChanged(auth, user=>{
+  currentUser = user;
+  $('loginNotice').style.display = user ? 'none' : 'block';
+  $('submitBtn').disabled = !user;
+});
+
+$('subscriptionForm').addEventListener('submit', async e=>{
+  e.preventDefault();
+
+  if(!currentUser){
+    showStatus('سجل الدخول أولًا ثم أرسل طلب الاشتراك.','error');
+    return;
+  }
+
+  const file = $('proofFile').files[0];
+  if(!file){
+    showStatus('اختر صورة إيصال الدفع أولًا.','error');
+    return;
+  }
+  if(!file.type.startsWith('image/')){
+    showStatus('الملف يجب أن يكون صورة.','error');
+    return;
+  }
+  if(file.size > 10*1024*1024){
+    showStatus('حجم الصورة يجب ألا يتجاوز 10 ميجابايت.','error');
+    return;
+  }
+
+  $('submitBtn').disabled = true;
+  $('submitBtn').textContent = 'جارٍ تجهيز طلب واتساب...';
+
+  try{
+    const requestRef = await addDoc(collection(db,'subscriptionRequests'),{
+      studentUid: currentUser.uid,
+      studentName: currentUser.displayName || '',
+      studentEmail: currentUser.email || '',
+      planId: 'library',
+      planName: settings.planName || 'عضوية المكتبة',
+      amount: Number(settings.amount || 0),
+      paymentNumber: PAYMENT_NUMBER,
+      paymentMethod: $('paymentMethod').value,
+      transactionRef: $('transactionRef').value.trim(),
+      notes: $('notes').value.trim(),
+      proofPath: `whatsapp://${WHATSAPP_NUMBER}`,
+      proofSentVia: 'WhatsApp',
+      whatsappNumber: WHATSAPP_NUMBER,
+      status: 'pending',
+      createdAt: serverTimestamp()
+    });
+
+    try{
+      await addDoc(collection(db,'notifications'),{
+        audience:'admin', targetRole:'admin', type:'subscription',
+        title:'💳 طلب اشتراك جديد',
+        message:`${currentUser.displayName || currentUser.email || 'طالب'} أرسل طلب اشتراك وسيتم إرسال الإيصال عبر واتساب.`,
+        subscriptionRequestId:requestRef.id, studentUid:currentUser.uid,
+        createdBy:currentUser.uid, createdAt:serverTimestamp(), readBy:[]
+      });
+    }catch(notificationError){
+      console.warn('تعذر إنشاء إشعار الأدمن',notificationError);
+    }
+
+    const message =
+`السلام عليكم، أرسلت طلب اشتراك في منصة زاد المعرفة.
+الاسم: ${currentUser.displayName || 'غير مسجل'}
+البريد: ${currentUser.email || 'غير مسجل'}
+الباقة: ${settings.planName || 'عضوية المكتبة'}
+المبلغ: ${Number(settings.amount || 0).toLocaleString('ar-EG')} جنيه
+رقم الدفع المحوّل إليه: ${PAYMENT_NUMBER}
+رقم الطلب: ${requestRef.id}
+
+سأرفق صورة إيصال الدفع مع هذه الرسالة.`;
+
+    // فتح محادثة واتساب مباشرة بدون شاشة اختيار الدردشة
+    const waUrl =
+      `https://wa.me/20${WHATSAPP_NUMBER.slice(1)}?text=${encodeURIComponent(message)}`;
+
+    window.location.href = waUrl;
+    showStatus('تم فتح المحادثة مباشرة مع رقم واتساب 01154015353. أرفق صورة الإيصال ثم اضغط إرسال.','success');
+
+    $('subscriptionForm').reset();
+
+  }catch(error){
+    console.error(error);
+    showStatus('تعذر تجهيز طلب الاشتراك: '+(error.code || error.message),'error');
+  }finally{
+    $('submitBtn').disabled = !currentUser;
+    $('submitBtn').textContent = '📲 إرسال الإيصال عبر واتساب';
+  }
+});
+</script>
+</body>
+</html>

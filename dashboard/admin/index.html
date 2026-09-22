@@ -229,6 +229,59 @@
     </section>
 
 
+
+    <!-- =====================================================
+         SUBSCRIPTIONS
+    ====================================================== -->
+    <section class="card" id="subscriptionManagement">
+      <h2>💳 إدارة اشتراكات الأعضاء</h2>
+      <p>الطالب يدفع يدويًا، ثم يرسل صورة الإيصال عبر واتساب، وبعد التحقق توافق أو ترفض الطلب من هنا.</p>
+
+      <div class="grid" style="margin-top:14px">
+        <label>اسم الباقة
+          <input id="subPlanName" placeholder="عضوية المكتبة الشهرية">
+        </label>
+        <label>قيمة الاشتراك بالجنيه
+          <input id="subAmount" type="number" min="0" step="1" placeholder="100">
+        </label>
+        <label>مدة الاشتراك بالأيام
+          <input id="subDurationDays" type="number" min="1" step="1" placeholder="30">
+        </label>
+        <label>رقم Vodafone Cash / بيانات الدفع
+          <input id="subPaymentNumber" placeholder="010xxxxxxxx">
+        </label>
+        <label style="grid-column:1/-1">ملاحظة الدفع
+          <input id="subPaymentNote" placeholder="بعد التحويل احتفظ بصورة الإيصال...">
+        </label>
+      </div>
+
+      <div class="actions" style="margin-top:12px">
+        <button id="saveSubscriptionSettings" class="btn gold" type="button">💾 حفظ إعدادات الاشتراك</button>
+        <span id="subscriptionSettingsStatus"></span>
+      </div>
+
+      <h3 style="margin-top:28px">📋 طلبات الاشتراك</h3>
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>الطالب</th>
+              <th>الباقة</th>
+              <th>المبلغ</th>
+              <th>طريقة الدفع</th>
+              <th>التاريخ</th>
+              <th>واتساب الإيصال</th>
+              <th>الحالة</th>
+              <th>الإجراء</th>
+            </tr>
+          </thead>
+          <tbody id="subscriptionRows">
+            <tr><td colspan="8">جارٍ تحميل الطلبات...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
     <!-- =====================================================
          CONTENT MANAGEMENT
     ====================================================== -->
@@ -852,6 +905,7 @@ import {
 import {
   collection,
   getDocs,
+  getDoc,
   doc,
   setDoc,
   updateDoc,
@@ -861,7 +915,8 @@ import {
   query,
   orderBy,
   limit,
-  where
+  where,
+  Timestamp
 } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 
 
@@ -4341,6 +4396,191 @@ syncStudentCounterButton?.addEventListener('click', async () => {
 });
 
 
+
+/* =====================================================
+   SUBSCRIPTIONS
+===================================================== */
+const subscriptionRows = $('subscriptionRows');
+const subscriptionSettingsStatus = $('subscriptionSettingsStatus');
+
+async function loadSubscriptionSettings(){
+  try{
+    const snap = await getDoc(doc(db,'subscriptionSettings','library'));
+    const data = snap.exists() ? snap.data() : {
+      planName:'عضوية المكتبة الشهرية',
+      amount:100,
+      durationDays:30,
+      paymentNumber:'',
+      paymentNote:'بعد الدفع احتفظ بصورة الإيصال وارفعها في صفحة الاشتراك.'
+    };
+    $('subPlanName').value = data.planName || '';
+    $('subAmount').value = data.amount ?? 100;
+    $('subDurationDays').value = data.durationDays ?? 30;
+    $('subPaymentNumber').value = data.paymentNumber || '';
+    $('subPaymentNote').value = data.paymentNote || '';
+  }catch(error){
+    console.error('Subscription settings error:',error);
+    subscriptionSettingsStatus.textContent='❌ تعذر تحميل إعدادات الاشتراك.';
+  }
+}
+
+$('saveSubscriptionSettings')?.addEventListener('click', async ()=>{
+  try{
+    await setDoc(doc(db,'subscriptionSettings','library'),{
+      planName:$('subPlanName').value.trim() || 'عضوية المكتبة الشهرية',
+      amount:Number($('subAmount').value || 0),
+      durationDays:Math.max(1,Number($('subDurationDays').value || 30)),
+      paymentNumber:$('subPaymentNumber').value.trim(),
+      paymentNote:$('subPaymentNote').value.trim(),
+      updatedAt:serverTimestamp(),
+      updatedBy:auth.currentUser?.uid || null
+    },{merge:true});
+    subscriptionSettingsStatus.textContent='✅ تم حفظ إعدادات الاشتراك.';
+  }catch(error){
+    console.error(error);
+    subscriptionSettingsStatus.textContent='❌ تعذر الحفظ: '+(error.code || error.message);
+  }
+});
+
+function subscriptionStatusText(status){
+  return status==='approved' ? '🟢 مقبول' : status==='rejected' ? '🔴 مرفوض' : '🟡 قيد المراجعة';
+}
+
+async function loadSubscriptionRequests(){
+  if(!subscriptionRows) return;
+  subscriptionRows.innerHTML='<tr><td colspan="8">جارٍ تحميل طلبات الاشتراك...</td></tr>';
+  try{
+    const snap=await getDocs(query(collection(db,'subscriptionRequests'),orderBy('createdAt','desc')));
+    if(snap.empty){
+      subscriptionRows.innerHTML='<tr><td colspan="8">لا توجد طلبات اشتراك.</td></tr>';
+      return;
+    }
+    subscriptionRows.innerHTML='';
+    snap.forEach(requestDoc=>{
+      const r=requestDoc.data();
+      const tr=document.createElement('tr');
+      tr.innerHTML=`
+        <td>${escapeHtml(r.studentName || r.studentEmail || '-')}<br><small>${escapeHtml(r.studentEmail || '')}</small></td>
+        <td>${escapeHtml(r.planName || '-')}</td>
+        <td>${Number(r.amount || 0).toLocaleString('ar-EG')} ج</td>
+        <td>${escapeHtml(r.paymentMethod || '-')}<br><small>${escapeHtml(r.transactionRef || '')}</small></td>
+        <td>${escapeHtml(formatDate(r.createdAt))}</td>
+        <td><button class="btn proof-btn" type="button">📲 فتح واتساب</button></td>
+        <td>${subscriptionStatusText(r.status)}</td>
+        <td>
+          ${r.status==='pending' ? `
+            <div class="actions" style="margin:0">
+              <button class="btn gold approve-sub" data-id="${requestDoc.id}" type="button">✅ موافقة</button>
+              <button class="btn danger reject-sub" data-id="${requestDoc.id}" type="button">❌ رفض</button>
+            </div>` : `<small>${escapeHtml(r.reviewReason || '')}</small>`}
+        </td>`;
+      subscriptionRows.appendChild(tr);
+    });
+  }catch(error){
+    console.error(error);
+    subscriptionRows.innerHTML=`<tr><td colspan="8">تعذر تحميل الطلبات: ${escapeHtml(error.code || error.message)}</td></tr>`;
+  }
+}
+
+subscriptionRows?.addEventListener('click', async event=>{
+  const proof=event.target.closest('.proof-btn');
+  if(proof){
+    const waUrl='https://wa.me/201154015353?text='+encodeURIComponent(
+      'السلام عليكم، أريد مراجعة إيصال دفع طلب اشتراك في منصة زاد المعرفة.'
+    );
+    window.open(waUrl,'_blank','noopener,noreferrer');
+    return;
+  }
+
+  const approve=event.target.closest('.approve-sub');
+  if(approve){
+    if(!confirm('هل تحققت من عملية الدفع وتريد تفعيل العضوية؟')) return;
+    approve.disabled=true;
+    try{
+      const requestRef=doc(db,'subscriptionRequests',approve.dataset.id);
+      const requestSnap=await getDoc(requestRef);
+      if(!requestSnap.exists()) throw new Error('طلب الاشتراك غير موجود.');
+      const r=requestSnap.data();
+      if(r.status!=='pending') throw new Error('تمت مراجعة هذا الطلب بالفعل.');
+
+      const settingsSnap=await getDoc(doc(db,'subscriptionSettings','library'));
+      const settings=settingsSnap.exists()?settingsSnap.data():{durationDays:30};
+      const durationDays=Math.max(1,Number(settings.durationDays || 30));
+      const start=new Date();
+      const end=new Date(start.getTime()+durationDays*24*60*60*1000);
+
+      await updateDoc(doc(db,'users',r.studentUid),{
+        subscriptionStatus:'active',
+        subscriptionPlan:r.planName || 'عضوية المكتبة',
+        subscriptionStart:Timestamp.fromDate(start),
+        subscriptionEnd:Timestamp.fromDate(end),
+        updatedAt:serverTimestamp()
+      });
+
+      await updateDoc(requestRef,{
+        status:'approved',
+        reviewedAt:serverTimestamp(),
+        reviewedBy:auth.currentUser?.uid || null,
+        subscriptionEnd:Timestamp.fromDate(end)
+      });
+
+      await addDoc(collection(db,'notifications'),{
+        audience:'user',
+        targetUid:r.studentUid,
+        type:'subscription',
+        title:'🎉 تم تفعيل عضويتك',
+        message:`تمت الموافقة على اشتراكك. العضوية فعالة حتى ${end.toLocaleDateString('ar-EG')}.`,
+        createdBy:auth.currentUser?.uid || null,
+        createdAt:serverTimestamp(),
+        readBy:[]
+      });
+
+      await loadSubscriptionRequests();
+      await loadUsers();
+    }catch(error){
+      console.error(error);
+      alert('تعذر اعتماد الاشتراك: '+(error.code || error.message));
+      approve.disabled=false;
+    }
+    return;
+  }
+
+  const reject=event.target.closest('.reject-sub');
+  if(reject){
+    const reason=prompt('اكتب سبب رفض طلب الاشتراك:','لم يتم التحقق من عملية الدفع.');
+    if(reason===null) return;
+    reject.disabled=true;
+    try{
+      const requestRef=doc(db,'subscriptionRequests',reject.dataset.id);
+      const requestSnap=await getDoc(requestRef);
+      if(!requestSnap.exists()) throw new Error('الطلب غير موجود.');
+      const r=requestSnap.data();
+      await updateDoc(requestRef,{
+        status:'rejected',
+        reviewReason:reason.trim() || 'لم يتم التحقق من عملية الدفع.',
+        reviewedAt:serverTimestamp(),
+        reviewedBy:auth.currentUser?.uid || null
+      });
+      await addDoc(collection(db,'notifications'),{
+        audience:'user',
+        targetUid:r.studentUid,
+        type:'subscription',
+        title:'❌ تم رفض طلب الاشتراك',
+        message:reason.trim() || 'لم يتم التحقق من عملية الدفع.',
+        subscriptionRequestId:reject.dataset.id,
+        createdBy:auth.currentUser?.uid || null,
+        createdAt:serverTimestamp(),
+        readBy:[]
+      });
+      await loadSubscriptionRequests();
+    }catch(error){
+      console.error(error);
+      alert('تعذر رفض الطلب: '+(error.code || error.message));
+      reject.disabled=false;
+    }
+  }
+});
+
 /* =====================================================
    INITIALIZATION
 ===================================================== */
@@ -4372,6 +4612,8 @@ guard(
     await loadContent();
 
     await loadBookings();
+    await loadSubscriptionSettings();
+    await loadSubscriptionRequests();
 
   }
 );

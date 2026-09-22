@@ -163,6 +163,17 @@
     </section>
 
 
+
+    <section class="card" id="subscriptionCard" style="margin-bottom:18px">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
+            <div>
+                <h3>💳 عضوية المكتبة</h3>
+                <p id="subscriptionStatusText" style="margin:6px 0;color:var(--muted)">جارٍ التحقق من حالة العضوية...</p>
+            </div>
+            <a id="subscriptionAction" class="btn gold" href="../../sections/subscription/index.html">اشترك الآن</a>
+        </div>
+    </section>
+
     <section class="stats-grid">
 
         <div class="card stat-card">
@@ -408,6 +419,32 @@ import {
 } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 
 
+
+
+async function loadSubscriptionStatus(uid){
+    const text=document.getElementById('subscriptionStatusText');
+    const action=document.getElementById('subscriptionAction');
+    try{
+        const snap=await getDoc(doc(db,'users',uid));
+        const p=snap.exists()?snap.data():{};
+        const end=p.subscriptionEnd?.toDate ? p.subscriptionEnd.toDate() : new Date(p.subscriptionEnd || 0);
+        const active=p.subscriptionStatus==='active' && !Number.isNaN(end.getTime()) && end.getTime()>Date.now();
+        if(active){
+            text.textContent=`🟢 عضويتك فعالة حتى ${end.toLocaleDateString('ar-EG')}. يمكنك الآن تحميل الكتب المتاحة للأعضاء.`;
+            action.textContent='📚 فتح المكتبة';
+            action.href='../../sections/library.html';
+        }else{
+            text.textContent=p.subscriptionStatus==='pending'
+                ? '🟡 لديك طلب اشتراك قيد المراجعة.'
+                : '🔒 لا توجد عضوية فعالة حاليًا.';
+            action.textContent='💳 اشترك الآن';
+            action.href='../../sections/subscription/index.html';
+        }
+    }catch(error){
+        console.error('Subscription status error:',error);
+        text.textContent='تعذر التحقق من حالة العضوية.';
+    }
+}
 
 /* =========================================================
    الحجوزات
@@ -1506,6 +1543,8 @@ onAuthStateChanged(
                 user.uid
             );
 
+
+            await loadSubscriptionStatus(user.uid);
 
             await loadLiveLessons(
                 user.uid,

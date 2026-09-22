@@ -2742,9 +2742,6 @@ function initBookTools(){
     const line=btn.closest('.book-card')?.querySelector('.progress-line span'); if(line)line.style.width=done?'100%':'0%';
     btn.onclick=()=>{const list=getStoredList('zadReadBooks');const i=list.indexOf(key);if(i>=0)list.splice(i,1);else list.push(key);setStoredList('zadReadBooks',list);const doneNow=i<0;btn.textContent=doneNow?'✓ تمت القراءة':'○ لم أقرأه بعد';if(line)line.style.width=doneNow?'100%':'0%';};
   });
-  document.querySelectorAll('.book-open').forEach(a=>a.addEventListener('click',()=>{
-    const key=bookKeyFrom(a); const list=getStoredList('zadRecentBooks').filter(x=>x!==key); list.unshift(key); setStoredList('zadRecentBooks',list.slice(0,10));
-  }));
 }
 
 /* =========================================================
@@ -2779,20 +2776,100 @@ document.addEventListener(
 </script>
 
 
-<script type="module">
-  import { auth } from '../firebase-config.js';
-  import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
 
-  // لا نعتمد على auth.currentUser فورًا؛ Firebase قد يحتاج لحظات لاستعادة الجلسة.
-  onAuthStateChanged(auth, (user) => {
-    if (user) {
-      document.documentElement.style.visibility = 'visible';
-    } else {
-      alert('يجب تسجيل الدخول أولاً للوصول إلى المكتبة.');
-      sessionStorage.setItem('redirectAfterLogin', window.location.pathname + window.location.search);
-      window.location.replace('../login/index.html');
+<div id="subscriptionGate" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:99999;align-items:center;justify-content:center;padding:18px">
+  <div style="max-width:520px;width:100%;background:#101d33;border:1px solid rgba(212,168,67,.4);border-radius:20px;padding:26px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.35)">
+    <div style="font-size:48px">🔒</div>
+    <h2 style="color:#f0c040;margin:10px 0">هذا الكتاب متاح للأعضاء المشتركين فقط</h2>
+    <p id="subscriptionGateText" style="color:#cbd5e1;line-height:2">
+      للاشتراك وتحميل الكتب، سجّل الدخول ثم قدّم طلب الاشتراك وأرفق صورة إثبات الدفع.
+    </p>
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:18px">
+      <a id="gateSubscribe" href="../subscription/index.html" style="display:inline-flex;padding:11px 18px;border-radius:12px;background:#d4a843;color:#0a1628;text-decoration:none;font-weight:800">💳 كيفية الاشتراك</a>
+      <a id="gateLogin" href="../login/index.html" style="display:inline-flex;padding:11px 18px;border-radius:12px;border:1px solid #d4a843;color:#fff;text-decoration:none;font-weight:800">🔑 تسجيل الدخول</a>
+      <button id="gateClose" type="button" style="padding:11px 18px;border-radius:12px;border:1px solid #475569;background:#17243a;color:#fff;font-weight:800;cursor:pointer">إغلاق</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { auth, db } from '../firebase-config.js';
+  import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
+  import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
+
+  let currentUser = null;
+  let currentProfile = null;
+
+  const gate = document.getElementById('subscriptionGate');
+  const gateText = document.getElementById('subscriptionGateText');
+  const closeGate = document.getElementById('gateClose');
+  const loginLink = document.getElementById('gateLogin');
+  const subscribeLink = document.getElementById('gateSubscribe');
+
+  closeGate?.addEventListener('click',()=>{ gate.style.display='none'; });
+
+  function activeSubscription(profile){
+    if(!profile || profile.subscriptionStatus !== 'active') return false;
+    const end = profile.subscriptionEnd?.toDate ? profile.subscriptionEnd.toDate() : new Date(profile.subscriptionEnd || 0);
+    return !Number.isNaN(end.getTime()) && end.getTime() > Date.now();
+  }
+
+  async function refreshProfile(user){
+    currentUser=user;
+    currentProfile=null;
+    if(user){
+      try{
+        const snap=await getDoc(doc(db,'users',user.uid));
+        currentProfile=snap.exists()?snap.data():null;
+      }catch(error){
+        console.warn('تعذر قراءة حالة العضوية:',error);
+      }
     }
+  }
+
+  function showSubscriptionGate(){
+    gateText.textContent = currentUser
+      ? 'حسابك غير مشترك حاليًا. اضغط «كيفية الاشتراك» لمعرفة طريقة الدفع ورفع إثبات العملية، ثم انتظر مراجعة الإدارة.'
+      : 'لتحميل الكتب يجب أن يكون لديك حساب ثم عضوية فعالة. سجّل الدخول أولًا، وبعدها قدّم طلب الاشتراك وأرفق صورة إثبات الدفع.';
+    loginLink.style.display=currentUser?'none':'inline-flex';
+    subscribeLink.href='../subscription/index.html';
+    gate.style.display='flex';
+  }
+
+  async function protectBookLink(event){
+    event.preventDefault();
+    const link=event.currentTarget;
+    await refreshProfile(currentUser);
+    if(activeSubscription(currentProfile)){
+      const key=decodeURIComponent(link.dataset.bookKey||'');
+      try{
+        const list=JSON.parse(localStorage.getItem('zadRecentBooks')||'[]').filter(x=>x!==key);
+        list.unshift(key);
+        localStorage.setItem('zadRecentBooks',JSON.stringify(list.slice(0,10)));
+      }catch(e){}
+      window.open(link.href,'_blank','noopener,noreferrer');
+      return;
+    }
+    showSubscriptionGate();
+  }
+
+  function bindProtectedDownloads(){
+    document.querySelectorAll('.book-open').forEach(a=>{
+      if(a.dataset.subscriptionGuard==='1') return;
+      a.dataset.subscriptionGuard='1';
+      a.addEventListener('click',protectBookLink);
+    });
+  }
+
+  // المكتبة نفسها مفتوحة للتصفح، لكن فتح/تحميل الكتاب محمي بعضوية فعالة.
+  onAuthStateChanged(auth, async user=>{
+    await refreshProfile(user);
+    document.documentElement.style.visibility='visible';
+    bindProtectedDownloads();
   });
+
+  const observer = new MutationObserver(()=>bindProtectedDownloads());
+  observer.observe(document.getElementById('books-grid'),{childList:true,subtree:true});
 </script>
 
 </body>
