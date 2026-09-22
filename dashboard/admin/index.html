@@ -143,6 +143,39 @@
 
 
     <!-- =====================================================
+         PLATFORM ANALYTICS
+    ====================================================== -->
+    <section class="card" id="platformAnalytics">
+      <div class="actions" style="justify-content:space-between;align-items:center">
+        <div><h2 style="margin:0">📊 إحصائيات المنصة</h2><p id="enhDataStatus" style="margin:6px 0;color:var(--muted)">بيانات مباشرة من Firebase.</p></div>
+        <button id="enhRefreshData" class="btn gold" type="button">🔄 تحديث</button>
+      </div>
+      <div class="enh-grid">
+        <div class="enh-stat">👥 المستخدمون<b id="enhTotalUsers">0</b><small>إجمالي الحسابات</small></div>
+        <div class="enh-stat">🎓 الطلاب<b id="enhStudents">0</b><small>حسابات الطلاب</small></div>
+        <div class="enh-stat">👨‍🏫 المعلمون<b id="enhTeachers">0</b><small>حسابات المعلمين</small></div>
+        <div class="enh-stat">⏳ معلمون بانتظار الاعتماد<b id="enhPendingTeachers">0</b><small>تحتاج مراجعة</small></div>
+        <div class="enh-stat">💳 عضويات نشطة<b id="enhActiveSubs">0</b><small>حاليًا</small></div>
+        <div class="enh-stat">🧾 طلبات اشتراك<b id="enhPendingSubs">0</b><small>قيد المراجعة</small></div>
+        <div class="enh-stat">📅 الحجوزات<b id="enhBookings">0</b><small>إجمالي الطلبات</small></div>
+        <div class="enh-stat">📝 محاولات الاختبارات<b id="enhQuizAttempts">0</b><small>المحفوظة</small></div>
+        <div class="enh-stat">🆕 تسجيلات اليوم<b id="enhNewToday">0</b><small>منذ منتصف الليل</small></div>
+      </div>
+    </section>
+
+    <!-- إدارة وبحث المستخدمين -->
+    <section class="card" id="enhancedUsersSearch">
+      <div class="actions" style="justify-content:space-between"><h2 style="margin:0">🔎 بحث وتصفية الحسابات</h2><button id="enhExportUsers" class="btn gold" type="button">📥 تصدير CSV</button></div>
+      <div class="enh-toolbar" style="margin-top:12px">
+        <input id="enhUserSearch" type="search" placeholder="ابحث بالاسم أو البريد أو الهاتف أو المدينة">
+        <select id="enhRoleFilter"><option value="all">كل الأنواع</option><option value="student">طلاب</option><option value="teacher">معلمون</option></select>
+        <select id="enhStatusFilter"><option value="all">كل الحالات</option><option value="active">نشط</option><option value="pending">قيد المراجعة</option><option value="disabled">معطل</option><option value="banned">محظور</option></select>
+        <select id="enhCountryFilter"><option value="all">كل البلدان</option></select>
+      </div>
+      <div class="table-wrap enh-table"><table class="table"><thead><tr><th>الاسم</th><th>البريد</th><th>البلد</th><th>المدينة</th><th>النوع</th><th>الحالة</th><th>التسجيل</th></tr></thead><tbody id="enhUsersRows"><tr><td colspan="7">جارٍ التحميل…</td></tr></tbody></table></div>
+    </section>
+
+    <!-- =====================================================
          USERS
     ====================================================== -->
 
@@ -252,6 +285,12 @@
         <label>مدة الاشتراك بالأيام
           <input id="subDurationDays" type="number" min="1" step="1" placeholder="30">
         </label>
+        <div style="grid-column:1/-1">
+          <label>الباقات المتعددة</label>
+          <div id="subscriptionPlansEditor" class="plans-editor"></div>
+          <button id="addSubscriptionPlan" class="btn" type="button" style="margin-top:10px">➕ إضافة باقة</button>
+          <small style="display:block;margin-top:8px;opacity:.75">أضف الباقات من الحقول مباشرة، بدون كتابة JSON.</small>
+        </div>
         <label>رقم Vodafone Cash / بيانات الدفع
           <input id="subPaymentNumber" placeholder="010xxxxxxxx">
         </label>
@@ -286,6 +325,8 @@
         </table>
       </div>
     </section>
+
+<section class="card" id="homepageManagement"><h2>🏠 أرقام الصفحة الرئيسية</h2><p>تظهر هذه الأرقام للزوار ويمكن تعديلها من الإدارة.</p><div class="grid" style="margin-top:14px"><label>الطلاب<input id="homeStatStudents" type="number" min="0"></label><label>الكتب<input id="homeStatBooks" type="number" min="0"></label><label>الأقسام<input id="homeStatCategories" type="number" min="0"></label><label>الاختبارات<input id="homeStatTests" type="number" min="0"></label></div><div class="actions"><button id="saveHomeStats" class="btn gold" type="button">💾 حفظ الأرقام</button><span id="homeStatsStatus"></span></div><div style="margin-top:10px;color:#cbd5e1;font-size:13px">ملاحظة: يجب نشر قواعد Firestore الحالية في Firebase Console حتى يتمكن الأدمن من الحفظ.</div></section>
 
     <!-- =====================================================
          CONTENT MANAGEMENT
@@ -452,6 +493,43 @@
          LOGIN LOGS
     ====================================================== -->
 
+
+    <!-- =====================================================
+         FULL QUIZ CENTER
+    ====================================================== -->
+    <section class="card" id="quizCenterManagement">
+      <div class="actions" style="justify-content:space-between;gap:10px;flex-wrap:wrap">
+        <div><h3>📝 مركز الاختبارات الكامل</h3><p style="margin:6px 0;color:var(--muted)">اختبارات عامة، بنك أسئلة، وقت محدد، محاولات متعددة، واختبارات نهائية.</p></div>
+        <button id="quizCenterRefresh" class="btn gold" type="button">🔄 تحديث</button>
+      </div>
+      <form id="fullQuizForm" class="admin-form" style="margin-top:16px">
+        <div class="grid">
+          <label>عنوان الاختبار<input id="fullQuizTitle" required placeholder="مثال: اختبار العقيدة — الوحدة الأولى"></label>
+          <label>المادة<input id="fullQuizSubject" required placeholder="العقيدة"></label>
+          <label>الصف<input id="fullQuizGrade" placeholder="أولى ثانوي"></label>
+          <label>نوع الاختبار<select id="fullQuizType"><option value="regular">اختبار عادي</option><option value="final">اختبار نهاية الوحدة</option><option value="bank">اختبار من بنك الأسئلة</option></select></label>
+          <label>المدة بالدقائق<input id="fullQuizDuration" type="number" min="1" max="240" value="20"></label>
+          <label>أقصى عدد محاولات<input id="fullQuizAttempts" type="number" min="1" max="20" value="1"></label>
+          <label>درجة النجاح %<input id="fullQuizPass" type="number" min="0" max="100" value="50"></label>
+          <label>الاستهداف<select id="fullQuizAudience"><option value="all">جميع الطلاب</option><option value="grade">طلاب صف محدد</option><option value="section">طلاب قسم محدد</option></select></label>
+          <label id="fullQuizAudienceValueWrap" style="display:none">القيمة<input id="fullQuizAudienceValue" placeholder="مثال: ثانية ثانوي أو القرآن الكريم"></label>
+        </div>
+        <div style="margin-top:16px">
+          <div class="actions" style="justify-content:space-between"><h4 style="margin:0">بناء الأسئلة</h4><button id="fullQuizAddQuestion" class="btn" type="button">+ إضافة سؤال</button></div>
+          <div id="fullQuizQuestions" style="margin-top:10px"></div>
+          <p style="color:var(--muted);font-size:13px">يدعم اختيار من متعدد، صح/خطأ، وترتيب العناصر. يمكن حفظ الأسئلة في بنك الأسئلة.</p>
+        </div>
+        <label style="display:flex;align-items:center;gap:8px;margin-top:12px"><input id="fullQuizSaveBank" type="checkbox"> حفظ الأسئلة أيضًا في بنك الأسئلة</label>
+        <div class="actions" style="margin-top:14px"><button class="btn gold" type="submit">💾 حفظ الاختبار</button><button id="fullQuizCancel" class="btn" type="button">تفريغ</button></div>
+        <p id="fullQuizStatus" class="notice" style="display:none;margin-top:10px"></p>
+      </form>
+      <div class="grid" style="margin-top:18px">
+        <div class="card"><h4>📚 الاختبارات المحفوظة</h4><div id="fullQuizList">جارٍ التحميل…</div></div>
+        <div class="card"><h4>🧰 بنك الأسئلة</h4><div id="questionBankList">جارٍ التحميل…</div></div>
+      </div>
+      <div class="table-wrap" style="margin-top:18px"><table class="table"><thead><tr><th>الطالب</th><th>الاختبار</th><th>الدرجة</th><th>النتيجة</th><th>الوقت</th></tr></thead><tbody id="fullQuizAttemptsRows"><tr><td colspan="5">جارٍ التحميل…</td></tr></tbody></table></div>
+    </section>
+
     <!-- =====================================================
          LIVE GOOGLE MEET LESSONS
     ====================================================== -->
@@ -531,6 +609,13 @@
           <tbody id="lessonFollowUpRows"><tr><td colspan="6">جارٍ التحميل…</td></tr></tbody>
         </table>
       </div>
+    </section>
+
+
+    <section class="card" id="attendanceManagement">
+      <div class="actions" style="justify-content:space-between"><div><h3>📋 إدارة الحضور والغياب</h3><p style="margin:6px 0;color:var(--muted)">حدد المحاضرة ثم سجل حاضر أو غائب لكل طالب مستهدف.</p></div><button id="refreshAttendance" class="btn gold" type="button">🔄 تحديث</button></div>
+      <div class="grid" style="margin-top:14px"><label>المحاضرة<select id="attendanceLessonSelect"><option value="">اختر المحاضرة</option></select></label><label>بحث عن طالب<input id="attendanceStudentSearch" placeholder="اسم الطالب أو البريد"></label></div>
+      <div class="table-wrap" style="margin-top:14px"><table class="table"><thead><tr><th>الطالب</th><th>الصف</th><th>الحالة</th><th>إجراء</th></tr></thead><tbody id="attendanceRows"><tr><td colspan="4">اختر محاضرة.</td></tr></tbody></table></div>
     </section>
 
     <section class="card" id="loginLogsManagement">
@@ -734,13 +819,12 @@
 
             <select id="notificationAudience">
 
-              <option value="all">
-                👥 جميع المستخدمين
-              </option>
-
-              <option value="user">
-                👤 مستخدم محدد
-              </option>
+              <option value="all">👥 جميع المستخدمين</option>
+              <option value="students">🎓 جميع الطلاب</option>
+              <option value="teachers">👨‍🏫 جميع المعلمين</option>
+              <option value="grade">📚 طلاب صف محدد</option>
+              <option value="section">🧭 طلاب قسم محدد</option>
+              <option value="user">👤 مستخدم محدد</option>
 
             </select>
 
@@ -757,6 +841,11 @@
 
             <select id="notificationUser"></select>
 
+          </label>
+
+          <label id="notificationGroupWrap" style="display:none">
+            قيمة الاستهداف
+            <input id="notificationGroupValue" placeholder="مثال: أولى ثانوي أو القرآن الكريم">
           </label>
 
         </div>
@@ -1164,6 +1253,29 @@ function showUser(user) {
       `
     ).join('');
 
+
+  userInfo.innerHTML += `
+    <div class="card" style="margin-top:14px">
+      <h4>✏️ تعديل البيانات الأساسية</h4>
+      <form id="enhEditUserForm" class="admin-form" style="display:grid;gap:8px;margin-top:10px">
+        <input id="enhEditName" value="${escapeHtml(user.fullName || user.name || '')}" placeholder="الاسم">
+        <input id="enhEditPhone" value="${escapeHtml(user.phone || '')}" placeholder="الهاتف">
+        <input id="enhEditCountry" value="${escapeHtml(user.country || '')}" placeholder="البلد">
+        <input id="enhEditCity" value="${escapeHtml(user.city || '')}" placeholder="المدينة">
+        <input id="enhEditGrade" value="${escapeHtml(user.role === 'teacher' ? (user.subject || user.grade || '') : (user.grade || user.studyGrade || ''))}" placeholder="الصف / المادة">
+        <button class="btn gold" type="submit">💾 حفظ التعديلات</button>
+        <span id="enhEditStatus" class="notice" style="display:none"></span>
+      </form>
+    </div>`;
+  document.getElementById('enhEditUserForm')?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const out=document.getElementById('enhEditStatus'); out.style.display='block'; out.textContent='جارٍ الحفظ…';
+    try {
+      const patch={fullName:document.getElementById('enhEditName').value.trim(),name:document.getElementById('enhEditName').value.trim(),phone:document.getElementById('enhEditPhone').value.trim(),country:document.getElementById('enhEditCountry').value.trim(),city:document.getElementById('enhEditCity').value.trim(),updatedAt:serverTimestamp()};
+      if(user.role==='teacher') patch.subject=document.getElementById('enhEditGrade').value.trim(); else patch.grade=document.getElementById('enhEditGrade').value.trim();
+      await updateDoc(doc(db,'users',user.uid),patch); out.textContent='تم الحفظ بنجاح.'; out.classList.add('success'); await loadUsers();
+    } catch(error){ console.error(error); out.textContent='تعذر حفظ التعديلات.'; }
+  });
 
   modal.classList.add('show');
 
@@ -2045,6 +2157,7 @@ function editLesson(item) {
   $('lessonTeacher').value = item.teacherName || '';
   $('lessonDate').value = item.date || '';
   $('lessonMeetUrl').value = item.meetUrl || '';
+  if ($('lessonPostQuiz')) $('lessonPostQuiz').checked = Array.isArray(item.postQuiz) && item.postQuiz.length > 0;
   $('lessonAudience').value = item.audience === 'selected' ? 'selected' : 'all';
   window.selectedLessonStudentIds = new Set(item.targetUids || []);
   $('lessonStudentsWrap').style.display = item.audience === 'selected' ? 'block' : 'none';
@@ -2138,6 +2251,7 @@ lessonForm?.addEventListener('submit', async (event) => {
     date: $('lessonDate').value,
     meetUrl,
     preQuiz: questions,
+    postQuiz: $('lessonPostQuiz')?.checked ? questions : [],
     audience: $('lessonAudience').value,
     targetUids: $('lessonAudience').value === 'selected' ? [...(window.selectedLessonStudentIds || new Set())] : [],
     updatedAt: serverTimestamp()
@@ -2378,6 +2492,9 @@ const notificationUserWrap =
 const notificationUser =
   $('notificationUser');
 
+const notificationGroupWrap = $('notificationGroupWrap');
+const notificationGroupValue = $('notificationGroupValue');
+
 const sendNotification =
   $('sendNotification');
 
@@ -2478,18 +2595,12 @@ function populateNotificationUsers(
 
 function toggleNotificationAudience() {
 
-  const isUser =
-    notificationAudience.value === 'user';
-
-
-  notificationUserWrap.style.display =
-    isUser
-      ? 'grid'
-      : 'none';
-
-
-  notificationUser.required =
-    isUser;
+  const isUser = notificationAudience.value === 'user';
+  const isGroup = ['grade','section'].includes(notificationAudience.value);
+  notificationUserWrap.style.display = isUser ? 'grid' : 'none';
+  if (typeof notificationGroupWrap !== 'undefined') notificationGroupWrap.style.display = isGroup ? 'grid' : 'none';
+  notificationUser.required = isUser;
+  if (typeof notificationGroupValue !== 'undefined') notificationGroupValue.required = isGroup;
 
 }
 
@@ -2544,19 +2655,8 @@ async function sendNotificationFromAdmin(
   }
 
 
-  if (
-    audience === 'user' &&
-    !targetUid
-  ) {
-
-    showNotificationStatus(
-      'اختر المستخدم الذي تريد إرسال الإشعار إليه.',
-      'error'
-    );
-
-    return;
-
-  }
+  if (audience === 'user' && !targetUid) { showNotificationStatus('اختر المستخدم الذي تريد إرسال الإشعار إليه.','error'); return; }
+  if (['grade','section'].includes(audience) && !notificationGroupValue.value.trim()) { showNotificationStatus('اكتب قيمة الاستهداف أولًا.','error'); return; }
 
 
   try {
@@ -2569,45 +2669,16 @@ async function sendNotificationFromAdmin(
       'جارٍ إرسال الإشعار…';
 
 
-    const data = {
-
-      title,
-
-      message,
-
-      type,
-
-      audience,
-
-      readBy: [],
-
-      createdAt:
-        serverTimestamp(),
-
-      createdBy:
-        auth.currentUser?.uid ||
-        null
-
-    };
-
-
-    if (
-      audience === 'user'
-    ) {
-
-      data.targetUid =
-        targetUid;
-
-    }
-
-
-    await addDoc(
-      collection(
-        db,
-        'notifications'
-      ),
-      data
-    );
+    const usersSnap = await getDocs(collection(db,'users'));
+    let targets = [];
+    if (audience === 'user') targets = [targetUid];
+    else if (audience === 'all') targets = usersSnap.docs.map(d=>d.id);
+    else if (audience === 'students') targets = usersSnap.docs.filter(d=>d.data().role==='student').map(d=>d.id);
+    else if (audience === 'teachers') targets = usersSnap.docs.filter(d=>d.data().role==='teacher').map(d=>d.id);
+    else if (audience === 'grade') { const g=notificationGroupValue.value.trim().toLowerCase(); targets=usersSnap.docs.filter(d=>{const x=d.data();return x.role==='student' && [x.grade,x.studyGrade,x.className].some(v=>String(v||'').trim().toLowerCase()===g)}).map(d=>d.id); }
+    else if (audience === 'section') { const g=notificationGroupValue.value.trim().toLowerCase(); targets=usersSnap.docs.filter(d=>{const x=d.data();return x.role==='student' && [x.section,x.category,x.subject].some(v=>String(v||'').trim().toLowerCase()===g)}).map(d=>d.id); }
+    if (!targets.length) throw new Error('لم يتم العثور على مستلمين مطابقين.');
+    await Promise.all(targets.map(uid=>addDoc(collection(db,'notifications'),{title,message,type,audience:'user',targetUid:uid,groupAudience:audience,readBy:[],createdAt:serverTimestamp(),createdBy:auth.currentUser?.uid||null})));
 
 
     notificationForm.reset();
@@ -4435,6 +4506,34 @@ syncStudentCounterButton?.addEventListener('click', async () => {
 const subscriptionRows = $('subscriptionRows');
 const subscriptionSettingsStatus = $('subscriptionSettingsStatus');
 
+function renderSubscriptionPlans(plans){
+  const box=$('subscriptionPlansEditor'); if(!box) return;
+  box.innerHTML='';
+  (Array.isArray(plans)?plans:[]).forEach((plan,i)=>addSubscriptionPlanRow(plan,i));
+}
+function addSubscriptionPlanRow(plan={}, index=null){
+  const box=$('subscriptionPlansEditor'); if(!box) return;
+  const row=document.createElement('div'); row.className='plan-row';
+  row.innerHTML=`<input data-plan-id placeholder="المعرف" value="${String(plan.id||'').replace(/"/g,'&quot;')}">
+    <input data-plan-name placeholder="اسم الباقة" value="${String(plan.name||'').replace(/"/g,'&quot;')}">
+    <input data-plan-amount type="number" min="0" placeholder="السعر" value="${Number(plan.amount||0)}">
+    <input data-plan-days type="number" min="1" placeholder="المدة بالأيام" value="${Number(plan.durationDays||30)}">
+    <input data-plan-desc placeholder="الوصف" value="${String(plan.description||'').replace(/"/g,'&quot;')}">
+    <button type="button" class="btn danger remove-plan">🗑️ حذف</button>`;
+  row.querySelector('.remove-plan').addEventListener('click',()=>row.remove());
+  box.appendChild(row);
+}
+function collectSubscriptionPlans(){
+  return [...document.querySelectorAll('#subscriptionPlansEditor .plan-row')].map((row,i)=>({
+    id:row.querySelector('[data-plan-id]')?.value.trim()||`plan-${i+1}`,
+    name:row.querySelector('[data-plan-name]')?.value.trim()||`باقة ${i+1}`,
+    amount:Number(row.querySelector('[data-plan-amount]')?.value||0),
+    durationDays:Math.max(1,Number(row.querySelector('[data-plan-days]')?.value||30)),
+    description:row.querySelector('[data-plan-desc]')?.value.trim()||''
+  })).filter(x=>x.name);
+}
+$('addSubscriptionPlan')?.addEventListener('click',()=>addSubscriptionPlanRow({id:'',name:'',amount:0,durationDays:30,description:''}));
+
 async function loadSubscriptionSettings(){
   try{
     const snap = await getDoc(doc(db,'subscriptionSettings','library'));
@@ -4450,6 +4549,7 @@ async function loadSubscriptionSettings(){
     $('subDurationDays').value = data.durationDays ?? 30;
     $('subPaymentNumber').value = data.paymentNumber || '';
     $('subPaymentNote').value = data.paymentNote || '';
+    renderSubscriptionPlans(data.plans||[{id:'monthly',name:data.planName||'عضوية شهرية',amount:Number(data.amount||100),durationDays:Number(data.durationDays||30),description:'عضوية المنصة'}]);
   }catch(error){
     console.error('Subscription settings error:',error);
     subscriptionSettingsStatus.textContent='❌ تعذر تحميل إعدادات الاشتراك.';
@@ -4464,6 +4564,7 @@ $('saveSubscriptionSettings')?.addEventListener('click', async ()=>{
       durationDays:Math.max(1,Number($('subDurationDays').value || 30)),
       paymentNumber:$('subPaymentNumber').value.trim(),
       paymentNote:$('subPaymentNote').value.trim(),
+      plans:collectSubscriptionPlans(),
       updatedAt:serverTimestamp(),
       updatedBy:auth.currentUser?.uid || null
     },{merge:true});
@@ -4537,7 +4638,7 @@ subscriptionRows?.addEventListener('click', async event=>{
 
       const settingsSnap=await getDoc(doc(db,'subscriptionSettings','library'));
       const settings=settingsSnap.exists()?settingsSnap.data():{durationDays:30};
-      const durationDays=Math.max(1,Number(settings.durationDays || 30));
+      const durationDays=Math.max(1,Number(r.durationDays || settings.durationDays || 30));
       const start=new Date();
       const end=new Date(start.getTime()+durationDays*24*60*60*1000);
 
@@ -4614,6 +4715,27 @@ subscriptionRows?.addEventListener('click', async event=>{
 });
 
 /* =====================================================
+   HOMEPAGE STATS
+===================================================== */
+async function loadHomeStatsAdmin(){for(const id of ['students','books','categories','tests']){try{const snap=await getDoc(doc(db,'publicStats',id));const el=document.getElementById('homeStat'+id.charAt(0).toUpperCase()+id.slice(1));if(el)el.value=snap.exists()?(snap.data().total||snap.data().count||0):0}catch(e){}}}
+$('saveHomeStats')?.addEventListener('click',async()=>{
+  const status=$('homeStatsStatus');
+  const button=$('saveHomeStats');
+  try{
+    button.disabled=true;
+    status.textContent='جارٍ الحفظ...';
+    for(const id of ['students','books','categories','tests']){
+      const el=document.getElementById('homeStat'+id.charAt(0).toUpperCase()+id.slice(1));
+      await setDoc(doc(db,'publicStats',id),{total:Number(el?.value||0),updatedAt:serverTimestamp(),source:'admin-homepage',updatedBy:auth.currentUser?.uid||null},{merge:true});
+    }
+    status.textContent='✅ تم حفظ الأرقام بنجاح.';
+  }catch(e){
+    console.error('Home stats save error:',e);
+    status.textContent='❌ '+(e.code==='permission-denied'?'صلاحية Firestore مرفوضة. انشر ملف firestore.rules الموجود مع النسخة ثم أعد المحاولة.':(e.code||e.message));
+  }finally{button.disabled=false;}
+});
+
+/* =====================================================
    INITIALIZATION
 ===================================================== */
 
@@ -4646,6 +4768,7 @@ guard(
     await loadBookings();
     await loadSubscriptionSettings();
     await loadSubscriptionRequests();
+    await loadHomeStatsAdmin();
 
   }
 );
@@ -4746,6 +4869,9 @@ onAuthStateChanged(
 
 </script>
 
+<script type="module" src="admin-enhancements.js"></script>
+<script type="module" src="quiz-center-admin.js"></script>
+<script type="module" src="attendance-admin.js"></script>
 </body>
 
 </html>

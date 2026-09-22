@@ -3507,3 +3507,23 @@ button {
 html, body, img, video { -webkit-user-select: none; user-select: none; }
 img, video { -webkit-user-drag: none; }
 input, textarea, select, [contenteditable="true"] { -webkit-user-select: text; user-select: text; }
+
+
+/* تحسين قسم لماذا زاد المعرفة */
+.why-zad-section{position:relative;overflow:hidden}
+.why-zad-shell{position:relative;border:1px solid rgba(255,255,255,.09);border-radius:30px;padding:34px;background:linear-gradient(135deg,rgba(24,37,62,.98),rgba(12,23,43,.98));box-shadow:0 24px 70px rgba(0,0,0,.18)}
+.why-zad-shell:before{content:"";position:absolute;width:280px;height:280px;border-radius:50%;top:-150px;left:-90px;background:rgba(245,195,55,.08);filter:blur(10px);pointer-events:none}
+.why-zad-head{position:relative;display:flex;align-items:flex-end;justify-content:space-between;gap:28px;margin-bottom:28px}
+.why-zad-head .section-title{margin-bottom:10px}
+.why-zad-head .section-sub{max-width:760px;line-height:1.9}
+.why-zad-badge{flex:0 0 auto;display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:999px;background:rgba(245,195,55,.1);border:1px solid rgba(245,195,55,.25);color:var(--text)}
+.why-zad-badge span{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:rgba(245,195,55,.18);color:#f5c337}
+.why-zad-grid{position:relative;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.why-zad-card{display:flex;gap:17px;align-items:flex-start;padding:22px;border-radius:22px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07);transition:transform .25s ease,border-color .25s ease,background .25s ease}
+.why-zad-card:hover{transform:translateY(-4px);border-color:rgba(245,195,55,.35);background:rgba(255,255,255,.055)}
+.why-zad-icon{flex:0 0 54px;width:54px;height:54px;border-radius:16px;display:grid;place-items:center;font-size:27px;background:linear-gradient(145deg,rgba(245,195,55,.2),rgba(245,195,55,.07));border:1px solid rgba(245,195,55,.2)}
+.why-zad-kicker{display:block;font-size:.78rem;font-weight:800;color:#f5c337;margin-bottom:5px}
+.why-zad-card h3{font-size:1.12rem;font-weight:900;margin:0 0 7px}
+.why-zad-card p{margin:0;line-height:1.8;opacity:.78}
+.why-zad-bottom{position:relative;margin-top:20px;padding:17px 20px;border-radius:18px;background:rgba(245,195,55,.07);border:1px solid rgba(245,195,55,.14);display:flex;align-items:center;justify-content:space-between;gap:16px;font-weight:800}
+@media(max-width:768px){.why-zad-shell{padding:22px;border-radius:24px}.why-zad-head{display:block}.why-zad-badge{display:inline-flex;margin-top:18px}.why-zad-grid{grid-template-columns:1fr}.why-zad-bottom{display:block;text-align:center}.why-zad-bottom .btn-primary{display:inline-block;margin-top:12px}}

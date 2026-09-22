@@ -24,6 +24,9 @@ service cloud.firestore {
         request.auth.token.email == 'maleksameh121@gmail.com'
         ||
         exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+        ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid))
+          && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin')
       );
     }
 
@@ -68,7 +71,7 @@ service cloud.firestore {
           && request.resource.data.email == resource.data.email
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
             'name', 'fullName', 'phone', 'country', 'city', 'grade', 'studyGrade', 'className',
-            'subject', 'photoURL', 'displayName', 'lastLoginAt', 'updatedAt'
+            'subject', 'photoURL', 'displayName', 'lastLoginAt', 'updatedAt', 'profileCompletedAt'
           ])
         );
 
@@ -200,6 +203,16 @@ service cloud.firestore {
       allow create, update, delete: if isAdmin();
     }
 
+
+    match /questionBank/{questionId} {
+      allow read, create, update, delete: if isAdmin();
+    }
+
+    match /lessonRatings/{ratingId} {
+      allow create: if signedIn() && request.resource.data.studentUid == request.auth.uid && request.resource.data.rating is number && request.resource.data.rating >= 1 && request.resource.data.rating <= 5;
+      allow read, update, delete: if isAdmin();
+    }
+
     match /quizzes/{quizId} {
       allow read: if signedIn();
       allow create, update, delete: if isAdmin();
@@ -222,9 +235,15 @@ service cloud.firestore {
       allow read, update, delete: if isAdmin();
     }
 
+    match /libraryProgress/{progressId} {
+      allow read: if signedIn() && resource.data.studentUid == request.auth.uid;
+      allow create: if signedIn() && request.resource.data.studentUid == request.auth.uid;
+      allow update, delete: if signedIn() && resource.data.studentUid == request.auth.uid;
+    }
+
     match /publicStats/{statId} {
       allow read: if true;
-      allow create, update: if isAdmin() && statId == 'students';
+      allow create, update: if isAdmin() && statId in ['students', 'books', 'categories', 'tests'];
 
       allow create: if statId == 'students'
         && signedIn()
@@ -247,6 +266,18 @@ service cloud.firestore {
         && getAfter(/databases/$(database)/documents/users/$(uid)).data.role == 'student';
       allow read: if isOwner(uid) || isAdmin();
       allow update, delete: if isAdmin();
+    }
+
+
+    match /auditLogs/{logId} {
+      allow read: if isAdmin();
+      allow create: if isAdmin();
+      allow update, delete: if isAdmin();
+    }
+
+    match /certificates/{certificateId} {
+      allow read: if isAdmin() || (signedIn() && resource.data.studentUid == request.auth.uid);
+      allow create, update, delete: if isAdmin();
     }
 
     match /{document=**} {

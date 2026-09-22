@@ -63,7 +63,15 @@
 <script src="assets/translation.js"></script>
 <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 <script src="content-protection.js" defer></script>
-</head>
+<script type="application/ld+json">{
+    "@context":"https://schema.org",
+    "@type":"EducationalOrganization",
+    "name":"زاد المعرفة",
+    "description":"منصة تعليمية إسلامية للقرآن الكريم والعلوم الشرعية واللغة العربية والتزكية.",
+    "email":"zadalmarfah@gmail.com",
+    "address":{"@type":"PostalAddress","addressLocality":"Cairo","addressCountry":"EG"}
+  }</script>
+<style>.why-card,.faq-item{background:rgba(16,29,51,.75);border:1px solid rgba(212,168,67,.22);border-radius:18px;padding:24px;color:inherit}.why-card h3{font-weight:800;margin-bottom:8px}.why-card p,.faq-item p{opacity:.78;line-height:1.9}.faq-item{padding:0}.faq-item summary{cursor:pointer;padding:18px;font-weight:800;list-style:none}.faq-item summary::-webkit-details-marker{display:none}.faq-item p{padding:0 18px 18px;margin:0}</style></head>
   <body>
 
 <!-- ═══════════ NAVBAR ═══════════ -->
@@ -291,6 +299,14 @@
     onclick="closeMob()"
   >
     الطلاب المتميزون
+  </a>
+
+  <a
+    href="./reviews/index.html"
+    class="mob-btn"
+    onclick="closeMob()"
+  >
+    آراء الطلاب
   </a>
 
   <a
@@ -564,7 +580,12 @@
     </section>
 
     <!--footer-->
-    <footer id="footer">
+    <section id="why-zad" class="why-zad-section py-20"><div class="max-w-7xl mx-auto px-4"><div class="why-zad-shell"><div class="why-zad-head"><div><div class="section-label">لماذا زاد المعرفة؟</div><h2 class="section-title">أكثر من منصة… رحلة تعلم متكاملة</h2><p class="section-sub">نجمع لك المحتوى والخدمات والأدوات التعليمية في تجربة واحدة بسيطة ومنظمة، تساعدك على التعلم والمتابعة والاستمرار.</p></div><div class="why-zad-badge"><span>✦</span><strong>تعلم • تابع • تطور</strong></div></div><div class="why-zad-grid"><article class="why-zad-card"><div class="why-zad-icon">📚</div><div><span class="why-zad-kicker">محتوى متنوع</span><h3>كل ما تحتاجه في مكان واحد</h3><p>مكتبة واختبارات ومحاضرات وخدمات تعليمية مرتبة لتصل لما تحتاجه بسهولة.</p></div></article><article class="why-zad-card"><div class="why-zad-icon">📊</div><div><span class="why-zad-kicker">متابعة ذكية</span><h3>اعرف تقدمك باستمرار</h3><p>تابع نتائجك وحضورك ونشاطك داخل حسابك بدل ما تضيع وقتك في البحث عن بياناتك.</p></div></article><article class="why-zad-card"><div class="why-zad-icon">🎯</div><div><span class="why-zad-kicker">تعلم منظم</span><h3>خطوات أوضح نحو هدفك</h3><p>تنظيم الأقسام والاختبارات والمواعيد يساعدك على بناء روتين تعلم أكثر وضوحًا.</p></div></article><article class="why-zad-card"><div class="why-zad-icon">🤝</div><div><span class="why-zad-kicker">تجربة أسهل</span><h3>خدمات مصممة للطالب</h3><p>واجهة عربية واضحة تعمل على الهاتف والكمبيوتر وتجمع أهم الأدوات في مكان واحد.</p></div></article></div><div class="why-zad-bottom"><span>✨ هدفنا أن تكون رحلتك التعليمية أوضح وأسهل</span><a class="btn-primary" href="login/register.html">ابدأ الآن</a></div></div></div></section>
+<section id="live-stats" class="py-16"><div class="max-w-7xl mx-auto px-4"><div id="homeStatsGrid" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div></div></section>
+
+<section id="faq" class="py-20"><div class="max-w-4xl mx-auto px-4"><div class="cats-header sr"><div class="section-label">أسئلة شائعة</div><h2 class="section-title">الأسئلة المتكررة</h2></div><div class="space-y-3"><details class="faq-item"><summary>هل التسجيل مجاني؟</summary><p>يمكنك إنشاء حساب مجانًا، وتختلف الخدمات أو العضويات حسب المتاح داخل المنصة.</p></details><details class="faq-item"><summary>كيف أعرف مواعيد المحاضرات؟</summary><p>ستجد المواعيد في قسم الأحداث ولوحة حسابك.</p></details><details class="faq-item"><summary>كيف أتابع نتائج الاختبارات؟</summary><p>بعد إنهاء الاختبار تُحفظ النتيجة في حسابك.</p></details><details class="faq-item"><summary>كيف أتواصل مع الإدارة؟</summary><p>استخدم بيانات التواصل الموجودة أسفل الموقع.</p></details></div></div></section>
+
+<footer id="footer">
       <div class="footer-container">
         <div class="footer-brand">
           <div class="logo">
@@ -1112,7 +1133,14 @@ document.addEventListener("DOMContentLoaded", function () {
 </script>
 <script type="module" src="auth-ui.js"></script>
 <script type="module" src="notifications.js"></script>
-<script type="module" src="push-notifications.js"></script>
 
+
+<script type="module">
+import {db} from './firebase-config.js';
+import {collection,getDocs,query,orderBy,limit} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+async function loadHomeExtras(){let st={};try{const q=await getDocs(query(collection(db,'publicStats'),limit(20)));q.forEach(d=>{const x=d.data()||{};st[d.id]=Number(x.total||x.count||0)})}catch(e){};const cards=[['students','👨‍🎓','الطلاب'],['books','📚','كتب المكتبة'],['categories','🧭','الأقسام'],['tests','📝','الاختبارات']];const sg=document.getElementById('homeStatsGrid');if(sg)sg.innerHTML=cards.map(x=>`<div class="card text-center p-6"><div class="text-3xl">${x[1]}</div><div class="text-3xl font-black mt-2">${Number(st[x[0]]||0).toLocaleString('ar-EG')}</div><div>${x[2]}</div></div>`).join('');}
+document.addEventListener('DOMContentLoaded',loadHomeExtras);
+</script>
 </body>
 </html>

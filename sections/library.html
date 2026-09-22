@@ -582,7 +582,9 @@ html.light .favorite-btn.favorite-active,body.light .favorite-btn.favorite-activ
   </section>
 
 
-  <!-- =========================================
+  <section id="library-smart" style="max-width:1200px;margin:0 auto 30px;padding:0 16px"><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px"><div class="book-card"><h3>🕘 آخر الكتب</h3><div id="lastBooksList">لا توجد كتب مفتوحة مؤخرًا.</div></div><div class="book-card"><h3>⭐ المفضلة</h3><div id="favoriteBooksList">لا توجد كتب مفضلة بعد.</div></div><div class="book-card"><h3>💡 اقتراحات لك</h3><div id="suggestedBooksList">اختر صفك لرؤية اقتراحات مناسبة.</div></div></div></section>
+
+<!-- =========================================
        FOOTER
   ========================================== -->
 
@@ -2728,8 +2730,13 @@ if (window.elementSdk) {
 
 function getStoredList(name){try{return JSON.parse(localStorage.getItem(name)||'[]')}catch(e){return []}}
 function setStoredList(name,list){localStorage.setItem(name,JSON.stringify(list))}
+function saveLastBook(key){let a=getStoredList('zadRecentBooks').filter(x=>x!==key);a.unshift(key);setStoredList('zadRecentBooks',a.slice(0,10));renderSmartLibrary()}
+function renderSmartLibrary(){const map=new Map(books.map(b=>[b.title+'|'+b.url,b]));const show=(ids,empty)=>ids.slice(0,5).map(k=>{const b=map.get(k);return b?`<a href="${b.url}" target="_blank" rel="noopener" style="display:block;padding:7px 0;color:inherit">${b.icon||'📖'} ${b.title}</a>`:''}).join('')||empty;const r=document.getElementById('lastBooksList'),f=document.getElementById('favoriteBooksList'),g=document.getElementById('suggestedBooksList');if(r)r.innerHTML=show(getStoredList('zadRecentBooks'),'لا توجد كتب مفتوحة مؤخرًا.');if(f)f.innerHTML=show(getStoredList('zadFavorites'),'لا توجد كتب مفضلة بعد.');if(g){const grade=document.getElementById('gradeFilter')?.value||'';const fav=getStoredList('zadFavorites');const a=books.filter(b=>(!grade||b.grade===grade)&&!fav.includes(b.title+'|'+b.url)).sort((a,b)=>(b.popular||0)-(a.popular||0)).slice(0,5);g.innerHTML=a.map(b=>`<a href="${b.url}" target="_blank" rel="noopener" style="display:block;padding:7px 0;color:inherit">${b.icon||'📘'} ${b.title}</a>`).join('')||'لا توجد اقتراحات حاليًا.'}}
+
 function bookKeyFrom(el){return decodeURIComponent(el.dataset.bookKey||'')}
 function initBookTools(){
+  document.querySelectorAll('.book-card a[href]').forEach(a=>{a.addEventListener('click',()=>saveLastBook((a.closest('.book-card')?.querySelector('.favorite-btn')?.dataset.bookKey)||''))});
+  renderSmartLibrary();
   const favs=getStoredList('zadFavorites');
   const reads=getStoredList('zadReadBooks');
   document.querySelectorAll('.favorite-btn').forEach(btn=>{

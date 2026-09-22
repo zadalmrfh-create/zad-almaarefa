@@ -6,6 +6,7 @@
     <title>لوحة الطالب | زاد المعرفة</title>
     <link rel="icon" href="../../images/logo.png">
     <link rel="stylesheet" href="../dashboard.css">
+<link rel="stylesheet" href="../enhancements.css">
 
 <style>
 .stats-grid{
@@ -243,6 +244,34 @@
     </section>
 
 
+    <section class="card" id="profileCard">
+      <div class="actions" style="justify-content:space-between"><div><h3>👤 ملفي الشخصي</h3><p id="profileLocationSummary" style="color:var(--muted);margin:4px 0">جارٍ التحميل…</p></div></div>
+      <form id="profileForm" class="profile-grid" style="margin-top:12px">
+        <label>الاسم الكامل<input id="profileName" required></label>
+        <label>رقم الهاتف<input id="profilePhone" inputmode="tel"></label>
+        <label>البلد<input id="profileCountry" required></label>
+        <label>المدينة<input id="profileCity" required></label>
+        <label class="full">الصف الدراسي<input id="profileGrade" required></label>
+        <div class="actions full"><button id="profileSaveBtn" class="btn gold" type="submit">💾 حفظ البيانات</button></div>
+      </form>
+      <p id="profileSaveStatus" class="notice" style="display:none;margin-top:12px"></p>
+      <div class="card" style="margin-top:12px">
+        <h4>🔐 تغيير كلمة المرور</h4>
+        <form id="passwordForm" class="profile-grid">
+          <label>كلمة المرور الجديدة<input id="newPassword" type="password" minlength="6" required></label>
+          <label>تأكيد كلمة المرور<input id="confirmPassword" type="password" minlength="6" required></label>
+          <div class="actions full"><button class="btn" type="submit">تغيير كلمة المرور</button></div>
+        </form>
+        <p id="passwordStatus" class="notice" style="display:none;margin-top:10px"></p>
+      </div>
+      <div class="profile-mini-grid">
+        <div class="profile-mini"><b id="profileQuizCount">0</b><span>اختبارات</span></div>
+        <div class="profile-mini"><b id="profileAvgScore">0%</b><span>متوسط الدرجات</span></div>
+        <div class="profile-mini"><b id="profileBookingCount">0</b><span>حجوزات</span></div>
+        <div class="profile-mini"><b id="profileLibraryCount">0</b><span>عناصر المكتبة</span></div>
+      </div>
+    </section>
+
     <section class="card" id="myBookingsCard">
 
         <h3>📅 طلبات حجز الحصص</h3>
@@ -279,6 +308,12 @@
 
     </section>
 
+
+
+    <section class="card" id="fullQuizzesCard">
+      <div class="actions" style="justify-content:space-between"><div><h3>📝 الاختبارات</h3><p style="margin:6px 0;color:var(--muted)">اختبارات قصيرة واختبارات نهاية الوحدات مع حفظ النتائج وعدد المحاولات.</p></div><button id="refreshFullQuizzes" class="btn gold" type="button">🔄 تحديث</button></div>
+      <div id="fullQuizzesList" class="grid" style="margin-top:14px"><div class="card">جارٍ تحميل الاختبارات…</div></div>
+    </section>
 
     <section class="card" id="liveLessonsCard">
 
@@ -320,6 +355,11 @@
 
     </section>
 
+
+
+    <div id="fullQuizOverlay" class="quiz-overlay" role="dialog" aria-modal="true">
+      <div class="quiz-box"><div class="actions" style="justify-content:space-between"><h3 id="fullQuizTitleView" style="margin:0">📝 الاختبار</h3><button id="fullQuizClose" class="btn danger" type="button">إغلاق</button></div><div class="actions" style="justify-content:space-between"><p id="fullQuizMeta" style="color:var(--muted)"></p><strong id="fullQuizTimer" style="color:var(--gold2)"></strong></div><form id="fullQuizFormStudent"></form><button id="fullQuizSubmit" class="btn gold" type="button">إرسال الاختبار</button><p id="fullQuizResult" class="notice" style="display:none;margin-top:12px"></p></div>
+    </div>
 
     <div
         id="quizOverlay"
@@ -394,6 +434,8 @@
 </div>
 
 
+<script type="module" src="quiz-center.js"></script>
+<script type="module" src="live-enhancements.js"></script>
 <script type="module">
 
 import {
@@ -559,6 +601,7 @@ const quizResult =
 
 let currentLesson = null;
 let currentQuiz = null;
+let currentQuizType = 'pre';
 let currentStudentUid = null;
 
 
@@ -624,7 +667,7 @@ function lessonDate(value) {
    هل الطالب حل الاختبار؟
 ========================================================= */
 
-async function hasPassedQuiz(uid, lessonId) {
+async function hasPassedQuiz(uid, lessonId, type = 'pre') {
 
     const snap =
         await getDocs(
@@ -644,7 +687,7 @@ async function hasPassedQuiz(uid, lessonId) {
 
         return (
             x.lessonId === lessonId &&
-            x.type === 'pre'
+            x.type === type
         );
 
     });
@@ -827,20 +870,20 @@ async function openMeet(lesson, uid) {
    فتح الاختبار
 ========================================================= */
 
-function openQuiz(lesson, uid) {
+function openQuiz(lesson, uid, type = 'pre') {
 
     currentLesson = lesson;
+    currentQuizType = type;
 
     currentStudentUid = uid;
 
-    currentQuiz =
-        Array.isArray(lesson.preQuiz)
-            ? lesson.preQuiz
-            : [];
+    currentQuiz = type === 'post'
+        ? (Array.isArray(lesson.postQuiz) ? lesson.postQuiz : [])
+        : (Array.isArray(lesson.preQuiz) ? lesson.preQuiz : []);
 
 
     quizTitle.textContent =
-        '📝 اختبار الاستعداد — ' +
+        (type === 'post' ? '📝 اختبار بعد المحاضرة — ' : '📝 اختبار الاستعداد — ') +
         (
             lesson.title ||
             lesson.name ||
@@ -1035,7 +1078,7 @@ quizForm?.addEventListener(
                         currentLesson.id,
 
                     type:
-                        'pre',
+                        currentQuizType,
 
                     answers:
                         answers,
@@ -1313,25 +1356,30 @@ async function loadLiveLessons(
                 </p>
 
 
+                <div class="lesson-countdown" data-lesson-date="${esc(lesson.date||'')}">⏳ حساب الوقت…</div>
+
                 <div class="lesson-actions">
 
                     ${
                         hasQuiz && !passed
                             ? `
-                                <button
-                                    class="btn gold quiz-btn"
-                                    type="button"
-                                >
-                                    📝 حل اختبار الاستعداد
-                                </button>
+                                <button class="btn gold quiz-btn" type="button">📝 حل اختبار الاستعداد</button>
                               `
+                            : ''
+                    }
+                    ${
+                        Array.isArray(lesson.postQuiz) && lesson.postQuiz.length
+                            ? `<button class="btn post-quiz-btn" type="button">📝 اختبار بعد المحاضرة</button>`
                             : ''
                     }
 
 
+                    <button class="btn rate-lesson-btn" type="button">⭐ تقييم المحاضرة</button>
+
                     <button
                         class="btn meet-btn"
                         type="button"
+                        data-start="${esc(lesson.date||'')}"
                         ${
                             !meetUrl
                                 ? 'disabled'
@@ -1369,6 +1417,8 @@ async function loadLiveLessons(
             );
 
 
+            card.querySelector('.post-quiz-btn')?.addEventListener('click', () => openQuiz(lesson, uid, 'post'));
+
             const meetBtn =
                 card.querySelector(
                     '.meet-btn'
@@ -1385,6 +1435,14 @@ async function loadLiveLessons(
             );
 
 
+            card.querySelector('.rate-lesson-btn')?.addEventListener('click', async () => {
+                const value = Number(prompt('قيّم المحاضرة من 1 إلى 5', '5'));
+                if (!value || value < 1 || value > 5) return;
+                try {
+                    await addDoc(collection(db, 'lessonRatings'), { lessonId: lesson.id, studentUid: uid, rating: value, createdAt: serverTimestamp() });
+                    alert('تم تسجيل تقييمك، شكرًا لك ⭐');
+                } catch(e) { alert('تعذر حفظ التقييم: ' + (e.code || e.message)); }
+            });
             liveLessonsList.appendChild(
                 card
             );
@@ -1802,5 +1860,6 @@ document
     src="../../notifications.js"
 ></script>
 
+<script type="module" src="../student/student-enhancements.js"></script>
 </body>
 </html>

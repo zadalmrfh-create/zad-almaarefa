@@ -38,6 +38,8 @@ input[type=file]{padding:10px}
       يجب تسجيل الدخول أولًا حتى نستطيع ربط طلب الاشتراك بحسابك.
     </div>
 
+    <div class="payment-box"><h3>🎟️ اختر الباقة</h3><div id="plansGrid" class="actions"></div></div>
+    <div id="currentSubBox" class="notice" style="display:none"></div>
     <div class="payment-box">
       <h3>💳 بيانات الاشتراك</h3>
       <p>الباقة: <strong id="planName">عضوية المكتبة</strong></p>
@@ -88,12 +90,8 @@ const PAYMENT_NUMBER = '01034011322';
 const WHATSAPP_NUMBER = '01154015353';
 
 let currentUser = null;
-let settings = {
-  planName: 'عضوية المكتبة',
-  amount: 100,
-  durationDays: 30,
-  paymentNote: 'بعد التحويل اختر صورة الإيصال واضغط إرسال عبر واتساب.'
-};
+let settings={planName:'عضوية المكتبة',amount:100,durationDays:30,paymentNote:'بعد التحويل اختر صورة الإيصال واضغط إرسال عبر واتساب.',plans:[]};
+let selectedPlanId='library';
 
 const $ = id => document.getElementById(id);
 
@@ -103,24 +101,12 @@ function showStatus(text, type='notice'){
   $('status').textContent=text;
 }
 
-async function loadSettings(){
-  try{
-    const snap = await getDoc(doc(db,'subscriptionSettings','library'));
-    if(snap.exists()) settings = {...settings, ...snap.data()};
-  }catch(e){ console.warn('تعذر تحميل إعدادات الاشتراك',e); }
+async function loadSettings(){try{const snap=await getDoc(doc(db,'subscriptionSettings','library'));if(snap.exists())settings={...settings,...snap.data()}}catch(e){console.warn(e)}if(!Array.isArray(settings.plans)||!settings.plans.length)settings.plans=[{id:'library',name:settings.planName,amount:Number(settings.amount||100),durationDays:Number(settings.durationDays||30),description:'عضوية أساسية'}];const pg=$('plansGrid');if(pg)pg.innerHTML=settings.plans.map((p,i)=>`<button type="button" class="btn ${i===0?'gold':''} plan-choice" data-plan="${String(p.id||i)}"><strong>${String(p.name||'باقة')}</strong><br><small>${Number(p.amount||0).toLocaleString('ar-EG')} جنيه • ${Number(p.durationDays||30)} يوم</small></button>`).join('');pg?.querySelectorAll('.plan-choice').forEach(b=>b.onclick=()=>selectPlan(b.dataset.plan));selectPlan(settings.plans[0].id||'library');}
+function selectPlan(id){const p=(settings.plans||[]).find(x=>String(x.id)===String(id))||settings.plans[0];if(!p)return;selectedPlanId=p.id||'library';settings.planName=p.name||settings.planName;settings.amount=Number(p.amount||0);settings.durationDays=Number(p.durationDays||30);$('planName').textContent=settings.planName;$('amount').textContent=`${settings.amount.toLocaleString('ar-EG')} جنيه`;document.querySelectorAll('.plan-choice').forEach(b=>b.classList.toggle('gold',String(b.dataset.plan)===String(selectedPlanId)));}
 
-  $('planName').textContent = settings.planName || 'عضوية المكتبة';
-  $('amount').textContent = `${Number(settings.amount || 0).toLocaleString('ar-EG')} جنيه`;
-  $('paymentNumber').textContent = PAYMENT_NUMBER;
-  $('paymentNote').textContent = settings.paymentNote || '';
-}
 loadSettings();
 
-onAuthStateChanged(auth, user=>{
-  currentUser = user;
-  $('loginNotice').style.display = user ? 'none' : 'block';
-  $('submitBtn').disabled = !user;
-});
+onAuthStateChanged(auth, async user=>{currentUser=user;$('loginNotice').style.display=user?'none':'block';$('submitBtn').disabled=!user;if(user){try{const snap=await getDoc(doc(db,'users',user.uid));const d=snap.exists()?snap.data():{};if(d.subscriptionStatus==='active'&&d.subscriptionEnd){const end=d.subscriptionEnd.toDate?d.subscriptionEnd.toDate():new Date(d.subscriptionEnd);const days=Math.ceil((end-Date.now())/86400000);const box=$('currentSubBox');if(box){box.style.display='block';box.textContent=days>0?`عضويتك فعالة حتى ${end.toLocaleDateString('ar-EG')} — متبقي ${days} يوم.`:'انتهت عضويتك الحالية.';box.className='notice '+(days<=5?'error':'success')}}}catch(e){console.warn(e)}}});
 
 $('subscriptionForm').addEventListener('submit', async e=>{
   e.preventDefault();
@@ -152,8 +138,9 @@ $('subscriptionForm').addEventListener('submit', async e=>{
       studentUid: currentUser.uid,
       studentName: currentUser.displayName || '',
       studentEmail: currentUser.email || '',
-      planId: 'library',
+      planId: selectedPlanId,
       planName: settings.planName || 'عضوية المكتبة',
+      durationDays: Number(settings.durationDays || 30),
       amount: Number(settings.amount || 0),
       paymentNumber: PAYMENT_NUMBER,
       paymentMethod: $('paymentMethod').value,
