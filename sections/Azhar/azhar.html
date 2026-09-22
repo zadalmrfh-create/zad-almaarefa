@@ -272,6 +272,34 @@
     <div class="TT">
       <a class="BTN" href="../booking/index.html?section=التعليم الأزهري">احجز حصتك الآن</a>
     </div>
+
+    <!-- بوابة حماية كتب المكتبة للأعضاء المشتركين -->
+    <div id="subscriptionGate" class="subscription-gate" aria-hidden="true">
+      <div class="subscription-gate-card">
+        <div class="subscription-gate-icon">🔒</div>
+        <h2>هذا الكتاب متاح للأعضاء المشتركين فقط</h2>
+        <p id="subscriptionGateText">لتحميل الكتب يجب أن يكون لديك حساب وعضوية فعالة.</p>
+        <div class="subscription-gate-actions">
+          <a id="gateSubscribe" href="../../subscription/index.html" class="gate-subscribe">💳 كيفية الاشتراك</a>
+          <a id="gateLogin" href="../../login/index.html" class="gate-login">🔑 تسجيل الدخول</a>
+          <button id="gateClose" type="button" class="gate-close">إغلاق</button>
+        </div>
+      </div>
+    </div>
+
+<style>
+.subscription-gate{display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.72);align-items:center;justify-content:center;padding:18px}
+.subscription-gate.show{display:flex}
+.subscription-gate-card{max-width:520px;width:100%;background:#101d33;border:1px solid rgba(212,168,67,.45);border-radius:20px;padding:28px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.4);font-family:Cairo,sans-serif}
+.subscription-gate-icon{font-size:48px}
+.subscription-gate-card h2{color:#f0c040;margin:10px 0;font-size:1.35rem}
+.subscription-gate-card p{color:#cbd5e1;line-height:2;margin:0}
+.subscription-gate-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:20px}
+.subscription-gate-actions a,.subscription-gate-actions button{display:inline-flex;align-items:center;justify-content:center;padding:11px 18px;border-radius:12px;font-family:inherit;font-weight:800;text-decoration:none;cursor:pointer}
+.gate-subscribe{background:#d4a843;color:#0a1628;border:1px solid #d4a843}
+.gate-login{background:#17243a;color:#fff;border:1px solid #d4a843}
+.gate-close{background:#17243a;color:#fff;border:1px solid #475569}
+</style>
     <script type="module" src="./azhar.js"></script>
   </body>
 </html>

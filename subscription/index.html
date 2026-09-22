@@ -29,7 +29,7 @@ input[type=file]{padding:10px}
 <div class="subscription-wrap">
   <div class="subscription-card">
     <div style="text-align:center">
-      <img src="../../images/logo.png" alt="زاد المعرفة" style="width:70px;height:70px;object-fit:contain">
+      <img src="../images/logo.png" alt="زاد المعرفة" style="width:70px;height:70px;object-fit:contain">
       <h1 style="color:#f0c040">الاشتراك في زاد المعرفة</h1>
       <p style="color:#94a3b8">ادفع يدويًا ثم ارفع صورة إيصال الدفع وانتظر مراجعة الإدارة.</p>
     </div>
@@ -86,113 +86,188 @@ import { auth, db } from '../firebase-config.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
 import { doc, getDoc, addDoc, collection, serverTimestamp } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 
-const PAYMENT_NUMBER = '01034011322';
+const DEFAULT_PAYMENT_NUMBER = '01034011322';
 const WHATSAPP_NUMBER = '01154015353';
-
-let currentUser = null;
-let settings={planName:'عضوية المكتبة',amount:100,durationDays:30,paymentNote:'بعد التحويل اختر صورة الإيصال واضغط إرسال عبر واتساب.',plans:[]};
-let selectedPlanId='library';
-
 const $ = id => document.getElementById(id);
 
+let currentUser = null;
+let settings = {
+  planName:'عضوية المكتبة', amount:100, durationDays:30,
+  paymentNumber:DEFAULT_PAYMENT_NUMBER,
+  paymentNote:'بعد التحويل اختر صورة الإيصال واضغط إرسال عبر واتساب.',
+  plans:[]
+};
+let selectedPlan = null;
+
 function showStatus(text, type='notice'){
-  $('status').style.display='block';
-  $('status').className='notice '+type;
-  $('status').textContent=text;
+  const el=$('status');
+  el.style.display='block';
+  el.className='notice '+type;
+  el.textContent=text;
 }
 
-async function loadSettings(){try{const snap=await getDoc(doc(db,'subscriptionSettings','library'));if(snap.exists())settings={...settings,...snap.data()}}catch(e){console.warn(e)}if(!Array.isArray(settings.plans)||!settings.plans.length)settings.plans=[{id:'library',name:settings.planName,amount:Number(settings.amount||100),durationDays:Number(settings.durationDays||30),description:'عضوية أساسية'}];const pg=$('plansGrid');if(pg)pg.innerHTML=settings.plans.map((p,i)=>`<button type="button" class="btn ${i===0?'gold':''} plan-choice" data-plan="${String(p.id||i)}"><strong>${String(p.name||'باقة')}</strong><br><small>${Number(p.amount||0).toLocaleString('ar-EG')} جنيه • ${Number(p.durationDays||30)} يوم</small></button>`).join('');pg?.querySelectorAll('.plan-choice').forEach(b=>b.onclick=()=>selectPlan(b.dataset.plan));selectPlan(settings.plans[0].id||'library');}
-function selectPlan(id){const p=(settings.plans||[]).find(x=>String(x.id)===String(id))||settings.plans[0];if(!p)return;selectedPlanId=p.id||'library';settings.planName=p.name||settings.planName;settings.amount=Number(p.amount||0);settings.durationDays=Number(p.durationDays||30);$('planName').textContent=settings.planName;$('amount').textContent=`${settings.amount.toLocaleString('ar-EG')} جنيه`;document.querySelectorAll('.plan-choice').forEach(b=>b.classList.toggle('gold',String(b.dataset.plan)===String(selectedPlanId)));}
+function renderPlanButtons(){
+  const pg=$('plansGrid');
+  if(!pg) return;
+  pg.innerHTML='';
+  settings.plans.forEach((plan,index)=>{
+    const b=document.createElement('button');
+    b.type='button';
+    b.className='btn plan-choice'+(index===0?' gold':'');
+    b.dataset.plan=plan.id;
+    b.innerHTML=`<strong>${escapeHtml(plan.name || 'باقة')}</strong><br><small>${Number(plan.amount||0).toLocaleString('ar-EG')} جنيه • ${Number(plan.durationDays||30)} يوم</small>`;
+    b.addEventListener('click',()=>selectPlan(plan.id));
+    pg.appendChild(b);
+  });
+}
 
-loadSettings();
+function escapeHtml(value){
+  return String(value ?? '').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+}
 
-onAuthStateChanged(auth, async user=>{currentUser=user;$('loginNotice').style.display=user?'none':'block';$('submitBtn').disabled=!user;if(user){try{const snap=await getDoc(doc(db,'users',user.uid));const d=snap.exists()?snap.data():{};if(d.subscriptionStatus==='active'&&d.subscriptionEnd){const end=d.subscriptionEnd.toDate?d.subscriptionEnd.toDate():new Date(d.subscriptionEnd);const days=Math.ceil((end-Date.now())/86400000);const box=$('currentSubBox');if(box){box.style.display='block';box.textContent=days>0?`عضويتك فعالة حتى ${end.toLocaleDateString('ar-EG')} — متبقي ${days} يوم.`:'انتهت عضويتك الحالية.';box.className='notice '+(days<=5?'error':'success')}}}catch(e){console.warn(e)}}});
+function selectPlan(id){
+  const found=settings.plans.find(p=>String(p.id)===String(id));
+  if(!found) return;
+  selectedPlan=found;
+  $('planName').textContent=found.name || 'عضوية المكتبة';
+  $('amount').textContent=`${Number(found.amount||0).toLocaleString('ar-EG')} جنيه`;
+  $('paymentNumber').textContent=settings.paymentNumber || DEFAULT_PAYMENT_NUMBER;
+  $('paymentNote').textContent=settings.paymentNote || '';
+  document.querySelectorAll('.plan-choice').forEach(btn=>{
+    btn.classList.toggle('gold',String(btn.dataset.plan)===String(found.id));
+  });
+}
 
-$('subscriptionForm').addEventListener('submit', async e=>{
-  e.preventDefault();
-
-  if(!currentUser){
-    showStatus('سجل الدخول أولًا ثم أرسل طلب الاشتراك.','error');
-    return;
-  }
-
-  const file = $('proofFile').files[0];
-  if(!file){
-    showStatus('اختر صورة إيصال الدفع أولًا.','error');
-    return;
-  }
-  if(!file.type.startsWith('image/')){
-    showStatus('الملف يجب أن يكون صورة.','error');
-    return;
-  }
-  if(file.size > 10*1024*1024){
-    showStatus('حجم الصورة يجب ألا يتجاوز 10 ميجابايت.','error');
-    return;
-  }
-
-  $('submitBtn').disabled = true;
-  $('submitBtn').textContent = 'جارٍ تجهيز طلب واتساب...';
+async function loadSettings(){
+  // لا نعتمد على Firebase لكي تظهر الصفحة. نعرض الباقة الافتراضية فورًا.
+  settings.plans=[{id:'library',name:settings.planName,amount:settings.amount,durationDays:settings.durationDays,description:'عضوية المنصة'}];
+  renderPlanButtons();
+  selectPlan('library');
 
   try{
-    const requestRef = await addDoc(collection(db,'subscriptionRequests'),{
-      studentUid: currentUser.uid,
-      studentName: currentUser.displayName || '',
-      studentEmail: currentUser.email || '',
-      planId: selectedPlanId,
-      planName: settings.planName || 'عضوية المكتبة',
-      durationDays: Number(settings.durationDays || 30),
-      amount: Number(settings.amount || 0),
-      paymentNumber: PAYMENT_NUMBER,
-      paymentMethod: $('paymentMethod').value,
-      transactionRef: $('transactionRef').value.trim(),
-      notes: $('notes').value.trim(),
-      proofPath: `whatsapp://${WHATSAPP_NUMBER}`,
-      proofSentVia: 'WhatsApp',
-      whatsappNumber: WHATSAPP_NUMBER,
-      status: 'pending',
-      createdAt: serverTimestamp()
-    });
-
-    try{
-      await addDoc(collection(db,'notifications'),{
-        audience:'admin', targetRole:'admin', type:'subscription',
-        title:'💳 طلب اشتراك جديد',
-        message:`${currentUser.displayName || currentUser.email || 'طالب'} أرسل طلب اشتراك وسيتم إرسال الإيصال عبر واتساب.`,
-        subscriptionRequestId:requestRef.id, studentUid:currentUser.uid,
-        createdBy:currentUser.uid, createdAt:serverTimestamp(), readBy:[]
-      });
-    }catch(notificationError){
-      console.warn('تعذر إنشاء إشعار الأدمن',notificationError);
+    const snap=await Promise.race([
+      getDoc(doc(db,'subscriptionSettings','library')),
+      new Promise((_,reject)=>setTimeout(()=>reject(new Error('timeout')),6000))
+    ]);
+    if(snap.exists()){
+      const data=snap.data() || {};
+      settings={...settings,...data};
+      if(Array.isArray(data.plans) && data.plans.length){
+        settings.plans=data.plans.map((p,i)=>({
+          id:String(p.id || `plan-${i+1}`),
+          name:p.name || `باقة ${i+1}`,
+          amount:Number(p.amount || 0),
+          durationDays:Math.max(1,Number(p.durationDays || 30)),
+          description:p.description || ''
+        }));
+      } else {
+        settings.plans=[{id:'library',name:settings.planName || 'عضوية المكتبة',amount:Number(settings.amount||100),durationDays:Number(settings.durationDays||30),description:'عضوية المنصة'}];
+      }
+      renderPlanButtons();
+      selectPlan(settings.plans[0].id);
     }
+  }catch(error){
+    console.warn('تعذر تحميل إعدادات الاشتراك، تم استخدام الإعدادات الافتراضية:',error);
+  }
+}
 
-    const message =
-`السلام عليكم، أرسلت طلب اشتراك في منصة زاد المعرفة.
-الاسم: ${currentUser.displayName || 'غير مسجل'}
-البريد: ${currentUser.email || 'غير مسجل'}
-الباقة: ${settings.planName || 'عضوية المكتبة'}
-المبلغ: ${Number(settings.amount || 0).toLocaleString('ar-EG')} جنيه
-رقم الدفع المحوّل إليه: ${PAYMENT_NUMBER}
+onAuthStateChanged(auth,async user=>{
+  currentUser=user;
+  $('loginNotice').style.display=user?'none':'block';
+  $('submitBtn').disabled=!user;
+  if(!user) return;
+  try{
+    const snap=await Promise.race([
+      getDoc(doc(db,'users',user.uid)),
+      new Promise((_,reject)=>setTimeout(()=>reject(new Error('timeout')),6000))
+    ]);
+    const d=snap.exists()?snap.data():{};
+    if(d.subscriptionStatus==='active' && d.subscriptionEnd){
+      const end=d.subscriptionEnd.toDate?d.subscriptionEnd.toDate():new Date(d.subscriptionEnd);
+      const days=Math.ceil((end.getTime()-Date.now())/86400000);
+      const box=$('currentSubBox');
+      if(box){
+        box.style.display='block';
+        box.textContent=days>0?`عضويتك فعالة حتى ${end.toLocaleDateString('ar-EG')} — متبقي ${days} يوم.`:'انتهت عضويتك الحالية.';
+        box.className='notice '+(days<=5?'error':'success');
+      }
+    }
+  }catch(error){console.warn('تعذر قراءة حالة العضوية:',error);}
+});
+
+$('subscriptionForm').addEventListener('submit',async e=>{
+  e.preventDefault();
+  if(!currentUser){showStatus('سجل الدخول أولًا ثم أرسل طلب الاشتراك.','error');return;}
+  if(!selectedPlan){showStatus('اختر الباقة أولًا.','error');return;}
+  const file=$('proofFile').files[0];
+  if(!file){showStatus('اختر صورة إيصال الدفع أولًا.','error');return;}
+  if(!file.type.startsWith('image/')){showStatus('الملف يجب أن يكون صورة.','error');return;}
+  if(file.size>10*1024*1024){showStatus('حجم الصورة يجب ألا يتجاوز 10 ميجابايت.','error');return;}
+
+  const btn=$('submitBtn');
+  btn.disabled=true;
+  btn.textContent='جارٍ تجهيز الطلب...';
+
+  try{
+    const requestPromise=addDoc(collection(db,'subscriptionRequests'),{
+      studentUid:currentUser.uid,
+      studentName:currentUser.displayName||'',
+      studentEmail:currentUser.email||'',
+      planId:String(selectedPlan.id),
+      planName:selectedPlan.name||'عضوية المكتبة',
+      durationDays:Number(selectedPlan.durationDays||30),
+      amount:Number(selectedPlan.amount||0),
+      paymentNumber:settings.paymentNumber||DEFAULT_PAYMENT_NUMBER,
+      paymentMethod:$('paymentMethod').value,
+      transactionRef:$('transactionRef').value.trim(),
+      notes:$('notes').value.trim(),
+      proofPath:`whatsapp://${WHATSAPP_NUMBER}`,
+      proofSentVia:'WhatsApp',
+      whatsappNumber:WHATSAPP_NUMBER,
+      status:'pending',
+      createdAt:serverTimestamp()
+    });
+    const requestRef=await Promise.race([
+      requestPromise,
+      new Promise((_,reject)=>setTimeout(()=>reject(new Error('انتهت مهلة الاتصال بقاعدة البيانات.')),15000))
+    ]);
+
+    // الإشعار اختياري؛ فشل الإشعار لا يمنع إكمال الاشتراك.
+    try{
+      await Promise.race([
+        addDoc(collection(db,'notifications'),{
+          audience:'admin',targetRole:'admin',type:'subscription',
+          title:'💳 طلب اشتراك جديد',
+          message:`${currentUser.displayName||currentUser.email||'طالب'} أرسل طلب اشتراك.`,
+          subscriptionRequestId:requestRef.id,studentUid:currentUser.uid,
+          createdBy:currentUser.uid,createdAt:serverTimestamp(),readBy:[]
+        }),
+        new Promise((_,reject)=>setTimeout(()=>reject(new Error('notification timeout')),5000))
+      ]);
+    }catch(notificationError){console.warn('تعذر إنشاء إشعار الأدمن:',notificationError);}
+
+    const message=`السلام عليكم، أرسلت طلب اشتراك في منصة زاد المعرفة.
+الاسم: ${currentUser.displayName||'غير مسجل'}
+البريد: ${currentUser.email||'غير مسجل'}
+الباقة: ${selectedPlan.name||'عضوية المكتبة'}
+المبلغ: ${Number(selectedPlan.amount||0).toLocaleString('ar-EG')} جنيه
+المدة: ${Number(selectedPlan.durationDays||30)} يوم
+رقم الدفع المحوّل إليه: ${settings.paymentNumber||DEFAULT_PAYMENT_NUMBER}
 رقم الطلب: ${requestRef.id}
 
 سأرفق صورة إيصال الدفع مع هذه الرسالة.`;
 
-    // فتح محادثة واتساب مباشرة بدون شاشة اختيار الدردشة
-    const waUrl =
-      `https://wa.me/20${WHATSAPP_NUMBER.slice(1)}?text=${encodeURIComponent(message)}`;
-
-    window.location.href = waUrl;
-    showStatus('تم فتح المحادثة مباشرة مع رقم واتساب 01154015353. أرفق صورة الإيصال ثم اضغط إرسال.','success');
-
-    $('subscriptionForm').reset();
-
+    window.location.href=`https://wa.me/20${WHATSAPP_NUMBER.slice(1)}?text=${encodeURIComponent(message)}`;
   }catch(error){
-    console.error(error);
-    showStatus('تعذر تجهيز طلب الاشتراك: '+(error.code || error.message),'error');
+    console.error('Subscription error:',error);
+    showStatus('تعذر إرسال طلب الاشتراك: '+(error.code||error.message||'خطأ غير معروف'),'error');
   }finally{
-    $('submitBtn').disabled = !currentUser;
-    $('submitBtn').textContent = '📲 إرسال الإيصال عبر واتساب';
+    btn.disabled=!currentUser;
+    btn.textContent='📲 إرسال الإيصال عبر واتساب';
   }
 });
+
+loadSettings();
 </script>
 </body>
 </html>
