@@ -3502,3 +3502,8 @@ button {
     width: min(100%, 280px);
   }
 }
+
+/* Basic content protection */
+html, body, img, video { -webkit-user-select: none; user-select: none; }
+img, video { -webkit-user-drag: none; }
+input, textarea, select, [contenteditable="true"] { -webkit-user-select: text; user-select: text; }
