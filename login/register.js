@@ -127,6 +127,8 @@ async function saveUserProfile(user, role, provider, extraData = {}) {
     email: user.email || '',
     photoURL: user.photoURL || '',
     phone: extraData.phone || '',
+    country: extraData.country || '',
+    city: extraData.city || '',
     grade: role === 'student' ? (extraData.grade || '') : '',
     subject: role === 'teacher' ? (extraData.grade || '') : '',
     role,
@@ -202,6 +204,8 @@ emailRegisterForm?.addEventListener('submit', async (event) => {
   const email = document.getElementById('registerEmail')?.value.trim() || '';
   const password = document.getElementById('registerPassword')?.value || '';
   const phone = document.getElementById('phone')?.value.trim() || '';
+  const country = document.getElementById('country')?.value.trim() || '';
+  const city = document.getElementById('city')?.value.trim() || '';
   const grade = document.getElementById('grade')?.value.trim() || '';
   const role = getRole();
 
@@ -219,6 +223,14 @@ emailRegisterForm?.addEventListener('submit', async (event) => {
   }
   if (!grade) {
     msg(role === 'teacher' ? 'اكتب المادة التي يدرسها المعلم.' : 'اكتب الصف الدراسي.');
+    return;
+  }
+  if (!country) {
+    msg('اكتب البلد.');
+    return;
+  }
+  if (!city) {
+    msg('اكتب المدينة.');
     return;
   }
   const currentAuthUser = auth.currentUser;
@@ -249,7 +261,7 @@ emailRegisterForm?.addEventListener('submit', async (event) => {
       await updateProfile(registrationUser, { displayName: name });
     }
 
-    await finishRegistration(registrationUser, role, registrationUser.providerData?.[0]?.providerId || 'password', { phone, grade });
+    await finishRegistration(registrationUser, role, registrationUser.providerData?.[0]?.providerId || 'password', { phone, grade, country, city });
     sessionStorage.removeItem('needsProfileRegistration');
     sessionStorage.removeItem('pendingRegistrationEmail');
     sessionStorage.removeItem('pendingRegistrationName');
