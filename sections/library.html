@@ -255,6 +255,16 @@ html.light .favorite-btn.favorite-active,body.light .favorite-btn.favorite-activ
   style="background-color:#0f172a"
 >
 
+  <!-- زر الرئيسية -->
+  <div style="padding:16px 16px 0;max-width:1200px;margin:0 auto;">
+    <a
+      href="../index.html"
+      class="btn-nav"
+      style="display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border-radius:12px;background:#0a1628;color:#fff;border:2px solid #d4a843;text-decoration:none;font-weight:800;"
+    >
+      🏠 الرئيسية
+    </a>
+  </div>
 
   <!-- =========================================
        HERO
@@ -611,7 +621,7 @@ html.light .favorite-btn.favorite-active,body.light .favorite-btn.favorite-activ
    LIBRARY DATA
 ========================================================= */
 
-const books = [
+var books = [
 
   /* =======================================================
      أولى إعدادي
@@ -794,189 +804,280 @@ const books = [
 
 
   /* =======================================================
-     أولى ثانوي
-  ======================================================= */
+      أولى ثانوي
+   ======================================================= */
 
-  {
-    title: "كتاب التاريخ الصف الأول الثانوي",
-    icon: "🏛️",
-    cat: "مواد متنوعة",
-    grade: "1sec",
-    desc: "كتاب التاريخ للصف الأول الثانوي",
-    url: "https://drive.google.com/file/d/1mqkxa7TgN5d6Z5qt1zZs9ZySw3MDnkCZ/view?usp=drivesdk",
-    date: 20260828,
-    popular: 90
-  },
-
-  {
-    title: "كتاب الفلسفة الصف الأول الثانوي",
-    icon: "💭",
-    cat: "مواد متنوعة",
-    grade: "1sec",
-    desc: "كتاب الفلسفة للصف الأول الثانوي",
-    url: "https://drive.google.com/file/d/162vwXgoyAmRKcTjj1sxqzJuNOLgKhMAY/view?usp=drivesdk",
-    date: 20260828,
-    popular: 89
-  },
-
-  {
-    title: "كتاب اللغة العربية الصف الأول الثانوي",
+   {
+    title: "الأضواء عربي الصف الأول الثانوي الترم الأول 2027",
     icon: "📘",
     cat: "لغة عربية",
     grade: "1sec",
-    desc: "كتاب اللغة العربية للصف الأول الثانوي",
-    url: "https://drive.google.com/file/d/1mmPDwmWmhxQCpgSpLYtls4UJrDdWh5qm/view?usp=drivesdk",
-    date: 20260828,
+    desc: "كتاب الأضواء في اللغة العربية للصف الأول الثانوي 2027",
+    url: "https://drive.google.com/file/d/1qhnfoVw74K7FDGgRscfQXy759NnVcLtY/view?usp=drive_link",
+    date: 20260923,
+    popular: 95
+  },
+   {
+    title: "فرنساوي ميرسي الصف الأول الثانوي الترم الأول 2027",
+    icon: "🇫🇷",
+    cat: "لغات",
+    grade: "1sec",
+    desc: "كتاب فرنساوي ميرسي للصف الأول الثانوي 2027",
+    url: "https://drive.google.com/file/d/1rrz6KarNnOB3L3Jfa109wauuTs0jvLyA/view?usp=drive_link",
+    date: 20260923,
+    popular: 94
+  },
+   {
+    title: "الأضواء عربي مراجعة الصف الأول الثانوي الترم الأول 2027",
+    icon: "📘",
+    cat: "لغة عربية",
+    grade: "1sec",
+    desc: "مراجعة اللغة العربية للصف الأول الثانوي 2027",
+    url: "https://drive.google.com/file/d/1ltZjpsRV64ALz5Bpse9LsS4y2Bcee3UW/view?usp=drive_link",
+    date: 20260923,
+    popular: 93
+  },
+   {
+    title: "الأضواء عربي تقييمات الصف الأول الثانوي الترم الأول 2027",
+    icon: "📘",
+    cat: "لغة عربية",
+    grade: "1sec",
+    desc: "تقييمات اللغة العربية للصف الأول الثانوي 2027",
+    url: "https://drive.google.com/file/d/1CpThgg4fCOEmVDCvZmh_HbSAmW-2Sjm7/view?usp=drive_link",
+    date: 20260923,
     popular: 92
   },
-
-  {
-    title: "كتاب الرياضيات الصف الأول الثانوي",
-    icon: "📐",
-    cat: "مواد علمية",
-    grade: "1sec",
-    desc: "كتاب الرياضيات للصف الأول الثانوي",
-    url: "https://drive.google.com/file/d/1wEwttMNFE_B_72kfOMjGySnCj0_KAGRL/view?usp=drivesdk",
-    date: 20260828,
-    popular: 91
-  },
-
-  {
-    title: "كتاب اللغة الإنجليزية الصف الأول الثانوي",
-    icon: "🇬🇧",
-    cat: "مواد متنوعة",
-    grade: "1sec",
-    desc: "كتاب اللغة الإنجليزية للصف الأول الثانوي",
-    url: "https://drive.google.com/file/d/1Xe9dq-Hgx_sYhDJlz6PernGmsLlEIw-S/view?usp=drivesdk",
-    date: 20260828,
-    popular: 90
-  },
-
-  {
-    title: "كتاب اللغة الفرنسية الصف الأول الثانوي",
-    icon: "🇫🇷",
-    cat: "مواد متنوعة",
-    grade: "1sec",
-    desc: "كتاب اللغة الفرنسية للصف الأول الثانوي",
-    url: "https://drive.google.com/file/d/1-rkGQn27qD2EOQSmP5IUIwm2Eal-RaR1/view?usp=drivesdk",
-    date: 20260828,
-    popular: 87
-  },
-
-  {
-    title: "كتاب العلوم المتكاملة الصف الأول الثانوي",
+   {
+    title: "ملحق الأضواء علوم متكاملة الصف الأول الثانوي الترم الأول 2027",
     icon: "🔬",
     cat: "مواد علمية",
     grade: "1sec",
-    desc: "كتاب العلوم المتكاملة للصف الأول الثانوي",
-    url: "https://drive.google.com/file/d/1ruvmWf54DNr9WeVEjBoGpz7JJwb3wt3D/view?usp=drivesdk",
-    date: 20260828,
-    popular: 93
-  },
-
-  {
-    title: "كتاب النحو الصف الأول الثانوي",
-    icon: "📓",
-    cat: "لغة عربية",
-    grade: "1sec",
-    desc: "كتاب النحو للصف الأول الثانوي",
-    url: "https://drive.google.com/file/d/1j_fwW5OXW5uXHgNEOKQIyNMSoDUVSAmq/view?usp=drivesdk",
-    date: 20260828,
+    desc: "ملحق الأضواء في العلوم المتكاملة للصف الأول الثانوي 2027",
+    url: "https://drive.google.com/file/d/1H-2ICFsvfkTKesoMxOanAl3Rx3DhCstu/view?usp=drive_link",
+    date: 20260923,
     popular: 91
   },
-
-  {
-    title: "كتاب الصرف الصف الأول الثانوي",
-    icon: "📓",
-    cat: "لغة عربية",
+   {
+    title: "المعاصر إنجليزي الصف الأول الثانوي الترم الأول 2027",
+    icon: "🇬🇧",
+    cat: "لغات",
     grade: "1sec",
-    desc: "كتاب الصرف للصف الأول الثانوي",
-    url: "https://drive.google.com/file/d/1V35LhkSmFXjU-GqxNx2DUZQxK1wFgE32/view?usp=drivesdk",
-    date: 20260828,
+    desc: "كتاب المعاصر في اللغة الإنجليزية للصف الأول الثانوي 2027",
+    url: "https://drive.google.com/file/d/1GvTFPpqa-dgQhoAENLmrJ806w1g03JXz/view?usp=drive_link",
+    date: 20260923,
     popular: 90
   },
-
-  {
-    title: "كتاب البلاغة الصف الأول الثانوي",
-    icon: "✍️",
+   {
+    title: "كتاب عربي الصف الأول الثانوي الترم الأول 2027",
+    icon: "📘",
     cat: "لغة عربية",
     grade: "1sec",
-    desc: "كتاب البلاغة للصف الأول الثانوي",
-    url: "https://drive.google.com/file/d/1y_AO9kYUw-Q2tk2Fy0kkHtuh9i2VRn3Z/view?usp=drivesdk",
-    date: 20260828,
+    desc: "كتاب اللغة العربية للصف الأول الثانوي 2027",
+    url: "https://drive.google.com/file/d/13DW55NjOF5I8dNBd35M46UUXp0yKR9Cx/view?usp=drive_link",
+    date: 20260923,
     popular: 89
   },
-
-  {
-    title: "كتاب التوحيد الصف الأول الثانوي",
-    icon: "📕",
-    cat: "مواد شرعية",
+   {
+    title: "الامتحان عربي الصف الأول الثانوي الترم الأول 2027",
+    icon: "📝",
+    cat: "لغة عربية",
     grade: "1sec",
-    desc: "كتاب التوحيد للصف الأول الثانوي",
-    url: "https://drive.google.com/file/d/18r6wAA3kUZF1df_IH6Dp64h7ZUzGtnlz/view?usp=drivesdk",
-    date: 20260828,
+    desc: "كتاب الامتحان في اللغة العربية للصف الأول الثانوي 2027",
+    url: "https://drive.google.com/file/d/1KnXeBlg55WYaYhhifuTcmJ1Dpd5S9I1b/view?usp=drive_link",
+    date: 20260923,
+    popular: 88
+  },
+   {
+    title: "الأضواء علوم متكاملة الصف الأول الثانوي الترم الأول 2027",
+    icon: "🔬",
+    cat: "مواد علمية",
+    grade: "1sec",
+    desc: "كتاب الأضواء في العلوم المتكاملة للصف الأول الثانوي 2027",
+    url: "https://drive.google.com/file/d/1PsgEAkU7C9Uwwbi7XegOdqE2UgeYt_cH/view?usp=drive_link",
+    date: 20260923,
+    popular: 95
+  },
+   {
+    title: "المعاصر إنجليزي الصف الأول الثانوي الترم الأول 2027",
+    icon: "🇬🇧",
+    cat: "لغات",
+    grade: "1sec",
+    desc: "كتاب المعاصر في اللغة الإنجليزية للصف الأول الثانوي 2027",
+    url: "https://drive.google.com/file/d/1aiq0yHIilTl4EY-F-FqGjhTL08Cxhqtl/view?usp=drive_link",
+    date: 20260923,
+    popular: 94
+  },
+   {
+    title: "فلسفة الصف الأول الثانوي الترم الأول 2027",
+    icon: "💭",
+    cat: "مواد متنوعة",
+    grade: "1sec",
+    desc: "كتاب الفلسفة للصف الأول الثانوي 2027",
+    url: "https://drive.google.com/file/d/1btrNcUge5sb2RnhDMDahXMbO5qiPBqGC/view?usp=drive_link",
+    date: 20260923,
+    popular: 93
+  },
+   {
+    title: "ملحق 1 جبر الصف الأول الثانوي الترم الأول 2027",
+    icon: "📐",
+    cat: "مواد علمية",
+    grade: "1sec",
+    desc: "ملحق الجبر للصف الأول الثانوي 2027",
+    url: "https://drive.google.com/file/d/1REL1is1xLiD5lhbOljdUY3pRUNizDolD/view?usp=drive_link",
+    date: 20260923,
     popular: 92
   },
-
-  {
-    title: "كتاب الحديث الصف الأول الثانوي",
-    icon: "📖",
-    cat: "مواد شرعية",
+   {
+    title: "الامتحان علوم متكاملة الصف الأول الثانوي الترم الأول 2027",
+    icon: "📝",
+    cat: "مواد علمية",
     grade: "1sec",
-    desc: "كتاب الحديث للصف الأول الثانوي",
-    url: "https://drive.google.com/file/d/1OmEFPtSISKtQGqDYVG8I2XAcy4f95Q07/view?usp=drivesdk",
-    date: 20260828,
-    popular: 90
-  },
-
-  {
-    title: "كتاب التفسير الصف الأول الثانوي",
-    icon: "📖",
-    cat: "مواد شرعية",
-    grade: "1sec",
-    desc: "كتاب التفسير للصف الأول الثانوي",
-    url: "https://drive.google.com/file/d/1xes4-HYavziTnixzD7y3lcPWx0jLilEU/view?usp=drivesdk",
-    date: 20260828,
+    desc: "كتاب الامتحان في العلوم المتكاملة للصف الأول الثانوي 2027",
+    url: "https://drive.google.com/file/d/1XsIqMqrHe1k-gDjwJU9snZcRec0-hsXy/view?usp=drive_link",
+    date: 20260923,
     popular: 91
   },
-
-  {
-    title: "كتاب الفقه الشافعي الصف الأول الثانوي",
-    icon: "📕",
-    cat: "مواد شرعية",
+   {
+    title: "التفوق علوم متكاملة الصف الأول الثانوي الترم الأول 2027",
+    icon: "🔬",
+    cat: "مواد علمية",
     grade: "1sec",
-    desc: "كتاب الفقه الشافعي للصف الأول الثانوي",
-    url: "https://drive.google.com/file/d/1_KObjwQrbyFMJmkg8h6gCSug30etbL6H/view?usp=drivesdk",
-    date: 20260828,
+    desc: "كتاب التفوق في العلوم المتكاملة للصف الأول الثانوي 2027",
+    url: "https://drive.google.com/file/d/1OBBXrnd-Nt48C7Dd-OEWXy7ME8-rWr0Y/view?usp=drive_link",
+    date: 20260923,
+    popular: 90
+  },
+   {
+    title: "المعاصر رياضيات الصف الأول الثانوي الترم الأول 2027",
+    icon: "📐",
+    cat: "مواد علمية",
+    grade: "1sec",
+    desc: "كتاب المعاصر في الرياضيات للصف الأول الثانوي 2027",
+    url: "https://drive.google.com/file/d/1cm_QDWab7zlJqqbqdlLwHC8UFtFXqrjK/view?usp=drive_link",
+    date: 20260923,
+    popular: 89
+  },
+   {
+    title: "ملحق الامتحان عربي الصف الأول الثانوي الترم الأول 2027",
+    icon: "📘",
+    cat: "لغة عربية",
+    grade: "1sec",
+    desc: "ملحق كتاب الامتحان في اللغة العربية للصف الأول الثانوي 2027",
+    url: "https://drive.google.com/file/d/1kSk392Y9f7EBeeXGtv-nFXzVML8xZ9lx/view?usp=drive_link",
+    date: 20260923,
     popular: 88
   },
-
-  {
-    title: "كتاب الفقه الحنفي الصف الأول الثانوي",
-    icon: "📕",
-    cat: "مواد شرعية",
+   {
+    title: "المعاصر رياضيات الإجابات الصف الأول الثانوي الترم الأول 2027",
+    icon: "📐",
+    cat: "مواد علمية",
     grade: "1sec",
-    desc: "كتاب الفقه الحنفي للصف الأول الثانوي",
-    url: "https://drive.google.com/file/d/1M5UYdIsdwCt-aGQIF8tGxg1OTb03rKMq/view?usp=drivesdk",
-    date: 20260828,
+    desc: "إجابات المعاصر رياضيات للصف الأول الثانوي 2027",
+    url: "https://drive.google.com/file/d/1416D3A5CmMiA1trCwtugp6jSHC7yTs4o/view?usp=drive_link",
+    date: 20260923,
+    popular: 95
+  },
+   {
+    title: "المعاصر رياضيات الامتحانات الصف الأول الثانوي الترم الأول 2027",
+    icon: "📐",
+    cat: "مواد علمية",
+    grade: "1sec",
+    desc: "امتحانات المعاصر رياضيات للصف الأول الثانوي 2027",
+    url: "https://drive.google.com/file/d/1VTV0M1u6MUagu_qN-jp_y78e0nJbLKlH/view?usp=drive_link",
+    date: 20260923,
+    popular: 94
+  },
+   {
+    title: "المعاصر إنجليزي الصف الأول الثانوي الترم الأول 2027",
+    icon: "🇬🇧",
+    cat: "لغات",
+    grade: "1sec",
+    desc: "كتاب المعاصر في اللغة الإنجليزية للصف الأول الثانوي 2027",
+    url: "https://drive.google.com/file/d/1Y_uI-TxZgBKdGD-xggXwBAFDSAQIUix1/view?usp=drive_link",
+    date: 20260923,
+    popular: 93
+  },
+   {
+    title: "جيم الصف الأول الثانوي الترم الأول 2027",
+    icon: "🇬🇧",
+    cat: "لغات",
+    grade: "1sec",
+    desc: "كتاب جيم للصف الأول الثانوي 2027",
+    url: "https://drive.google.com/file/d/1LEHlWj9BFpSmns4oa2C__Duj6b-TlRZh/view?usp=drive_link",
+    date: 20260923,
+    popular: 92
+  },
+   {
+    title: "مذكرة الامتحان علوم متكاملة الصف الأول الثانوي الترم الأول 2027",
+    icon: "📝",
+    cat: "مواد علمية",
+    grade: "1sec",
+    desc: "مذكرة الامتحان في العلوم المتكاملة للصف الأول الثانوي 2027",
+    url: "https://drive.google.com/file/d/1xANfNeRQywstGSY44PZoPcewkURemoa3/view?usp=drive_link",
+    date: 20260923,
+    popular: 91
+  },
+   {
+    title: "مذكرة الامتحان علوم متكاملة الصف الأول الثانوي الترم الأول 2027 (1)",
+    icon: "📝",
+    cat: "مواد علمية",
+    grade: "1sec",
+    desc: "مذكرة الامتحان في العلوم المتكاملة للصف الأول الثانوي 2027",
+    url: "https://drive.google.com/file/d/160pd-gWKZPJNFPC13fMoITflbO_Xh_vC/view?usp=drive_link",
+    date: 20260923,
+    popular: 90
+  },
+   {
+    title: "تاريخ الصف الأول الثانوي الترم الأول 2027",
+    icon: "🏛️",
+    cat: "مواد متنوعة",
+    grade: "1sec",
+    desc: "كتاب التاريخ للصف الأول الثانوي 2027",
+    url: "https://drive.google.com/file/d/1kUveRazC3SicFQdwFcsjjJVjAdwJdOQT/view?usp=drive_link",
+    date: 20260923,
+    popular: 89
+  },
+   {
+    title: "ملحق 2 جيم الصف الأول الثانوي الترم الأول 2027",
+    icon: "🇬🇧",
+    cat: "لغات",
+    grade: "1sec",
+    desc: "ملحق جيم للصف الأول الثانوي 2027",
+    url: "https://drive.google.com/file/d/1JAAitPtVWADKM5wLBqHhX-FtCAz0pM0A/view?usp=drive_link",
+    date: 20260923,
     popular: 88
   },
-
-  {
-    title: "كتاب الفقه المالكي الصف الأول الثانوي",
-    icon: "📕",
-    cat: "مواد شرعية",
-    grade: "1sec",
-    desc: "كتاب الفقه المالكي للصف الأول الثانوي",
-    url: "https://drive.google.com/file/d/1OtNdNw4ocdAQwoFLV9PJ3UWenMnBL923/view?usp=drivesdk",
-    date: 20260828,
-    popular: 88
-  },
-
-
-  /* =======================================================
+   /* =======================================================
      ثانية ثانوي
   ======================================================= */
+   {
+    title: "كتاب الحديث الصف الثاني الثانوي", icon: "📖", cat: "مواد شرعية", grade: "2sec", desc: "كتاب الحديث للصف الثاني الثانوي", url: "https://drive.google.com/file/d/10fb9EuCsFonyb4Kg1A6zuTDjBP_MSigw/view?usp=drive_link", date: 20260923, popular: 94
+   },
+   {
+    title: "كتاب التوحيد الصف الثاني الثانوي", icon: "📕", cat: "مواد شرعية", grade: "2sec", desc: "كتاب التوحيد للصف الثاني الثانوي", url: "https://drive.google.com/file/d/12tnHpw5SYIURnlk5FuLb-mCQIcrcIOBh/view?usp=drive_link", date: 20260923, popular: 94
+   },
+
+  {
+    title: "المعاصر لغة إنجليزية الصف الثاني الثانوي الترم الأول 2027",
+    icon: "🇬🇧",
+    cat: "لغات",
+    grade: "2sec",
+    desc: "كتاب المعاصر في اللغة الإنجليزية للصف الثاني الثانوي - الترم الأول 2027",
+    url: "https://drive.google.com/file/d/1ffwuQKRpLTBAMGv5Ju2eE-e4C5LIXzS_/view?usp=sharing",
+    date: 20260923,
+    popular: 95
+  },
+
+  {
+    title: "ملحق المعاصر إنجليزي 2 ثانوي بكالوريا الترم الأول 2027",
+    icon: "🇬🇧",
+    cat: "لغات",
+    grade: "2sec",
+    desc: "ملحق المعاصر في اللغة الإنجليزية للصف الثاني الثانوي - الترم الأول 2027",
+    url: "https://drive.google.com/file/d/12miuo3NvK12GcoVQx-FLuMVnJkUfGOVb/view?usp=sharing",
+    date: 20260923,
+    popular: 94
+  },
 
   {
     title: "المرشد بلاغة الصف الثاني الثانوي",
@@ -2803,10 +2904,33 @@ document.addEventListener(
 <script type="module">
   import { auth, db } from '../firebase-config.js';
   import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
-  import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
+  import { doc, getDoc, getDocs, collection } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 
   let currentUser = null;
   let currentProfile = null;
+
+  async function loadAdminLibraryBooks(){
+    try{
+      const snap=await getDocs(collection(db,'libraryBooks'));
+      snap.forEach(item=>{
+        const b=item.data()||{};
+        if(b.visible===false || !b.title || !b.url) return;
+        const exists=books.some(x=>x.title===b.title && x.url===b.url);
+        if(exists) return;
+        books.push({
+          title:b.title, icon:b.icon||'📚', cat:b.category||'مواد متنوعة',
+          grade:b.grade||'', desc:b.description||'', url:b.url,
+          date:Number(b.date||Date.now()), popular:Number(b.popular||0)
+        });
+      });
+      if(typeof applySort==='function') applySort();
+      if(typeof renderSmartLibrary==='function') renderSmartLibrary();
+    }catch(error){
+      console.warn('تعذر تحميل كتب المكتبة المضافة من لوحة الإدارة:',error);
+    }
+  }
+
+  loadAdminLibraryBooks();
 
   const gate = document.getElementById('subscriptionGate');
   const gateText = document.getElementById('subscriptionGateText');

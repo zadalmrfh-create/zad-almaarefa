@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>طاقم التدريس — زاد المعرفة</title>
+<link rel="icon" type="image/png" href="../images/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css"><link rel="stylesheet" href="../assets/translation.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0} :root{--gold:#c9a84c;--gold-light:#f5ecd4;--gold-hover:#b8923e;--white:#fff;--gray-50:#f9fafb;--gray-200:#e5e7eb;--gray-400:#9ca3af;--gray-600:#4b5563;--gray-800:#1f2937}
+body{font-family:Cairo,sans-serif;background:var(--gray-50);color:var(--gray-800);direction:rtl}.page-header{background:var(--white);border-bottom:1px solid var(--gray-200);padding:18px 32px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:50}.header-icon{width:42px;height:42px;background:var(--gold-light);border-radius:10px;display:flex;align-items:center;justify-content:center;overflow:hidden}.logo-img{width:42px;height:42px;object-fit:cover;border-radius:50%}.header-title{font-size:19px;font-weight:700}.header-sub{font-size:12px;color:var(--gray-400);margin-top:1px}.back-link{margin-right:auto;display:inline-flex;align-items:center;justify-content:center;min-width:135px;min-height:46px;padding:10px 18px;background:#0a1628;color:#fff;border:2px solid #d4a843;border-radius:12px;font-weight:800;text-decoration:none;box-shadow:0 4px 14px rgba(0,0,0,.2)}
+main{max-width:1060px;margin:0 auto;padding:48px 24px 100px}.hero{text-align:center;margin-bottom:52px}.hero-badge{display:inline-block;background:var(--gold-light);color:var(--gold-hover);font-size:12px;font-weight:700;border-radius:999px;padding:5px 18px;margin-bottom:14px}.hero h1{font-size:30px;font-weight:800;margin-bottom:10px}.hero p{font-size:14px;color:var(--gray-600);line-height:1.7}.teachers-status{text-align:center;padding:30px;color:var(--gray-600)}.teachers-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:28px}.card{background:var(--white);border:1px solid var(--gray-200);border-radius:18px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.06);display:flex;flex-direction:column;transition:.22s}.card:hover{transform:translateY(-5px);box-shadow:0 14px 36px rgba(0,0,0,.12);border-color:var(--gold)}.photo-link{display:block}.card-photo,.card-no-photo{width:100%;aspect-ratio:4/3;object-fit:cover;object-position:top center;display:block}.card-no-photo{background:linear-gradient(150deg,var(--gold-light),#fffbef);display:flex;align-items:center;justify-content:center;font-size:72px}.card-body{padding:20px 20px 14px;flex:1;display:flex;flex-direction:column;gap:12px}.teacher-name{font-size:17px;font-weight:800}.teacher-role{font-size:12.5px;font-weight:600;color:var(--gold-hover);margin-top:-6px}.subjects{display:flex;flex-wrap:wrap;gap:6px}.subject{background:var(--gold-light);color:var(--gold-hover);font-size:11px;font-weight:700;border-radius:999px;padding:4px 11px}.bio{font-size:13px;color:var(--gray-600);line-height:1.75}.stats{display:flex;border-top:1px solid var(--gray-200);padding-top:12px;margin-top:auto}.stat{flex:1;text-align:center;border-left:1px solid var(--gray-200);padding:0 6px}.stat:last-child{border-left:none}.stat-val{font-size:17px;font-weight:800;color:var(--gold)}.stat-lbl{font-size:10.5px;color:var(--gray-400);margin-top:1px}.empty{background:#fff;border:1px solid var(--gray-200);border-radius:18px;padding:35px;text-align:center;color:var(--gray-600)}
+@media(max-width:680px){main{padding:28px 14px 70px}.page-header{padding:14px 16px;flex-wrap:wrap}.teachers-grid{grid-template-columns:1fr}.header-title{font-size:17px}.header-sub{font-size:10px}.back-link{order:5;width:100%}}
+</style></head>
+<body>
+<header class="page-header"><div class="header-icon"><img src="../images/logo.png" alt="زاد المعرفة" class="logo-img"></div><div><div class="header-title">طاقم التدريس</div><div class="header-sub">نخبة من المعلمين المتميزين لخدمة العلم والمعرفة</div></div><a href="../index.html" class="back-link">← الرئيسية</a></header>
+<main><div class="hero"><div class="hero-badge">فريق التدريس</div><h1>طاقم التدريس</h1><p>نخبة من المعلمين المتميزين لخدمة العلم والمعرفة</p></div><div id="status" class="teachers-status">جارٍ تحميل طاقم التدريس...</div><div id="teachersGrid" class="teachers-grid"></div></main>
+<script type="module">
+import {db} from '../firebase-config.js';
+import {collection,getDocs} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
+const grid=document.getElementById('teachersGrid'),status=document.getElementById('status');
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const text=v=>String(v??'').trim();
+const num=v=>{const n=Number(String(v??'').replace(/[^0-9.]/g,''));return Number.isFinite(n)&&n>0?n:''};
+function photo(v){const x=text(v);return x||'../images/teacher-malek.webp'}
+const LEGACY_TEACHERS = [
+ { legacyKey:'legacy-dhia-quran', name:'الأستاذ ضياء نبيل', subject:'القرآن الكريم, التجويد, حفظ القرآن', role:'معلم القرآن الكريم وعلوم التجويد', image:'../images/quran-title.png', bio:'معلم متخصص في تحفيظ القرآن الكريم وتعليم أحكام التجويد، مع تبسيط التلاوة وتدريب الطلاب على القراءة الصحيحة بأسلوب سهل ومبسط.' },
+ { legacyKey:'legacy-dhia-calligraphy', name:'الأستاذ ضياء نبيل', subject:'الخط العربي, تحسين الخط, الزخرفة', role:'معلم الخط العربي والزخرفة الإسلامية', image:'../images/arabic-calligraphy.png', bio:'معلم متخصص في تعليم الخط العربي بأنواعه المختلفة، مع التركيز على تنمية مهارات الجمال الفني في الكتابة والزخرفة الإسلامية.' },
+ { legacyKey:'legacy-dhia-arabic', name:'الأستاذ ضياء نبيل', subject:'اللغة العربية', role:'معلم متعدد التخصصات', image:'../images/arabic-teacher.png', bio:'معلم متميز في اللغة العربية، يجمع بين العلم الشرعي والأصيل والإتقان في تعليم القرآن الكريم والمواد الشرعية بأسلوب مبسط وممتع.' }
+];
+
+function render(t){
+ const name=text(t.name)||'المعلم'; const image=photo(t.image); const subjects=text(t.subject).split(',').map(x=>x.trim()).filter(Boolean); const bio=text(t.bio); const role=text(t.role); const experience=num(t.experience)||0; const specialties=num(t.specialties)||subjects.length||0; const studentsCount=num(t.studentsCount)||0;
+ const subjectHtml=subjects.length?subjects.map((s,i)=>`<span class="subject">📚 ${esc(s)}</span>`).join(''):'';
+ const stats=[['experience','سنوات الخبرة',experience],['specialties','التخصصات',specialties],['studentsCount','عدد الطلاب',studentsCount]];
+ return `<article class="card"><a class="photo-link" href="${esc(image)}" target="_blank" rel="noopener"><img class="card-photo" src="${esc(image)}" alt="${esc(name)}" onerror="this.onerror=null;this.src='../images/image-not-available.svg'"></a><div class="card-body"><div><div class="teacher-name">${esc(name)}</div>${role?`<div class="teacher-role">${esc(role)}</div>`:''}</div>${subjectHtml?`<div class="subjects">${subjectHtml}</div>`:''}${bio?`<p class="bio">${esc(bio)}</p>`:''}<div class="stats">${stats.map(([v,l,value])=>`<div class="stat"><div class="stat-val">${esc(value)}</div><div class="stat-lbl">${esc(l)}</div></div>`).join('')}</div></div></article>`;
+}
+async function load(){try{const snap=await getDocs(collection(db,'teachers'));const raw=snap.docs.map(d=>({id:d.id,...d.data()}));const byLegacy=new Map(raw.filter(x=>x.legacyKey).map(x=>[x.legacyKey,x]));const firestoreList=raw.filter(x=>x.visible!==false).map(x=>{if(byLegacy.has(x.legacyKey)){const legacy=LEGACY_TEACHERS.find(t=>t.legacyKey===x.legacyKey);return legacy?{...legacy,...x,image:legacy.image}:x}return x});const fallbackList=LEGACY_TEACHERS.filter(x=>!byLegacy.has(x.legacyKey));const list=[...firestoreList,...fallbackList];if(!list.length){status.remove();grid.innerHTML='<div class="empty">لا يوجد معلمون مضافون حاليًا من لوحة التحكم.</div>';return}status.remove();grid.innerHTML=list.map(render).join('')}catch(e){console.error(e);status.textContent='تعذر تحميل طاقم التدريس: '+(e.code||e.message)}}
+load();
+</script>
+<script src="../assets/translation.js"></script><script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+</body></html>

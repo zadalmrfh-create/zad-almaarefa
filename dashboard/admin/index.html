@@ -343,8 +343,8 @@
 
 
       <p>
-        إضافة وتعديل وحذف وإظهار أو إخفاء الأحداث
-        وطاقم التدريس والطلاب المتميزين.
+        إضافة وتعديل وحذف وإظهار أو إخفاء الأحداث وطاقم التدريس والطلاب المتميزين،
+        وإدارة كتب المكتبة العامة ومكتبة التعليم الأزهري.
       </p>
 
 
@@ -382,6 +382,24 @@
           type="button"
         >
           الطلاب المتميزون
+        </button>
+
+
+        <button
+          class="btn"
+          data-content-tab="libraryBooks"
+          type="button"
+        >
+          المكتبة العامة
+        </button>
+
+
+        <button
+          class="btn"
+          data-content-tab="azharBooks"
+          type="button"
+        >
+          مكتبة التعليم الأزهري
         </button>
 
       </div>
@@ -3031,7 +3049,13 @@ const contentTypes = {
     'طاقم التدريس',
 
   featuredStudents:
-    'الطلاب المتميزون'
+    'الطلاب المتميزون',
+
+  libraryBooks:
+    'المكتبة العامة',
+
+  azharBooks:
+    'مكتبة التعليم الأزهري'
 
 };
 
@@ -3113,7 +3137,7 @@ const fieldSets = {
 
     [
       'subject',
-      'المادة / التخصص',
+      'المادة / التخصص (يمكن فصل أكثر من مادة بفاصلة)',
       'text'
     ],
 
@@ -3136,10 +3160,48 @@ const fieldSets = {
     ],
 
     [
-      'whatsapp',
-      'رقم أو رابط واتساب (اختياري)',
+      'experience',
+      'سنوات الخبرة',
+      'text'
+    ],
+
+    [
+      'specialties',
+      'عدد التخصصات',
+      'text'
+    ],
+
+    [
+      'studentsCount',
+      'عدد الطلاب',
       'text'
     ]
+
+  ],
+
+
+  libraryBooks: [
+
+    ['title', 'اسم الكتاب', 'text'],
+    ['grade', 'الصف / المرحلة', 'text'],
+    ['subject', 'المادة', 'text'],
+    ['category', 'التصنيف', 'text'],
+    ['icon', 'الأيقونة', 'text'],
+    ['description', 'وصف الكتاب', 'textarea'],
+    ['url', 'رابط الكتاب', 'text']
+
+  ],
+
+
+  azharBooks: [
+
+    ['title', 'اسم الكتاب', 'text'],
+    ['grade', 'الصف / المرحلة', 'text'],
+    ['subject', 'المادة', 'text'],
+    ['category', 'التصنيف', 'text'],
+    ['icon', 'الأيقونة', 'text'],
+    ['description', 'وصف الكتاب', 'textarea'],
+    ['url', 'رابط الكتاب', 'text']
 
   ],
 
@@ -3196,7 +3258,13 @@ const fieldSets = {
 
     [
       'certificateLink',
-      'رابط الشهادة PDF (اختياري)',
+      'رابط الشهادة (صورة أو PDF) — يظهر مباشرة داخل كارت الطالب',
+      'text'
+    ],
+
+    [
+      'category',
+      'قسم الشهادة: quran أو tajweed أو arabic أو sharia',
       'text'
     ]
 
@@ -3371,6 +3439,60 @@ function setContentStatus(
 
 }
 
+
+
+/* مزامنة المعلمين القدامى مرة واحدة بدون استبدال أي بيانات موجودة */
+async function ensureLegacyTeachers() {
+  const legacyTeachers = [
+    {
+      legacyKey: 'legacy-dhia-quran',
+      name: 'الأستاذ ضياء نبيل',
+      subject: 'القرآن الكريم, التجويد, حفظ القرآن',
+      role: 'معلم القرآن الكريم وعلوم التجويد',
+      image: '../images/quran-title.png',
+      bio: 'معلم متخصص في تحفيظ القرآن الكريم وتعليم أحكام التجويد، مع تبسيط التلاوة وتدريب الطلاب على القراءة الصحيحة بأسلوب سهل ومبسط.',
+      visible: true
+    },
+    {
+      legacyKey: 'legacy-dhia-calligraphy',
+      name: 'الأستاذ ضياء نبيل',
+      subject: 'الخط العربي, تحسين الخط, الزخرفة',
+      role: 'معلم الخط العربي والزخرفة الإسلامية',
+      image: '../images/arabic-calligraphy.png',
+      bio: 'معلم متخصص في تعليم الخط العربي بأنواعه المختلفة، مع التركيز على تنمية مهارات الجمال الفني في الكتابة والزخرفة الإسلامية.',
+      visible: true
+    },
+    {
+      legacyKey: 'legacy-dhia-arabic',
+      name: 'الأستاذ ضياء نبيل',
+      subject: 'اللغة العربية',
+      role: 'معلم متعدد التخصصات',
+      image: '../images/arabic-teacher.png',
+      bio: 'معلم متميز في اللغة العربية، يجمع بين العلم الشرعي والأصيل والإتقان في تعليم القرآن الكريم والمواد الشرعية بأسلوب مبسط وممتع.',
+      visible: true
+    }
+  ];
+
+  const snap = await getDocs(collection(db, 'teachers'));
+  const existingDocs = new Map(
+    snap.docs
+      .map(d => [d.data()?.legacyKey, d])
+      .filter(([key]) => !!key)
+  );
+
+  await Promise.all(legacyTeachers.map(t => {
+    const existingDoc = existingDocs.get(t.legacyKey);
+    const { legacyKey, ...data } = t;
+    return setDoc(doc(db, 'teachers', existingDoc?.id || legacyKey), {
+      ...data,
+      legacyKey,
+      updatedAt: serverTimestamp(),
+      ...(existingDoc ? {} : { createdAt: serverTimestamp() })
+    }, { merge: true });
+  }));
+
+  return legacyTeachers.length;
+}
 
 
 /* تحميل المحتوى */
@@ -3582,7 +3704,16 @@ document
           fillContentForm({});
 
 
-          loadContent();
+          if (activeContentType === 'teachers') {
+            ensureLegacyTeachers()
+              .then(() => loadContent())
+              .catch(error => {
+                console.error('Legacy teachers sync error:', error);
+                loadContent();
+              });
+          } else {
+            loadContent();
+          }
 
         }
       );
@@ -3603,7 +3734,7 @@ $('contentForm')
 
 
       const requiredKey =
-        activeContentType === 'events'
+        (activeContentType === 'events' || activeContentType === 'libraryBooks' || activeContentType === 'azharBooks')
           ? 'title'
           : 'name';
 
@@ -4762,6 +4893,12 @@ guard(
     await loadUsers();
 
     await loadLoginLogs();
+
+    try {
+      await ensureLegacyTeachers();
+    } catch (error) {
+      console.error('Initial legacy teachers sync error:', error);
+    }
 
     await loadContent();
 

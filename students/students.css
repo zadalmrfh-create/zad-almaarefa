@@ -786,6 +786,49 @@ main {
   object-position: top center;
   display: block;
 }
+.certificate-media {
+  width: 100%;
+  aspect-ratio: 4/3;
+  background: linear-gradient(150deg, var(--gold-light) 0%, #fffbef 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+  text-decoration: none;
+}
+.certificate-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  background: #fff;
+  padding: 8px;
+}
+.certificate-pdf iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: #fff;
+}
+.certificate-open {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  background: rgba(10,22,40,.88);
+  color: #fff;
+  border: 1px solid var(--gold);
+  border-radius: 999px;
+  padding: 7px 12px;
+  font-size: 12px;
+  font-weight: 800;
+  text-decoration: none;
+  backdrop-filter: blur(4px);
+}
+.certificate-error::before {
+  content: '👨‍🎓';
+  font-size: 58px;
+}
 .card-no-photo {
   width: 100%;
   aspect-ratio: 4/3;
@@ -794,6 +837,15 @@ main {
   align-items: center;
   justify-content: center;
   font-size: 72px;
+  overflow: hidden;
+}
+
+/* لو صورة الطالب غير موجودة/الرابط مكسور، يظهر نفس شكل الطالب مالك
+   بدل ما يظهر نص alt بحجم ضخم داخل الكارت. */
+.card-no-photo.image-fallback::before {
+  content: '👨‍🎓';
+  font-size: 72px;
+  line-height: 1;
 }
 
 .card-body {

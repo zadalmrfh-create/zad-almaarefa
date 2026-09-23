@@ -296,6 +296,69 @@
      JAVASCRIPT — minimal, only for cert filter + search
      عشان تضيف طالب: أضف object جديد في المصفوفة المناسبة
 ============================================= -->
+    <script type="module">
+import {db} from "../firebase-config.js";
+import {collection,getDocs} from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const clean=v=>String(v??'').trim();
+
+function certificateUrl(raw){
+  const url=clean(raw);
+  if(!url) return '';
+  // Google Drive share links -> embeddable preview.
+  const m=url.match(/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?id=)([A-Za-z0-9_-]+)/i);
+  if(m) return `https://drive.google.com/file/d/${m[1]}/preview`;
+  return url;
+}
+function isImage(url){ return /\.(?:png|jpe?g|webp|gif|svg)(?:[?#].*)?$/i.test(url); }
+function isPdf(url){ return /\.pdf(?:[?#].*)?$/i.test(url) || /drive\.google\.com\/file\/d\//i.test(url); }
+function certPreview(raw,name){
+  const url=certificateUrl(raw);
+  if(!url) return `<div class="card-no-photo">👨‍🎓</div>`;
+  const safe=esc(url), alt=esc(`شهادة ${name}`);
+  if(isImage(url)) return `<a class="certificate-media" href="${safe}" target="_blank" rel="noopener"><img class="certificate-image" src="${safe}" alt="${alt}" loading="lazy" onerror="this.onerror=null;this.closest('.certificate-media').classList.add('certificate-error');this.style.display='none';"></a>`;
+  if(isPdf(url)) return `<div class="certificate-media certificate-pdf"><iframe src="${safe}" title="${alt}" loading="lazy"></iframe><a class="certificate-open" href="${safe}" target="_blank" rel="noopener">فتح الشهادة ↗</a></div>`;
+  return `<div class="certificate-media certificate-pdf"><iframe src="${safe}" title="${alt}" loading="lazy"></iframe><a class="certificate-open" href="${safe}" target="_blank" rel="noopener">فتح الشهادة ↗</a></div>`;
+}
+
+(async()=>{
+  try{
+    const snap=await getDocs(collection(db,'featuredStudents'));
+    const items=snap.docs.map(d=>({id:d.id,...d.data()})).filter(x=>x.visible!==false);
+    const grid=document.querySelector('.students-grid');
+    if(!grid||!items.length)return;
+    const wrap=document.createElement('div');
+    wrap.style.display='contents';
+    wrap.innerHTML=items.map(x=>{
+      const tags=clean(x.tags).split(',').map(v=>v.trim()).filter(Boolean);
+      const cert=clean(x.certificateLink||x.certificate);
+      const name=clean(x.name)||'طالب متميز';
+      return `<div class="card">
+        ${certPreview(cert,name)}
+        <div class="card-body">
+          <div><div class="student-name">${esc(name)}</div><div class="student-level">${esc(x.grade||'')}</div></div>
+          <div class="tags">${tags.map(t=>`<span class="tag">${esc(t)}</span>`).join('')}</div>
+          <p class="student-bio">${esc(x.achievement||'')}</p>
+          <div class="stats">
+            <div class="stat"><div class="stat-val">${esc(x.percentage||'—')}</div><div class="stat-lbl">نسبة التفوق</div></div>
+            <div class="stat"><div class="stat-val">${esc(x.memorized||'—')}</div><div class="stat-lbl">الأجزاء/الجوائز</div></div>
+            <div class="stat"><div class="stat-val">${esc(x.certificates||'—')}</div><div class="stat-lbl">شهادات</div></div>
+          </div>
+        </div>
+        ${cert?`<a class="cert-btn" href="${esc(certificateUrl(cert))}" target="_blank" rel="noopener">🏆 فتح الشهادة</a>`:''}
+      </div>`;
+    }).join('');
+    grid.prepend(wrap);
+    items.forEach(x=>{
+      const cat=['quran','tajweed','arabic','sharia'].includes(x.category)?x.category:'quran';
+      if(x.certificateLink||x.certificate)CERT_DATA[cat].students.push({img:x.certificateLink||x.certificate});
+    });
+    Object.keys(CERT_DATA).forEach(k=>{const e=document.getElementById('count-'+k);if(e)e.textContent=CERT_DATA[k].students.length+' طالب'});
+  }catch(e){console.error(e)}
+})();
+</script>
+
     <script>
       // =============================================
       // DATA — أضف الطلاب هنا تحت كل قسم

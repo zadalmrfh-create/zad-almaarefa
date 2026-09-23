@@ -1,6 +1,6 @@
 import { auth, db } from "../../firebase-config.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
-import { doc, getDoc } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+import { doc, getDoc, getDocs, collection } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
 /* =========================================================
    AZHAR EDUCATION PAGE — BEHAVIOR
    Organized in 3 independent parts:
@@ -250,84 +250,124 @@ const SUBJECTS = {
   sec1: {
     library: [
 {
-  name: "كتب تاريخ 1ث",
+  name: "الأضواء عربي الصف الأول الثانوي الترم الأول 2027",
   level: "1ث",
-  link: "https://drive.google.com/file/d/1mqkxa7TgN5d6Z5qt1zZs9ZySw3MDnkCZ/view?usp=drivesdk",
+  link: "https://drive.google.com/file/d/1qhnfoVw74K7FDGgRscfQXy759NnVcLtY/view?usp=drive_link",
 },
 {
-  name: "كتب فلسفة 1ث",
+  name: "فرنساوي ميرسي الصف الأول الثانوي الترم الأول 2027",
   level: "1ث",
-  link: "https://drive.google.com/file/d/162vwXgoyAmRKcTjj1sxqzJuNOLgKhMAY/view?usp=drivesdk",
+  link: "https://drive.google.com/file/d/1rrz6KarNnOB3L3Jfa109wauuTs0jvLyA/view?usp=drive_link",
 },
 {
-  name: "كتب لغة عربية 1ث",
+  name: "الأضواء عربي مراجعة الصف الأول الثانوي الترم الأول 2027",
   level: "1ث",
-  link: "https://drive.google.com/file/d/1mmPDwmWmhxQCpgSpLYtls4UJrDdWh5qm/view?usp=drivesdk",
+  link: "https://drive.google.com/file/d/1ltZjpsRV64ALz5Bpse9LsS4y2Bcee3UW/view?usp=drive_link",
 },
 {
-  name: "كتب رياضيات 1ث",
+  name: "الأضواء عربي تقييمات الصف الأول الثانوي الترم الأول 2027",
   level: "1ث",
-  link: "https://drive.google.com/file/d/1wEwttMNFE_B_72kfOMjGySnCj0_KAGRL/view?usp=drivesdk",
+  link: "https://drive.google.com/file/d/1CpThgg4fCOEmVDCvZmh_HbSAmW-2Sjm7/view?usp=drive_link",
 },
 {
-  name: "كتب إنجليزي 1ث",
+  name: "ملحق الأضواء علوم متكاملة الصف الأول الثانوي الترم الأول 2027",
   level: "1ث",
-  link: "https://drive.google.com/file/d/1Xe9dq-Hgx_sYhDJlz6PernGmsLlEIw-S/view?usp=drivesdk",
+  link: "https://drive.google.com/file/d/1H-2ICFsvfkTKesoMxOanAl3Rx3DhCstu/view?usp=drive_link",
 },
 {
-  name: "كتب فرنساوي 1ث",
+  name: "المعاصر إنجليزي الصف الأول الثانوي الترم الأول 2027",
   level: "1ث",
-  link: "https://drive.google.com/file/d/1-rkGQn27qD2EOQSmP5IUIwm2Eal-RaR1/view?usp=drivesdk",
+  link: "https://drive.google.com/file/d/1GvTFPpqa-dgQhoAENLmrJ806w1g03JXz/view?usp=drive_link",
 },
 {
-  name: "كتب علوم متكاملة 1ث",
+  name: "كتاب عربي الصف الأول الثانوي الترم الأول 2027",
   level: "1ث",
-  link: "https://drive.google.com/file/d/1ruvmWf54DNr9WeVEjBoGpz7JJwb3wt3D/view?usp=drivesdk",
+  link: "https://drive.google.com/file/d/13DW55NjOF5I8dNBd35M46UUXp0yKR9Cx/view?usp=drive_link",
 },
 {
-  name: "كتب نحو 1ث",
+  name: "الامتحان عربي الصف الأول الثانوي الترم الأول 2027",
   level: "1ث",
-  link: "https://drive.google.com/file/d/1j_fwW5OXW5uXHgNEOKQIyNMSoDUVSAmq/view?usp=drivesdk",
+  link: "https://drive.google.com/file/d/1KnXeBlg55WYaYhhifuTcmJ1Dpd5S9I1b/view?usp=drive_link",
 },
 {
-  name: "كتب صرف 1ث",
+  name: "الأضواء علوم متكاملة الصف الأول الثانوي الترم الأول 2027",
   level: "1ث",
-  link: "https://drive.google.com/file/d/1V35LhkSmFXjU-GqxNx2DUZQxK1wFgE32/view?usp=drivesdk",
+  link: "https://drive.google.com/file/d/1PsgEAkU7C9Uwwbi7XegOdqE2UgeYt_cH/view?usp=drive_link",
 },
 {
-  name: "كتب بلاغة 1ث",
+  name: "المعاصر إنجليزي الصف الأول الثانوي الترم الأول 2027",
   level: "1ث",
-  link: "https://drive.google.com/file/d/1y_AO9kYUw-Q2tk2Fy0kkHtuh9i2VRn3Z/view?usp=drivesdk",
+  link: "https://drive.google.com/file/d/1aiq0yHIilTl4EY-F-FqGjhTL08Cxhqtl/view?usp=drive_link",
 },
 {
-  name: "كتب توحيد 1ث",
+  name: "فلسفة الصف الأول الثانوي الترم الأول 2027",
   level: "1ث",
-  link: "https://drive.google.com/file/d/18r6wAA3kUZF1df_IH6Dp64h7ZUzGtnlz/view?usp=drivesdk",
+  link: "https://drive.google.com/file/d/1btrNcUge5sb2RnhDMDahXMbO5qiPBqGC/view?usp=drive_link",
 },
 {
-  name: "كتب حديث 1ث",
+  name: "ملحق 1 جبر الصف الأول الثانوي الترم الأول 2027",
   level: "1ث",
-  link: "https://drive.google.com/file/d/1OmEFPtSISKtQGqDYVG8I2XAcy4f95Q07/view?usp=drivesdk",
+  link: "https://drive.google.com/file/d/1REL1is1xLiD5lhbOljdUY3pRUNizDolD/view?usp=drive_link",
 },
 {
-  name: "كتب تفسير 1ث",
+  name: "الامتحان علوم متكاملة الصف الأول الثانوي الترم الأول 2027",
   level: "1ث",
-  link: "https://drive.google.com/file/d/1xes4-HYavziTnixzD7y3lcPWx0jLilEU/view?usp=drivesdk",
+  link: "https://drive.google.com/file/d/1XsIqMqrHe1k-gDjwJU9snZcRec0-hsXy/view?usp=drive_link",
 },
 {
-  name: "كتب فقه شافعي 1ث",
+  name: "التفوق علوم متكاملة الصف الأول الثانوي الترم الأول 2027",
   level: "1ث",
-  link: "https://drive.google.com/file/d/1_KObjwQrbyFMJmkg8h6gCSug30etbL6H/view?usp=drivesdk",
+  link: "https://drive.google.com/file/d/1OBBXrnd-Nt48C7Dd-OEWXy7ME8-rWr0Y/view?usp=drive_link",
 },
 {
-  name: "كتب فقه حنفي 1ث",
+  name: "المعاصر رياضيات الصف الأول الثانوي الترم الأول 2027",
   level: "1ث",
-  link: "https://drive.google.com/file/d/1M5UYdIsdwCt-aGQIF8tGxg1OTb03rKMq/view?usp=drivesdk",
+  link: "https://drive.google.com/file/d/1cm_QDWab7zlJqqbqdlLwHC8UFtFXqrjK/view?usp=drive_link",
 },
 {
-  name: "كتب فقه مالكي 1ث",
+  name: "ملحق الامتحان عربي الصف الأول الثانوي الترم الأول 2027",
   level: "1ث",
-  link: "https://drive.google.com/file/d/1OtNdNw4ocdAQwoFLV9PJ3UWenMnBL923/view?usp=drivesdk",
+  link: "https://drive.google.com/file/d/1kSk392Y9f7EBeeXGtv-nFXzVML8xZ9lx/view?usp=drive_link",
+},
+{
+  name: "المعاصر رياضيات الإجابات الصف الأول الثانوي الترم الأول 2027",
+  level: "1ث",
+  link: "https://drive.google.com/file/d/1416D3A5CmMiA1trCwtugp6jSHC7yTs4o/view?usp=drive_link",
+},
+{
+  name: "المعاصر رياضيات الامتحانات الصف الأول الثانوي الترم الأول 2027",
+  level: "1ث",
+  link: "https://drive.google.com/file/d/1VTV0M1u6MUagu_qN-jp_y78e0nJbLKlH/view?usp=drive_link",
+},
+{
+  name: "المعاصر إنجليزي الصف الأول الثانوي الترم الأول 2027",
+  level: "1ث",
+  link: "https://drive.google.com/file/d/1Y_uI-TxZgBKdGD-xggXwBAFDSAQIUix1/view?usp=drive_link",
+},
+{
+  name: "جيم الصف الأول الثانوي الترم الأول 2027",
+  level: "1ث",
+  link: "https://drive.google.com/file/d/1LEHlWj9BFpSmns4oa2C__Duj6b-TlRZh/view?usp=drive_link",
+},
+{
+  name: "مذكرة الامتحان علوم متكاملة الصف الأول الثانوي الترم الأول 2027",
+  level: "1ث",
+  link: "https://drive.google.com/file/d/1xANfNeRQywstGSY44PZoPcewkURemoa3/view?usp=drive_link",
+},
+{
+  name: "مذكرة الامتحان علوم متكاملة الصف الأول الثانوي الترم الأول 2027 (1)",
+  level: "1ث",
+  link: "https://drive.google.com/file/d/160pd-gWKZPJNFPC13fMoITflbO_Xh_vC/view?usp=drive_link",
+},
+{
+  name: "تاريخ الصف الأول الثانوي الترم الأول 2027",
+  level: "1ث",
+  link: "https://drive.google.com/file/d/1kUveRazC3SicFQdwFcsjjJVjAdwJdOQT/view?usp=drive_link",
+},
+{
+  name: "ملحق 2 جيم الصف الأول الثانوي الترم الأول 2027",
+  level: "1ث",
+  link: "https://drive.google.com/file/d/1JAAitPtVWADKM5wLBqHhX-FtCAz0pM0A/view?usp=drive_link",
 },
     ],
     exams:[
@@ -456,7 +496,17 @@ const SUBJECTS = {
     link: "https://drive.google.com/file/d/1XZq0ojVX0DdMdIdxP71z7Kme4_an0Zoh/view?usp=drivesdk",
 },
 
-    ],
+    
+{
+  name: "كتاب التوحيد الصف الثاني الثانوي",
+  level: "ثانوي",
+  link: "https://drive.google.com/file/d/12tnHpw5SYIURnlk5FuLb-mCQIcrcIOBh/view?usp=drive_link",
+},
+{
+  name: "كتاب الحديث الصف الثاني الثانوي",
+  level: "ثانوي",
+  link: "https://drive.google.com/file/d/10fb9EuCsFonyb4Kg1A6zuTDjBP_MSigw/view?usp=drive_link",
+},],
     exams: [],
 
   video: [ ],
@@ -678,6 +728,28 @@ const SUBJECTS = {
     ],
   },
 };
+
+async function loadAdminAzharBooks(){
+  try{
+    const snap=await getDocs(collection(db,"azharBooks"));
+    snap.forEach(item=>{
+      const b=item.data()||{};
+      if(b.visible===false || !b.title || !b.url) return;
+      const grade=String(b.grade||"").trim();
+      if(!SUBJECTS[grade]) SUBJECTS[grade]={library:[],exams:[]};
+      SUBJECTS[grade].library=SUBJECTS[grade].library||[];
+      const exists=SUBJECTS[grade].library.some(x=>x.name===b.title && x.link===b.url);
+      if(exists) return;
+      SUBJECTS[grade].library.push({
+        name:b.title, level:b.subject||b.category||"", link:b.url, icon:b.icon||"📚"
+      });
+    });
+  }catch(error){
+    console.warn("تعذر تحميل كتب مكتبة التعليم الأزهري المضافة من لوحة الإدارة:",error);
+  }
+}
+
+await loadAdminAzharBooks();
 
 const RESOURCE_ICON = {
   library: "📖",

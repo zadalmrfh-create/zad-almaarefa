@@ -112,6 +112,16 @@ service cloud.firestore {
       allow create, update, delete: if isAdmin();
     }
 
+    match /libraryBooks/{id} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /azharBooks/{id} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
     match /notifications/{notificationId} {
       allow read, create, update, delete: if isAdmin();
 
