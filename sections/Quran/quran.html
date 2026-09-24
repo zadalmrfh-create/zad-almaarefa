@@ -174,7 +174,7 @@
           <h2 class="section-title">اختر القسم</h2>
 
           <div class="stage-stack">
-            <button class="stage-row" data-stage="s1">
+            <button class="stage-row" data-stage="s1" type="button" onclick="window.open('quran-hifz.html', '_blank')">
               <div class="stage-row-icon">📿</div>
               <div class="stage-row-text">
                 <div class="stage-row-name">حفظ وتعليم القرآن بالتجويد</div>
@@ -198,7 +198,7 @@
               <span class="stage-row-arrow">‹</span>
             </button>
 
-            <button class="stage-row" data-stage="s3">
+            <button class="stage-row" data-stage="s3" type="button" onclick="window.open('quran-qiraat.html', '_blank')">
               <div class="stage-row-icon">🎙️</div>
               <div class="stage-row-text">
                 <div class="stage-row-name">القراءات العشر المتواترة</div>
@@ -207,7 +207,7 @@
               <span class="stage-row-arrow">‹</span>
             </button>
 
-            <button class="stage-row" data-stage="s4">
+            <button class="stage-row" data-stage="s4" type="button" onclick="window.open('quran-tafsir.html', '_blank')">
               <div class="stage-row-icon">📚</div>
               <div class="stage-row-text">
                 <div class="stage-row-name">كتب التفسير وعلوم القرآن</div>
@@ -218,7 +218,7 @@
               <span class="stage-row-arrow">‹</span>
             </button>
 
-            <button class="stage-row" data-stage="s5">
+            <button class="stage-row" data-stage="s5" type="button" onclick="window.open('quran-tadabbur.html', '_blank')">
               <div class="stage-row-icon">🎓</div>
               <div class="stage-row-text">
                 <div class="stage-row-name">محاضرات في تدبر القرآن الكريم</div>
@@ -241,6 +241,74 @@
             </div>
           </div>
           <div id="sectionDescription" class="section-description"></div>
+
+          <!-- Quran reader: shown for the real Mushaf section -->
+          <div id="quranReader" class="quran-reader is-hidden" aria-live="polite">
+            <div class="mushaf-toolbar">
+              <div class="mushaf-title">📖 مصحف المدينة — 604 صفحة</div>
+              <div class="mushaf-page-tools">
+                <button type="button" id="quranPrev" class="mushaf-btn">→ السابقة</button>
+                <label class="page-jump">
+                  صفحة
+                  <input id="quranPageInput" type="number" min="1" max="604" value="1" inputmode="numeric" />
+                  / 604
+                </label>
+                <button type="button" id="quranNext" class="mushaf-btn">التالية ←</button>
+              </div>
+            </div>
+
+            <div class="quran-quick-tools">
+              <select id="quranSurahSelect" class="quran-select" aria-label="اختر السورة">
+                <option value="">اختر السورة</option>
+              </select>
+              <select id="quranReciterSelect" class="quran-select" aria-label="اختر القارئ">
+                <option value="">جاري تحميل القراء...</option>
+              </select>
+              <select id="quranTafsirSelect" class="quran-select" aria-label="اختر التفسير">
+                <option value="muyassar">التفسير الميسر</option>
+                <option value="ibnkathir">ابن كثير — رابط التفسير</option>
+                <option value="saadi">السعدي — رابط التفسير</option>
+                <option value="tabari">الطبري — رابط التفسير</option>
+                <option value="qurtubi">القرطبي — رابط التفسير</option>
+              </select>
+              <button type="button" id="quranBookmark" class="mushaf-btn">🔖 حفظ الصفحة</button>
+              <button type="button" id="quranLastPage" class="mushaf-btn">↩ آخر موضع</button>
+            </div>
+
+            <div class="quran-search-row">
+              <input id="quranSearchInput" class="quran-search-input" type="search" placeholder="ابحث عن كلمة أو آية في القرآن..." />
+              <button type="button" id="quranSearchBtn" class="gold-btn">🔎 بحث</button>
+            </div>
+            <div id="quranSearchResults" class="quran-search-results is-hidden"></div>
+
+            <div class="mushaf-stage">
+              <button type="button" id="quranFav" class="mushaf-fav" title="حفظ الصفحة">♡</button>
+              <img id="mushafPageImage" class="mushaf-page-image" alt="صفحة المصحف" draggable="false" />
+            </div>
+
+            <div class="mushaf-bottom">
+              <div id="mushafPageInfo" class="mushaf-page-info">الصفحة 1 من 604</div>
+              <div class="mushaf-credit">صفحات المصحف: QCF/مصحف المدينة — بيانات العرض من مصادر قرآن موثوقة</div>
+            </div>
+
+            <div class="quran-audio-panel">
+              <div class="audio-heading">🎧 الاستماع</div>
+              <p id="audioStatus" class="audio-status">اختر قارئًا ثم شغّل السورة الحالية.</p>
+              <audio id="quranAudio" class="quran-audio" controls preload="none"></audio>
+              <div class="audio-actions">
+                <button type="button" id="audioPlaySurah" class="gold-btn">▶ تشغيل السورة</button>
+                <button type="button" id="audioStop" class="mushaf-btn">⏹ إيقاف</button>
+              </div>
+            </div>
+
+            <div class="quran-feature-grid">
+              <button type="button" data-quran-feature="translation">🌍 عربي + English</button>
+              <button type="button" data-quran-feature="tafsir">📚 التفسير</button>
+              <button type="button" data-quran-feature="bookmarks">🔖 العلامات والمفضلة</button>
+              <button type="button" data-quran-feature="share">📤 مشاركة الصفحة</button>
+            </div>
+            <div id="quranFeaturePanel" class="quran-feature-panel is-hidden"></div>
+          </div>
 
           <!-- 🔍 Search bar -->
           <div class="search-bar">
@@ -278,7 +346,6 @@
         احجز حصتك الآن
       </a>
     </div>
-    <script src="quran-data.js"></script>
     <script src="quran.js"></script>
   </body>
 </html>

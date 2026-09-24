@@ -1096,3 +1096,147 @@ main {
   transform: translateY(-2px);
   box-shadow: 0 10px 28px rgba(201, 168, 76, 0.42);
 }
+
+/* =========================================================
+   REAL MUSHAF READER
+========================================================= */
+.quran-reader{margin-top:24px;background:linear-gradient(180deg,#fbfaf6,#f4f0e6);border:1px solid #e5dcc5;border-radius:22px;padding:16px;box-shadow:0 18px 45px rgba(54,43,20,.10)}
+.quran-reader.is-hidden{display:none}
+.mushaf-toolbar,.quran-quick-tools,.quran-search-row,.mushaf-bottom{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.mushaf-title{font-size:20px;font-weight:800;color:#2c261b}
+.mushaf-page-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.mushaf-btn,.gold-btn{border:1px solid #d8cda9;background:#fff;color:#3d3526;border-radius:12px;padding:9px 13px;font-family:inherit;font-weight:700;cursor:pointer;transition:.2s}
+.mushaf-btn:hover{transform:translateY(-1px);border-color:#c9a84c}
+.gold-btn{background:#c9a84c;color:#fff;border-color:#c9a84c}
+.gold-btn:hover{background:#b08f3d}
+.page-jump{display:flex;align-items:center;gap:5px;font-weight:700;color:#5e5546}
+.page-jump input{width:68px;border:1px solid #ddd2b4;border-radius:10px;padding:8px;text-align:center;font:inherit;background:#fff}
+.quran-quick-tools{justify-content:center;margin:15px 0 10px}
+.quran-select{min-width:180px;border:1px solid #ddd2b4;background:#fff;border-radius:12px;padding:10px 12px;font-family:inherit;font-weight:700;color:#3d3526}
+.quran-search-row{margin:10px 0}
+.quran-search-input{flex:1;min-width:220px;border:1px solid #ddd2b4;border-radius:12px;padding:11px 13px;font:inherit;background:#fff}
+.quran-search-results{margin:10px 0;display:grid;gap:8px}
+.quran-search-results.is-hidden{display:none}
+.quran-result{background:#fff;border:1px solid #e4dac1;border-radius:12px;padding:11px;text-align:right;cursor:pointer}
+.quran-result:hover{border-color:#c9a84c}
+.quran-result strong{display:block;color:#a17c20;margin-bottom:4px}
+.mushaf-stage{position:relative;display:flex;justify-content:center;align-items:center;margin:14px auto;padding:10px;background:#e8dfca;border-radius:18px;min-height:420px;overflow:hidden}
+.mushaf-page-image{display:block;width:min(100%,700px);height:auto;max-height:78vh;object-fit:contain;background:#fff;box-shadow:0 8px 25px rgba(0,0,0,.18);border:1px solid #d1c5a4;user-select:none}
+.mushaf-fav{position:absolute;top:18px;right:18px;z-index:2;width:42px;height:42px;border:0;border-radius:50%;background:rgba(255,255,255,.92);font-size:25px;cursor:pointer;box-shadow:0 5px 14px rgba(0,0,0,.12)}
+.mushaf-fav.active{color:#b08f3d}
+.mushaf-page-info{font-weight:800;color:#4c4334}
+.mushaf-credit{font-size:12px;color:#8b806d}
+.quran-audio-panel{margin-top:16px;padding:16px;background:#fff;border:1px solid #e4dac1;border-radius:16px}
+.audio-heading{font-size:18px;font-weight:800;color:#342c20}
+.audio-status{color:#766b59;margin:6px 0 10px}
+.quran-audio{width:100%}
+.audio-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.quran-feature-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-top:12px}
+.quran-feature-grid button{border:1px solid #e2d8bf;background:#fff;border-radius:12px;padding:11px;font-family:inherit;font-weight:800;cursor:pointer;color:#443a2b}
+.quran-feature-grid button:hover{border-color:#c9a84c}
+.quran-feature-panel{margin-top:10px;background:#fff;border:1px solid #e4dac1;border-radius:14px;padding:14px;line-height:1.9}
+.quran-feature-panel.is-hidden{display:none}
+.quran-feature-panel a{color:#9a7721;font-weight:800}
+@media(max-width:700px){.quran-feature-grid{grid-template-columns:repeat(2,1fr)}.mushaf-stage{padding:5px}.mushaf-page-image{max-height:none}.quran-select{min-width:150px;flex:1}.mushaf-title{font-size:17px}}
+
+/* =========================================================
+   REAL LESSON CONTENT + HIFZ PLAN MODAL
+========================================================= */
+.quran-content-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 22px;
+}
+.quran-content-modal.is-hidden { display: none; }
+.quran-content-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(20, 18, 14, .62);
+  backdrop-filter: blur(4px);
+}
+.quran-content-dialog {
+  position: relative;
+  width: min(820px, 100%);
+  max-height: min(86vh, 760px);
+  overflow-y: auto;
+  background: var(--white);
+  border: 1px solid var(--gold);
+  border-radius: 22px;
+  padding: 30px;
+  box-shadow: 0 24px 80px rgba(0,0,0,.25);
+  direction: rtl;
+}
+.quran-modal-close {
+  position: absolute;
+  top: 12px;
+  left: 14px;
+  width: 38px;
+  height: 38px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--gold-light);
+  color: var(--gray-800);
+  font-size: 25px;
+  cursor: pointer;
+}
+.quran-content-kicker {
+  color: var(--gold-dark, #8a6b25);
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.quran-content-dialog h3 {
+  margin: 0 0 18px;
+  color: var(--gray-800);
+  font-size: 25px;
+}
+.quran-content-body {
+  color: var(--gray-700, #4f4a42);
+  font-size: 16px;
+  line-height: 2;
+}
+.quran-content-body h3,
+.quran-content-body h4 {
+  color: var(--gray-800);
+  margin: 8px 0 10px;
+}
+.quran-content-body ul,
+.quran-content-body ol {
+  padding-right: 24px;
+}
+.quran-content-body li {
+  margin: 6px 0;
+}
+.quran-study-tip,
+.hifz-plan-summary {
+  margin-top: 20px;
+  padding: 15px 17px;
+  border-radius: 14px;
+  background: var(--gold-light);
+  border-right: 4px solid var(--gold);
+}
+.lesson-open-btn {
+  border: 0;
+  cursor: pointer;
+}
+
+
+:root{--gold:#c9a441;--ink:#18202a;--muted:#6f7782;--bg:#f7f8fa;--card:#fff;--line:#e6e8ec}*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:Tajawal,Cairo,Arial,sans-serif;color:var(--ink);direction:rtl}.top{background:#fff;border-bottom:1px solid var(--line);padding:22px 5%;display:flex;align-items:center;justify-content:space-between;gap:20px}.brand{display:flex;align-items:center;gap:14px}.brand img{width:64px;height:64px;object-fit:contain}.brand h1{margin:0 0 5px;font-size:24px}.brand p{margin:0;color:var(--muted)}.back{color:#8b6d24;text-decoration:none;font-weight:700}.wrap{width:min(1120px,92%);margin:30px auto 70px}.hero{background:linear-gradient(135deg,#fff,#fbf5e5);border:1px solid #eadcae;border-radius:24px;padding:28px;box-shadow:0 8px 28px #00000008}.hero h2{margin:0 0 10px;font-size:28px}.hero p{line-height:1.9;color:#4f5864}.note{background:#fff8df;border-right:4px solid var(--gold);padding:14px 16px;border-radius:12px;line-height:1.8}.tools{display:flex;gap:12px;flex-wrap:wrap;margin:22px 0}.tools input,.tools select{flex:1;min-width:220px;padding:14px 16px;border:1px solid var(--line);border-radius:13px;background:#fff;font:inherit}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px}.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:0 5px 20px #00000006}.card h3{margin:0 0 8px;font-size:20px}.meta{color:var(--muted);font-size:14px;margin-bottom:12px}.card p,.card li{line-height:1.85;color:#505966}.tag{display:inline-block;background:#f8efd4;color:#80631f;padding:5px 9px;border-radius:999px;font-size:12px;margin-bottom:10px}.card a{display:inline-block;margin-top:10px;color:#8a6a1f;font-weight:700;text-decoration:none}.section-title{margin:34px 0 16px;font-size:23px}.empty{padding:30px;text-align:center;color:var(--muted)}.footer{text-align:center;color:#7b818b;margin-top:36px;font-size:13px}@media(max-width:700px){.top{align-items:flex-start;flex-direction:column}.brand h1{font-size:20px}.hero h2{font-size:23px}}
+
+/* نافذة المحاضرة داخل نفس الصفحة */
+.modal{position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(0,0,0,.52);backdrop-filter:blur(3px)}
+.modal.open{display:flex}
+.modal-box{width:min(680px,92vw);max-height:82vh;overflow:auto;background:#fff;border-radius:20px;box-shadow:0 20px 60px rgba(0,0,0,.25);padding:0;border:1px solid rgba(0,0,0,.08);animation:modalIn .18s ease-out}
+.modal-head{position:sticky;top:0;display:flex;align-items:center;justify-content:space-between;gap:15px;padding:18px 22px;background:#fff;border-bottom:1px solid #eee;z-index:1}
+.modal-head h3{margin:0;font-family:Cairo,Tajawal,sans-serif;font-size:20px}
+.modal-head .close{border:0;border-radius:10px;padding:9px 14px;cursor:pointer;background:#f1f3f5;color:#333;font-family:inherit;font-weight:700}
+.modal-head .close:hover{background:#e2e6ea}
+#modalBody{padding:22px;font-family:Tajawal,Cairo,sans-serif;line-height:1.9;color:#333}
+#modalBody h4{margin:20px 0 8px}
+#modalBody ol{padding-right:22px}
+@keyframes modalIn{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+@media(max-width:600px){.modal{padding:12px}.modal-box{width:96vw;max-height:88vh;border-radius:16px}.modal-head{padding:14px 16px}.modal-head h3{font-size:17px}#modalBody{padding:17px}}

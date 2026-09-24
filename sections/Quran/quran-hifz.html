@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>حفظ وتعليم القرآن بالتجويد — زاد المعرفة</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--gold:#cda941;--gold-dark:#a98225;--ink:#18202a;--muted:#7b8490;--bg:#f7f7f5;--card:#fff;--border:#e8e5dd}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Cairo,Tajawal,sans-serif}
+.top{background:#fff;border-bottom:1px solid #eee;padding:22px 5%;display:flex;align-items:center;justify-content:space-between;gap:20px}
+.brand{display:flex;align-items:center;gap:14px}.brand img{width:58px;height:58px;object-fit:contain}.brand h1{font-size:21px;margin:0 0 3px;font-weight:800}.brand p{margin:0;color:var(--muted);font-size:13px}
+.back{color:#9a7625;text-decoration:none;font-weight:700}.wrap{width:min(1050px,92%);margin:30px auto 70px}
+.hero{background:linear-gradient(135deg,#fff,#fbf8ef);border:1px solid #e8dfc6;border-radius:22px;padding:28px;margin-bottom:22px;box-shadow:0 5px 20px #00000008}
+.hero h2{margin:0 0 8px;font-size:28px}.hero p{margin:0;color:#6f7780;line-height:1.9}.hero .note{margin-top:15px;padding:12px 15px;border-radius:12px;background:#fff8df;color:#765c20;font-size:14px}
+.tools{display:flex;gap:12px;flex-wrap:wrap;margin:20px 0}.search{flex:1;min-width:250px;padding:14px 18px;border:1px solid var(--border);border-radius:13px;background:#fff;font:inherit;outline:none}.filter{padding:13px 18px;border:1px solid var(--border);border-radius:13px;background:#fff;font:inherit;cursor:pointer}.filter.active{background:var(--gold);color:#fff;border-color:var(--gold)}
+.section-title{display:flex;align-items:center;justify-content:space-between;margin:28px 0 14px}.section-title h3{margin:0;font-size:21px}.count{color:var(--muted);font-size:13px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:20px;box-shadow:0 4px 14px #00000008;display:flex;flex-direction:column;min-height:205px}.card-top{display:flex;gap:14px;align-items:flex-start}.icon{width:50px;height:50px;border-radius:13px;background:#f7edd0;display:grid;place-items:center;font-size:24px;flex:0 0 50px}.card h4{margin:2px 0 7px;font-size:17px}.meta{font-size:12px;color:var(--muted);line-height:1.8}.desc{font-size:13px;color:#68717b;line-height:1.8;margin:13px 0}.actions{margin-top:auto;display:flex;gap:8px}.btn{border:0;border-radius:10px;padding:11px 15px;background:var(--gold);color:#fff;font:700 13px Cairo;cursor:pointer}.btn.secondary{background:#f4f0e5;color:#806323}.empty{text-align:center;padding:40px;background:#fff;border:1px dashed #ddd;border-radius:16px;color:#888}
+.modal{position:fixed;inset:0;background:#0008;display:none;align-items:center;justify-content:center;padding:20px;z-index:10}.modal.open{display:flex}.modal-box{width:min(760px,100%);max-height:85vh;overflow:auto;background:#fff;border-radius:20px;padding:25px}.modal-head{display:flex;justify-content:space-between;gap:15px;align-items:center}.close{border:0;background:#eee;border-radius:9px;padding:8px 12px;cursor:pointer}.modal-box h3{font-size:22px}.modal-box p,.modal-box li{line-height:2;color:#4e5660}.modal-box li{margin-bottom:6px}
+@media(max-width:700px){.grid{grid-template-columns:1fr}.top{padding:16px 4%}.brand h1{font-size:17px}.brand p{font-size:11px}.hero h2{font-size:23px}.wrap{margin-top:18px}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand"><img src="../../images/logo.png" alt="زاد المعرفة"><div><h1>حفظ وتعليم القرآن بالتجويد</h1><p>منصة زاد المعرفة — مسار التجويد وخطط الحفظ</p></div></div>
+  <a class="back" href="quran.html">← العودة لأقسام القرآن</a>
+</header>
+<main class="wrap">
+  <section class="hero">
+    <h2>📖 حفظ وتعليم القرآن بالتجويد</h2>
+    <p>مسار مستقل للتجويد يبدأ من الأساسيات ثم ينتقل إلى أحكام التلاوة والتطبيق، مع خطة حفظ مستقلة لكل جزء من القرآن الكريم.</p>
+    <div class="note">30 خطة حفظ — خطة لكل جزء من القرآن — بتقسيم أسبوعي: 5 أيام حفظ + يوم تسميع وربط + يوم مراجعة.</div>
+  </section>
+  <div class="tools">
+    <input id="search" class="search" type="search" placeholder="ابحث داخل دروس التجويد وخطط الحفظ...">
+    <button class="filter active" data-filter="all">الكل</button>
+    <button class="filter" data-filter="lesson">دروس التجويد</button>
+    <button class="filter" data-filter="plan">خطط الحفظ</button>
+  </div>
+  <div class="section-title"><h3>دروس التجويد</h3><span id="lessonCount" class="count"></span></div>
+  <section id="lessons" class="grid"></section>
+  <div class="section-title"><h3>خطط حفظ القرآن</h3><span id="planCount" class="count"></span></div>
+  <section id="plans" class="grid"></section>
+</main>
+<div id="modal" class="modal" role="dialog" aria-modal="true"><div class="modal-box"><div class="modal-head"><h3 id="modalTitle"></h3><button class="close" id="close">إغلاق ×</button></div><div id="modalBody"></div></div></div>
+<script src="quran-data.js"></script>
+<script>
+const section=QURAN_DATA.s1;const lessonsEl=document.getElementById('lessons'),plansEl=document.getElementById('plans'),search=document.getElementById('search');let filter='all';
+function esc(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
+function lessonCard(x){return `<article class="card" data-kind="lesson"><div class="card-top"><div class="icon">${x.icon||'📖'}</div><div><h4>${esc(x.name)}</h4><div class="meta">${esc(x.meta||'درس تجويد')} · داخل المنصة</div></div></div><div class="desc">درس تفاعلي يشرح الحكم مع أمثلة وتطبيق عملي من القرآن الكريم.</div><div class="actions"><button class="btn" data-action="lesson" data-id="${section.lessons.indexOf(x)}">📖 ابدأ الدرس</button></div></article>`}
+function planCard(x,i){return `<article class="card" data-kind="plan"><div class="card-top"><div class="icon">📋</div><div><h4>خطة حفظ ${esc(x.name)}</h4><div class="meta">الصفحات ${x.start}–${x.end} · 7 أيام</div></div></div><div class="desc">تقسيم أسبوعي للحفظ مع يوم للتسميع والربط ويوم للمراجعة والتثبيت.</div><div class="actions"><button class="btn" data-action="plan" data-id="${i}">📋 عرض خطة الحفظ</button></div></article>`}
+function render(){const q=search.value.trim().toLowerCase();const ls=section.lessons.filter(x=>(filter==='all'||filter==='lesson')&&(!q||x.name.toLowerCase().includes(q)||x.meta.toLowerCase().includes(q)));const ps=section.plans.filter(x=>(filter==='all'||filter==='plan')&&(!q||x.name.toLowerCase().includes(q)));lessonsEl.innerHTML=ls.length?ls.map(lessonCard).join(''):'<div class="empty">لا توجد دروس مطابقة للبحث.</div>';plansEl.innerHTML=ps.length?ps.map((x)=>planCard(x,section.plans.indexOf(x))).join(''):'<div class="empty">لا توجد خطط مطابقة للبحث.</div>';document.getElementById('lessonCount').textContent=`${ls.length} درس`;document.getElementById('planCount').textContent=`${ps.length} خطة`;}
+function openModal(title,body){document.getElementById('modalTitle').textContent=title;document.getElementById('modalBody').innerHTML=body;document.getElementById('modal').classList.add('open')}
+function planBody(p){let total=p.end-p.start+1,base=Math.floor(total/5),rem=total%5,cur=p.start,days=[];for(let d=1;d<=5;d++){let n=base+(d<=rem?1:0),a=cur,b=cur+n-1;days.push(`<li><strong>اليوم ${d}:</strong> حفظ الصفحات ${a}–${b}</li>`);cur=b+1}days.push('<li><strong>اليوم 6:</strong> تسميع كامل ما تم حفظه وربط بدايات المقاطع.</li>');days.push('<li><strong>اليوم 7:</strong> مراجعة الجزء كاملًا وتثبيت المواضع التي تحتاج إعادة.</li>');return `<p>خطة ${esc(p.name)} من الصفحة ${p.start} إلى الصفحة ${p.end} (${total} صفحة).</p><ol>${days.join('')}</ol>`}
+document.addEventListener('click',e=>{const f=e.target.closest('.filter');if(f){document.querySelectorAll('.filter').forEach(x=>x.classList.remove('active'));f.classList.add('active');filter=f.dataset.filter;render()}const b=e.target.closest('[data-action]');if(b){if(b.dataset.action==='lesson'){const x=section.lessons[+b.dataset.id];openModal(x.name,x.content)}else{const p=section.plans[+b.dataset.id];openModal('خطة حفظ '+p.name,planBody(p))}}});search.addEventListener('input',render);document.getElementById('close').onclick=()=>document.getElementById('modal').classList.remove('open');document.getElementById('modal').addEventListener('click',e=>{if(e.target.id==='modal')e.currentTarget.classList.remove('open')});render();
+</script>
+</body></html>

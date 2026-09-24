@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>مصحف زاد المعرفة</title>
+<link rel="icon" type="image/png" href="../../images/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="quran.css">
+<style>
+body.reader-page{background:#f5f1e7;margin:0;color:#30291e;font-family:Cairo,sans-serif}
+.reader-shell{max-width:1200px;margin:auto;padding:18px}
+.reader-head{position:sticky;top:0;z-index:20;background:rgba(245,241,231,.96);backdrop-filter:blur(10px);border-bottom:1px solid #ddd1b5;padding:12px 0;margin-bottom:16px}
+.reader-head-inner{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.reader-brand{font-weight:800;font-size:20px}.reader-brand small{display:block;font-size:12px;font-weight:500;color:#857963}
+.reader-actions{display:flex;gap:8px;flex-wrap:wrap}.reader-btn{border:1px solid #d6c9a8;background:#fff;border-radius:11px;padding:9px 12px;cursor:pointer;font-family:inherit;font-weight:700;color:#453b2a}.reader-btn:hover{border-color:#b99845}
+.reader-controls{background:#fff;border:1px solid #e0d6bf;border-radius:18px;padding:14px;box-shadow:0 8px 25px rgba(54,43,20,.07)}
+.reader-controls .row{display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap;margin-bottom:10px}.reader-controls .row:last-child{margin-bottom:0}
+.reader-select,.reader-input{border:1px solid #d8cdb0;background:#fff;border-radius:10px;padding:10px 12px;font-family:inherit;min-width:180px}
+.reader-input{min-width:90px;width:90px}.page-label{font-weight:800}
+.mushaf-wrap{margin:16px auto;display:flex;justify-content:center;position:relative}.mushaf-wrap img{width:min(100%,760px);height:auto;background:#fff;border:1px solid #d3c6a5;box-shadow:0 12px 35px rgba(0,0,0,.16);border-radius:4px}.page-fav{position:absolute;top:12px;right:12px;width:44px;height:44px;border:0;border-radius:50%;background:rgba(255,255,255,.94);font-size:26px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.14)}
+.info-row{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:13px;color:#756a57;margin:8px 0 14px}
+.reader-panel{background:#fff;border:1px solid #e0d6bf;border-radius:18px;padding:16px;margin-top:14px}.reader-panel h3{margin:0 0 10px}.panel-hidden{display:none!important}
+.audio-box audio{width:100%}.audio-status{color:#756a57;font-size:13px}.audio-buttons{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.tafsir-toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.tafsir-toolbar label{font-weight:800}.tafsir-text{margin-top:14px;line-height:2.05;font-size:17px}.ayah-list{display:grid;gap:8px;margin-top:12px}.ayah-option{border:1px solid #e0d6bf;background:#fbfaf6;border-radius:10px;padding:10px;text-align:right;cursor:pointer;font-family:inherit}.ayah-option:hover,.ayah-option.active{border-color:#b99845;background:#fffaf0}.translation-row{margin-top:12px;padding-top:12px;border-top:1px dashed #ddd1b5}.en{direction:ltr;text-align:left;color:#5e584d}.search-results{display:grid;gap:8px}.search-result{border:1px solid #e0d6bf;border-radius:10px;padding:10px;background:#fbfaf6;cursor:pointer}.search-result strong{display:block;margin-bottom:4px}.dark{background:#161616!important;color:#eee}.dark .reader-head{background:rgba(22,22,22,.96);border-color:#333}.dark .reader-controls,.dark .reader-panel,.dark .reader-btn,.dark .reader-select,.dark .reader-input,.dark .page-fav{background:#222;color:#eee;border-color:#444}.dark .mushaf-wrap{background:#29261f}.dark .ayah-option,.dark .search-result{background:#252525;color:#eee;border-color:#444}.dark .mushaf-wrap img{box-shadow:0 12px 35px rgba(0,0,0,.5)}
+@media(max-width:700px){.reader-shell{padding:10px}.reader-brand{font-size:17px}.reader-select{min-width:140px;flex:1}.mushaf-wrap img{width:100%}}
+</style>
+</head>
+<body class="reader-page">
+<div class="reader-head"><div class="reader-shell reader-head-inner">
+<div class="reader-brand">📖 مصحف زاد المعرفة <small>مصحف المدينة — 604 صفحة</small></div>
+<div class="reader-actions"><button class="reader-btn" id="themeBtn">🌙 الوضع الداكن</button><button class="reader-btn" id="backBtn">← الرجوع للمنصة</button></div>
+</div></div>
+<main class="reader-shell">
+<section class="reader-controls">
+<div class="row">
+<button class="reader-btn" id="prevBtn">→ السابقة</button><span class="page-label">صفحة</span><input class="reader-input" id="pageInput" type="number" min="1" max="604" value="1"><span id="pageInfo">الصفحة 1 من 604</span><button class="reader-btn" id="nextBtn">التالية ←</button>
+</div>
+<div class="row">
+<select class="reader-select" id="surahSelect"><option value="">اختر السورة</option></select>
+<select class="reader-select" id="reciterSelect"><option value="">جاري تحميل القراء...</option></select>
+<button class="reader-btn" id="favBtn">♡ حفظ الصفحة</button><button class="reader-btn" id="lastBtn">↩ آخر موضع</button>
+</div>
+<div class="row">
+<input class="reader-input" style="width:min(360px,100%);min-width:220px" id="searchInput" type="search" placeholder="ابحث عن كلمة أو آية في القرآن"><button class="reader-btn" id="searchBtn">🔎 بحث</button>
+</div>
+<div id="searchResults" class="search-results panel-hidden"></div>
+</section>
+
+<div class="mushaf-wrap"><button class="page-fav" id="pageFav" title="حفظ الصفحة">♡</button><img id="mushafImage" alt="صفحة المصحف" draggable="false"><div id="imageFallback" class="panel-hidden">تعذر تحميل صفحة المصحف.</div></div>
+<div class="info-row"><span id="pageCounter">1 / 604</span><span id="surahInfo">سورة الفاتحة</span></div>
+
+<section class="reader-panel audio-box"><h3>🎧 التلاوة</h3><div class="audio-status" id="audioStatus">اختر القارئ والرواية ثم شغّل السورة.</div><audio id="audio" controls preload="none"></audio><div class="audio-buttons"><button class="reader-btn" id="playSurah">▶ تشغيل السورة</button><button class="reader-btn" id="stopAudio">⏹ إيقاف</button></div></section>
+
+<section class="reader-panel"><div class="tafsir-toolbar"><label for="tafsirSelect">📚 التفسير داخل المنصة:</label><select class="reader-select" id="tafsirSelect"><option value="muyassar">التفسير الميسر</option><option value="jalalayn">تفسير الجلالين</option><option value="waseet">التفسير الوسيط</option></select><button class="reader-btn" id="loadTafsir">عرض تفسير الصفحة</button></div><p style="color:#756a57;font-size:13px">اختر آية من الصفحة لعرض تفسيرها هنا. لن يتم نقلك إلى أي موقع خارجي.</p><div id="ayahList" class="ayah-list"></div><div id="tafsirPanel" class="tafsir-text panel-hidden"></div></section>
+
+<section class="reader-panel"><h3>🌍 الترجمة</h3><button class="reader-btn" id="translationBtn">عرض العربية + English للصفحة</button><div id="translationPanel" class="tafsir-text panel-hidden"></div></section>
+</main>
+<script src="quran-reader.js"></script>
+</body></html>
