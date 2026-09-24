@@ -6,7 +6,6 @@
     <title>لوحة الطالب | زاد المعرفة</title>
     <link rel="icon" href="../../images/logo.png">
     <link rel="stylesheet" href="../dashboard.css">
-<link rel="stylesheet" href="../enhancements.css">
 
 <style>
 .stats-grid{
@@ -435,7 +434,9 @@
 
 
 <script type="module" src="quiz-center.js"></script>
-<script type="module" src="live-enhancements.js"></script>
+<script>
+const tick=()=>{document.querySelectorAll('.lesson-countdown').forEach(el=>{const d=new Date(el.dataset.lessonDate||'');if(Number.isNaN(d.getTime()))return;const diff=d.getTime()-Date.now();if(diff>0){const s=Math.floor(diff/1000),h=Math.floor(s/3600),m=Math.floor(s%3600/60),sec=s%60;el.textContent=`⏳ تبدأ خلال ${h?String(h).padStart(2,'0')+':':''}${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;}else if(diff>-3600000){el.textContent='🟢 المحاضرة جارية الآن';}else{el.textContent='⚪ انتهت المحاضرة';}});document.querySelectorAll('.meet-btn[data-start]').forEach(btn=>{const d=new Date(btn.dataset.start||'');if(Number.isNaN(d.getTime()))return;const diff=d.getTime()-Date.now();const allowed=diff<=15*60000&&diff>-60*60000;btn.disabled=!allowed;if(!allowed){btn.title=diff>0?'سيظهر زر الدخول قبل الموعد بـ15 دقيقة':'انتهى وقت الدخول لهذه المحاضرة';}})};setInterval(tick,1000);tick();
+</script>
 <script type="module">
 
 import {
