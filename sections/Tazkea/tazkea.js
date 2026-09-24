@@ -1,3 +1,67 @@
+/* تزكية وتربية — محتوى الدروس */
+const QURAN_DATA = {
+  s1: {
+    title: "تزكية النفس وبناء العادات الصالحة",
+    description: `<h3>🌿 عن القسم</h3><p>بناء علاقة عملية بين معرفة الخير وممارسته في الحياة اليومية.</p>`,
+    lessons: [
+      { name: "مدخل إلى تزكية النفس", fileType: "lesson", meta: "درس تعليمي", source: "زاد المعرفة", downloadUrl: "../Arabic/lesson.html?section=tazkea&lesson=s1-1" },
+      { name: "النية وأثرها في العمل", fileType: "lesson", meta: "درس تعليمي", source: "زاد المعرفة", downloadUrl: "../Arabic/lesson.html?section=tazkea&lesson=s1-2" },
+      { name: "المحافظة على العادات الصالحة", fileType: "lesson", meta: "درس تعليمي", source: "زاد المعرفة", downloadUrl: "../Arabic/lesson.html?section=tazkea&lesson=s1-3" },
+      { name: "مجاهدة النفس وضبط السلوك", fileType: "lesson", meta: "درس تعليمي", source: "زاد المعرفة", downloadUrl: "../Arabic/lesson.html?section=tazkea&lesson=s1-4" },
+      { name: "التوبة ومراجعة النفس", fileType: "lesson", meta: "درس تعليمي", source: "زاد المعرفة", downloadUrl: "../Arabic/lesson.html?section=tazkea&lesson=s1-5" },
+      { name: "خطة أسبوعية للتزكية", fileType: "lesson", meta: "درس تعليمي", source: "زاد المعرفة", downloadUrl: "../Arabic/lesson.html?section=tazkea&lesson=s1-6" }
+    ],
+  },
+  s2: {
+    title: "الإرشاد النفسي والتوازن الداخلي",
+    description: `<h3>🌿 عن القسم</h3><p>مهارات تربوية بسيطة لفهم المشاعر وتنظيم الضغوط اليومية دون تشخيص أو علاج طبي.</p>`,
+    lessons: [
+      { name: "فهم المشاعر والتعبير عنها", fileType: "lesson", meta: "درس تعليمي", source: "زاد المعرفة", downloadUrl: "../Arabic/lesson.html?section=tazkea&lesson=s2-1" },
+      { name: "التعامل مع ضغط الدراسة", fileType: "lesson", meta: "درس تعليمي", source: "زاد المعرفة", downloadUrl: "../Arabic/lesson.html?section=tazkea&lesson=s2-2" },
+      { name: "تنظيم الوقت والأولويات", fileType: "lesson", meta: "درس تعليمي", source: "زاد المعرفة", downloadUrl: "../Arabic/lesson.html?section=tazkea&lesson=s2-3" },
+      { name: "التركيز وتقليل المشتتات", fileType: "lesson", meta: "درس تعليمي", source: "زاد المعرفة", downloadUrl: "../Arabic/lesson.html?section=tazkea&lesson=s2-4" },
+      { name: "التعامل مع الخطأ والفشل الدراسي", fileType: "lesson", meta: "درس تعليمي", source: "زاد المعرفة", downloadUrl: "../Arabic/lesson.html?section=tazkea&lesson=s2-5" },
+      { name: "طلب المساعدة بطريقة صحيحة", fileType: "lesson", meta: "درس تعليمي", source: "زاد المعرفة", downloadUrl: "../Arabic/lesson.html?section=tazkea&lesson=s2-6" }
+    ],
+  },
+  s3: {
+    title: "الآداب والأخلاق الإسلامية",
+    description: `<h3>🌿 عن القسم</h3><p>تحويل القيم الإسلامية إلى سلوك واضح في البيت والمدرسة والمجتمع.</p>`,
+    lessons: [
+      { name: "الصدق", fileType: "lesson", meta: "درس تعليمي", source: "زاد المعرفة", downloadUrl: "../Arabic/lesson.html?section=tazkea&lesson=s3-1" },
+      { name: "الأمانة والمسؤولية", fileType: "lesson", meta: "درس تعليمي", source: "زاد المعرفة", downloadUrl: "../Arabic/lesson.html?section=tazkea&lesson=s3-2" },
+      { name: "بر الوالدين واحترام الكبار", fileType: "lesson", meta: "درس تعليمي", source: "زاد المعرفة", downloadUrl: "../Arabic/lesson.html?section=tazkea&lesson=s3-3" },
+      { name: "أدب الحوار", fileType: "lesson", meta: "درس تعليمي", source: "زاد المعرفة", downloadUrl: "../Arabic/lesson.html?section=tazkea&lesson=s3-4" },
+      { name: "الرحمة والتعاون", fileType: "lesson", meta: "درس تعليمي", source: "زاد المعرفة", downloadUrl: "../Arabic/lesson.html?section=tazkea&lesson=s3-5" },
+      { name: "آداب التعامل في المدرسة والإنترنت", fileType: "lesson", meta: "درس تعليمي", source: "زاد المعرفة", downloadUrl: "../Arabic/lesson.html?section=tazkea&lesson=s3-6" }
+    ],
+  },
+  s4: {
+    title: "مهارات الدراسة وتنمية الذات",
+    description: `<h3>🌿 عن القسم</h3><p>أدوات عملية تساعد الطالب على التخطيط والمراجعة وبناء عادة تعلم مستقرة.</p>`,
+    lessons: [
+      { name: "كيف تضع خطة مذاكرة", fileType: "lesson", meta: "درس تعليمي", source: "زاد المعرفة", downloadUrl: "../Arabic/lesson.html?section=tazkea&lesson=s4-1" },
+      { name: "التغلب على التسويف", fileType: "lesson", meta: "درس تعليمي", source: "زاد المعرفة", downloadUrl: "../Arabic/lesson.html?section=tazkea&lesson=s4-2" },
+      { name: "تحديد الأهداف", fileType: "lesson", meta: "درس تعليمي", source: "زاد المعرفة", downloadUrl: "../Arabic/lesson.html?section=tazkea&lesson=s4-3" },
+      { name: "المراجعة الفعالة", fileType: "lesson", meta: "درس تعليمي", source: "زاد المعرفة", downloadUrl: "../Arabic/lesson.html?section=tazkea&lesson=s4-4" },
+      { name: "الاستعداد للاختبار", fileType: "lesson", meta: "درس تعليمي", source: "زاد المعرفة", downloadUrl: "../Arabic/lesson.html?section=tazkea&lesson=s4-5" },
+      { name: "متابعة التقدم", fileType: "lesson", meta: "درس تعليمي", source: "زاد المعرفة", downloadUrl: "../Arabic/lesson.html?section=tazkea&lesson=s4-6" }
+    ],
+  },
+  s5: {
+    title: "الصحبة الصالحة والبيئة الإيجابية",
+    description: `<h3>🌿 عن القسم</h3><p>فهم أثر البيئة المحيطة في السلوك وبناء علاقات قائمة على الاحترام والتعاون.</p>`,
+    lessons: [
+      { name: "اختيار الصحبة الصالحة", fileType: "lesson", meta: "درس تعليمي", source: "زاد المعرفة", downloadUrl: "../Arabic/lesson.html?section=tazkea&lesson=s5-1" },
+      { name: "التأثر بالأصدقاء", fileType: "lesson", meta: "درس تعليمي", source: "زاد المعرفة", downloadUrl: "../Arabic/lesson.html?section=tazkea&lesson=s5-2" },
+      { name: "الحدود الصحية في العلاقات", fileType: "lesson", meta: "درس تعليمي", source: "زاد المعرفة", downloadUrl: "../Arabic/lesson.html?section=tazkea&lesson=s5-3" },
+      { name: "التعاون داخل المجتمع", fileType: "lesson", meta: "درس تعليمي", source: "زاد المعرفة", downloadUrl: "../Arabic/lesson.html?section=tazkea&lesson=s5-4" },
+      { name: "التعامل مع الخلافات", fileType: "lesson", meta: "درس تعليمي", source: "زاد المعرفة", downloadUrl: "../Arabic/lesson.html?section=tazkea&lesson=s5-5" },
+      { name: "بناء بيئة تعليمية إيجابية", fileType: "lesson", meta: "درس تعليمي", source: "زاد المعرفة", downloadUrl: "../Arabic/lesson.html?section=tazkea&lesson=s5-6" }
+    ],
+  },
+};
+
 /* =========================================================
    QURAN SECTION PAGE — BEHAVIOR
    1) Accordion
@@ -168,6 +232,7 @@ function getFilterLabel(type) {
     audio: "🎵 صوت",
     exam: "📝 اختبار",
     book: "📚 كتب",
+    lesson: "📘 دروس",
   };
 
   return labels[type] || type;
@@ -239,6 +304,11 @@ function buildLessonCard(lesson) {
     case "exam":
     case "اختبار":
       actionLabel = "📝 فتح الاختبار";
+      break;
+
+    case "lesson":
+    case "درس":
+      actionLabel = "📖 فتح الدرس";
       break;
 
     case "mp3":

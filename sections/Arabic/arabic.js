@@ -1,5 +1,5 @@
 /* =========================================================
-   QURAN SECTION PAGE — BEHAVIOR
+   ARABIC SECTION PAGE — BEHAVIOR
    1) Accordion
    2) CTA Scroll
    3) Flow: Sections → Lessons
@@ -156,6 +156,10 @@ function normalizeType(type) {
     return "book";
   }
 
+  if (t === "درس" || t === "lesson" || t === "تدريب") {
+    return "lesson";
+  }
+
   return t;
 }
 
@@ -168,6 +172,7 @@ function getFilterLabel(type) {
     audio: "🎵 صوت",
     exam: "📝 اختبار",
     book: "📚 كتب",
+    lesson: "📘 دروس وتدريبات",
   };
 
   return labels[type] || type;
@@ -244,6 +249,12 @@ function buildLessonCard(lesson) {
     case "mp3":
     case "audio":
       actionLabel = "🎧 استماع للصوت";
+      break;
+
+    case "درس":
+    case "تدريب":
+    case "lesson":
+      actionLabel = "📘 فتح الدرس";
       break;
   }
 

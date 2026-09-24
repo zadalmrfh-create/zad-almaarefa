@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>درس — زاد المعرفة</title>
+<link rel="icon" type="image/png" href="../../images/logo.png">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f6f7f9;color:#172033;font-family:Cairo,Tahoma,sans-serif;line-height:1.9}.wrap{max-width:980px;margin:auto;padding:24px}.top{display:flex;align-items:center;gap:16px;background:#172033;color:#fff;border-radius:20px;padding:18px 22px;margin-bottom:20px}.logo{width:58px;height:58px;object-fit:contain;background:#fff;border-radius:50%;padding:4px}.top h1{margin:0;font-size:22px}.top p{margin:2px 0 0;color:#d9dee8}.back{display:inline-block;margin-right:auto;color:#fff;text-decoration:none;background:#b8862c;padding:9px 15px;border-radius:12px}.lesson{background:#fff;border-radius:20px;padding:26px;box-shadow:0 6px 25px #0000000b}.badge{display:inline-block;background:#fff4d7;color:#8a651d;padding:5px 12px;border-radius:999px;font-weight:700}.title{font-size:32px;margin:12px 0 8px}.objectives{background:#f8f3e7;border-right:5px solid #d2aa4b;border-radius:12px;padding:14px 18px;margin:20px 0}.objectives ul{margin:8px 0;padding-right:22px}.block{border:1px solid #e8ebef;border-radius:15px;padding:18px;margin:16px 0}.block h2{font-size:20px;margin:0 0 8px;color:#8a651d}.block p{margin:0}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:24px}.btn{border:0;text-decoration:none;cursor:pointer;padding:11px 17px;border-radius:12px;font:inherit;font-weight:700;background:#172033;color:#fff}.btn.gold{background:#c69b3d}.missing{padding:30px;text-align:center}.print-only{display:none}@media(max-width:650px){.top{flex-wrap:wrap}.back{margin-right:0}.title{font-size:25px}}@media print{body{background:#fff}.wrap{max-width:none;padding:0}.top{background:#fff;color:#111;border:0;padding:0 0 15px;box-shadow:none}.top p{color:#555}.logo{display:none}.back,.actions{display:none}.lesson{box-shadow:none;padding:0}.print-only{display:block}.block{break-inside:avoid}.objectives{background:#fff;border:1px solid #bbb}.title{font-size:25px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top"><img class="logo" src="../../images/logo.png" alt="زاد المعرفة"><div><h1>زاد المعرفة</h1><p id="lessonSectionName">اللغة العربية وعلومها</p></div><a class="back" id="backLink" href="arabic.html">← العودة للقسم</a></header>
+<main class="lesson" id="lesson"></main>
+</div>
+<script src="lesson-data.js"></script>
+<script>
+const params=new URLSearchParams(location.search), section=params.get('section'), lessonId=params.get('lesson');
+const datasets={arabic:ARABIC_LESSONS,sharia:SHARIA_LESSONS,tazkea:TAZKEA_LESSONS};
+const data=(datasets[section]&&datasets[section][lessonId])||null;
+const back=document.getElementById('backLink');
+const sectionName=document.getElementById('lessonSectionName');
+if(section==='sharia'){back.href='../Sharia/sharia.html';back.textContent='← العودة إلى العلوم الشرعية';sectionName.textContent='العلوم الشرعية';}
+else if(section==='tazkea'){back.href='../Tazkea/tazkea.html';back.textContent='← العودة إلى التزكية والتربية';sectionName.textContent='التزكية والتربية';}
+const el=document.getElementById('lesson');
+if(!data){el.innerHTML='<div class="missing"><h2>الدرس غير موجود</h2><p>ارجع إلى القسم واختر درسًا من الدروس المتاحة.</p><a class="btn gold" href="arabic.html">العودة للقسم</a></div>';}else{
+let html='<span class="badge">'+data.level+'</span><h2 class="title">'+data.title+'</h2>';
+html+='<div class="objectives"><strong>🎯 أهداف الدرس</strong><ul>'+data.objectives.map(x=>'<li>'+x+'</li>').join('')+'</ul></div>';
+html+=data.sections.map(x=>'<section class="block"><h2>'+x.h+'</h2><p>'+x.p+'</p></section>').join('');
+html+='<div class="actions"><button class="btn gold" onclick="window.print()">🖨️ طباعة / حفظ PDF</button><a class="btn" href="'+back.href+'">↩ رجوع للأقسام</a></div>';
+el.innerHTML=html;document.title=data.title+' — زاد المعرفة';}
+</script>
+</body></html>
