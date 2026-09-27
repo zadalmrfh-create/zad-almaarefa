@@ -1,6 +1,6 @@
 import { auth, db } from '../../firebase-config.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
-import { collection, getDocs, query, where, orderBy, limit } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
+import { collection, getDocs, query, orderBy, limit } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 
 const $ = id => document.getElementById(id);
 const esc = v => String(v ?? '').replace(/[&<>\"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -8,7 +8,6 @@ const dateValue = v => v?.toDate ? v.toDate() : (v ? new Date(v) : null);
 const dateText = v => { const d=dateValue(v); return d && !Number.isNaN(d.getTime()) ? d.toLocaleDateString('ar-EG') : '-'; };
 
 let users = [];
-let subscriptions = [];
 let bookings = [];
 let attempts = [];
 
@@ -18,8 +17,6 @@ function renderStats(){
   stat('enhStudents', users.filter(x=>x.role==='student').length);
   stat('enhTeachers', users.filter(x=>x.role==='teacher').length);
   stat('enhPendingTeachers', users.filter(x=>x.role==='teacher' && x.status==='pending').length);
-  stat('enhActiveSubs', users.filter(x=>x.subscriptionStatus==='active' && dateValue(x.subscriptionEnd)?.getTime()>Date.now()).length);
-  stat('enhPendingSubs', subscriptions.filter(x=>x.status==='pending').length);
   stat('enhBookings', bookings.length);
   stat('enhQuizAttempts', attempts.length);
   const today = new Date(); today.setHours(0,0,0,0);
@@ -49,13 +46,12 @@ function exportCSV(){
 
 async function load(){
   try{
-    const [us,subs,book,att]=await Promise.all([
+    const [us,book,att]=await Promise.all([
       getDocs(collection(db,'users')),
-      getDocs(query(collection(db,'subscriptionRequests'),orderBy('createdAt','desc'),limit(500))),
       getDocs(query(collection(db,'bookings'),orderBy('createdAt','desc'),limit(500))),
       getDocs(query(collection(db,'quizAttempts'),orderBy('submittedAt','desc'),limit(1000)))
     ]);
-    users=us.docs.map(d=>d.data()); subscriptions=subs.docs.map(d=>d.data()); bookings=book.docs.map(d=>d.data()); attempts=att.docs.map(d=>d.data());
+    users=us.docs.map(d=>d.data()); bookings=book.docs.map(d=>d.data()); attempts=att.docs.map(d=>d.data());
     const countries=[...new Set(users.map(x=>x.country).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'ar'));
     const select=$('enhCountryFilter'); if(select){ select.innerHTML='<option value="all">كل البلدان</option>'+countries.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join(''); }
     renderStats(); applyFilters();

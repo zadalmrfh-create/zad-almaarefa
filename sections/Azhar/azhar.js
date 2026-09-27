@@ -1,6 +1,6 @@
 import { auth, db } from "../../firebase-config.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
-import { doc, getDoc, getDocs, collection } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+import { getDocs, collection } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
 /* =========================================================
    AZHAR EDUCATION PAGE — BEHAVIOR
    Organized in 3 independent parts:
@@ -31,33 +31,10 @@ document.querySelectorAll(".acc-trigger").forEach(function (trigger) {
    2) CTA SCROLL
 --------------------------------------------------------- */
 let currentUser = null;
-let currentProfile = null;
-let authReady = false;
-let authReadyResolve;
-const authReadyPromise = new Promise(resolve => { authReadyResolve = resolve; });
 
-onAuthStateChanged(auth, async (u) => {
+onAuthStateChanged(auth, (u) => {
   currentUser = u;
-  currentProfile = null;
-  if (u) {
-    try {
-      const snap = await getDoc(doc(db, "users", u.uid));
-      currentProfile = snap.exists() ? snap.data() : null;
-    } catch (error) {
-      console.warn("تعذر قراءة حالة العضوية:", error);
-    }
-  }
-  authReady = true;
-  authReadyResolve();
 });
-
-function activeSubscription(profile) {
-  if (!profile || profile.subscriptionStatus !== "active") return false;
-  const end = profile.subscriptionEnd?.toDate
-    ? profile.subscriptionEnd.toDate()
-    : new Date(profile.subscriptionEnd || 0);
-  return !Number.isNaN(end.getTime()) && end.getTime() > Date.now();
-}
 
 function requireLogin(message) {
   if (currentUser) return true;
@@ -66,40 +43,6 @@ function requireLogin(message) {
   return false;
 }
 
-async function requireLibraryMembership() {
-  await authReadyPromise;
-
-  if (!currentUser) {
-    showSubscriptionGate(false);
-    return false;
-  }
-
-  if (activeSubscription(currentProfile)) return true;
-
-  showSubscriptionGate(true);
-  return false;
-}
-
-function showSubscriptionGate(isLoggedIn) {
-  const gate = document.getElementById("subscriptionGate");
-  const text = document.getElementById("subscriptionGateText");
-  const login = document.getElementById("gateLogin");
-  if (!gate) return;
-
-  text.textContent = isLoggedIn
-    ? "حسابك غير مشترك حاليًا. اشترك أولًا ثم يمكنك تحميل كتب المكتبة."
-    : "لتحميل الكتب يجب أن يكون لديك حساب ثم عضوية فعالة. سجّل الدخول أولًا ثم قدّم طلب الاشتراك.";
-  login.style.display = isLoggedIn ? "none" : "inline-flex";
-  gate.classList.add("show");
-  gate.setAttribute("aria-hidden", "false");
-}
-
-const gateClose = document.getElementById("gateClose");
-gateClose?.addEventListener("click", () => {
-  const gate = document.getElementById("subscriptionGate");
-  gate?.classList.remove("show");
-  gate?.setAttribute("aria-hidden", "true");
-});
 document.getElementById("ctaStart").addEventListener("click", function () {
   if (!requireLogin("يجب تسجيل الدخول أولاً لبدء التعلم.")) return;
   document.getElementById("flowSection").scrollIntoView({ behavior: "smooth" });
@@ -825,9 +768,8 @@ function renderGrades(stageKey) {
    STEP 2 -> 3: resource selected (library / exams)
 --------------------------------------------------------- */
 document.querySelectorAll(".resource-card").forEach(function (card) {
-  card.addEventListener("click", async function () {
-    // المكتبة: التصفح متاح، لكن فتح/تحميل أي كتاب يحتاج عضوية فعالة.
-    // الامتحانات والفيديوهات تظل على نظام تسجيل الدخول الحالي.
+  card.addEventListener("click", function () {
+    // المكتبة متاحة مباشرة، بينما الامتحانات والفيديوهات تتطلب تسجيل الدخول.
     if (card.dataset.resource !== "library" && !requireLogin("يجب تسجيل الدخول أولاً للوصول إلى هذا المحتوى.")) return;
     state.resource = card.dataset.resource;
     openSearchStep();
@@ -906,10 +848,8 @@ function renderResults(query) {
     `;
 
     const downloadBtn = card.querySelector(".protected-download");
-    downloadBtn.addEventListener("click", async function () {
-      if (state.resource === "library") {
-        if (!(await requireLibraryMembership())) return;
-      } else if (!requireLogin("يجب تسجيل الدخول أولاً للوصول إلى هذا المحتوى.")) {
+    downloadBtn.addEventListener("click", function () {
+      if (state.resource !== "library" && !requireLogin("يجب تسجيل الدخول أولاً للوصول إلى هذا المحتوى.")) {
         return;
       }
       window.open(subject.link, "_blank", "noopener,noreferrer");

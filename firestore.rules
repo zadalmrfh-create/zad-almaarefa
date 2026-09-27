@@ -37,14 +37,6 @@ service cloud.firestore {
         && getUser(request.auth.uid).data.status == 'active';
     }
 
-    function activeSubscriber(uid) {
-      return signedIn()
-        && exists(/databases/$(database)/documents/users/$(uid))
-        && getUser(uid).data.subscriptionStatus == 'active'
-        && getUser(uid).data.subscriptionEnd is timestamp
-        && getUser(uid).data.subscriptionEnd > request.time;
-    }
-
     match /users/{uid} {
       allow create: if isOwner(uid)
         && request.resource.data.uid == request.auth.uid
@@ -61,7 +53,7 @@ service cloud.firestore {
         || (isTeacher() && resource.data.role == 'student');
 
       // المستخدم يستطيع تعديل بياناته الأساسية فقط.
-      // بيانات الاشتراك لا يمكن للمستخدم تزويرها؛ الإدارة فقط هي التي تغيّرها.
+      // المستخدم يستطيع تعديل بياناته الأساسية المسموح بها فقط.
       allow update: if isAdmin()
         || (
           isOwner(uid)
@@ -180,32 +172,6 @@ service cloud.firestore {
         );
 
       allow delete: if isAdmin();
-    }
-
-    match /subscriptionSettings/{settingId} {
-      allow read: if true;
-      allow create, update, delete: if isAdmin();
-    }
-
-    match /subscriptionRequests/{requestId} {
-      // الطالب ينشئ طلبًا باسمه فقط، ويبدأ دائمًا قيد المراجعة.
-      allow create: if signedIn()
-        && request.resource.data.studentUid == request.auth.uid
-        && request.resource.data.status == 'pending'
-        && request.resource.data.planId is string
-        && request.resource.data.planName is string
-        && request.resource.data.amount is number
-        && request.resource.data.paymentMethod in ['Vodafone Cash', 'منفذ دفع / سوبر ماركت']
-        && request.resource.data.proofPath is string
-        && request.resource.data.createdAt == request.time;
-
-      allow read: if isAdmin()
-        || (signedIn() && resource.data.studentUid == request.auth.uid);
-
-      // الإدارة فقط تستطيع اعتماد/رفض الطلب وتحديد مدة الاشتراك.
-      allow update: if isAdmin();
-      allow delete: if isAdmin()
-        || (signedIn() && resource.data.studentUid == request.auth.uid && resource.data.status == 'pending');
     }
 
     match /lessons/{lessonId} {

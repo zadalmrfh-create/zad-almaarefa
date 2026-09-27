@@ -155,8 +155,6 @@
         <div class="enh-stat">🎓 الطلاب<b id="enhStudents">0</b><small>حسابات الطلاب</small></div>
         <div class="enh-stat">👨‍🏫 المعلمون<b id="enhTeachers">0</b><small>حسابات المعلمين</small></div>
         <div class="enh-stat">⏳ معلمون بانتظار الاعتماد<b id="enhPendingTeachers">0</b><small>تحتاج مراجعة</small></div>
-        <div class="enh-stat">💳 عضويات نشطة<b id="enhActiveSubs">0</b><small>حاليًا</small></div>
-        <div class="enh-stat">🧾 طلبات اشتراك<b id="enhPendingSubs">0</b><small>قيد المراجعة</small></div>
         <div class="enh-stat">📅 الحجوزات<b id="enhBookings">0</b><small>إجمالي الطلبات</small></div>
         <div class="enh-stat">📝 محاولات الاختبارات<b id="enhQuizAttempts">0</b><small>المحفوظة</small></div>
         <div class="enh-stat">🆕 تسجيلات اليوم<b id="enhNewToday">0</b><small>منذ منتصف الليل</small></div>
@@ -264,66 +262,6 @@
       <p style="margin:8px 0;color:var(--muted)">اضغط مرة واحدة لحساب الطلاب القدامى من مجموعة users وتحديث العداد الظاهر للزوار.</p>
       <button id="syncStudentCounter" class="btn gold" type="button">🔄 مزامنة عدد الطلاب الحاليين</button>
       <span id="studentCounterSyncStatus" style="display:block;margin-top:10px"></span>
-    </section>
-
-
-
-    <!-- =====================================================
-         SUBSCRIPTIONS
-    ====================================================== -->
-    <section class="card" id="subscriptionManagement">
-      <h2>💳 إدارة اشتراكات الأعضاء</h2>
-      <p>الطالب يدفع يدويًا، ثم يرسل صورة الإيصال عبر واتساب، وبعد التحقق توافق أو ترفض الطلب من هنا.</p>
-
-      <div class="grid" style="margin-top:14px">
-        <label>اسم الباقة
-          <input id="subPlanName" placeholder="عضوية المكتبة الشهرية">
-        </label>
-        <label>قيمة الاشتراك بالجنيه
-          <input id="subAmount" type="number" min="0" step="1" placeholder="100">
-        </label>
-        <label>مدة الاشتراك بالأيام
-          <input id="subDurationDays" type="number" min="1" step="1" placeholder="30">
-        </label>
-        <div style="grid-column:1/-1">
-          <label>الباقات المتعددة</label>
-          <div id="subscriptionPlansEditor" class="plans-editor"></div>
-          <button id="addSubscriptionPlan" class="btn" type="button" style="margin-top:10px">➕ إضافة باقة</button>
-          <small style="display:block;margin-top:8px;opacity:.75">أضف الباقات من الحقول مباشرة، بدون كتابة JSON.</small>
-        </div>
-        <label>رقم Vodafone Cash / بيانات الدفع
-          <input id="subPaymentNumber" placeholder="010xxxxxxxx">
-        </label>
-        <label style="grid-column:1/-1">ملاحظة الدفع
-          <input id="subPaymentNote" placeholder="بعد التحويل احتفظ بصورة الإيصال...">
-        </label>
-      </div>
-
-      <div class="actions" style="margin-top:12px">
-        <button id="saveSubscriptionSettings" class="btn gold" type="button">💾 حفظ إعدادات الاشتراك</button>
-        <span id="subscriptionSettingsStatus"></span>
-      </div>
-
-      <h3 style="margin-top:28px">📋 طلبات الاشتراك</h3>
-      <div class="table-wrap">
-        <table class="table">
-          <thead>
-            <tr>
-              <th>الطالب</th>
-              <th>الباقة</th>
-              <th>المبلغ</th>
-              <th>طريقة الدفع</th>
-              <th>التاريخ</th>
-              <th>واتساب الإيصال</th>
-              <th>الحالة</th>
-              <th>الإجراء</th>
-            </tr>
-          </thead>
-          <tbody id="subscriptionRows">
-            <tr><td colspan="10">جارٍ تحميل الطلبات...</td></tr>
-          </tbody>
-        </table>
-      </div>
     </section>
 
 <section class="card" id="homepageManagement"><h2>🏠 أرقام الصفحة الرئيسية</h2><p>تظهر هذه الأرقام للزوار ويمكن تعديلها من الإدارة.</p><div class="grid" style="margin-top:14px"><label>الطلاب<input id="homeStatStudents" type="number" min="0"></label><label>الكتب<input id="homeStatBooks" type="number" min="0"></label><label>الأقسام<input id="homeStatCategories" type="number" min="0"></label><label>الاختبارات<input id="homeStatTests" type="number" min="0"></label></div><div class="actions"><button id="saveHomeStats" class="btn gold" type="button">💾 حفظ الأرقام</button><span id="homeStatsStatus"></span></div><div style="margin-top:10px;color:#cbd5e1;font-size:13px">ملاحظة: يجب نشر قواعد Firestore الحالية في Firebase Console حتى يتمكن الأدمن من الحفظ.</div></section>
@@ -1027,8 +965,7 @@ import {
   query,
   orderBy,
   limit,
-  where,
-  Timestamp
+  where
 } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 
 
@@ -4632,220 +4569,6 @@ syncStudentCounterButton?.addEventListener('click', async () => {
 
 
 /* =====================================================
-   SUBSCRIPTIONS
-===================================================== */
-const subscriptionRows = $('subscriptionRows');
-const subscriptionSettingsStatus = $('subscriptionSettingsStatus');
-
-function renderSubscriptionPlans(plans){
-  const box=$('subscriptionPlansEditor'); if(!box) return;
-  box.innerHTML='';
-  (Array.isArray(plans)?plans:[]).forEach((plan,i)=>addSubscriptionPlanRow(plan,i));
-}
-function addSubscriptionPlanRow(plan={}, index=null){
-  const box=$('subscriptionPlansEditor'); if(!box) return;
-  const row=document.createElement('div'); row.className='plan-row';
-  row.innerHTML=`<input data-plan-id placeholder="المعرف" value="${String(plan.id||'').replace(/"/g,'&quot;')}">
-    <input data-plan-name placeholder="اسم الباقة" value="${String(plan.name||'').replace(/"/g,'&quot;')}">
-    <input data-plan-amount type="number" min="0" placeholder="السعر" value="${Number(plan.amount||0)}">
-    <input data-plan-days type="number" min="1" placeholder="المدة بالأيام" value="${Number(plan.durationDays||30)}">
-    <input data-plan-desc placeholder="الوصف" value="${String(plan.description||'').replace(/"/g,'&quot;')}">
-    <button type="button" class="btn danger remove-plan">🗑️ حذف</button>`;
-  row.querySelector('.remove-plan').addEventListener('click',()=>row.remove());
-  box.appendChild(row);
-}
-function collectSubscriptionPlans(){
-  return [...document.querySelectorAll('#subscriptionPlansEditor .plan-row')].map((row,i)=>({
-    id:row.querySelector('[data-plan-id]')?.value.trim()||`plan-${i+1}`,
-    name:row.querySelector('[data-plan-name]')?.value.trim()||`باقة ${i+1}`,
-    amount:Number(row.querySelector('[data-plan-amount]')?.value||0),
-    durationDays:Math.max(1,Number(row.querySelector('[data-plan-days]')?.value||30)),
-    description:row.querySelector('[data-plan-desc]')?.value.trim()||''
-  })).filter(x=>x.name);
-}
-$('addSubscriptionPlan')?.addEventListener('click',()=>addSubscriptionPlanRow({id:'',name:'',amount:0,durationDays:30,description:''}));
-
-async function loadSubscriptionSettings(){
-  try{
-    const snap = await getDoc(doc(db,'subscriptionSettings','library'));
-    const data = snap.exists() ? snap.data() : {
-      planName:'عضوية المكتبة الشهرية',
-      amount:100,
-      durationDays:30,
-      paymentNumber:'',
-      paymentNote:'بعد الدفع احتفظ بصورة الإيصال وارفعها في صفحة الاشتراك.'
-    };
-    $('subPlanName').value = data.planName || '';
-    $('subAmount').value = data.amount ?? 100;
-    $('subDurationDays').value = data.durationDays ?? 30;
-    $('subPaymentNumber').value = data.paymentNumber || '';
-    $('subPaymentNote').value = data.paymentNote || '';
-    renderSubscriptionPlans(data.plans||[{id:'monthly',name:data.planName||'عضوية شهرية',amount:Number(data.amount||100),durationDays:Number(data.durationDays||30),description:'عضوية المنصة'}]);
-  }catch(error){
-    console.error('Subscription settings error:',error);
-    subscriptionSettingsStatus.textContent='❌ تعذر تحميل إعدادات الاشتراك.';
-  }
-}
-
-$('saveSubscriptionSettings')?.addEventListener('click', async ()=>{
-  try{
-    await setDoc(doc(db,'subscriptionSettings','library'),{
-      planName:$('subPlanName').value.trim() || 'عضوية المكتبة الشهرية',
-      amount:Number($('subAmount').value || 0),
-      durationDays:Math.max(1,Number($('subDurationDays').value || 30)),
-      paymentNumber:$('subPaymentNumber').value.trim(),
-      paymentNote:$('subPaymentNote').value.trim(),
-      plans:collectSubscriptionPlans(),
-      updatedAt:serverTimestamp(),
-      updatedBy:auth.currentUser?.uid || null
-    },{merge:true});
-    subscriptionSettingsStatus.textContent='✅ تم حفظ إعدادات الاشتراك.';
-  }catch(error){
-    console.error(error);
-    subscriptionSettingsStatus.textContent='❌ تعذر الحفظ: '+(error.code || error.message);
-  }
-});
-
-function subscriptionStatusText(status){
-  return status==='approved' ? '🟢 مقبول' : status==='rejected' ? '🔴 مرفوض' : '🟡 قيد المراجعة';
-}
-
-async function loadSubscriptionRequests(){
-  if(!subscriptionRows) return;
-  subscriptionRows.innerHTML='<tr><td colspan="10">جارٍ تحميل طلبات الاشتراك...</td></tr>';
-  try{
-    const snap=await getDocs(query(collection(db,'subscriptionRequests'),orderBy('createdAt','desc')));
-    if(snap.empty){
-      subscriptionRows.innerHTML='<tr><td colspan="10">لا توجد طلبات اشتراك.</td></tr>';
-      return;
-    }
-    subscriptionRows.innerHTML='';
-    snap.forEach(requestDoc=>{
-      const r=requestDoc.data();
-      const tr=document.createElement('tr');
-      tr.innerHTML=`
-        <td>${escapeHtml(r.studentName || r.studentEmail || '-')}<br><small>${escapeHtml(r.studentEmail || '')}</small></td>
-        <td>${escapeHtml(r.planName || '-')}</td>
-        <td>${Number(r.amount || 0).toLocaleString('ar-EG')} ج</td>
-        <td>${escapeHtml(r.paymentMethod || '-')}<br><small>${escapeHtml(r.transactionRef || '')}</small></td>
-        <td>${escapeHtml(formatDate(r.createdAt))}</td>
-        <td><button class="btn proof-btn" type="button">📲 فتح واتساب</button></td>
-        <td>${subscriptionStatusText(r.status)}</td>
-        <td>
-          ${r.status==='pending' ? `
-            <div class="actions" style="margin:0">
-              <button class="btn gold approve-sub" data-id="${requestDoc.id}" type="button">✅ موافقة</button>
-              <button class="btn danger reject-sub" data-id="${requestDoc.id}" type="button">❌ رفض</button>
-            </div>` : `<small>${escapeHtml(r.reviewReason || '')}</small>`}
-        </td>`;
-      subscriptionRows.appendChild(tr);
-    });
-  }catch(error){
-    console.error(error);
-    subscriptionRows.innerHTML=`<tr><td colspan="10">تعذر تحميل الطلبات: ${escapeHtml(error.code || error.message)}</td></tr>`;
-  }
-}
-
-subscriptionRows?.addEventListener('click', async event=>{
-  const proof=event.target.closest('.proof-btn');
-  if(proof){
-    const waUrl='https://wa.me/201154015353?text='+encodeURIComponent(
-      'السلام عليكم، أريد مراجعة إيصال دفع طلب اشتراك في منصة زاد المعرفة.'
-    );
-    window.open(waUrl,'_blank','noopener,noreferrer');
-    return;
-  }
-
-  const approve=event.target.closest('.approve-sub');
-  if(approve){
-    if(!confirm('هل تحققت من عملية الدفع وتريد تفعيل العضوية؟')) return;
-    approve.disabled=true;
-    try{
-      const requestRef=doc(db,'subscriptionRequests',approve.dataset.id);
-      const requestSnap=await getDoc(requestRef);
-      if(!requestSnap.exists()) throw new Error('طلب الاشتراك غير موجود.');
-      const r=requestSnap.data();
-      if(r.status!=='pending') throw new Error('تمت مراجعة هذا الطلب بالفعل.');
-
-      const settingsSnap=await getDoc(doc(db,'subscriptionSettings','library'));
-      const settings=settingsSnap.exists()?settingsSnap.data():{durationDays:30};
-      const durationDays=Math.max(1,Number(r.durationDays || settings.durationDays || 30));
-      const start=new Date();
-      const end=new Date(start.getTime()+durationDays*24*60*60*1000);
-
-      await updateDoc(doc(db,'users',r.studentUid),{
-        subscriptionStatus:'active',
-        subscriptionPlan:r.planName || 'عضوية المكتبة',
-        subscriptionStart:Timestamp.fromDate(start),
-        subscriptionEnd:Timestamp.fromDate(end),
-        updatedAt:serverTimestamp()
-      });
-
-      await updateDoc(requestRef,{
-        status:'approved',
-        reviewedAt:serverTimestamp(),
-        reviewedBy:auth.currentUser?.uid || null,
-        subscriptionEnd:Timestamp.fromDate(end)
-      });
-
-      await addDoc(collection(db,'notifications'),{
-        audience:'user',
-        targetUid:r.studentUid,
-        type:'subscription',
-        title:'🎉 تم تفعيل عضويتك',
-        message:`تمت الموافقة على اشتراكك. العضوية فعالة حتى ${end.toLocaleDateString('ar-EG')}.`,
-        createdBy:auth.currentUser?.uid || null,
-        createdAt:serverTimestamp(),
-        readBy:[]
-      });
-
-      await loadSubscriptionRequests();
-      await loadUsers();
-    }catch(error){
-      console.error(error);
-      alert('تعذر اعتماد الاشتراك: '+(error.code || error.message));
-      approve.disabled=false;
-    }
-    return;
-  }
-
-  const reject=event.target.closest('.reject-sub');
-  if(reject){
-    const reason=prompt('اكتب سبب رفض طلب الاشتراك:','لم يتم التحقق من عملية الدفع.');
-    if(reason===null) return;
-    reject.disabled=true;
-    try{
-      const requestRef=doc(db,'subscriptionRequests',reject.dataset.id);
-      const requestSnap=await getDoc(requestRef);
-      if(!requestSnap.exists()) throw new Error('الطلب غير موجود.');
-      const r=requestSnap.data();
-      await updateDoc(requestRef,{
-        status:'rejected',
-        reviewReason:reason.trim() || 'لم يتم التحقق من عملية الدفع.',
-        reviewedAt:serverTimestamp(),
-        reviewedBy:auth.currentUser?.uid || null
-      });
-      await addDoc(collection(db,'notifications'),{
-        audience:'user',
-        targetUid:r.studentUid,
-        type:'subscription',
-        title:'❌ تم رفض طلب الاشتراك',
-        message:reason.trim() || 'لم يتم التحقق من عملية الدفع.',
-        subscriptionRequestId:reject.dataset.id,
-        createdBy:auth.currentUser?.uid || null,
-        createdAt:serverTimestamp(),
-        readBy:[]
-      });
-      await loadSubscriptionRequests();
-    }catch(error){
-      console.error(error);
-      alert('تعذر رفض الطلب: '+(error.code || error.message));
-      reject.disabled=false;
-    }
-  }
-});
-
-/* =====================================================
    HOMEPAGE STATS
 ===================================================== */
 async function loadHomeStatsAdmin(){for(const id of ['students','books','categories','tests']){try{const snap=await getDoc(doc(db,'publicStats',id));const el=document.getElementById('homeStat'+id.charAt(0).toUpperCase()+id.slice(1));if(el)el.value=snap.exists()?(snap.data().total||snap.data().count||0):0}catch(e){}}}
@@ -4903,8 +4626,6 @@ guard(
     await loadContent();
 
     await loadBookings();
-    await loadSubscriptionSettings();
-    await loadSubscriptionRequests();
     await loadHomeStatsAdmin();
 
   }
