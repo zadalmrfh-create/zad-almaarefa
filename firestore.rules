@@ -109,6 +109,16 @@ service cloud.firestore {
       allow create, update, delete: if isAdmin();
     }
 
+    // سجل تنزيلات الكتب: المستخدم يسجل تنزيله بنفسه، والأدمن فقط يقرأ السجل.
+    match /libraryDownloads/{downloadId} {
+      allow create: if signedIn()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.bookTitle is string
+        && request.resource.data.bookUrl is string
+        && request.resource.data.source in ['general', 'azhar'];
+      allow read, update, delete: if isAdmin();
+    }
+
     match /azharBooks/{id} {
       allow read: if true;
       allow create, update, delete: if isAdmin();

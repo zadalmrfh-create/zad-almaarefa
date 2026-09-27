@@ -2843,7 +2843,7 @@ if (window.elementSdk) {
 function getStoredList(name){try{return JSON.parse(localStorage.getItem(name)||'[]')}catch(e){return []}}
 function setStoredList(name,list){localStorage.setItem(name,JSON.stringify(list))}
 function saveLastBook(key){let a=getStoredList('zadRecentBooks').filter(x=>x!==key);a.unshift(key);setStoredList('zadRecentBooks',a.slice(0,10));renderSmartLibrary()}
-function renderSmartLibrary(){const map=new Map(books.map(b=>[b.title+'|'+b.url,b]));const show=(ids,empty)=>ids.slice(0,5).map(k=>{const b=map.get(k);return b?`<a href="${b.url}" target="_blank" rel="noopener" style="display:block;padding:7px 0;color:inherit">${b.icon||'📖'} ${b.title}</a>`:''}).join('')||empty;const r=document.getElementById('lastBooksList'),f=document.getElementById('favoriteBooksList'),g=document.getElementById('suggestedBooksList');if(r)r.innerHTML=show(getStoredList('zadRecentBooks'),'لا توجد كتب مفتوحة مؤخرًا.');if(f)f.innerHTML=show(getStoredList('zadFavorites'),'لا توجد كتب مفضلة بعد.');if(g){const grade=document.getElementById('gradeFilter')?.value||'';const fav=getStoredList('zadFavorites');const a=books.filter(b=>(!grade||b.grade===grade)&&!fav.includes(b.title+'|'+b.url)).sort((a,b)=>(b.popular||0)-(a.popular||0)).slice(0,5);g.innerHTML=a.map(b=>`<a href="${b.url}" target="_blank" rel="noopener" style="display:block;padding:7px 0;color:inherit">${b.icon||'📘'} ${b.title}</a>`).join('')||'لا توجد اقتراحات حاليًا.'}}
+function renderSmartLibrary(){const map=new Map(books.map(b=>[b.title+'|'+b.url,b]));const show=(ids,empty)=>ids.slice(0,5).map(k=>{const b=map.get(k);return b?`<a class="book-open" data-book-key="${encodeURIComponent(b.title+'|'+b.url)}" href="${b.url}" target="_blank" rel="noopener" style="display:block;padding:7px 0;color:inherit">${b.icon||'📖'} ${b.title}</a>`:''}).join('')||empty;const r=document.getElementById('lastBooksList'),f=document.getElementById('favoriteBooksList'),g=document.getElementById('suggestedBooksList');if(r)r.innerHTML=show(getStoredList('zadRecentBooks'),'لا توجد كتب مفتوحة مؤخرًا.');if(f)f.innerHTML=show(getStoredList('zadFavorites'),'لا توجد كتب مفضلة بعد.');if(g){const grade=document.getElementById('gradeFilter')?.value||'';const fav=getStoredList('zadFavorites');const a=books.filter(b=>(!grade||b.grade===grade)&&!fav.includes(b.title+'|'+b.url)).sort((a,b)=>(b.popular||0)-(a.popular||0)).slice(0,5);g.innerHTML=a.map(b=>`<a class="book-open" data-book-key="${encodeURIComponent(b.title+'|'+b.url)}" href="${b.url}" target="_blank" rel="noopener" style="display:block;padding:7px 0;color:inherit">${b.icon||'📘'} ${b.title}</a>`).join('')||'لا توجد اقتراحات حاليًا.'}}
 
 function bookKeyFrom(el){return decodeURIComponent(el.dataset.bookKey||'')}
 function initBookTools(){
@@ -2899,8 +2899,9 @@ document.addEventListener(
 
 
 <script type="module">
-  import { db } from '../firebase-config.js';
+  import { auth, db } from '../firebase-config.js';
   import { getDocs, collection } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
+  import { hasSignedInUser, trackBookDownload } from './book-download-tracker.js';
 
   async function loadAdminLibraryBooks(){
     try{
@@ -2934,11 +2935,44 @@ document.addEventListener(
     }catch(e){}
   }
 
+  function findBookFromLink(link){
+    const key=decodeURIComponent(link.dataset.bookKey||'');
+    const splitAt=key.indexOf('|');
+    const title=splitAt>=0?key.slice(0,splitAt):'';
+    const url=splitAt>=0?key.slice(splitAt+1):(link.href||'');
+    return books.find(b=>b.title===title && b.url===url) || {
+      title,
+      url,
+      grade:'',
+      cat:''
+    };
+  }
+
   function bindBookTracking(){
     document.querySelectorAll('.book-open').forEach(a=>{
       if(a.dataset.openTracking==='1') return;
       a.dataset.openTracking='1';
-      a.addEventListener('click',rememberOpenedBook);
+      a.addEventListener('click',event=>{
+        rememberOpenedBook(event);
+
+        if(!hasSignedInUser()){
+          event.preventDefault();
+          try{sessionStorage.setItem('redirectAfterLogin','../sections/library.html');}catch(e){}
+          alert('الكتب مجانية وبدون اشتراك، لكن يجب تسجيل الدخول أولاً حتى يتم تسجيل التحميل باسمك.');
+          window.location.href='../login/index.html';
+          return;
+        }
+
+        const book=findBookFromLink(a);
+        trackBookDownload({
+          title:book.title,
+          url:book.url,
+          source:'general',
+          sourceLabel:'المكتبة العامة',
+          grade:book.grade||'',
+          category:book.cat||''
+        }).catch(error=>console.warn('تعذر تسجيل تحميل الكتاب:',error));
+      });
     });
   }
 
@@ -2948,6 +2982,8 @@ document.addEventListener(
   const observer = new MutationObserver(()=>bindBookTracking());
   const grid = document.getElementById('books-grid');
   if(grid) observer.observe(grid,{childList:true,subtree:true});
+  const smartLibrary = document.getElementById('library-smart');
+  if(smartLibrary) observer.observe(smartLibrary,{childList:true,subtree:true});
 </script>
 
 </body>

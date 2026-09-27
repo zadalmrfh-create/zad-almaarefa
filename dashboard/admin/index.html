@@ -266,6 +266,43 @@
 
 <section class="card" id="homepageManagement"><h2>🏠 أرقام الصفحة الرئيسية</h2><p>تظهر هذه الأرقام للزوار ويمكن تعديلها من الإدارة.</p><div class="grid" style="margin-top:14px"><label>الطلاب<input id="homeStatStudents" type="number" min="0"></label><label>الكتب<input id="homeStatBooks" type="number" min="0"></label><label>الأقسام<input id="homeStatCategories" type="number" min="0"></label><label>الاختبارات<input id="homeStatTests" type="number" min="0"></label></div><div class="actions"><button id="saveHomeStats" class="btn gold" type="button">💾 حفظ الأرقام</button><span id="homeStatsStatus"></span></div><div style="margin-top:10px;color:#cbd5e1;font-size:13px">ملاحظة: يجب نشر قواعد Firestore الحالية في Firebase Console حتى يتمكن الأدمن من الحفظ.</div></section>
 
+
+    <!-- =====================================================
+         LIBRARY DOWNLOAD TRACKING
+    ====================================================== -->
+    <section class="card" id="libraryDownloadTracking">
+      <div class="actions" style="justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+        <div>
+          <h2 style="margin-bottom:6px">📥 تنزيلات المكتبة</h2>
+          <p style="margin:0;color:var(--muted)">متابعة من نزّل كل كتاب من المكتبة العامة ومكتبة التعليم الأزهري.</p>
+        </div>
+        <button id="refreshLibraryDownloads" class="btn gold" type="button">🔄 تحديث السجل</button>
+      </div>
+
+      <div class="grid" style="margin-top:16px">
+        <div class="card"><h4>👥 أشخاص نزّلوا كتبًا</h4><b id="downloadUsersCount" style="font-size:30px">0</b></div>
+        <div class="card"><h4>📚 كتب تم تنزيلها</h4><b id="downloadBooksCount" style="font-size:30px">0</b></div>
+        <div class="card"><h4>⬇️ إجمالي مرات التنزيل</h4><b id="downloadClicksCount" style="font-size:30px">0</b></div>
+      </div>
+
+      <h3 style="margin-top:22px">عدد الأشخاص لكل كتاب</h3>
+      <div class="table-wrap" style="margin-top:10px">
+        <table class="table">
+          <thead><tr><th>اسم الكتاب</th><th>المكتبة</th><th>عدد الأشخاص</th><th>مرات التنزيل</th><th>آخر تنزيل</th></tr></thead>
+          <tbody id="downloadBookStatsRows"><tr><td colspan="5">جارٍ تحميل الإحصائيات…</td></tr></tbody>
+        </table>
+      </div>
+
+      <h3 style="margin-top:22px">آخر عمليات التنزيل</h3>
+      <div class="table-wrap" style="margin-top:10px">
+        <table class="table">
+          <thead><tr><th>الاسم</th><th>الإيميل</th><th>الكتاب</th><th>المكتبة</th><th>الوقت</th></tr></thead>
+          <tbody id="libraryDownloadRows"><tr><td colspan="5">جارٍ تحميل سجل التنزيلات…</td></tr></tbody>
+        </table>
+      </div>
+      <div id="libraryDownloadStatus" style="margin-top:10px;color:var(--muted)"></div>
+    </section>
+
     <!-- =====================================================
          CONTENT MANAGEMENT
     ====================================================== -->
@@ -2974,6 +3011,99 @@ refreshNotifications.addEventListener(
 
 
 /* =====================================================
+   LIBRARY DOWNLOAD TRACKING
+===================================================== */
+
+function downloadTimeMs(item) {
+  const value = item?.downloadedAt;
+  if (value && typeof value.toMillis === 'function') return value.toMillis();
+  const fallback = new Date(item?.clientDownloadedAt || 0).getTime();
+  return Number.isFinite(fallback) ? fallback : 0;
+}
+
+async function loadLibraryDownloads() {
+  const status = $('libraryDownloadStatus');
+  const historyBody = $('libraryDownloadRows');
+  const booksBody = $('downloadBookStatsRows');
+
+  if (status) status.textContent = 'جارٍ تحديث سجل تنزيلات المكتبة…';
+  if (historyBody) historyBody.innerHTML = '<tr><td colspan="5">جارٍ التحميل…</td></tr>';
+  if (booksBody) booksBody.innerHTML = '<tr><td colspan="5">جارٍ التحميل…</td></tr>';
+
+  try {
+    const snap = await getDocs(collection(db, 'libraryDownloads'));
+    const downloads = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    downloads.sort((a, b) => downloadTimeMs(b) - downloadTimeMs(a));
+
+    const uniqueUsers = new Set(downloads.map(x => x.userId).filter(Boolean));
+    const byBook = new Map();
+
+    downloads.forEach(item => {
+      const key = [item.source || '', item.bookTitle || '', item.bookUrl || ''].join('|');
+      if (!byBook.has(key)) {
+        byBook.set(key, {
+          title: item.bookTitle || 'كتاب بدون اسم',
+          sourceLabel: item.sourceLabel || (item.source === 'azhar' ? 'مكتبة التعليم الأزهري' : 'المكتبة العامة'),
+          users: new Set(),
+          clicks: 0,
+          lastItem: item
+        });
+      }
+      const entry = byBook.get(key);
+      if (item.userId) entry.users.add(item.userId);
+      entry.clicks += 1;
+      if (downloadTimeMs(item) > downloadTimeMs(entry.lastItem)) entry.lastItem = item;
+    });
+
+    if ($('downloadUsersCount')) $('downloadUsersCount').textContent = uniqueUsers.size;
+    if ($('downloadBooksCount')) $('downloadBooksCount').textContent = byBook.size;
+    if ($('downloadClicksCount')) $('downloadClicksCount').textContent = downloads.length;
+
+    const bookStats = Array.from(byBook.values()).sort((a, b) => {
+      if (b.users.size !== a.users.size) return b.users.size - a.users.size;
+      return downloadTimeMs(b.lastItem) - downloadTimeMs(a.lastItem);
+    });
+
+    if (booksBody) {
+      booksBody.innerHTML = bookStats.length
+        ? bookStats.map(item => `
+          <tr>
+            <td>${escapeHtml(item.title)}</td>
+            <td>${escapeHtml(item.sourceLabel)}</td>
+            <td><b>${item.users.size}</b></td>
+            <td>${item.clicks}</td>
+            <td>${escapeHtml(formatDate(item.lastItem.downloadedAt || item.lastItem.clientDownloadedAt))}</td>
+          </tr>
+        `).join('')
+        : '<tr><td colspan="5">لا توجد تنزيلات مسجلة حتى الآن.</td></tr>';
+    }
+
+    if (historyBody) {
+      historyBody.innerHTML = downloads.length
+        ? downloads.slice(0, 300).map(item => `
+          <tr>
+            <td>${escapeHtml(item.userName || 'مستخدم')}</td>
+            <td>${escapeHtml(item.userEmail || '—')}</td>
+            <td>${escapeHtml(item.bookTitle || 'كتاب بدون اسم')}</td>
+            <td>${escapeHtml(item.sourceLabel || (item.source === 'azhar' ? 'مكتبة التعليم الأزهري' : 'المكتبة العامة'))}</td>
+            <td>${escapeHtml(formatDate(item.downloadedAt || item.clientDownloadedAt))}</td>
+          </tr>
+        `).join('')
+        : '<tr><td colspan="5">لا توجد تنزيلات مسجلة حتى الآن.</td></tr>';
+    }
+
+    if (status) status.textContent = `آخر تحديث: ${new Intl.DateTimeFormat('ar-EG', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date())}`;
+  } catch (error) {
+    console.error('خطأ في تحميل تنزيلات المكتبة:', error);
+    if (historyBody) historyBody.innerHTML = `<tr><td colspan="5">تعذر تحميل السجل: ${escapeHtml(error.code || error.message)}</td></tr>`;
+    if (booksBody) booksBody.innerHTML = `<tr><td colspan="5">تعذر تحميل الإحصائيات.</td></tr>`;
+    if (status) status.textContent = 'تعذر تحميل سجل التنزيلات. تأكد من نشر قواعد Firestore الجديدة.';
+  }
+}
+
+$('refreshLibraryDownloads')?.addEventListener('click', loadLibraryDownloads);
+
+/* =====================================================
    CONTENT MANAGEMENT
 ===================================================== */
 
@@ -4627,6 +4757,7 @@ guard(
 
     await loadBookings();
     await loadHomeStatsAdmin();
+    await loadLibraryDownloads();
 
   }
 );

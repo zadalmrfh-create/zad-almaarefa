@@ -1,6 +1,7 @@
 import { auth, db } from "../../firebase-config.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
 import { getDocs, collection } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+import { trackBookDownload } from "../book-download-tracker.js";
 /* =========================================================
    AZHAR EDUCATION PAGE — BEHAVIOR
    Organized in 3 independent parts:
@@ -39,6 +40,12 @@ onAuthStateChanged(auth, (u) => {
 function requireLogin(message) {
   if (currentUser) return true;
   alert(message || "يجب تسجيل الدخول أولاً.");
+  try {
+    const target = location.pathname.includes("/sections/Azhar/")
+      ? "../sections/Azhar/azhar.html"
+      : "../sections/library.html";
+    sessionStorage.setItem("redirectAfterLogin", target);
+  } catch (e) {}
   window.location.href = "../../login/index.html";
   return false;
 }
@@ -849,9 +856,24 @@ function renderResults(query) {
 
     const downloadBtn = card.querySelector(".protected-download");
     downloadBtn.addEventListener("click", function () {
-      if (state.resource !== "library" && !requireLogin("يجب تسجيل الدخول أولاً للوصول إلى هذا المحتوى.")) {
+      if (state.resource === "library") {
+        if (!requireLogin("الكتب مجانية وبدون اشتراك، لكن يجب تسجيل الدخول أولاً حتى يتم تسجيل التحميل باسمك.")) {
+          try { sessionStorage.setItem("redirectAfterLogin", "../sections/Azhar/azhar.html"); } catch (e) {}
+          return;
+        }
+
+        trackBookDownload({
+          title: subject.name,
+          url: subject.link,
+          source: "azhar",
+          sourceLabel: "مكتبة التعليم الأزهري",
+          grade: state.grade?.name || subject.level || "",
+          category: subject.level || ""
+        }).catch((error) => console.warn("تعذر تسجيل تحميل الكتاب:", error));
+      } else if (!requireLogin("يجب تسجيل الدخول أولاً للوصول إلى هذا المحتوى.")) {
         return;
       }
+
       window.open(subject.link, "_blank", "noopener,noreferrer");
     });
 

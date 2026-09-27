@@ -106,6 +106,12 @@ async function redirectAfterLogin(user) {
     return;
   }
 
+  if (target && target.includes('/sections/Azhar/azhar.html')) {
+    sessionStorage.removeItem('redirectAfterLogin');
+    window.location.replace('../sections/Azhar/azhar.html');
+    return;
+  }
+
   // الأدمن الأساسي دائمًا يذهب إلى لوحة الإدارة
   if (user?.email?.toLowerCase() === 'maleksameh121@gmail.com') {
     window.location.replace('../dashboard/admin/index.html');
