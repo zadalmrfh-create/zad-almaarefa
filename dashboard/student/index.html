@@ -73,39 +73,6 @@
     gap:8px;
     margin-top:14px
 }
-.quiz-overlay{
-    position:fixed;
-    inset:0;
-    background:rgba(0,0,0,.72);
-    display:none;
-    align-items:center;
-    justify-content:center;
-    padding:18px;
-    z-index:9999
-}
-.quiz-overlay.show{
-    display:flex
-}
-.quiz-box{
-    background:#101b30;
-    border:1px solid rgba(212,168,67,.45);
-    border-radius:18px;
-    max-width:700px;
-    width:100%;
-    max-height:90vh;
-    overflow:auto;
-    padding:22px
-}
-.quiz-question{
-    padding:16px;
-    margin:12px 0;
-    border:1px solid rgba(255,255,255,.08);
-    border-radius:14px
-}
-.quiz-option{
-    display:block;
-    padding:8px 0
-}
 @media(max-width:760px){
     .live-lessons-grid{
         grid-template-columns:1fr
@@ -118,6 +85,19 @@
 <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
 <script src="../../content-protection.js" defer></script>
+
+<style>
+.student-tabs{display:flex;gap:8px;flex-wrap:wrap;padding:8px;margin:0 0 18px;border:1px solid #2f3d52;border-radius:16px;background:#101a2a;position:sticky;top:8px;z-index:40}
+.student-tab{border:1px solid transparent;background:transparent;color:#dbe4ef;padding:10px 12px;border-radius:10px;font-family:inherit;font-weight:800;cursor:pointer;transition:.2s;white-space:nowrap}
+.student-tab:hover{background:#17243a;border-color:#34445c}.student-tab.active{background:var(--gold);color:#111;border-color:var(--gold)}
+.student-panel{display:none;animation:studentFade .18s ease}.student-panel.active{display:block}@keyframes studentFade{from{opacity:.45;transform:translateY(4px)}to{opacity:1;transform:none}}
+.student-info-list{display:grid;gap:10px}.student-note,.student-notification{padding:14px;border:1px solid #2c394c;border-radius:13px;background:#111b2b}.student-note p,.student-notification p{margin:7px 0;white-space:pre-wrap;line-height:1.7}.student-note small,.student-notification small{color:var(--muted)}
+.student-notification.unread{border-right:4px solid var(--gold);background:rgba(229,189,61,.06)}
+.student-progress-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.student-progress-card{padding:16px;border:1px solid #2f3d52;border-radius:14px;background:#111b2b;text-align:center}.student-progress-card b{display:block;color:var(--gold2);font-size:26px}.student-progress-card span{font-size:12px;color:var(--muted)}
+@media(max-width:900px){.student-tabs{overflow-x:auto;flex-wrap:nowrap;scrollbar-width:thin}.student-progress-grid{grid-template-columns:1fr 1fr}.stats-grid{grid-template-columns:1fr 1fr!important}}
+@media(max-width:600px){.student-progress-grid,.stats-grid{grid-template-columns:1fr!important}}
+</style>
+
 </head>
 
 <body>
@@ -163,28 +143,24 @@
 
     </section>
 
+    <nav class="student-tabs" aria-label="أقسام لوحة الطالب">
+      <button class="student-tab active" data-student-tab="overview">🏠 الرئيسية</button>
+      <button class="student-tab" data-student-tab="attendance">✅ حضوري</button>
+      <button class="student-tab" data-student-tab="notes">🗒️ ملاحظات المعلم</button>
+      <button class="student-tab" data-student-tab="progress">📊 تقدمي</button>
+      <button class="student-tab" data-student-tab="bookings">📅 حجوزاتي</button>
+      <button class="student-tab" data-student-tab="lessons">🎥 المحاضرات</button>
+      <button class="student-tab" data-student-tab="profile">👤 ملفي</button>
+      <button class="student-tab" data-student-tab="notifications">🔔 التنبيهات <span id="studentNotificationBadge"></span></button>
+    </nav>
+
+    <section class="student-panel active" data-student-panel="overview">
     <section class="stats-grid">
-
-        <div class="card stat-card">
-            <span>📚</span>
-            <strong id="favCount">0</strong>
-            <small>كتب مفضلة</small>
-        </div>
-
-        <div class="card stat-card">
-            <span>✅</span>
-            <strong id="readCount">0</strong>
-            <small>كتب تمت قراءتها</small>
-        </div>
-
-        <div class="card stat-card">
-            <span>🕘</span>
-            <strong id="recentCount">0</strong>
-            <small>آخر الكتب المفتوحة</small>
-        </div>
-
+        <div class="card stat-card"><span>✅</span><strong id="studentAttendanceCount">0</strong><small>سجلات حضوري</small></div>
+        <div class="card stat-card"><span>🗒️</span><strong id="studentNotesCount">0</strong><small>ملاحظات المعلم</small></div>
+        <div class="card stat-card"><span>📅</span><strong id="studentBookingCount">0</strong><small>طلبات الحجز</small></div>
+        <div class="card stat-card"><span>🔔</span><strong id="studentUnreadCount">0</strong><small>تنبيهات جديدة</small></div>
     </section>
-
 
     <section class="grid">
 
@@ -229,9 +205,36 @@
         </div>
 
     </section>
+    </section>
 
+    <section class="card student-panel" data-student-panel="attendance" id="studentAttendanceCard">
+      <div class="actions" style="justify-content:space-between"><div><h3>✅ حضوري</h3><p style="color:var(--muted)">سجل الحضور والغياب الذي سجله المعلم.</p></div></div>
+      <div class="profile-mini-grid">
+        <div class="profile-mini"><b id="studentPresentCount">0</b><span>حاضر</span></div>
+        <div class="profile-mini"><b id="studentAbsentCount">0</b><span>غائب</span></div>
+        <div class="profile-mini"><b id="studentExcusedCount">0</b><span>اعتذر</span></div>
+        <div class="profile-mini"><b id="studentAttendanceRate">0%</b><span>نسبة الحضور</span></div>
+      </div>
+      <div class="table-wrap"><table class="table"><thead><tr><th>التاريخ</th><th>المادة</th><th>المعلم</th><th>الحالة</th><th>الملاحظة</th></tr></thead><tbody id="studentAttendanceRows"><tr><td colspan="5">جارٍ التحميل...</td></tr></tbody></table></div>
+    </section>
 
-    <section class="card" id="profileCard">
+    <section class="card student-panel" data-student-panel="notes" id="studentNotesCard">
+      <div class="actions" style="justify-content:space-between"><div><h3>🗒️ ملاحظات المعلم</h3><p style="color:var(--muted)">تظهر هنا فقط الملاحظات التي اختار المعلم مشاركتها معك.</p></div></div>
+      <div id="studentNotesList" class="student-info-list"><div class="notice">جارٍ تحميل الملاحظات...</div></div>
+    </section>
+
+    <section class="card student-panel" data-student-panel="progress" id="studentProgressCard">
+      <div class="actions" style="justify-content:space-between"><div><h3>📊 تقدمي</h3><p style="color:var(--muted)">ملخص حضورك وحجوزاتك وملاحظات المتابعة.</p></div></div>
+      <div class="student-progress-grid">
+        <div class="student-progress-card"><b id="progressAttendanceRate">0%</b><span>نسبة الحضور</span></div>
+        <div class="student-progress-card"><b id="progressCompletedBookings">0</b><span>حجوزات مكتملة/مؤكدة</span></div>
+        <div class="student-progress-card"><b id="progressTeacherNotes">0</b><span>ملاحظات متابعة</span></div>
+        <div class="student-progress-card"><b id="progressLibraryCount">0</b><span>عناصر مكتبتي</span></div>
+      </div>
+      <div id="studentProgressMessage" class="notice" style="margin-top:14px">سيظهر ملخص تقدمك هنا.</div>
+    </section>
+
+    <section class="card student-panel" data-student-panel="profile" id="profileCard">
       <div class="actions" style="justify-content:space-between"><div><h3>👤 ملفي الشخصي</h3><p id="profileLocationSummary" style="color:var(--muted);margin:4px 0">جارٍ التحميل…</p></div></div>
       <form id="profileForm" class="profile-grid" style="margin-top:12px">
         <label>الاسم الكامل<input id="profileName" required></label>
@@ -252,14 +255,14 @@
         <p id="passwordStatus" class="notice" style="display:none;margin-top:10px"></p>
       </div>
       <div class="profile-mini-grid">
-        <div class="profile-mini"><b id="profileQuizCount">0</b><span>اختبارات</span></div>
-        <div class="profile-mini"><b id="profileAvgScore">0%</b><span>متوسط الدرجات</span></div>
+        <div class="profile-mini"><b id="profileAttendanceCount">0</b><span>سجلات حضور</span></div>
+        <div class="profile-mini"><b id="profileNotesCount">0</b><span>ملاحظات المعلم</span></div>
         <div class="profile-mini"><b id="profileBookingCount">0</b><span>حجوزات</span></div>
         <div class="profile-mini"><b id="profileLibraryCount">0</b><span>عناصر المكتبة</span></div>
       </div>
     </section>
 
-    <section class="card" id="myBookingsCard">
+    <section class="card student-panel" data-student-panel="bookings" id="myBookingsCard">
 
         <h3>📅 طلبات حجز الحصص</h3>
 
@@ -294,15 +297,7 @@
         </div>
 
     </section>
-
-
-
-    <section class="card" id="fullQuizzesCard">
-      <div class="actions" style="justify-content:space-between"><div><h3>📝 الاختبارات</h3><p style="margin:6px 0;color:var(--muted)">اختبارات قصيرة واختبارات نهاية الوحدات مع حفظ النتائج وعدد المحاولات.</p></div><button id="refreshFullQuizzes" class="btn gold" type="button">🔄 تحديث</button></div>
-      <div id="fullQuizzesList" class="grid" style="margin-top:14px"><div class="card">جارٍ تحميل الاختبارات…</div></div>
-    </section>
-
-    <section class="card" id="liveLessonsCard">
+    <section class="card student-panel" data-student-panel="lessons" id="liveLessonsCard">
 
         <div class="actions" style="justify-content:space-between">
 
@@ -311,8 +306,7 @@
                 <h3>🎥 المحاضرات المباشرة</h3>
 
                 <p>
-                    حل اختبار الاستعداد أولًا،
-                    ثم ادخل إلى محاضرة Google Meet في موعدها.
+                    تابع المحاضرات المباشرة وادخل إلى Google Meet في موعدها.
                 </p>
 
             </div>
@@ -341,87 +335,16 @@
         </div>
 
     </section>
-
-
-
-    <div id="fullQuizOverlay" class="quiz-overlay" role="dialog" aria-modal="true">
-      <div class="quiz-box"><div class="actions" style="justify-content:space-between"><h3 id="fullQuizTitleView" style="margin:0">📝 الاختبار</h3><button id="fullQuizClose" class="btn danger" type="button">إغلاق</button></div><div class="actions" style="justify-content:space-between"><p id="fullQuizMeta" style="color:var(--muted)"></p><strong id="fullQuizTimer" style="color:var(--gold2)"></strong></div><form id="fullQuizFormStudent"></form><button id="fullQuizSubmit" class="btn gold" type="button">إرسال الاختبار</button><p id="fullQuizResult" class="notice" style="display:none;margin-top:12px"></p></div>
-    </div>
-
-    <div
-        id="quizOverlay"
-        class="quiz-overlay"
-        role="dialog"
-        aria-modal="true"
-    >
-
-        <div class="quiz-box">
-
-            <div
-                class="actions"
-                style="justify-content:space-between"
-            >
-
-                <h3
-                    id="quizTitle"
-                    style="margin:0"
-                >
-                    📝 اختبار الاستعداد
-                </h3>
-
-                <button
-                    id="closeQuiz"
-                    class="btn danger"
-                    type="button"
-                >
-                    إغلاق
-                </button>
-
-            </div>
-
-
-            <p
-                id="quizHint"
-                style="color:var(--muted)"
-            ></p>
-
-
-            <form id="quizForm"></form>
-
-
-            <div
-                class="actions"
-                style="margin-top:14px"
-            >
-
-                <button
-                    id="submitQuiz"
-                    class="btn gold"
-                    type="submit"
-                    form="quizForm"
-                >
-                    إرسال الإجابات
-                </button>
-
-            </div>
-
-
-            <p
-                id="quizResult"
-                class="notice"
-                style="display:none;margin-top:12px"
-            ></p>
-
-        </div>
-
-    </div>
+    <section class="card student-panel" data-student-panel="notifications" id="studentNotificationsCard">
+      <div class="actions" style="justify-content:space-between"><div><h3>🔔 تنبيهاتي</h3><p style="color:var(--muted)">إشعارات الحساب والحجوزات والمتابعة.</p></div><button id="markAllStudentNotifications" class="btn" type="button">✓ تحديد الكل كمقروء</button></div>
+      <div id="studentNotificationsList" class="student-info-list"><div class="notice">جارٍ تحميل التنبيهات...</div></div>
+    </section>
 
 </main>
 
 </div>
 
 
-<script type="module" src="quiz-center.js"></script>
 <script>
 const tick=()=>{document.querySelectorAll('.lesson-countdown').forEach(el=>{const d=new Date(el.dataset.lessonDate||'');if(Number.isNaN(d.getTime()))return;const diff=d.getTime()-Date.now();if(diff>0){const s=Math.floor(diff/1000),h=Math.floor(s/3600),m=Math.floor(s%3600/60),sec=s%60;el.textContent=`⏳ تبدأ خلال ${h?String(h).padStart(2,'0')+':':''}${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;}else if(diff>-3600000){el.textContent='🟢 المحاضرة جارية الآن';}else{el.textContent='⚪ انتهت المحاضرة';}});document.querySelectorAll('.meet-btn[data-start]').forEach(btn=>{const d=new Date(btn.dataset.start||'');if(Number.isNaN(d.getTime()))return;const diff=d.getTime()-Date.now();const allowed=diff<=15*60000&&diff>-60*60000;btn.disabled=!allowed;if(!allowed){btn.title=diff>0?'سيظهر زر الدخول قبل الموعد بـ15 دقيقة':'انتهى وقت الدخول لهذه المحاضرة';}})};setInterval(tick,1000);tick();
 </script>
@@ -541,34 +464,11 @@ async function loadMyBookings(uid) {
 
 
 /* =========================================================
-   LIVE GOOGLE MEET + PRE QUIZ
+   LIVE GOOGLE MEET
 ========================================================= */
 
 const liveLessonsList =
     document.getElementById('liveLessonsList');
-
-const quizOverlay =
-    document.getElementById('quizOverlay');
-
-const quizForm =
-    document.getElementById('quizForm');
-
-const quizTitle =
-    document.getElementById('quizTitle');
-
-const quizHint =
-    document.getElementById('quizHint');
-
-const quizResult =
-    document.getElementById('quizResult');
-
-
-let currentLesson = null;
-let currentQuiz = null;
-let currentQuizType = 'pre';
-let currentStudentUid = null;
-
-
 
 /* =========================================================
    حماية النصوص
@@ -628,506 +528,33 @@ function lessonDate(value) {
 
 
 /* =========================================================
-   هل الطالب حل الاختبار؟
-========================================================= */
-
-async function hasPassedQuiz(uid, lessonId, type = 'pre') {
-
-    const snap =
-        await getDocs(
-            query(
-                collection(db, 'quizAttempts'),
-                where(
-                    'studentUid',
-                    '==',
-                    uid
-                )
-            )
-        );
-
-    return snap.docs.some(d => {
-
-        const x = d.data();
-
-        return (
-            x.lessonId === lessonId &&
-            x.type === type
-        );
-
-    });
-
-}
-
-
-
-/* =========================================================
    فتح Google Meet
 ========================================================= */
 
 async function openMeet(lesson, uid) {
-
-    const meetUrl =
-        lesson.meetUrl ||
-        lesson.meetLink ||
-        lesson.googleMeetUrl ||
-        lesson.googleMeet;
-
-
-    if (!meetUrl) {
-
-        alert(
-            'رابط Google Meet غير موجود لهذه المحاضرة.'
-        );
-
-        return;
-
-    }
-
-
-    /*
-       مهم:
-       نفتح النافذة مباشرة من ضغطة المستخدم،
-       لأن window.open بعد await قد يتم منعه بواسطة المتصفح.
-    */
-
-    const meetWindow =
-        window.open(
-            'about:blank',
-            '_blank'
-        );
-
-
+    const meetUrl = lesson.meetUrl || lesson.meetLink || lesson.googleMeetUrl || lesson.googleMeet;
+    if (!meetUrl) { alert('رابط Google Meet غير موجود لهذه المحاضرة.'); return; }
+    const meetWindow = window.open('about:blank','_blank');
     try {
-
-        const preQuiz =
-            Array.isArray(lesson.preQuiz)
-                ? lesson.preQuiz
-                : [];
-
-
-        const passed =
-            preQuiz.length
-                ? await hasPassedQuiz(
-                    uid,
-                    lesson.id
-                )
-                : true;
-
-
-        if (!passed) {
-
-            if (
-                meetWindow &&
-                !meetWindow.closed
-            ) {
-
-                meetWindow.close();
-
-            }
-
-            alert(
-                'يجب حل اختبار الاستعداد قبل دخول المحاضرة.'
-            );
-
-            openQuiz(
-                lesson,
-                uid
-            );
-
-            return;
-
-        }
-
-
-        /*
-           تسجيل دخول الطالب إلى Meet
-        */
-
         try {
-
-            await addDoc(
-                collection(
-                    db,
-                    'lessonAttendance'
-                ),
-                {
-                    lessonId:
-                        lesson.id,
-
-                    studentUid:
-                        uid,
-
-                    lessonTitle:
-                        lesson.title ||
-                        lesson.name ||
-                        '',
-
-                    action:
-                        'meet_open',
-
-                    openedAt:
-                        serverTimestamp()
-                }
-            );
-
+            await addDoc(collection(db, 'lessonAttendance'), {
+                lessonId: lesson.id,
+                studentUid: uid,
+                lessonTitle: lesson.title || lesson.name || '',
+                action: 'meet_open',
+                openedAt: serverTimestamp()
+            });
         } catch (attendanceError) {
-
-            /*
-               تسجيل الحضور ليس شرطًا لفتح Meet.
-            */
-
-            console.warn(
-                'تعذر تسجيل الحضور:',
-                attendanceError
-            );
-
+            console.warn('تعذر تسجيل فتح المحاضرة:', attendanceError);
         }
-
-
-        /*
-           فتح الرابط
-        */
-
-        if (
-            meetWindow &&
-            !meetWindow.closed
-        ) {
-
-            meetWindow.location.href =
-                meetUrl;
-
-        } else {
-
-            window.location.href =
-                meetUrl;
-
-        }
-
-
+        if (meetWindow && !meetWindow.closed) meetWindow.location.href = meetUrl;
+        else window.location.href = meetUrl;
     } catch (e) {
-
         console.error(e);
-
-
-        if (
-            meetWindow &&
-            !meetWindow.closed
-        ) {
-
-            meetWindow.location.href =
-                meetUrl;
-
-        } else {
-
-            window.location.href =
-                meetUrl;
-
-        }
-
+        if (meetWindow && !meetWindow.closed) meetWindow.location.href = meetUrl;
+        else window.location.href = meetUrl;
     }
-
 }
-
-
-
-/* =========================================================
-   فتح الاختبار
-========================================================= */
-
-function openQuiz(lesson, uid, type = 'pre') {
-
-    currentLesson = lesson;
-    currentQuizType = type;
-
-    currentStudentUid = uid;
-
-    currentQuiz = type === 'post'
-        ? (Array.isArray(lesson.postQuiz) ? lesson.postQuiz : [])
-        : (Array.isArray(lesson.preQuiz) ? lesson.preQuiz : []);
-
-
-    quizTitle.textContent =
-        (type === 'post' ? '📝 اختبار بعد المحاضرة — ' : '📝 اختبار الاستعداد — ') +
-        (
-            lesson.title ||
-            lesson.name ||
-            'المحاضرة'
-        );
-
-
-    quizHint.textContent =
-        `عدد الأسئلة: ${currentQuiz.length}. يجب إرسال الإجابات قبل دخول Google Meet.`;
-
-
-    quizResult.style.display =
-        'none';
-
-    quizResult.textContent =
-        '';
-
-
-    quizForm.innerHTML =
-        currentQuiz.map(
-            (q, i) => `
-
-                <div class="quiz-question">
-
-                    <strong>
-                        ${i + 1}.
-                        ${esc(q.text || q.question || '')}
-                    </strong>
-
-                    ${
-                        (
-                            Array.isArray(q.options)
-                                ? q.options
-                                : []
-                        )
-                        .map(
-                            (op, j) => `
-
-                                <label class="quiz-option">
-
-                                    <input
-                                        type="radio"
-                                        name="q${i}"
-                                        value="${j}"
-                                        required
-                                    >
-
-                                    ${esc(op)}
-
-                                </label>
-
-                            `
-                        )
-                        .join('')
-                    }
-
-                </div>
-
-            `
-        ).join('');
-
-
-    quizOverlay.classList.add('show');
-
-}
-
-
-
-/* =========================================================
-   إغلاق الاختبار
-========================================================= */
-
-document
-    .getElementById('closeQuiz')
-    ?.addEventListener(
-        'click',
-        () => {
-
-            quizOverlay.classList.remove(
-                'show'
-            );
-
-        }
-    );
-
-
-quizOverlay?.addEventListener(
-    'click',
-    e => {
-
-        if (
-            e.target === quizOverlay
-        ) {
-
-            quizOverlay.classList.remove(
-                'show'
-            );
-
-        }
-
-    }
-);
-
-
-
-/* =========================================================
-   إرسال الاختبار
-========================================================= */
-
-quizForm?.addEventListener(
-    'submit',
-    async e => {
-
-        e.preventDefault();
-
-
-        if (
-            !currentLesson ||
-            !currentQuiz.length
-        ) {
-
-            return;
-
-        }
-
-
-        const formData =
-            new FormData(quizForm);
-
-
-        const answers =
-            currentQuiz.map(
-                (q, i) =>
-                    Number(
-                        formData.get(`q${i}`)
-                    )
-            );
-
-
-        const correct =
-            answers.reduce(
-                (n, a, i) => {
-
-                    return (
-                        n +
-                        (
-                            a ===
-                            Number(
-                                currentQuiz[i].answer
-                            )
-                                ? 1
-                                : 0
-                        )
-                    );
-
-                },
-                0
-            );
-
-
-        const score =
-            Math.round(
-                (
-                    correct /
-                    currentQuiz.length
-                ) * 100
-            );
-
-
-        const btn =
-            document.getElementById(
-                'submitQuiz'
-            );
-
-
-        btn.disabled = true;
-
-
-        try {
-
-            await addDoc(
-                collection(
-                    db,
-                    'quizAttempts'
-                ),
-                {
-
-                    studentUid:
-                        currentStudentUid,
-
-                    lessonId:
-                        currentLesson.id,
-
-                    type:
-                        currentQuizType,
-
-                    answers:
-                        answers,
-
-                    correct:
-                        correct,
-
-                    total:
-                        currentQuiz.length,
-
-                    score:
-                        score,
-
-                    createdAt:
-                        serverTimestamp()
-
-                }
-            );
-
-
-            quizResult.style.display =
-                'block';
-
-
-            quizResult.textContent =
-                `تم تسجيل الاختبار: ${correct} من ${currentQuiz.length} (${score}%). يمكنك الآن دخول Google Meet.`;
-
-
-            const meetBtn =
-                document.createElement(
-                    'button'
-                );
-
-
-            meetBtn.type =
-                'button';
-
-            meetBtn.className =
-                'btn gold';
-
-            meetBtn.textContent =
-                '🎥 دخول Google Meet';
-
-
-            meetBtn.addEventListener(
-                'click',
-                () =>
-                    openMeet(
-                        currentLesson,
-                        currentStudentUid
-                    )
-            );
-
-
-            quizResult.appendChild(
-                document.createElement('br')
-            );
-
-
-            quizResult.appendChild(
-                meetBtn
-            );
-
-
-        } catch (err) {
-
-            console.error(err);
-
-            alert(
-                'تعذر حفظ نتيجة الاختبار: ' +
-                (
-                    err.code ||
-                    err.message
-                )
-            );
-
-        } finally {
-
-            btn.disabled = false;
-
-        }
-
-    }
-);
-
 
 
 /* =========================================================
@@ -1213,38 +640,6 @@ async function loadLiveLessons(
             const lesson of lessons
         ) {
 
-            const hasQuiz =
-                Array.isArray(
-                    lesson.preQuiz
-                ) &&
-                lesson.preQuiz.length > 0;
-
-
-            let passed = false;
-
-
-            if (hasQuiz) {
-
-                try {
-
-                    passed =
-                        await hasPassedQuiz(
-                            uid,
-                            lesson.id
-                        );
-
-                } catch (e) {
-
-                    console.warn(
-                        'تعذر قراءة نتيجة الاختبار:',
-                        e
-                    );
-
-                }
-
-            }
-
-
             const card =
                 document.createElement(
                     'article'
@@ -1303,39 +698,12 @@ async function loadLiveLessons(
                     </span>
 
                 </div>
-
-
-                <p>
-
-                    ${
-                        hasQuiz
-                            ? (
-                                passed
-                                    ? '✅ تم حل اختبار الاستعداد.'
-                                    : '📝 يوجد اختبار استعداد قبل المحاضرة.'
-                            )
-                            : 'لا يوجد اختبار استعداد لهذه المحاضرة.'
-                    }
-
-                </p>
+                <p>يمكنك دخول المحاضرة في موعدها من زر Google Meet.</p>
 
 
                 <div class="lesson-countdown" data-lesson-date="${esc(lesson.date||'')}">⏳ حساب الوقت…</div>
 
                 <div class="lesson-actions">
-
-                    ${
-                        hasQuiz && !passed
-                            ? `
-                                <button class="btn gold quiz-btn" type="button">📝 حل اختبار الاستعداد</button>
-                              `
-                            : ''
-                    }
-                    ${
-                        Array.isArray(lesson.postQuiz) && lesson.postQuiz.length
-                            ? `<button class="btn post-quiz-btn" type="button">📝 اختبار بعد المحاضرة</button>`
-                            : ''
-                    }
 
 
                     <button class="btn rate-lesson-btn" type="button">⭐ تقييم المحاضرة</button>
@@ -1352,36 +720,13 @@ async function loadLiveLessons(
                     >
 
                         🎥
-                        ${
-                            passed || !hasQuiz
-                                ? 'دخول Google Meet'
-                                : 'حل الاختبار أولًا'
-                        }
+                        دخول Google Meet
 
                     </button>
 
                 </div>
 
             `;
-
-
-            const quizBtn =
-                card.querySelector(
-                    '.quiz-btn'
-                );
-
-
-            quizBtn?.addEventListener(
-                'click',
-                () =>
-                    openQuiz(
-                        lesson,
-                        uid
-                    )
-            );
-
-
-            card.querySelector('.post-quiz-btn')?.addEventListener('click', () => openQuiz(lesson, uid, 'post'));
 
             const meetBtn =
                 card.querySelector(

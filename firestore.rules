@@ -50,7 +50,8 @@ service cloud.firestore {
         );
 
       allow read: if isOwner(uid) || isAdmin()
-        || (isTeacher() && resource.data.role == 'student');
+        || (isTeacher() && resource.data.role == 'student')
+        || (signedIn() && resource.data.role == 'teacher' && resource.data.status == 'active');
 
       // المستخدم يستطيع تعديل بياناته الأساسية فقط.
       // المستخدم يستطيع تعديل بياناته الأساسية المسموح بها فقط.
@@ -160,7 +161,8 @@ service cloud.firestore {
           'التزكية والتربية',
           'اللغة العربية',
           'العلوم الشرعية',
-          'التعليم الأزهري'
+          'التعليم الأزهري',
+          'البرمجة وتكنولوجيا المعلومات'
         ]
         && request.resource.data.subject is string
         && request.resource.data.lessonType is string
@@ -256,12 +258,15 @@ service cloud.firestore {
         || (isTeacher() && resource.data.teacherUid == request.auth.uid);
     }
 
-    // ملاحظات المعلم خاصة بالمعلم والإدارة ولا تظهر للطالب.
+    // ملاحظات المعلم: الخاصة للمعلم والإدارة، ويمكن إظهار ملاحظات مختارة للطالب.
     match /teacherStudentNotes/{noteId} {
       allow create: if isTeacher()
         && request.resource.data.teacherUid == request.auth.uid
         && request.resource.data.studentUid is string;
-      allow read, update, delete: if isAdmin()
+      allow read: if isAdmin()
+        || (isTeacher() && resource.data.teacherUid == request.auth.uid)
+        || (signedIn() && resource.data.studentUid == request.auth.uid && resource.data.visibleToStudent == true);
+      allow update, delete: if isAdmin()
         || (isTeacher() && resource.data.teacherUid == request.auth.uid);
     }
 

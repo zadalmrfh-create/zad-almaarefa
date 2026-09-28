@@ -43,3 +43,5 @@ body{margin:0;font-family:Cairo,Arial,sans-serif;background:linear-gradient(135d
   .brand img{width:55px;height:55px}
   .brand h1{font-size:23px}
 }
+
+.auto-teacher-hint{display:block;margin-top:7px;color:#9fb0c8;font-size:12px;line-height:1.6}#bookingTeacher:disabled{opacity:1;cursor:not-allowed;background:#111a2b;color:#f3d97b;border-color:rgba(212,168,67,.45)}

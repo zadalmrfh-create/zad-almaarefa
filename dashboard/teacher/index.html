@@ -41,7 +41,6 @@
       <button class="teacher-tab active" data-tab="overview">🏠 الرئيسية</button>
       <button class="teacher-tab" data-tab="students">👥 طلابي</button>
       <button class="teacher-tab" data-tab="attendance">✅ الحضور والغياب</button>
-      <button class="teacher-tab" data-tab="homework">📝 الواجبات</button>
       <button class="teacher-tab" data-tab="notes">🗒️ ملاحظاتي</button>
       <button class="teacher-tab" data-tab="reports">📈 التقارير</button>
       <button class="teacher-tab" data-tab="notifications">🔔 التنبيهات <span class="teacher-badge" id="teacherNotificationBadge">0</span></button>
@@ -54,7 +53,7 @@
         <div class="enh-grid teacher-stats-grid">
           <div class="enh-stat"><span>👥 طلابي</span><b id="teacherStudentsCount">0</b><small>طلاب مرتبطون بك</small></div>
           <div class="enh-stat"><span>✅ الحضور</span><b id="teacherAttendanceCount">0</b><small>سجلات الحضور</small></div>
-          <div class="enh-stat"><span>📝 الواجبات</span><b id="teacherHomeworkCount">0</b><small>واجبات مسجلة</small></div>
+          <div class="enh-stat"><span>🗒️ الملاحظات</span><b id="teacherNotesCount">0</b><small>ملاحظات مسجلة</small></div>
           <div class="enh-stat"><span>🔔 تنبيهات جديدة</span><b id="teacherUnreadCount">0</b><small>تحتاج لمراجعتك</small></div>
         </div>
 
@@ -64,7 +63,6 @@
             <div class="teacher-quick-actions">
               <button class="teacher-action-card" data-go="students"><span>👥</span><strong>عرض طلابي</strong><small>بيانات الطلاب والتواصل</small></button>
               <button class="teacher-action-card" data-go="attendance"><span>✅</span><strong>تسجيل حضور</strong><small>حضور أو غياب الطالب</small></button>
-              <button class="teacher-action-card" data-go="homework"><span>📝</span><strong>إضافة واجب</strong><small>متابعة الواجبات والتسليم</small></button>
               <button class="teacher-action-card" data-go="notes"><span>🗒️</span><strong>إضافة ملاحظة</strong><small>ملاحظات خاصة على الطلاب</small></button>
             </div>
           </section>
@@ -73,14 +71,14 @@
             <div class="teacher-section-head"><div><h3>📊 لمحة سريعة</h3><p>ملخص مباشر لأداء طلابك.</p></div></div>
             <div class="teacher-mini-metrics">
               <div><span>نسبة الحضور</span><b id="overviewAttendanceRate">0%</b></div>
-              <div><span>واجبات مكتملة</span><b id="overviewHomeworkRate">0%</b></div>
-              <div><span>ملاحظات مسجلة</span><b id="overviewNotesCount">0</b></div>
+              <div><span>طلاب لديهم حضور</span><b id="overviewActiveStudents">0</b></div>
+              <div><span>ملاحظات ظاهرة للطلاب</span><b id="overviewVisibleNotesCount">0</b></div>
             </div>
           </section>
         </div>
 
         <section class="card">
-          <div class="teacher-section-head"><div><h3>🕘 أحدث النشاطات</h3><p>آخر حضور وواجبات وملاحظات تم تسجيلها.</p></div></div>
+          <div class="teacher-section-head"><div><h3>🕘 أحدث النشاطات</h3><p>آخر حضور وملاحظات تم تسجيلها.</p></div></div>
           <div id="teacherRecentActivity" class="teacher-activity-list"><div class="teacher-empty">لا توجد نشاطات حتى الآن.</div></div>
         </section>
       </section>
@@ -93,7 +91,7 @@
           </div>
           <div class="table-wrap teacher-table-wrap">
             <table class="table teacher-table">
-              <thead><tr><th>الطالب</th><th>الصف</th><th>الهاتف</th><th>الحضور</th><th>الواجبات</th><th>إجراءات</th></tr></thead>
+              <thead><tr><th>الطالب</th><th>الصف</th><th>الهاتف</th><th>الحضور</th><th>الملاحظات</th><th>إجراءات</th></tr></thead>
               <tbody id="teacherStudentsRows"><tr><td colspan="6">جارٍ التحميل...</td></tr></tbody>
             </table>
           </div>
@@ -129,48 +127,21 @@
         </section>
       </section>
 
-      <section class="teacher-panel" data-panel="homework">
-        <div class="teacher-two-col">
-          <section class="card">
-            <div class="teacher-section-head"><div><h3>📝 إضافة واجب</h3><p>حدد الطالب والواجب وموعد التسليم.</p></div></div>
-            <form id="homeworkForm" class="teacher-form">
-              <label>الطالب<select id="homeworkStudent" class="teacher-input" required></select></label>
-              <label>موعد التسليم<input id="homeworkDueDate" class="teacher-input" type="date"></label>
-              <label class="full">عنوان الواجب<input id="homeworkTitle" class="teacher-input" required placeholder="عنوان واضح للواجب"></label>
-              <label class="full">التفاصيل<textarea id="homeworkDescription" class="teacher-input" rows="4" placeholder="اشرح المطلوب من الطالب..."></textarea></label>
-              <div class="full teacher-form-actions"><button class="btn gold" type="submit">إضافة الواجب</button><span id="homeworkFormStatus" class="teacher-form-status"></span></div>
-            </form>
-          </section>
-          <section class="card">
-            <div class="teacher-section-head"><div><h3>📊 ملخص الواجبات</h3><p>حالة الواجبات المسجلة.</p></div></div>
-            <div class="profile-mini-grid">
-              <div class="profile-mini"><b id="homeworkTotal">0</b><span>الإجمالي</span></div>
-              <div class="profile-mini"><b id="homeworkPending">0</b><span>مطلوب</span></div>
-              <div class="profile-mini"><b id="homeworkDone">0</b><span>تم التسليم</span></div>
-              <div class="profile-mini"><b id="homeworkMissing">0</b><span>لم يُسلّم</span></div>
-            </div>
-          </section>
-        </div>
-        <section class="card">
-          <div class="teacher-section-head"><div><h3>📚 متابعة الواجبات</h3><p>غيّر حالة التسليم وأضف تقييمك أو ملاحظتك.</p></div><select id="homeworkFilterStudent" class="teacher-input teacher-filter"><option value="">كل الطلاب</option></select></div>
-          <div class="table-wrap teacher-table-wrap"><table class="table teacher-table teacher-homework-table"><thead><tr><th>الطالب</th><th>الواجب</th><th>التسليم</th><th>الحالة</th><th>التقييم / الملاحظة</th><th>إجراء</th></tr></thead><tbody id="homeworkRows"><tr><td colspan="6">لا توجد واجبات.</td></tr></tbody></table></div>
-        </section>
-      </section>
-
       <section class="teacher-panel" data-panel="notes">
         <div class="teacher-two-col">
           <section class="card">
-            <div class="teacher-section-head"><div><h3>🗒️ إضافة ملاحظة</h3><p>ملاحظات خاصة يراها المعلم والإدارة فقط.</p></div></div>
+            <div class="teacher-section-head"><div><h3>🗒️ إضافة ملاحظة</h3><p>اكتب ملاحظة للمتابعة، ويمكنك اختيار إظهارها للطالب.</p></div></div>
             <form id="noteForm" class="teacher-form">
               <label>الطالب<select id="noteStudent" class="teacher-input" required></select></label>
               <label>نوع الملاحظة<select id="noteCategory" class="teacher-input"><option>عام</option><option>المستوى</option><option>المتابعة</option><option>الالتزام</option></select></label>
               <label class="full">الملاحظة<textarea id="noteText" class="teacher-input" rows="5" required placeholder="اكتب ملاحظتك هنا..."></textarea></label>
+              <label class="full teacher-check-label"><input id="noteVisibleToStudent" type="checkbox"> <span>إظهار هذه الملاحظة للطالب داخل لوحة الطالب</span></label>
               <div class="full teacher-form-actions"><button class="btn gold" type="submit">حفظ الملاحظة</button><span id="noteFormStatus" class="teacher-form-status"></span></div>
             </form>
           </section>
           <section class="card">
             <div class="teacher-section-head"><div><h3>📌 إرشاد</h3><p>استخدم الملاحظات لمتابعة مستوى الطالب وتقدمه، وتجنب كتابة بيانات حساسة غير لازمة.</p></div></div>
-            <div class="teacher-tip">يمكنك فتح ملف أي طالب من قسم <strong>طلابي</strong> لمشاهدة ملخص حضوره وواجباته وملاحظاته.</div>
+            <div class="teacher-tip">يمكنك فتح ملف أي طالب من قسم <strong>طلابي</strong> لمشاهدة ملخص حضوره وملاحظاته. الملاحظة لا تظهر للطالب إلا إذا فعّلت خيار الإظهار.</div>
           </section>
         </div>
         <section class="card">
@@ -181,14 +152,14 @@
 
       <section class="teacher-panel" data-panel="reports">
         <section class="card">
-          <div class="teacher-section-head"><div><h3>📈 تقارير المعلم</h3><p>ملخص متابعة الطلاب والحضور والواجبات.</p></div><div class="actions"><button id="printTeacherReport" class="btn">🖨️ طباعة</button><button id="exportTeacherReport" class="btn gold">⬇️ تصدير CSV</button></div></div>
+          <div class="teacher-section-head"><div><h3>📈 تقارير المعلم</h3><p>ملخص متابعة الطلاب والحضور والملاحظات.</p></div><div class="actions"><button id="printTeacherReport" class="btn">🖨️ طباعة</button><button id="exportTeacherReport" class="btn gold">⬇️ تصدير CSV</button></div></div>
           <div class="enh-grid teacher-report-stats">
             <div class="enh-stat"><span>👥 الطلاب</span><b id="reportStudents">0</b></div>
             <div class="enh-stat"><span>✅ نسبة الحضور</span><b id="reportAttendanceRate">0%</b></div>
-            <div class="enh-stat"><span>📝 إنجاز الواجبات</span><b id="reportHomeworkRate">0%</b></div>
+            <div class="enh-stat"><span>✅ سجلات الحضور</span><b id="reportAttendanceTotal">0</b></div>
             <div class="enh-stat"><span>🗒️ الملاحظات</span><b id="reportNotes">0</b></div>
           </div>
-          <div class="table-wrap teacher-table-wrap"><table class="table teacher-table"><thead><tr><th>الطالب</th><th>حاضر</th><th>غائب/اعتذر</th><th>واجبات</th><th>تم التسليم</th><th>ملاحظات</th></tr></thead><tbody id="teacherReportRows"><tr><td colspan="6">لا توجد بيانات.</td></tr></tbody></table></div>
+          <div class="table-wrap teacher-table-wrap"><table class="table teacher-table"><thead><tr><th>الطالب</th><th>حاضر</th><th>غائب/اعتذر</th><th>نسبة الحضور</th><th>الملاحظات</th><th>الظاهرة للطالب</th></tr></thead><tbody id="teacherReportRows"><tr><td colspan="6">لا توجد بيانات.</td></tr></tbody></table></div>
         </section>
       </section>
 

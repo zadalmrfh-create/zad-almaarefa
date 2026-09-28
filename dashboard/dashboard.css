@@ -528,3 +528,5 @@ body{
   .teacher-topbar,.teacher-tabs,.teacher-panel:not([data-panel="reports"]),#printTeacherReport,#exportTeacherReport{display:none!important}
   .teacher-panel[data-panel="reports"]{display:block!important}.teacher-dashboard-page{background:#fff;color:#111}.card{background:#fff;color:#111;border:1px solid #ddd}.table td{color:#111}.table th{color:#7c5a00}
 }
+
+.teacher-check-label{display:flex!important;grid-template-columns:auto 1fr!important;align-items:center;gap:9px!important;padding:10px 12px;border:1px solid #34445c;border-radius:10px;background:#111b2b}.teacher-check-label input{width:18px;height:18px;accent-color:var(--gold)}
