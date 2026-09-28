@@ -1034,10 +1034,20 @@
           return;
         }
         list.innerHTML = latest.map((item, index) => {
-          const title = itemTitle(item);
+          const rawTitle = itemTitle(item);
+          let title = rawTitle;
+          try { title = decodeURIComponent(title); } catch (_) {}
+          title = title
+            .replace(/https?:\/\/\S+/gi, " ")
+            .replace(/(?:usp=drive_link|view\?[^\s]*)/gi, " ")
+            .replace(/[|\[\]{}]+/g, " ")
+            .replace(/\s+/g, " ")
+            .trim();
+          if (!title) title = "درس من المكتبة";
+          if (title.length > 72) title = title.slice(0, 69).trim() + "…";
           const status = item.completed || item.status === "completed" || item.read ? "مكتمل" : (index === 0 ? "جارٍ" : "مُشاهد");
           const icon = item.icon || ["📖", "🌙", "⚖️"][index] || "📚";
-          return `<div class="dl-row"><div class="dl-icon">${icon}</div><span class="dl-text">${title.replace(/[<>&"']/g, "")}</span><span class="dl-badge">${status}</span></div>`;
+          return `<div class="dl-row" title="${title.replace(/[<>&"']/g, "")}"><div class="dl-icon">${icon}</div><span class="dl-text">${title.replace(/[<>&"']/g, "")}</span><span class="dl-badge">${status}</span></div>`;
         }).join("");
       }
 
