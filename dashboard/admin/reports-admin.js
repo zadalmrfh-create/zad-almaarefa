@@ -75,6 +75,58 @@ function bookingStudentKey(b) {
   return String(b.studentUid || b.email || b.phone || b.fullName || b.id || '').toLowerCase();
 }
 
+function renderStudentReports() {
+  const body = $('bookingStudentReportsRows');
+  if (!body) return;
+
+  const search = String($('bookingStudentReportSearch')?.value || '').trim().toLowerCase();
+  const grouped = new Map();
+
+  allBookings.forEach(booking => {
+    const key = bookingStudentKey(booking);
+    if (!key) return;
+    if (!grouped.has(key)) grouped.set(key, []);
+    grouped.get(key).push(booking);
+  });
+
+  const rows = [...grouped.values()].map(items => {
+    items.sort((a, b) => (toDate(b.createdAt)?.getTime() || 0) - (toDate(a.createdAt)?.getTime() || 0));
+    const latest = items[0] || {};
+    return { latest, items };
+  }).filter(({ latest }) => {
+    if (!search) return true;
+    return [
+      latest.fullName,
+      latest.phone,
+      latest.email,
+      latest.subject
+    ].join(' ').toLowerCase().includes(search);
+  }).sort((a, b) => (toDate(b.latest.createdAt)?.getTime() || 0) - (toDate(a.latest.createdAt)?.getTime() || 0));
+
+  body.innerHTML = rows.length ? rows.map(({ latest, items }) => `
+    <tr>
+      <td>${esc(latest.fullName || '—')}</td>
+      <td>${esc(latest.phone || '—')}</td>
+      <td>${esc(latest.email || '—')}</td>
+      <td>${items.length.toLocaleString('ar-EG')}</td>
+      <td><span class="status-pill" data-status="${esc(latest.status || 'جديد')}">${esc(latest.status || 'جديد')}</span></td>
+      <td>${esc(fmtDate(latest.createdAt))}</td>
+      <td><button class="btn booking-student-report-btn" data-booking-student-id="${esc(latest.id)}" type="button">👤 فتح التقرير</button></td>
+    </tr>
+  `).join('') : '<tr><td colspan="7">لا توجد تقارير طلاب مطابقة.</td></tr>';
+}
+
+function setBookingTab(tabName) {
+  document.querySelectorAll('.booking-tab-btn').forEach(button => {
+    const active = button.dataset.bookingTab === tabName;
+    button.classList.toggle('active', active);
+    button.setAttribute('aria-selected', active ? 'true' : 'false');
+  });
+  document.querySelectorAll('.booking-tab-panel').forEach(panel => {
+    panel.classList.toggle('active', panel.dataset.bookingPanel === tabName);
+  });
+}
+
 function downloadUserKey(item) {
   return String(item.userId || item.userEmail || item.userName || item.id || '').toLowerCase();
 }
@@ -278,6 +330,7 @@ function renderBookingReports() {
         <td><button class="btn booking-report-btn" data-booking-report-id="${esc(b.id)}" type="button">📄 فتح</button></td>
       </tr>`).join('') : '<tr><td colspan="7">لا توجد حجوزات مطابقة للفلاتر.</td></tr>';
   }
+  renderStudentReports();
 }
 
 function bookingCsvRows(items = filteredBookings) {
@@ -604,6 +657,12 @@ function bindEvents() {
     .forEach(id => $(id)?.addEventListener(id.includes('Search') ? 'input' : 'change', renderBookingReports));
   ['libraryReportSearch', 'libraryReportSource', 'libraryReportFrom', 'libraryReportTo']
     .forEach(id => $(id)?.addEventListener(id.includes('Search') ? 'input' : 'change', renderLibraryReports));
+
+  $('bookingStudentReportSearch')?.addEventListener('input', renderStudentReports);
+  document.querySelectorAll('.booking-tab-btn').forEach(button => {
+    button.addEventListener('click', () => setBookingTab(button.dataset.bookingTab || 'requests'));
+  });
+  setBookingTab('requests');
 
   $('resetBookingReportFilters')?.addEventListener('click', resetBookingFilters);
   $('resetLibraryReportFilters')?.addEventListener('click', resetLibraryFilters);

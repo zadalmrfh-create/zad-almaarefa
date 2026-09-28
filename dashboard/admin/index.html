@@ -160,97 +160,65 @@
       </div>
     </section>
 
-    <!-- إدارة وبحث المستخدمين -->
-    <section class="card" id="enhancedUsersSearch">
-      <div class="actions" style="justify-content:space-between"><h2 style="margin:0">🔎 بحث وتصفية الحسابات</h2><button id="enhExportUsers" class="btn gold" type="button">📥 تصدير CSV</button></div>
-      <div class="enh-toolbar" style="margin-top:12px">
+    <!-- =====================================================
+         USERS + SEARCH / FILTERS
+    ====================================================== -->
+    <section class="card users-management-card" id="usersManagement">
+      <div class="users-management-head">
+        <div>
+          <h2 style="margin:0">👥 المستخدمون</h2>
+          <p style="margin:6px 0 0;color:var(--muted)">ابحث وصفِّ الحسابات ثم نفّذ الإجراءات من نفس الجدول.</p>
+        </div>
+        <div class="actions">
+          <button id="enhExportUsers" class="btn" type="button">📥 تصدير CSV</button>
+          <button id="refresh" class="btn gold" type="button">🔄 تحديث</button>
+        </div>
+      </div>
+
+      <div class="enh-toolbar users-filter-toolbar" style="margin-top:14px">
         <input id="enhUserSearch" type="search" placeholder="ابحث بالاسم أو البريد أو الهاتف أو المدينة">
-        <select id="enhRoleFilter"><option value="all">كل الأنواع</option><option value="student">طلاب</option><option value="teacher">معلمون</option></select>
-        <select id="enhStatusFilter"><option value="all">كل الحالات</option><option value="active">نشط</option><option value="pending">قيد المراجعة</option><option value="disabled">معطل</option><option value="banned">محظور</option></select>
+        <select id="enhRoleFilter">
+          <option value="all">كل الأنواع</option>
+          <option value="student">طلاب</option>
+          <option value="teacher">معلمون</option>
+        </select>
+        <select id="enhStatusFilter">
+          <option value="all">كل الحالات</option>
+          <option value="active">نشط</option>
+          <option value="pending">قيد المراجعة</option>
+          <option value="disabled">معطل</option>
+          <option value="banned">محظور</option>
+        </select>
         <select id="enhCountryFilter"><option value="all">كل البلدان</option></select>
       </div>
-      <div class="table-wrap enh-table"><table class="table"><thead><tr><th>الاسم</th><th>البريد</th><th>البلد</th><th>المدينة</th><th>النوع</th><th>الحالة</th><th>التسجيل</th></tr></thead><tbody id="enhUsersRows"><tr><td colspan="7">جارٍ التحميل…</td></tr></tbody></table></div>
-    </section>
 
-    <!-- =====================================================
-         USERS
-    ====================================================== -->
-
-    <section class="card">
-
-      <div
-        class="actions"
-        style="justify-content:space-between"
-      >
-
-        <h3>
-          👥 المستخدمون
-        </h3>
-
-
-        <button
-          id="refresh"
-          class="btn gold"
-          type="button"
-        >
-          تحديث
-        </button>
-
+      <div class="users-filter-summary">
+        <span id="enhUsersResultCount">جارٍ تحميل الحسابات…</span>
+        <button id="enhResetUserFilters" class="btn compact-btn" type="button">مسح الفلاتر</button>
       </div>
 
-
-
-      <div class="table-wrap">
-
-        <table class="table">
-
+      <div class="table-wrap users-table-wrap">
+        <table class="table users-table">
           <thead>
-
             <tr>
-
               <th>الاسم</th>
-
               <th>البريد</th>
-
               <th>الهاتف</th>
-
               <th>البلد</th>
-
               <th>المدينة</th>
-
               <th>واتساب</th>
-
               <th>الصف الدراسي / المادة</th>
-
               <th>النوع</th>
-
               <th>الحالة</th>
-
               <th>الإجراء</th>
-
             </tr>
-
           </thead>
-
-
           <tbody id="users">
-
-            <tr>
-
-              <td colspan="10">
-                جارٍ التحميل…
-              </td>
-
-            </tr>
-
+            <tr><td colspan="10">جارٍ التحميل…</td></tr>
           </tbody>
-
         </table>
-
       </div>
-
     </section>
-
 
 
     <!-- =====================================================
@@ -263,7 +231,6 @@
       <span id="studentCounterSyncStatus" style="display:block;margin-top:10px"></span>
     </section>
 
-<section class="card" id="homepageManagement"><h2>🏠 أرقام الصفحة الرئيسية</h2><p>تظهر هذه الأرقام للزوار ويمكن تعديلها من الإدارة.</p><div class="grid" style="margin-top:14px"><label>الطلاب<input id="homeStatStudents" type="number" min="0"></label><label>الكتب<input id="homeStatBooks" type="number" min="0"></label><label>الأقسام<input id="homeStatCategories" type="number" min="0"></label><label>الاختبارات<input id="homeStatTests" type="number" min="0"></label></div><div class="actions"><button id="saveHomeStats" class="btn gold" type="button">💾 حفظ الأرقام</button><span id="homeStatsStatus"></span></div><div style="margin-top:10px;color:#cbd5e1;font-size:13px">ملاحظة: يجب نشر قواعد Firestore الحالية في Firebase Console حتى يتمكن الأدمن من الحفظ.</div></section>
 
 
     <!-- =====================================================
@@ -539,42 +506,6 @@
 
 
     <!-- =====================================================
-         FULL QUIZ CENTER
-    ====================================================== -->
-    <section class="card" id="quizCenterManagement">
-      <div class="actions" style="justify-content:space-between;gap:10px;flex-wrap:wrap">
-        <div><h3>📝 مركز الاختبارات الكامل</h3><p style="margin:6px 0;color:var(--muted)">اختبارات عامة، بنك أسئلة، وقت محدد، محاولات متعددة، واختبارات نهائية.</p></div>
-        <button id="quizCenterRefresh" class="btn gold" type="button">🔄 تحديث</button>
-      </div>
-      <form id="fullQuizForm" class="admin-form" style="margin-top:16px">
-        <div class="grid">
-          <label>عنوان الاختبار<input id="fullQuizTitle" required placeholder="مثال: اختبار العقيدة — الوحدة الأولى"></label>
-          <label>المادة<input id="fullQuizSubject" required placeholder="العقيدة"></label>
-          <label>الصف<input id="fullQuizGrade" placeholder="أولى ثانوي"></label>
-          <label>نوع الاختبار<select id="fullQuizType"><option value="regular">اختبار عادي</option><option value="final">اختبار نهاية الوحدة</option><option value="bank">اختبار من بنك الأسئلة</option></select></label>
-          <label>المدة بالدقائق<input id="fullQuizDuration" type="number" min="1" max="240" value="20"></label>
-          <label>أقصى عدد محاولات<input id="fullQuizAttempts" type="number" min="1" max="20" value="1"></label>
-          <label>درجة النجاح %<input id="fullQuizPass" type="number" min="0" max="100" value="50"></label>
-          <label>الاستهداف<select id="fullQuizAudience"><option value="all">جميع الطلاب</option><option value="grade">طلاب صف محدد</option><option value="section">طلاب قسم محدد</option></select></label>
-          <label id="fullQuizAudienceValueWrap" style="display:none">القيمة<input id="fullQuizAudienceValue" placeholder="مثال: ثانية ثانوي أو القرآن الكريم"></label>
-        </div>
-        <div style="margin-top:16px">
-          <div class="actions" style="justify-content:space-between"><h4 style="margin:0">بناء الأسئلة</h4><button id="fullQuizAddQuestion" class="btn" type="button">+ إضافة سؤال</button></div>
-          <div id="fullQuizQuestions" style="margin-top:10px"></div>
-          <p style="color:var(--muted);font-size:13px">يدعم اختيار من متعدد، صح/خطأ، وترتيب العناصر. يمكن حفظ الأسئلة في بنك الأسئلة.</p>
-        </div>
-        <label style="display:flex;align-items:center;gap:8px;margin-top:12px"><input id="fullQuizSaveBank" type="checkbox"> حفظ الأسئلة أيضًا في بنك الأسئلة</label>
-        <div class="actions" style="margin-top:14px"><button class="btn gold" type="submit">💾 حفظ الاختبار</button><button id="fullQuizCancel" class="btn" type="button">تفريغ</button></div>
-        <p id="fullQuizStatus" class="notice" style="display:none;margin-top:10px"></p>
-      </form>
-      <div class="grid" style="margin-top:18px">
-        <div class="card"><h4>📚 الاختبارات المحفوظة</h4><div id="fullQuizList">جارٍ التحميل…</div></div>
-        <div class="card"><h4>🧰 بنك الأسئلة</h4><div id="questionBankList">جارٍ التحميل…</div></div>
-      </div>
-      <div class="table-wrap" style="margin-top:18px"><table class="table"><thead><tr><th>الطالب</th><th>الاختبار</th><th>الدرجة</th><th>النتيجة</th><th>الوقت</th></tr></thead><tbody id="fullQuizAttemptsRows"><tr><td colspan="5">جارٍ التحميل…</td></tr></tbody></table></div>
-    </section>
-
-    <!-- =====================================================
          LIVE GOOGLE MEET LESSONS
     ====================================================== -->
 
@@ -582,7 +513,7 @@
       <div class="actions" style="justify-content:space-between">
         <div>
           <h3>🎥 المحاضرات المباشرة وGoogle Meet</h3>
-          <p style="margin:6px 0 0;color:var(--muted)">إضافة موعد المحاضرة ورابط Google Meet واختبار الاستعداد قبلها.</p>
+          <p style="margin:6px 0 0;color:var(--muted)">إضافة موعد المحاضرة ورابط Google Meet وتحديد الطلاب المستهدفين.</p>
         </div>
         <button id="refreshLessons" class="btn gold" type="button">تحديث</button>
       </div>
@@ -612,14 +543,6 @@
           </div>
         </div>
 
-        <div style="margin-top:18px">
-          <div class="actions" style="justify-content:space-between">
-            <h4 style="margin:0">📝 اختبار الاستعداد قبل المحاضرة</h4>
-            <button id="addQuestion" class="btn" type="button">+ إضافة سؤال</button>
-          </div>
-          <div id="questionBuilder" style="margin-top:12px"></div>
-          <p style="color:var(--muted);font-size:13px">يمكنك إضافة أي عدد من الأسئلة، ولكل سؤال 4 اختيارات وتحدد الإجابة الصحيحة.</p>
-        </div>
 
         <div class="actions" style="margin-top:14px">
           <button class="btn gold" type="submit">💾 حفظ المحاضرة</button>
@@ -630,8 +553,8 @@
 
       <div class="table-wrap" style="margin-top:20px">
         <table class="table">
-          <thead><tr><th>المحاضرة</th><th>المادة</th><th>الصف</th><th>الموعد</th><th>المستهدفون</th><th>الاختبار</th><th>الإجراء</th></tr></thead>
-          <tbody id="lessonRows"><tr><td colspan="7">جارٍ تحميل المحاضرات…</td></tr></tbody>
+          <thead><tr><th>المحاضرة</th><th>المادة</th><th>الصف</th><th>الموعد</th><th>المستهدفون</th><th>الإجراء</th></tr></thead>
+          <tbody id="lessonRows"><tr><td colspan="6">جارٍ تحميل المحاضرات…</td></tr></tbody>
         </table>
       </div>
     </section>
@@ -695,25 +618,49 @@
          BOOKINGS
     ====================================================== -->
     <section class="card" id="bookingsManagement">
-      <div class="actions" style="justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
+      <div class="booking-section-head">
         <div>
-          <h2 style="margin-bottom:6px">📅 طلبات حجز الحصص</h2>
-          <p style="margin:0;color:var(--muted)">طلبات الطلاب المرسلة من نموذج الحجز، مع تقرير منفصل لكل حجز ولكل طالب وتقرير مجمّع.</p>
+          <h2 style="margin:0 0 6px">📅 حجز الحصص</h2>
+          <p style="margin:0;color:var(--muted)">الطلبات والتقارير في تبويبات منفصلة حتى تظل لوحة التحكم خفيفة ومرتبة.</p>
         </div>
-        <div class="actions">
-          <button id="bookingReportExport" class="btn" type="button">📥 تصدير CSV</button>
-          <button id="bookingReportPrint" class="btn" type="button">🖨️ طباعة التقرير</button>
-          <button id="bookingReportRefresh" class="btn gold" type="button">🔄 تحديث التقارير</button>
-        </div>
+        <button id="bookingReportRefresh" class="btn gold" type="button">🔄 تحديث البيانات</button>
       </div>
 
+      <div class="booking-tabs" role="tablist" aria-label="أقسام حجز الحصص">
+        <button class="booking-tab-btn active" type="button" data-booking-tab="requests">📋 الطلبات</button>
+        <button class="booking-tab-btn" type="button" data-booking-tab="reports">📊 التقرير المجمّع</button>
+        <button class="booking-tab-btn" type="button" data-booking-tab="students">👤 تقارير الطلاب</button>
+      </div>
+
+      <div class="booking-tab-panel active" id="bookingTabRequests" data-booking-panel="requests">
+        <div class="booking-panel-title">
+          <div><h3>طلبات الحجز</h3><p>غيّر الحالة أو افتح تقرير الحجز أو تقرير الطالب من نفس الصف.</p></div>
+        </div>
+      <div class="table-wrap" style="margin-top:20px">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>الطالب</th><th>التواصل</th><th>المرحلة/الصف</th><th>المادة</th><th>اليومان</th><th>المعلم</th><th>الحالة</th><th>إجراء</th>
+            </tr>
+          </thead>
+          <tbody id="bookingRows"><tr><td colspan="8">جارٍ التحميل...</td></tr></tbody>
+        </table>
+      </div>
+
+      </div>
+
+      <div class="booking-tab-panel" id="bookingTabReports" data-booking-panel="reports">
       <div class="report-block" id="bookingReportsPanel">
         <div class="report-head">
           <div>
             <h3>📊 التقرير المجمّع للحجوزات</h3>
             <p id="bookingReportResultCount">جارٍ تحميل البيانات…</p>
           </div>
-          <button id="resetBookingReportFilters" class="btn" type="button">مسح الفلاتر</button>
+          <div class="actions">
+            <button id="bookingReportExport" class="btn" type="button">📥 تصدير CSV</button>
+            <button id="bookingReportPrint" class="btn" type="button">🖨️ طباعة</button>
+            <button id="resetBookingReportFilters" class="btn" type="button">مسح الفلاتر</button>
+          </div>
         </div>
 
         <div class="report-filters booking-report-filters">
@@ -781,17 +728,28 @@
         </div>
       </div>
 
-      <div class="table-wrap" style="margin-top:20px">
-        <table class="table">
-          <thead>
-            <tr>
-              <th>الطالب</th><th>التواصل</th><th>المرحلة/الصف</th><th>المادة</th><th>اليومان</th><th>المعلم</th><th>الحالة</th><th>إجراء</th>
-            </tr>
-          </thead>
-          <tbody id="bookingRows"><tr><td colspan="8">جارٍ التحميل...</td></tr></tbody>
-        </table>
+
+      </div>
+
+      <div class="booking-tab-panel" id="bookingTabStudents" data-booking-panel="students">
+        <div class="report-block student-reports-panel">
+          <div class="report-head">
+            <div>
+              <h3>👤 تقارير الطلاب</h3>
+              <p>كل طالب يظهر مرة واحدة، ويمكن فتح تقرير يجمع جميع حجوزاته السابقة والحالية.</p>
+            </div>
+            <input id="bookingStudentReportSearch" class="student-report-search" type="search" placeholder="ابحث باسم الطالب أو الهاتف أو البريد">
+          </div>
+          <div class="table-wrap">
+            <table class="table report-table-compact">
+              <thead><tr><th>الطالب</th><th>الهاتف</th><th>البريد</th><th>عدد الحجوزات</th><th>آخر حالة</th><th>آخر حجز</th><th>التقرير</th></tr></thead>
+              <tbody id="bookingStudentReportsRows"><tr><td colspan="7">جارٍ تحميل تقارير الطلاب…</td></tr></tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </section>
+
 
     <!-- =====================================================
          NOTIFICATIONS
@@ -1440,6 +1398,30 @@ const tbody =
   $('users');
 
 
+window.applyAdminUserFilters = function applyAdminUserFilters() {
+  if (!tbody) return;
+  const queryText = String($('enhUserSearch')?.value || '').trim().toLowerCase();
+  const role = $('enhRoleFilter')?.value || 'all';
+  const status = $('enhStatusFilter')?.value || 'all';
+  const country = $('enhCountryFilter')?.value || 'all';
+  const rows = [...tbody.querySelectorAll('tr[data-user-row="1"]')];
+  let visible = 0;
+
+  rows.forEach(row => {
+    const matches =
+      (!queryText || String(row.dataset.search || '').includes(queryText)) &&
+      (role === 'all' || row.dataset.role === role) &&
+      (status === 'all' || row.dataset.status === status) &&
+      (country === 'all' || row.dataset.country === country);
+    row.hidden = !matches;
+    if (matches) visible += 1;
+  });
+
+  const counter = $('enhUsersResultCount');
+  if (counter) counter.textContent = `يعرض ${visible.toLocaleString('ar-EG')} من ${rows.length.toLocaleString('ar-EG')} حساب`;
+};
+
+
 async function loadUsers() {
 
   tbody.innerHTML = `
@@ -1719,6 +1701,22 @@ async function loadUsers() {
                 user.className ||
                 '-'
               );
+
+
+        tr.dataset.userRow = '1';
+        tr.dataset.role = isTeacher ? 'teacher' : 'student';
+        tr.dataset.status = status;
+        tr.dataset.country = String(user.country || '');
+        tr.dataset.search = [
+          name,
+          email,
+          phone,
+          user.country || '',
+          user.city || '',
+          studyInfo,
+          roleText,
+          getStatusText(status)
+        ].join(' ').toLowerCase();
 
 
         tr.innerHTML = `
@@ -2078,6 +2076,7 @@ async function loadUsers() {
                 ]);
 
                 await loadUsers();
+                await syncAutomaticHomeStats();
                 await loadBookings();
                 await loadLessonFollowUp();
                 await loadLoginLogs();
@@ -2106,6 +2105,8 @@ async function loadUsers() {
 
       }
     );
+
+    window.applyAdminUserFilters?.();
 
   }
 
@@ -2161,6 +2162,7 @@ function showLessonStatus(message, error = false) {
 }
 
 function addQuestionRow(data = {}) {
+  if (!questionBuilder) return;
   const index = questionBuilder.children.length + 1;
   const wrap = document.createElement('div');
   wrap.className = 'card';
@@ -2198,6 +2200,7 @@ $('addQuestion')?.addEventListener('click', () => addQuestionRow());
 if (questionBuilder && !questionBuilder.children.length) addQuestionRow();
 
 function collectQuestions() {
+  if (!questionBuilder) return [];
   return [...questionBuilder.children].map(card => ({
     text: card.querySelector('.q-text').value.trim(),
     options: [...card.querySelectorAll('.q-option')].map(x => x.value.trim()),
@@ -2209,8 +2212,9 @@ function resetLessonForm() {
   editingLessonId = null;
   window.selectedLessonStudentIds = new Set();
   lessonForm.reset();
-  questionBuilder.innerHTML = '';
-  addQuestionRow();
+  if (questionBuilder) {
+    questionBuilder.innerHTML = '';
+  }
   $('cancelLessonEdit').style.display = 'none';
   $('lessonForm').querySelector('button[type="submit"]').textContent = '💾 حفظ المحاضرة';
 }
@@ -2226,14 +2230,14 @@ function lessonDateText(value) {
 
 async function loadLessons() {
   if (!lessonRows) return;
-  lessonRows.innerHTML = '<tr><td colspan="7">جارٍ تحميل المحاضرات…</td></tr>';
+  lessonRows.innerHTML = '<tr><td colspan="6">جارٍ تحميل المحاضرات…</td></tr>';
   try {
     const snap = await getDocs(collection(db, 'lessons'));
     const items = [];
     snap.forEach(d => items.push({ id: d.id, ...d.data() }));
     items.sort((a,b) => String(a.date || '').localeCompare(String(b.date || '')));
     if (!items.length) {
-      lessonRows.innerHTML = '<tr><td colspan="7">لا توجد محاضرات مضافة حتى الآن.</td></tr>';
+      lessonRows.innerHTML = '<tr><td colspan="6">لا توجد محاضرات مضافة حتى الآن.</td></tr>';
       return;
     }
     lessonRows.innerHTML = '';
@@ -2245,7 +2249,6 @@ async function loadLessons() {
         <td>${escapeHtml(item.grade)}</td>
         <td>${escapeHtml(lessonDateText(item.date))}</td>
         <td>${item.audience === 'selected' ? `👤 ${(item.targetUids || []).length} طالب` : '👥 جميع الطلاب'}</td>
-        <td>${Array.isArray(item.preQuiz) && item.preQuiz.length ? `${item.preQuiz.length} أسئلة` : 'بدون'}</td>
         <td>
           <div class="actions">
             <button class="btn edit-lesson" type="button">تعديل</button>
@@ -2271,7 +2274,7 @@ async function loadLessons() {
     });
   } catch (e) {
     console.error(e);
-    lessonRows.innerHTML = `<tr><td colspan="7">تعذر تحميل المحاضرات: ${escapeHtml(e.code || e.message)}</td></tr>`;
+    lessonRows.innerHTML = `<tr><td colspan="6">تعذر تحميل المحاضرات: ${escapeHtml(e.code || e.message)}</td></tr>`;
   }
 }
 
@@ -2288,9 +2291,9 @@ function editLesson(item) {
   window.selectedLessonStudentIds = new Set(item.targetUids || []);
   $('lessonStudentsWrap').style.display = item.audience === 'selected' ? 'block' : 'none';
   if (item.audience === 'selected') renderLessonStudents();
-  questionBuilder.innerHTML = '';
-  (item.preQuiz || []).forEach(q => addQuestionRow(q));
-  if (!questionBuilder.children.length) addQuestionRow();
+  if (questionBuilder) {
+    questionBuilder.innerHTML = '';
+  }
   $('cancelLessonEdit').style.display = 'inline-block';
   $('lessonForm').querySelector('button[type="submit"]').textContent = '💾 حفظ التعديل';
   document.getElementById('liveLessonsManagement')?.scrollIntoView({behavior:'smooth'});
@@ -2364,7 +2367,7 @@ lessonForm?.addEventListener('submit', async (event) => {
     showLessonStatus('اكتب رابط Google Meet صحيحًا يبدأ بـ https://', true);
     return;
   }
-  const questions = collectQuestions();
+  const questions = [];
   if ($('lessonAudience').value === 'selected' && !(window.selectedLessonStudentIds || new Set()).size) {
     showLessonStatus('اختر طالبًا واحدًا على الأقل للمحاضرة المحددة.', true);
     return;
@@ -2390,17 +2393,6 @@ lessonForm?.addEventListener('submit', async (event) => {
       data.createdAt = serverTimestamp();
       const ref = await addDoc(collection(db, 'lessons'), data);
       savedLessonId = ref.id;
-      if (questions.length) {
-        await addDoc(collection(db, 'quizzes'), {
-          lessonId: savedLessonId,
-          type: 'pre',
-          title: `اختبار الاستعداد — ${data.title}`,
-          questions,
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp()
-        });
-      }
-
       // إنشاء إشعار شخصي لكل طالب مستهدف
       const targets = data.audience === 'selected'
         ? [...(data.targetUids || [])]
@@ -4067,6 +4059,7 @@ $('contentForm')
 
 
         await loadContent();
+        await syncAutomaticHomeStats();
 
       }
 
@@ -4258,6 +4251,7 @@ contentRows.addEventListener(
 
 
       await loadContent();
+      await syncAutomaticHomeStats();
 
     }
 
@@ -4697,20 +4691,15 @@ async function loadBookings() {
                       'booking',
 
                     title:
-                      newStatus ===
-                      'تم الحجز'
-
-                        ? '✅ تمت الموافقة على حجزك'
-
-                        : '📅 تحديث طلب حجز الحصة',
+                      `📅 تم تحديث حالة طلب حجز الحصة للطالب ${booking.fullName || booking.studentName || 'غير معروف'}`,
 
                     message:
                       newStatus ===
                       'تم الحجز'
 
-                        ? 'تمت الموافقة على طلب حجز الحصة الخاص بك. سيتم التواصل معك لتأكيد التفاصيل.'
+                        ? `تم تحديث حالة طلب حجز الحصة للطالب ${booking.fullName || booking.studentName || 'غير معروف'} إلى: تم الحجز. سيتم التواصل لتأكيد التفاصيل.`
 
-                        : `تم تحديث حالة طلب حجز الحصة الخاص بك إلى: ${newStatus}`,
+                        : `تم تحديث حالة طلب حجز الحصة للطالب ${booking.fullName || booking.studentName || 'غير معروف'} إلى: ${newStatus}`,
 
                     bookingId:
 
@@ -4843,25 +4832,127 @@ syncStudentCounterButton?.addEventListener('click', async () => {
 
 
 /* =====================================================
-   HOMEPAGE STATS
+   AUTOMATIC HOMEPAGE STATS
 ===================================================== */
-async function loadHomeStatsAdmin(){for(const id of ['students','books','categories','tests']){try{const snap=await getDoc(doc(db,'publicStats',id));const el=document.getElementById('homeStat'+id.charAt(0).toUpperCase()+id.slice(1));if(el)el.value=snap.exists()?(snap.data().total||snap.data().count||0):0}catch(e){}}}
-$('saveHomeStats')?.addEventListener('click',async()=>{
-  const status=$('homeStatsStatus');
-  const button=$('saveHomeStats');
-  try{
-    button.disabled=true;
-    status.textContent='جارٍ الحفظ...';
-    for(const id of ['students','books','categories','tests']){
-      const el=document.getElementById('homeStat'+id.charAt(0).toUpperCase()+id.slice(1));
-      await setDoc(doc(db,'publicStats',id),{total:Number(el?.value||0),updatedAt:serverTimestamp(),source:'admin-homepage',updatedBy:auth.currentUser?.uid||null},{merge:true});
-    }
-    status.textContent='✅ تم حفظ الأرقام بنجاح.';
-  }catch(e){
-    console.error('Home stats save error:',e);
-    status.textContent='❌ '+(e.code==='permission-denied'?'صلاحية Firestore مرفوضة. انشر ملف firestore.rules الموجود مع النسخة ثم أعد المحاولة.':(e.code||e.message));
-  }finally{button.disabled=false;}
-});
+async function fetchLocalText(url) {
+  try {
+    const response = await fetch(url, { cache: 'no-store' });
+    return response.ok ? await response.text() : '';
+  } catch (error) {
+    console.warn('تعذر قراءة الملف لحساب الإحصائيات:', url, error);
+    return '';
+  }
+}
+
+function staticLibraryKeys(source) {
+  const keys = new Set();
+  const start = source.indexOf('var books = [');
+  if (start < 0) return keys;
+  const end = source.indexOf('];', start);
+  const chunk = end > start ? source.slice(start, end) : source.slice(start);
+  for (const objectText of (chunk.match(/\{[\s\S]*?\}/g) || [])) {
+    const title = objectText.match(/\btitle\s*:\s*["']([^"']+)["']/)?.[1]?.trim() || '';
+    const url = objectText.match(/\burl\s*:\s*["']([^"']+)["']/)?.[1]?.trim() || '';
+    if (title) keys.add(`${title}|${url}`);
+  }
+  return keys;
+}
+
+function legacyTeacherKeys(source) {
+  return new Set(
+    [...source.matchAll(/\blegacyKey\s*:\s*["']([^"']+)["']/g)]
+      .map(match => String(match[1] || '').trim())
+      .filter(Boolean)
+  );
+}
+
+function activeStaticTestLinks(source) {
+  const links = new Set();
+  try {
+    const parsed = new DOMParser().parseFromString(source, 'text/html');
+    parsed.querySelectorAll('a.subject.active[href]').forEach(link => {
+      const href = String(link.getAttribute('href') || '').trim();
+      if (href) links.add(href);
+    });
+  } catch (error) {
+    console.warn('تعذر تحليل صفحة الاختبارات:', error);
+  }
+  return links;
+}
+
+async function syncAutomaticHomeStats() {
+  try {
+    const [
+      usersSnap,
+      teachersSnap,
+      booksSnap,
+      quizzesSnap,
+      librarySource,
+      teachersSource,
+      testsSource
+    ] = await Promise.all([
+      getDocs(collection(db, 'users')),
+      getDocs(collection(db, 'teachers')),
+      getDocs(collection(db, 'libraryBooks')),
+      getDocs(collection(db, 'quizzes')),
+      fetchLocalText('../../sections/library.html'),
+      fetchLocalText('../../teachers/index.html'),
+      fetchLocalText('../../sections/tests/index.html')
+    ]);
+
+    const students = usersSnap.docs.filter(item => item.data()?.role === 'student').length;
+
+    const bookKeys = staticLibraryKeys(librarySource);
+    booksSnap.docs.forEach(item => {
+      const book = item.data() || {};
+      if (book.visible === false || !book.title) return;
+      bookKeys.add(`${String(book.title).trim()}|${String(book.url || '').trim()}`);
+    });
+
+    const legacyKeys = legacyTeacherKeys(teachersSource);
+    const teacherKeys = new Set([...legacyKeys].map(key => `legacy:${key}`));
+    teachersSnap.docs.forEach(item => {
+      const teacher = item.data() || {};
+      if (teacher.visible === false) return;
+      if (teacher.legacyKey && legacyKeys.has(String(teacher.legacyKey))) {
+        teacherKeys.add(`legacy:${String(teacher.legacyKey)}`);
+      } else {
+        teacherKeys.add(`firestore:${item.id}`);
+      }
+    });
+
+    const testKeys = new Set([...activeStaticTestLinks(testsSource)].map(href => `static:${href}`));
+    quizzesSnap.docs.forEach(item => {
+      const quiz = item.data() || {};
+      if (quiz.type === 'pre') return;
+      testKeys.add(`firestore:${item.id}`);
+    });
+
+    const values = {
+      students,
+      books: bookKeys.size,
+      categories: teacherKeys.size,
+      tests: testKeys.size
+    };
+
+    await Promise.all(Object.entries(values).map(([id, total]) =>
+      setDoc(doc(db, 'publicStats', id), {
+        total,
+        updatedAt: serverTimestamp(),
+        source: 'automatic-dashboard-sync',
+        updatedBy: auth.currentUser?.uid || null
+      }, { merge: true })
+    ));
+
+    return values;
+  } catch (error) {
+    console.error('Automatic homepage stats sync error:', error);
+    return null;
+  }
+}
+
+$('enhRefreshData')?.addEventListener('click', syncAutomaticHomeStats);
+
 
 /* =====================================================
    INITIALIZATION
@@ -4900,7 +4991,7 @@ guard(
     await loadContent();
 
     await loadBookings();
-    await loadHomeStatsAdmin();
+    await syncAutomaticHomeStats();
     await loadLibraryDownloads();
 
   }
@@ -5004,7 +5095,6 @@ onAuthStateChanged(
 
 <script type="module" src="reports-admin.js"></script>
 <script type="module" src="admin-enhancements.js"></script>
-<script type="module" src="quiz-center-admin.js"></script>
 <script type="module" src="attendance-admin.js"></script>
 </body>
 

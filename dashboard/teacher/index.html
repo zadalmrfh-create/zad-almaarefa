@@ -1,20 +1,244 @@
-<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>لوحة المعلم | زاد المعرفة</title><link rel="stylesheet" href="../dashboard.css">
-<link rel="stylesheet" href="../../assets/translation.css">
-<script src="../../assets/translation.js"></script>
-<script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
-<script src="../../content-protection.js" defer></script>
-</head><body><div class="wrap"><header class="top"><div class="brand"><h1>زاد المعرفة</h1><small>لوحة المعلم</small></div><div class="actions"><a class="btn" href="../../index.html">الرئيسية</a><button id="logout" class="btn danger">تسجيل الخروج</button></div></header><main><div id="loading" class="notice">جارٍ التحقق...</div><section class="hero"><h2>مرحبًا <span data-name>...</span> 👨‍🏫</h2><p data-email></p></section><section class="card" id="teacherAnalytics"><h3>📊 ملخص أداء المعلم</h3><div class="enh-grid">
-<div class="enh-stat">👥 الطلاب<b id="teacherStudentsCount">0</b><small>طلاب المنصة</small></div>
-<div class="enh-stat">📅 الحجوزات<b id="teacherBookingsCount">0</b><small>المسندة إليك</small></div>
-<div class="enh-stat">📝 الاختبارات<b id="teacherQuizCount">0</b><small>محاولات مرتبطة</small></div>
-<div class="enh-stat">🟢 الحضور<b id="teacherAttendanceCount">0</b><small>سجلات الحضور</small></div>
-<div class="enh-stat">🌍 البلدان<b id="teacherCountriesCount">0</b><small>تنوع الطلاب</small></div></div></section>
-<section class="card"><h3>🌍 بيانات الطلاب</h3><div class="table-wrap"><table class="table"><thead><tr><th>الاسم</th><th>البلد</th><th>المدينة</th><th>الصف</th><th>الهاتف</th></tr></thead><tbody id="teacherStudentEnhancedRows"><tr><td colspan="5">جارٍ التحميل…</td></tr></tbody></table></div></section>
-<section class="card" id="teacherBookings"><h3>📅 طلبات حجز الحصص</h3><div class="table-wrap"><table class="table"><thead><tr><th>الطالب</th><th>المادة</th><th>الصف</th><th>اليومان</th><th>النوع</th><th>الحالة</th><th>إجراء</th></tr></thead><tbody id="teacherBookingRows"><tr><td colspan="7">جارٍ التحميل...</td></tr></tbody></table></div></section><section class="card"><h3>👥 بيانات الطلاب</h3><div class="table-wrap"><table class="table"><thead><tr><th>الاسم</th><th>الإيميل</th><th>رقم الهاتف</th><th>الصف الدراسي</th><th>واتساب</th></tr></thead><tbody id="students"><tr><td colspan="5">جارٍ التحميل...</td></tr></tbody></table></div></section></main></div><script type="module">import {auth,db} from '../../firebase-config.js';import {onAuthStateChanged,signOut} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';import {doc,getDoc,collection,getDocs,query,where,updateDoc,addDoc,serverTimestamp} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';function whatsappNumber(value){ const digits=String(value||'').replace(/\D/g,''); return digits.startsWith('0') ? '20'+digits.slice(1) : digits; }
-onAuthStateChanged(auth,async u=>{if(!u)return location.replace('../../login/index.html');const me=await getDoc(doc(db,'users',u.uid));const p=me.exists()?me.data():{};if(p.role!=='teacher'||p.status!=='active')return location.replace('../../dashboard/student/index.html');document.querySelector('[data-name]').textContent=p.fullName||p.name||u.email;document.querySelector('[data-email]').textContent=u.email;const snap=await getDocs(query(collection(db,'users'),where('role','==','student')));const rows=[];snap.forEach(d=>{const x=d.data();if(x.role==='student')rows.push(`<tr><td>${x.fullName||x.name||'-'}</td><td>${x.email||'-'}</td><td>${x.phone||x.phoneNumber||'-'}</td><td>${x.grade||x.studyGrade||'-'}</td><td>${x.phone||x.phoneNumber?`<a class="btn gold" target="_blank" href="https://wa.me/${whatsappNumber(x.phone||x.phoneNumber)}">واتساب</a>`:'-'}</td></tr>`)});document.getElementById('students').innerHTML=rows.join('')||'<tr><td colspan="5">لا يوجد طلاب.</td></tr>';await loadTeacherBookings(u.uid);document.getElementById('loading').remove()});document.getElementById('logout').onclick=()=>signOut(auth).then(()=>location.replace('../../login/index.html'));
-async function loadTeacherBookings(uid){
- const body=document.getElementById('teacherBookingRows');
- try{const snap=await getDocs(query(collection(db,'bookings'),where('teacherUid','==',uid)));body.innerHTML='';snap.forEach(x=>{const b=x.data();const tr=document.createElement('tr');tr.innerHTML=`<td>${b.fullName||'-'}<br>${b.phone||'-'}</td><td>${b.subject||'-'}</td><td>${b.educationType||''} / ${b.grade||'-'}</td><td>${b.preferredDay1||'-'} — ${b.preferredDay2||'-'}<br>${b.preferredPeriod||''}</td><td>${b.lessonType||'-'}<br>${b.lessonMode||''}</td><td><select class="booking-status-select"><option ${b.status==='جديد'?'selected':''}>جديد</option><option ${b.status==='قيد المراجعة'?'selected':''}>قيد المراجعة</option><option ${b.status==='تم التواصل'?'selected':''}>تم التواصل</option><option ${b.status==='تم الحجز'?'selected':''}>تم الحجز</option><option ${b.status==='مكتمل'?'selected':''}>مكتمل</option><option ${b.status==='ملغي'?'selected':''}>ملغي</option></select></td><td><button class="btn" data-id="${x.id}">حفظ</button></td>`;body.appendChild(tr);});if(!body.innerHTML)body.innerHTML='<tr><td colspan="7">لا توجد طلبات معيّنة لك.</td></tr>';body.querySelectorAll('[data-id]').forEach(btn=>btn.onclick=async()=>{const tr=btn.closest('tr');const newStatus=tr.querySelector('select').value;const bookingId=btn.dataset.id;const bookingDoc=snap.docs.find(d=>d.id===bookingId);const booking=bookingDoc?.data()||{};const oldStatus=btn.dataset.currentStatus||booking.status||'جديد';await updateDoc(doc(db,'bookings',bookingId),{status:newStatus,updatedAt:serverTimestamp()});if(newStatus!==oldStatus){try{await addDoc(collection(db,'bookingStatusHistory'),{bookingId,studentUid:booking.studentUid||null,studentName:booking.fullName||null,previousStatus:oldStatus,status:newStatus,changedByUid:auth.currentUser?.uid||null,changedByEmail:auth.currentUser?.email||null,changedByName:auth.currentUser?.displayName||null,changedAt:serverTimestamp(),clientChangedAt:new Date().toISOString()});booking.status=newStatus;btn.dataset.currentStatus=newStatus;}catch(historyError){console.warn('تعذر حفظ سجل تغيير حالة الحجز:',historyError);}btn.dataset.currentStatus=newStatus;}btn.textContent='تم الحفظ';});}catch(e){body.innerHTML='<tr><td colspan="7">تعذر تحميل الطلبات: '+(e.code||e.message)+'</td></tr>';}
-}
-</script><script type="module" src="teacher-enhancements.js"></script>
-</body></html>
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>لوحة المعلم | زاد المعرفة</title>
+  <link rel="stylesheet" href="../dashboard.css">
+  <link rel="stylesheet" href="../../assets/translation.css">
+  <script src="../../assets/translation.js"></script>
+  <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+  <script src="../../content-protection.js" defer></script>
+</head>
+<body class="teacher-dashboard-page">
+  <div class="wrap teacher-wrap">
+    <header class="top teacher-topbar">
+      <div class="brand">
+        <img src="../../images/logo.png" alt="زاد المعرفة">
+        <div>
+          <h1>زاد المعرفة</h1>
+          <small>لوحة المعلم</small>
+        </div>
+      </div>
+      <div class="actions">
+        <a class="btn" href="../../index.html">🏠 الرئيسية</a>
+        <button id="logout" class="btn danger">تسجيل الخروج</button>
+      </div>
+    </header>
+
+    <div id="loading" class="notice">جارٍ التحقق وتحميل بياناتك...</div>
+
+    <section class="hero teacher-hero">
+      <div>
+        <span class="teacher-kicker">مساحة عمل المعلم</span>
+        <h2>مرحبًا <span data-name>...</span> 👨‍🏫</h2>
+        <p data-email></p>
+      </div>
+      <div class="teacher-date" id="teacherToday"></div>
+    </section>
+
+    <nav class="teacher-tabs" id="teacherTabs" aria-label="أقسام لوحة المعلم">
+      <button class="teacher-tab active" data-tab="overview">🏠 الرئيسية</button>
+      <button class="teacher-tab" data-tab="students">👥 طلابي</button>
+      <button class="teacher-tab" data-tab="attendance">✅ الحضور والغياب</button>
+      <button class="teacher-tab" data-tab="homework">📝 الواجبات</button>
+      <button class="teacher-tab" data-tab="notes">🗒️ ملاحظاتي</button>
+      <button class="teacher-tab" data-tab="reports">📈 التقارير</button>
+      <button class="teacher-tab" data-tab="notifications">🔔 التنبيهات <span class="teacher-badge" id="teacherNotificationBadge">0</span></button>
+      <button class="teacher-tab" data-tab="profile">⚙️ ملفي</button>
+      <button class="teacher-tab" data-tab="contact">💬 التواصل السريع</button>
+    </nav>
+
+    <main class="teacher-workspace">
+      <section class="teacher-panel active" data-panel="overview">
+        <div class="enh-grid teacher-stats-grid">
+          <div class="enh-stat"><span>👥 طلابي</span><b id="teacherStudentsCount">0</b><small>طلاب مرتبطون بك</small></div>
+          <div class="enh-stat"><span>✅ الحضور</span><b id="teacherAttendanceCount">0</b><small>سجلات الحضور</small></div>
+          <div class="enh-stat"><span>📝 الواجبات</span><b id="teacherHomeworkCount">0</b><small>واجبات مسجلة</small></div>
+          <div class="enh-stat"><span>🔔 تنبيهات جديدة</span><b id="teacherUnreadCount">0</b><small>تحتاج لمراجعتك</small></div>
+        </div>
+
+        <div class="teacher-home-grid">
+          <section class="card teacher-summary-card">
+            <div class="teacher-section-head"><div><h3>⚡ إجراءات سريعة</h3><p>اختصارات لأكثر المهام استخدامًا.</p></div></div>
+            <div class="teacher-quick-actions">
+              <button class="teacher-action-card" data-go="students"><span>👥</span><strong>عرض طلابي</strong><small>بيانات الطلاب والتواصل</small></button>
+              <button class="teacher-action-card" data-go="attendance"><span>✅</span><strong>تسجيل حضور</strong><small>حضور أو غياب الطالب</small></button>
+              <button class="teacher-action-card" data-go="homework"><span>📝</span><strong>إضافة واجب</strong><small>متابعة الواجبات والتسليم</small></button>
+              <button class="teacher-action-card" data-go="notes"><span>🗒️</span><strong>إضافة ملاحظة</strong><small>ملاحظات خاصة على الطلاب</small></button>
+            </div>
+          </section>
+
+          <section class="card teacher-summary-card">
+            <div class="teacher-section-head"><div><h3>📊 لمحة سريعة</h3><p>ملخص مباشر لأداء طلابك.</p></div></div>
+            <div class="teacher-mini-metrics">
+              <div><span>نسبة الحضور</span><b id="overviewAttendanceRate">0%</b></div>
+              <div><span>واجبات مكتملة</span><b id="overviewHomeworkRate">0%</b></div>
+              <div><span>ملاحظات مسجلة</span><b id="overviewNotesCount">0</b></div>
+            </div>
+          </section>
+        </div>
+
+        <section class="card">
+          <div class="teacher-section-head"><div><h3>🕘 أحدث النشاطات</h3><p>آخر حضور وواجبات وملاحظات تم تسجيلها.</p></div></div>
+          <div id="teacherRecentActivity" class="teacher-activity-list"><div class="teacher-empty">لا توجد نشاطات حتى الآن.</div></div>
+        </section>
+      </section>
+
+      <section class="teacher-panel" data-panel="students">
+        <section class="card">
+          <div class="teacher-section-head">
+            <div><h3>👥 طلابي</h3><p>يظهر هنا الطلاب المرتبطون بك فقط.</p></div>
+            <input id="studentSearch" class="teacher-input teacher-search" type="search" placeholder="ابحث بالاسم أو الهاتف أو الصف...">
+          </div>
+          <div class="table-wrap teacher-table-wrap">
+            <table class="table teacher-table">
+              <thead><tr><th>الطالب</th><th>الصف</th><th>الهاتف</th><th>الحضور</th><th>الواجبات</th><th>إجراءات</th></tr></thead>
+              <tbody id="teacherStudentsRows"><tr><td colspan="6">جارٍ التحميل...</td></tr></tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+
+      <section class="teacher-panel" data-panel="attendance">
+        <div class="teacher-two-col">
+          <section class="card">
+            <div class="teacher-section-head"><div><h3>✅ تسجيل حضور أو غياب</h3><p>سجل حالة الطالب في الحصة.</p></div></div>
+            <form id="attendanceForm" class="teacher-form">
+              <label>الطالب<select id="attendanceStudent" class="teacher-input" required></select></label>
+              <label>التاريخ<input id="attendanceDate" class="teacher-input" type="date" required></label>
+              <label>الحالة<select id="attendanceStatus" class="teacher-input" required><option value="حاضر">حاضر</option><option value="غائب">غائب</option><option value="اعتذر">اعتذر</option></select></label>
+              <label>المادة<input id="attendanceSubject" class="teacher-input" placeholder="مثال: النحو"></label>
+              <label class="full">ملاحظة<textarea id="attendanceNote" class="teacher-input" rows="3" placeholder="ملاحظة اختيارية..."></textarea></label>
+              <div class="full teacher-form-actions"><button class="btn gold" type="submit">حفظ الحضور</button><span id="attendanceFormStatus" class="teacher-form-status"></span></div>
+            </form>
+          </section>
+          <section class="card">
+            <div class="teacher-section-head"><div><h3>📊 ملخص الحضور</h3><p>إحصائيات سجلاتك الحالية.</p></div></div>
+            <div class="profile-mini-grid">
+              <div class="profile-mini"><b id="attendancePresent">0</b><span>حاضر</span></div>
+              <div class="profile-mini"><b id="attendanceAbsent">0</b><span>غائب</span></div>
+              <div class="profile-mini"><b id="attendanceExcused">0</b><span>اعتذر</span></div>
+              <div class="profile-mini"><b id="attendanceRate">0%</b><span>نسبة الحضور</span></div>
+            </div>
+          </section>
+        </div>
+        <section class="card">
+          <div class="teacher-section-head"><div><h3>📋 سجل الحضور</h3><p>آخر سجلات الحضور والغياب.</p></div><select id="attendanceFilterStudent" class="teacher-input teacher-filter"><option value="">كل الطلاب</option></select></div>
+          <div class="table-wrap teacher-table-wrap"><table class="table teacher-table"><thead><tr><th>الطالب</th><th>التاريخ</th><th>المادة</th><th>الحالة</th><th>الملاحظة</th><th>إجراء</th></tr></thead><tbody id="attendanceRows"><tr><td colspan="6">لا توجد سجلات.</td></tr></tbody></table></div>
+        </section>
+      </section>
+
+      <section class="teacher-panel" data-panel="homework">
+        <div class="teacher-two-col">
+          <section class="card">
+            <div class="teacher-section-head"><div><h3>📝 إضافة واجب</h3><p>حدد الطالب والواجب وموعد التسليم.</p></div></div>
+            <form id="homeworkForm" class="teacher-form">
+              <label>الطالب<select id="homeworkStudent" class="teacher-input" required></select></label>
+              <label>موعد التسليم<input id="homeworkDueDate" class="teacher-input" type="date"></label>
+              <label class="full">عنوان الواجب<input id="homeworkTitle" class="teacher-input" required placeholder="عنوان واضح للواجب"></label>
+              <label class="full">التفاصيل<textarea id="homeworkDescription" class="teacher-input" rows="4" placeholder="اشرح المطلوب من الطالب..."></textarea></label>
+              <div class="full teacher-form-actions"><button class="btn gold" type="submit">إضافة الواجب</button><span id="homeworkFormStatus" class="teacher-form-status"></span></div>
+            </form>
+          </section>
+          <section class="card">
+            <div class="teacher-section-head"><div><h3>📊 ملخص الواجبات</h3><p>حالة الواجبات المسجلة.</p></div></div>
+            <div class="profile-mini-grid">
+              <div class="profile-mini"><b id="homeworkTotal">0</b><span>الإجمالي</span></div>
+              <div class="profile-mini"><b id="homeworkPending">0</b><span>مطلوب</span></div>
+              <div class="profile-mini"><b id="homeworkDone">0</b><span>تم التسليم</span></div>
+              <div class="profile-mini"><b id="homeworkMissing">0</b><span>لم يُسلّم</span></div>
+            </div>
+          </section>
+        </div>
+        <section class="card">
+          <div class="teacher-section-head"><div><h3>📚 متابعة الواجبات</h3><p>غيّر حالة التسليم وأضف تقييمك أو ملاحظتك.</p></div><select id="homeworkFilterStudent" class="teacher-input teacher-filter"><option value="">كل الطلاب</option></select></div>
+          <div class="table-wrap teacher-table-wrap"><table class="table teacher-table teacher-homework-table"><thead><tr><th>الطالب</th><th>الواجب</th><th>التسليم</th><th>الحالة</th><th>التقييم / الملاحظة</th><th>إجراء</th></tr></thead><tbody id="homeworkRows"><tr><td colspan="6">لا توجد واجبات.</td></tr></tbody></table></div>
+        </section>
+      </section>
+
+      <section class="teacher-panel" data-panel="notes">
+        <div class="teacher-two-col">
+          <section class="card">
+            <div class="teacher-section-head"><div><h3>🗒️ إضافة ملاحظة</h3><p>ملاحظات خاصة يراها المعلم والإدارة فقط.</p></div></div>
+            <form id="noteForm" class="teacher-form">
+              <label>الطالب<select id="noteStudent" class="teacher-input" required></select></label>
+              <label>نوع الملاحظة<select id="noteCategory" class="teacher-input"><option>عام</option><option>المستوى</option><option>المتابعة</option><option>الالتزام</option></select></label>
+              <label class="full">الملاحظة<textarea id="noteText" class="teacher-input" rows="5" required placeholder="اكتب ملاحظتك هنا..."></textarea></label>
+              <div class="full teacher-form-actions"><button class="btn gold" type="submit">حفظ الملاحظة</button><span id="noteFormStatus" class="teacher-form-status"></span></div>
+            </form>
+          </section>
+          <section class="card">
+            <div class="teacher-section-head"><div><h3>📌 إرشاد</h3><p>استخدم الملاحظات لمتابعة مستوى الطالب وتقدمه، وتجنب كتابة بيانات حساسة غير لازمة.</p></div></div>
+            <div class="teacher-tip">يمكنك فتح ملف أي طالب من قسم <strong>طلابي</strong> لمشاهدة ملخص حضوره وواجباته وملاحظاته.</div>
+          </section>
+        </div>
+        <section class="card">
+          <div class="teacher-section-head"><div><h3>📋 الملاحظات المسجلة</h3><p>مرتبة من الأحدث إلى الأقدم.</p></div><select id="notesFilterStudent" class="teacher-input teacher-filter"><option value="">كل الطلاب</option></select></div>
+          <div id="notesList" class="teacher-notes-list"><div class="teacher-empty">لا توجد ملاحظات.</div></div>
+        </section>
+      </section>
+
+      <section class="teacher-panel" data-panel="reports">
+        <section class="card">
+          <div class="teacher-section-head"><div><h3>📈 تقارير المعلم</h3><p>ملخص متابعة الطلاب والحضور والواجبات.</p></div><div class="actions"><button id="printTeacherReport" class="btn">🖨️ طباعة</button><button id="exportTeacherReport" class="btn gold">⬇️ تصدير CSV</button></div></div>
+          <div class="enh-grid teacher-report-stats">
+            <div class="enh-stat"><span>👥 الطلاب</span><b id="reportStudents">0</b></div>
+            <div class="enh-stat"><span>✅ نسبة الحضور</span><b id="reportAttendanceRate">0%</b></div>
+            <div class="enh-stat"><span>📝 إنجاز الواجبات</span><b id="reportHomeworkRate">0%</b></div>
+            <div class="enh-stat"><span>🗒️ الملاحظات</span><b id="reportNotes">0</b></div>
+          </div>
+          <div class="table-wrap teacher-table-wrap"><table class="table teacher-table"><thead><tr><th>الطالب</th><th>حاضر</th><th>غائب/اعتذر</th><th>واجبات</th><th>تم التسليم</th><th>ملاحظات</th></tr></thead><tbody id="teacherReportRows"><tr><td colspan="6">لا توجد بيانات.</td></tr></tbody></table></div>
+        </section>
+      </section>
+
+      <section class="teacher-panel" data-panel="notifications">
+        <section class="card">
+          <div class="teacher-section-head"><div><h3>🔔 تنبيهات المعلم</h3><p>الإشعارات الموجهة إلى حسابك.</p></div><button id="markAllTeacherNotifications" class="btn">✓ تحديد الكل كمقروء</button></div>
+          <div id="teacherNotificationsList" class="teacher-notifications-list"><div class="teacher-empty">لا توجد تنبيهات.</div></div>
+        </section>
+      </section>
+
+      <section class="teacher-panel" data-panel="profile">
+        <section class="card">
+          <div class="teacher-section-head"><div><h3>⚙️ ملف المعلم</h3><p>حدّث بياناتك المهنية ومعلومات التواصل.</p></div></div>
+          <form id="teacherProfileForm" class="teacher-form profile-grid">
+            <label>الاسم<input id="profileName" class="teacher-input" required></label>
+            <label>رقم الهاتف<input id="profilePhone" class="teacher-input"></label>
+            <label>واتساب<input id="profileWhatsapp" class="teacher-input"></label>
+            <label>المادة الأساسية<input id="profileSubject" class="teacher-input"></label>
+            <label>البلد<input id="profileCountry" class="teacher-input"></label>
+            <label>المدينة<input id="profileCity" class="teacher-input"></label>
+            <label class="full">نبذة عنك<textarea id="profileBio" class="teacher-input" rows="4" placeholder="نبذة مختصرة عن خبرتك وطريقة التدريس..."></textarea></label>
+            <label class="full">الصفوف التي تدرسها<input id="profileGrades" class="teacher-input" placeholder="مثال: أولى ثانوي، ثانية ثانوي"></label>
+            <label class="full">الأيام المتاحة<input id="profileDays" class="teacher-input" placeholder="مثال: السبت، الاثنين، الأربعاء"></label>
+            <label>الفترات المتاحة<input id="profilePeriods" class="teacher-input" placeholder="مساءً، بعد الظهر"></label>
+            <label>طريقة التدريس<input id="profileModes" class="teacher-input" placeholder="أونلاين، حضوري"></label>
+            <div class="full teacher-form-actions"><button class="btn gold" type="submit">حفظ بياناتي</button><span id="profileFormStatus" class="teacher-form-status"></span></div>
+          </form>
+        </section>
+      </section>
+
+      <section class="teacher-panel" data-panel="contact">
+        <section class="card">
+          <div class="teacher-section-head"><div><h3>💬 التواصل السريع</h3><p>تواصل مع الإدارة أو أحد طلابك بسرعة.</p></div></div>
+          <div class="teacher-contact-admin">
+            <div><strong>إدارة زاد المعرفة</strong><span>للدعم والاستفسارات</span></div>
+            <a class="btn gold" target="_blank" rel="noopener" href="https://wa.me/201515474939">واتساب الإدارة</a>
+          </div>
+          <div id="teacherContactStudents" class="teacher-contact-grid"><div class="teacher-empty">لا يوجد طلاب مرتبطون بك.</div></div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal" id="studentDetailsModal" aria-hidden="true">
+    <div class="modal-box teacher-student-modal">
+      <div class="modal-header"><h3 id="studentDetailsTitle">ملف الطالب</h3><button class="modal-close" id="closeStudentDetails" type="button">×</button></div>
+      <div id="studentDetailsBody"></div>
+    </div>
+  </div>
+
+  <script type="module" src="teacher-enhancements.js"></script>
+</body>
+</html>

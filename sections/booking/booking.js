@@ -81,7 +81,7 @@ form.addEventListener("submit", async event => {
       targetRole: "admin",
       type: "booking",
       title: "📅 طلب حجز حصة جديد",
-      message: `الطالب ${data.fullName || "غير معروف"} أرسل طلب حجز في قسم ${data.section || "غير محدد"} لمجال ${data.subject || "غير محدد"}.`,
+      message: `الطالب ${data.fullName || "غير معروف"} أرسل طلب حجز في قسم ${data.section || "غير محدد"} لمادة ${data.subject || "غير محدد"}.`,
       bookingId: bookingRef.id,
       studentUid: currentUser?.uid || null,
       createdBy: currentUser?.uid || null,

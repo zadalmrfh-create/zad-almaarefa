@@ -63,7 +63,8 @@ service cloud.firestore {
           && request.resource.data.email == resource.data.email
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
             'name', 'fullName', 'phone', 'country', 'city', 'grade', 'studyGrade', 'className',
-            'subject', 'photoURL', 'displayName', 'lastLoginAt', 'updatedAt', 'profileCompletedAt'
+            'subject', 'photoURL', 'displayName', 'lastLoginAt', 'updatedAt', 'profileCompletedAt',
+            'bio', 'whatsapp', 'teachingGrades', 'availableDays', 'availablePeriods', 'lessonModes'
           ])
         );
 
@@ -227,11 +228,41 @@ service cloud.firestore {
     }
 
     match /lessonAttendance/{attendanceId} {
-      allow create: if signedIn()
-        && request.resource.data.studentUid == request.auth.uid;
-      allow read: if signedIn()
-        && resource.data.studentUid == request.auth.uid;
-      allow read, update, delete: if isAdmin();
+      allow create: if (signedIn() && request.resource.data.studentUid == request.auth.uid)
+        || isAdmin()
+        || (isTeacher()
+          && request.resource.data.teacherUid == request.auth.uid
+          && request.resource.data.studentUid is string);
+
+      allow read: if isAdmin()
+        || (signedIn() && resource.data.studentUid == request.auth.uid)
+        || (isTeacher() && resource.data.teacherUid == request.auth.uid);
+
+      allow update, delete: if isAdmin()
+        || (isTeacher() && resource.data.teacherUid == request.auth.uid);
+    }
+
+    // واجبات المعلم للطلاب المرتبطين به.
+    match /teacherHomeworks/{homeworkId} {
+      allow create: if isTeacher()
+        && request.resource.data.teacherUid == request.auth.uid
+        && request.resource.data.studentUid is string;
+
+      allow read: if isAdmin()
+        || (isTeacher() && resource.data.teacherUid == request.auth.uid)
+        || (signedIn() && resource.data.studentUid == request.auth.uid);
+
+      allow update, delete: if isAdmin()
+        || (isTeacher() && resource.data.teacherUid == request.auth.uid);
+    }
+
+    // ملاحظات المعلم خاصة بالمعلم والإدارة ولا تظهر للطالب.
+    match /teacherStudentNotes/{noteId} {
+      allow create: if isTeacher()
+        && request.resource.data.teacherUid == request.auth.uid
+        && request.resource.data.studentUid is string;
+      allow read, update, delete: if isAdmin()
+        || (isTeacher() && resource.data.teacherUid == request.auth.uid);
     }
 
     match /libraryProgress/{progressId} {

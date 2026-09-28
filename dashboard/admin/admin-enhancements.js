@@ -23,23 +23,24 @@ function renderStats(){
   stat('enhNewToday', users.filter(x=>{const d=dateValue(x.createdAt);return d && d>=today;}).length);
 }
 
-function applyFilters(){
+function filteredUserList(){
   const q=($('enhUserSearch')?.value||'').trim().toLowerCase();
   const role=$('enhRoleFilter')?.value||'all';
   const status=$('enhStatusFilter')?.value||'all';
   const country=($('enhCountryFilter')?.value||'all');
-  const rows=users.filter(u=>{
-    const hay=[u.fullName,u.name,u.displayName,u.email,u.phone,u.country,u.city,u.grade,u.subject].join(' ').toLowerCase();
-    return (!q||hay.includes(q)) && (role==='all'||u.role===role) && (status==='all'||u.status===status) && (country==='all'||(u.country||'')===country);
+  return users.filter(u=>{
+    const hay=[u.fullName,u.name,u.displayName,u.email,u.phone,u.country,u.city,u.grade,u.studyGrade,u.subject].join(' ').toLowerCase();
+    return (!q||hay.includes(q)) && (role==='all'||u.role===role) && (status==='all'||(u.status||'active')===status) && (country==='all'||(u.country||'')===country);
   }).sort((a,b)=>(dateValue(b.createdAt)?.getTime()||0)-(dateValue(a.createdAt)?.getTime()||0));
-  const tbody=$('enhUsersRows');
-  if(!tbody) return;
-  tbody.innerHTML=rows.length?rows.map(u=>`<tr><td>${esc(u.fullName||u.name||'-')}</td><td>${esc(u.email||'-')}</td><td>${esc(u.country||'-')}</td><td>${esc(u.city||'-')}</td><td>${u.role==='teacher'?'معلم':'طالب'}</td><td>${esc(u.status||'active')}</td><td>${dateText(u.createdAt)}</td></tr>`).join(''):'<tr><td colspan="7">لا توجد نتائج.</td></tr>';
+}
+
+function applyFilters(){
+  window.applyAdminUserFilters?.();
 }
 
 function exportCSV(){
   const header=['الاسم','البريد','الهاتف','البلد','المدينة','النوع','الحالة','الصف/المادة','تاريخ التسجيل'];
-  const lines=[header,...users.map(u=>[u.fullName||u.name||'',u.email||'',u.phone||'',u.country||'',u.city||'',u.role==='teacher'?'معلم':'طالب',u.status||'',u.role==='teacher'?(u.subject||u.grade||''):(u.grade||u.studyGrade||''),dateText(u.createdAt)])];
+  const lines=[header,...filteredUserList().map(u=>[u.fullName||u.name||'',u.email||'',u.phone||'',u.country||'',u.city||'',u.role==='teacher'?'معلم':'طالب',u.status||'active',u.role==='teacher'?(u.subject||u.grade||''):(u.grade||u.studyGrade||''),dateText(u.createdAt)])];
   const csv='\ufeff'+lines.map(row=>row.map(v=>'"'+String(v).replaceAll('"','""')+'"').join(',')).join('\n');
   const blob=new Blob([csv],{type:'text/csv;charset=utf-8'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`zad-users-${new Date().toISOString().slice(0,10)}.csv`; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1000);
 }
@@ -63,5 +64,13 @@ $('enhUserSearch')?.addEventListener('input',applyFilters);
 $('enhRoleFilter')?.addEventListener('change',applyFilters);
 $('enhStatusFilter')?.addEventListener('change',applyFilters);
 $('enhCountryFilter')?.addEventListener('change',applyFilters);
+$('enhResetUserFilters')?.addEventListener('click',()=>{
+  if($('enhUserSearch')) $('enhUserSearch').value='';
+  if($('enhRoleFilter')) $('enhRoleFilter').value='all';
+  if($('enhStatusFilter')) $('enhStatusFilter').value='all';
+  if($('enhCountryFilter')) $('enhCountryFilter').value='all';
+  applyFilters();
+});
 $('enhExportUsers')?.addEventListener('click',exportCSV);
 $('enhRefreshData')?.addEventListener('click',load);
+$('refresh')?.addEventListener('click',()=>setTimeout(load,200));

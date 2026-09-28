@@ -1139,7 +1139,7 @@ document.addEventListener("DOMContentLoaded", function () {
 import {db} from './firebase-config.js';
 import {collection,getDocs,query,orderBy,limit} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-async function loadHomeExtras(){let st={};try{const q=await getDocs(query(collection(db,'publicStats'),limit(20)));q.forEach(d=>{const x=d.data()||{};st[d.id]=Number(x.total||x.count||0)})}catch(e){};const cards=[['students','👨‍🎓','الطلاب'],['books','📚','كتب المكتبة'],['categories','🧭','الأقسام'],['tests','📝','الاختبارات']];const sg=document.getElementById('homeStatsGrid');if(sg)sg.innerHTML=cards.map(x=>`<div class="card text-center p-6"><div class="text-3xl">${x[1]}</div><div class="text-3xl font-black mt-2">${Number(st[x[0]]||0).toLocaleString('ar-EG')}</div><div>${x[2]}</div></div>`).join('');}
+async function loadHomeExtras(){let st={};try{const q=await getDocs(query(collection(db,'publicStats'),limit(20)));q.forEach(d=>{const x=d.data()||{};st[d.id]=Number(x.total||x.count||0)})}catch(e){};const cards=[['students','👨‍🎓','الطلاب'],['books','📚','كتب المكتبة'],['categories','👨‍🏫','المعلمون'],['tests','📝','الاختبارات']];const sg=document.getElementById('homeStatsGrid');if(sg)sg.innerHTML=cards.map(x=>`<div class="card text-center p-6"><div class="text-3xl">${x[1]}</div><div class="text-3xl font-black mt-2">${Number(st[x[0]]||0).toLocaleString('ar-EG')}</div><div>${x[2]}</div></div>`).join('');}
 document.addEventListener('DOMContentLoaded',loadHomeExtras);
 </script>
 </body>
