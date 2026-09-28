@@ -200,6 +200,26 @@ const SUBJECTS = {
   sec1: {
     library: [
 {
+  name: "المرشد تفسير الصف الأول الثانوي",
+  level: "1ث",
+  link: "https://mega.nz/file/rzwmnbTK#WR9CtqCSCibctDOA02eKI-sCW3MrwlOMCAk7dZIxC_c",
+},
+{
+  name: "المرشد توحيد الصف الأول الثانوي",
+  level: "1ث",
+  link: "https://mega.nz/file/f35yEa4B#FUDYLKUD6n88miqZSPDjoF8XREWWDRtgLKxkVHAVZ1U",
+},
+{
+  name: "المرشد حديث الصف الأول الثانوي",
+  level: "1ث",
+  link: "https://mega.nz/file/2nRQEZDC#xf7BAdsXi9Xzmz5mbi6N0RvZU_0ZSqgDhDskiShDSOg",
+},
+{
+  name: "المرشد نحو الصف الأول الثانوي",
+  level: "1ث",
+  link: "https://mega.nz/file/f35yEa4B#FUDYLKUD6n88miqZSPDjoF8XREWWDRtgLKxkVHAVZ1U",
+},
+{
   name: "الأضواء عربي الصف الأول الثانوي الترم الأول 2027",
   level: "1ث",
   link: "https://drive.google.com/file/d/1qhnfoVw74K7FDGgRscfQXy759NnVcLtY/view?usp=drive_link",
@@ -225,11 +245,6 @@ const SUBJECTS = {
   link: "https://drive.google.com/file/d/1H-2ICFsvfkTKesoMxOanAl3Rx3DhCstu/view?usp=drive_link",
 },
 {
-  name: "المعاصر إنجليزي الصف الأول الثانوي الترم الأول 2027",
-  level: "1ث",
-  link: "https://drive.google.com/file/d/1GvTFPpqa-dgQhoAENLmrJ806w1g03JXz/view?usp=drive_link",
-},
-{
   name: "كتاب عربي الصف الأول الثانوي الترم الأول 2027",
   level: "1ث",
   link: "https://drive.google.com/file/d/13DW55NjOF5I8dNBd35M46UUXp0yKR9Cx/view?usp=drive_link",
@@ -245,7 +260,7 @@ const SUBJECTS = {
   link: "https://drive.google.com/file/d/1PsgEAkU7C9Uwwbi7XegOdqE2UgeYt_cH/view?usp=drive_link",
 },
 {
-  name: "المعاصر إنجليزي الصف الأول الثانوي الترم الأول 2027",
+  name: "العمالقة إنجليزي الصف الأول الثانوي الترم الأول 2027",
   level: "1ث",
   link: "https://drive.google.com/file/d/1aiq0yHIilTl4EY-F-FqGjhTL08Cxhqtl/view?usp=drive_link",
 },
@@ -384,11 +399,6 @@ const SUBJECTS = {
   name: "امتحان كيمياء 2 ث 2026",
   level: "ثانوي",
   link: "https://drive.google.com/file/d/1DzrHo5F8d5dLlk9PTa0q5_6OkdTz3e_x/view?usp=drive_link",
-},
-{
-  name: "المرشد فقه حنفي ج2 - 2025 - المرشد للعلوم الشرعية",
-  level: "ثانوي",
-  link: "https://drive.google.com/file/d/1F45dkDC2Y8vM3yrORf0GER0KGGomz3NG/view?usp=drive_link",
 },
 {
   name: "الامتحان فيزياء 2 ثانوي ترم 1 - بنك إلكتروني",
