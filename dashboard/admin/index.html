@@ -31,7 +31,6 @@
 <link rel="stylesheet" href="../../assets/translation.css">
 <script src="../../assets/translation.js"></script>
 <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
-<script src="../../content-protection.js" defer></script>
 </head>
 
 
@@ -274,15 +273,67 @@
       <div class="actions" style="justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
         <div>
           <h2 style="margin-bottom:6px">📥 تنزيلات المكتبة</h2>
-          <p style="margin:0;color:var(--muted)">متابعة من نزّل كل كتاب من المكتبة العامة ومكتبة التعليم الأزهري.</p>
+          <p style="margin:0;color:var(--muted)">متابعة من نزّل كل كتاب من المكتبة العامة ومكتبة التعليم الأزهري، مع تقارير تفصيلية ومجمعة.</p>
         </div>
-        <button id="refreshLibraryDownloads" class="btn gold" type="button">🔄 تحديث السجل</button>
+        <div class="actions">
+          <button id="libraryReportExport" class="btn" type="button">📥 تصدير CSV</button>
+          <button id="libraryReportPrint" class="btn" type="button">🖨️ طباعة التقرير</button>
+          <button id="refreshLibraryDownloads" class="btn gold" type="button">🔄 تحديث السجل</button>
+        </div>
       </div>
 
       <div class="grid" style="margin-top:16px">
         <div class="card"><h4>👥 أشخاص نزّلوا كتبًا</h4><b id="downloadUsersCount" style="font-size:30px">0</b></div>
         <div class="card"><h4>📚 كتب تم تنزيلها</h4><b id="downloadBooksCount" style="font-size:30px">0</b></div>
         <div class="card"><h4>⬇️ إجمالي مرات التنزيل</h4><b id="downloadClicksCount" style="font-size:30px">0</b></div>
+      </div>
+
+      <div class="report-block" id="libraryReportsPanel">
+        <div class="report-head">
+          <div>
+            <h3>📊 التقرير التحليلي للتنزيلات</h3>
+            <p>استخدم الفلاتر لتحديث الإحصائيات والرسوم والجداول فورًا.</p>
+          </div>
+          <button id="resetLibraryReportFilters" class="btn" type="button">مسح الفلاتر</button>
+        </div>
+
+        <div class="report-filters">
+          <label>بحث
+            <input id="libraryReportSearch" type="search" placeholder="اسم العضو، البريد أو الكتاب">
+          </label>
+          <label>المكتبة
+            <select id="libraryReportSource">
+              <option value="all">كل المكتبات</option>
+              <option value="general">المكتبة العامة</option>
+              <option value="azhar">مكتبة التعليم الأزهري</option>
+            </select>
+          </label>
+          <label>من تاريخ<input id="libraryReportFrom" type="date"></label>
+          <label>إلى تاريخ<input id="libraryReportTo" type="date"></label>
+        </div>
+
+        <div class="report-stats">
+          <div class="report-stat"><span>تنزيلات اليوم</span><b id="libraryTodayCount">0</b></div>
+          <div class="report-stat"><span>آخر 7 أيام</span><b id="libraryWeekCount">0</b></div>
+          <div class="report-stat"><span>هذا الشهر</span><b id="libraryMonthCount">0</b></div>
+          <div class="report-stat"><span>الأشخاص في التقرير</span><b id="libraryFilteredUsers">0</b></div>
+          <div class="report-stat"><span>الكتب في التقرير</span><b id="libraryFilteredBooks">0</b></div>
+          <div class="report-stat"><span>إجمالي التقرير</span><b id="libraryFilteredTotal">0</b></div>
+        </div>
+
+        <div class="report-charts two-cols">
+          <div class="report-chart-card"><h4>📈 التنزيلات خلال آخر 7 أيام</h4><div id="libraryDailyChart" class="report-bars"></div></div>
+          <div class="report-chart-card"><h4>🏆 أكثر الكتب تنزيلًا</h4><div id="libraryTopBooksChart" class="report-bars"></div></div>
+          <div class="report-chart-card"><h4>🏛️ مقارنة المكتبات</h4><div id="librarySourceChart" class="report-bars"></div></div>
+        </div>
+
+        <h3 style="margin-top:22px">👤 أكثر الأعضاء نشاطًا</h3>
+        <div class="table-wrap" style="margin-top:10px">
+          <table class="table report-table-compact">
+            <thead><tr><th>العضو</th><th>الإيميل</th><th>كتب مختلفة</th><th>مرات التنزيل</th><th>آخر تنزيل</th><th>تقرير</th></tr></thead>
+            <tbody id="libraryUserStatsRows"><tr><td colspan="6">جارٍ تحميل التقرير…</td></tr></tbody>
+          </table>
+        </div>
       </div>
 
       <h3 style="margin-top:22px">عدد الأشخاص لكل كتاب</h3>
@@ -643,70 +694,104 @@
     <!-- =====================================================
          BOOKINGS
     ====================================================== -->
-
-    <section
-      class="card"
-      id="bookingsManagement"
-    >
-
-      <h2>
-        طلبات حجز الحصص
-      </h2>
-
-
-      <p>
-        طلبات الطلاب المرسلة من نموذج التعليم الأزهري.
-      </p>
-
-
-      <div class="table-wrap">
-
-        <table class="table">
-
-          <thead>
-
-            <tr>
-
-              <th>الطالب</th>
-
-              <th>التواصل</th>
-
-              <th>المرحلة/الصف</th>
-
-              <th>المادة</th>
-
-              <th>اليومان</th>
-
-              <th>المعلم</th>
-
-              <th>الحالة</th>
-
-              <th>إجراء</th>
-
-            </tr>
-
-          </thead>
-
-
-          <tbody id="bookingRows">
-
-            <tr>
-
-              <td colspan="9">
-                جارٍ التحميل...
-              </td>
-
-            </tr>
-
-          </tbody>
-
-        </table>
-
+    <section class="card" id="bookingsManagement">
+      <div class="actions" style="justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
+        <div>
+          <h2 style="margin-bottom:6px">📅 طلبات حجز الحصص</h2>
+          <p style="margin:0;color:var(--muted)">طلبات الطلاب المرسلة من نموذج الحجز، مع تقرير منفصل لكل حجز ولكل طالب وتقرير مجمّع.</p>
+        </div>
+        <div class="actions">
+          <button id="bookingReportExport" class="btn" type="button">📥 تصدير CSV</button>
+          <button id="bookingReportPrint" class="btn" type="button">🖨️ طباعة التقرير</button>
+          <button id="bookingReportRefresh" class="btn gold" type="button">🔄 تحديث التقارير</button>
+        </div>
       </div>
 
+      <div class="report-block" id="bookingReportsPanel">
+        <div class="report-head">
+          <div>
+            <h3>📊 التقرير المجمّع للحجوزات</h3>
+            <p id="bookingReportResultCount">جارٍ تحميل البيانات…</p>
+          </div>
+          <button id="resetBookingReportFilters" class="btn" type="button">مسح الفلاتر</button>
+        </div>
+
+        <div class="report-filters booking-report-filters">
+          <label>بحث
+            <input id="bookingReportSearch" type="search" placeholder="الطالب، الهاتف، البريد أو المادة">
+          </label>
+          <label>الحالة
+            <select id="bookingReportStatus">
+              <option value="all">كل الحالات</option>
+              <option>جديد</option><option>قيد المراجعة</option><option>تم التواصل</option><option>تم الحجز</option><option>مكتمل</option><option>ملغي</option>
+            </select>
+          </label>
+          <label>القسم
+            <select id="bookingReportSection"><option value="all">كل الأقسام</option></select>
+          </label>
+          <label>المادة
+            <select id="bookingReportSubject"><option value="all">كل المواد</option></select>
+          </label>
+          <label>المعلم
+            <select id="bookingReportTeacher"><option value="all">كل المعلمين</option></select>
+          </label>
+          <label>طريقة الحصة
+            <select id="bookingReportMode"><option value="all">الكل</option><option>أونلاين</option><option>حضوري</option></select>
+          </label>
+          <label>من تاريخ<input id="bookingReportFrom" type="date"></label>
+          <label>إلى تاريخ<input id="bookingReportTo" type="date"></label>
+        </div>
+
+        <div class="report-stats booking-report-stats">
+          <div class="report-stat"><span>إجمالي الحجوزات</span><b id="bookReportTotal">0</b></div>
+          <div class="report-stat"><span>طلاب مختلفون</span><b id="bookReportStudents">0</b></div>
+          <div class="report-stat"><span>جديد</span><b id="bookReportNew">0</b></div>
+          <div class="report-stat"><span>قيد المراجعة</span><b id="bookReportReview">0</b></div>
+          <div class="report-stat"><span>تم التواصل</span><b id="bookReportContacted">0</b></div>
+          <div class="report-stat"><span>تم الحجز</span><b id="bookReportBooked">0</b></div>
+          <div class="report-stat"><span>مكتمل</span><b id="bookReportCompleted">0</b></div>
+          <div class="report-stat"><span>ملغي</span><b id="bookReportCancelled">0</b></div>
+          <div class="report-stat accent"><span>نسبة التحويل</span><b id="bookReportConversion">0%</b></div>
+        </div>
+
+        <div class="report-charts two-cols">
+          <div class="report-chart-card"><h4>حالات الحجوزات</h4><div id="bookingStatusChart" class="report-bars"></div></div>
+          <div class="report-chart-card"><h4>أكثر المواد طلبًا</h4><div id="bookingSubjectChart" class="report-bars"></div></div>
+          <div class="report-chart-card"><h4>أكثر الأقسام طلبًا</h4><div id="bookingSectionChart" class="report-bars"></div></div>
+          <div class="report-chart-card"><h4>أكثر المعلمين طلبًا</h4><div id="bookingTeacherChart" class="report-bars"></div></div>
+          <div class="report-chart-card"><h4>الفترات الأكثر طلبًا</h4><div id="bookingPeriodChart" class="report-bars"></div></div>
+          <div class="report-chart-card"><h4>الأيام الأكثر طلبًا</h4><div id="bookingDayChart" class="report-bars"></div></div>
+          <div class="report-chart-card"><h4>الحجوزات خلال آخر 7 أيام</h4><div id="bookingDailyChart" class="report-bars"></div></div>
+        </div>
+
+        <h3 style="margin-top:22px">👨‍🏫 تقرير المعلمين</h3>
+        <div class="table-wrap" style="margin-top:10px">
+          <table class="table report-table-compact">
+            <thead><tr><th>المعلم</th><th>إجمالي الطلبات</th><th>تم الحجز</th><th>مكتمل</th><th>ملغي</th></tr></thead>
+            <tbody id="bookingTeacherStatsRows"><tr><td colspan="5">جارٍ تحميل التقرير…</td></tr></tbody>
+          </table>
+        </div>
+
+        <h3 style="margin-top:22px">📋 تفاصيل التقرير المجمّع</h3>
+        <div class="table-wrap" style="margin-top:10px">
+          <table class="table report-table-compact">
+            <thead><tr><th>الطالب</th><th>المادة</th><th>المعلم</th><th>الطريقة</th><th>الحالة</th><th>تاريخ الطلب</th><th>تقرير</th></tr></thead>
+            <tbody id="bookingAggregateRows"><tr><td colspan="7">جارٍ تحميل التقرير…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="table-wrap" style="margin-top:20px">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>الطالب</th><th>التواصل</th><th>المرحلة/الصف</th><th>المادة</th><th>اليومان</th><th>المعلم</th><th>الحالة</th><th>إجراء</th>
+            </tr>
+          </thead>
+          <tbody id="bookingRows"><tr><td colspan="8">جارٍ التحميل...</td></tr></tbody>
+        </table>
+      </div>
     </section>
-
-
 
     <!-- =====================================================
          NOTIFICATIONS
@@ -966,6 +1051,55 @@
 </style>
 
 
+
+<style>
+/* =====================================================
+   REPORTING SYSTEM
+===================================================== */
+.report-block{margin-top:22px;padding:18px;border:1px solid #34445c;border-radius:16px;background:rgba(8,15,27,.28)}
+.report-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.report-head h3{margin:0 0 5px;color:var(--gold2)}
+.report-head p{margin:0;color:var(--muted);font-size:13px}
+.report-filters{display:grid;grid-template-columns:repeat(4,minmax(150px,1fr));gap:10px;margin:14px 0 16px}
+.report-filters label{display:flex;flex-direction:column;gap:6px;color:#dbe4ef;font-size:13px;font-weight:700}
+.report-filters input,.report-filters select,.report-note-area textarea{width:100%;background:#101a2a;color:#fff;border:1px solid #34445c;border-radius:10px;padding:10px 11px;font-family:inherit;outline:none}
+.report-filters input:focus,.report-filters select:focus,.report-note-area textarea:focus{border-color:var(--gold)}
+.report-stats{display:grid;grid-template-columns:repeat(6,minmax(120px,1fr));gap:10px}
+.booking-report-stats{grid-template-columns:repeat(5,minmax(120px,1fr))}
+.report-stat{padding:14px;border:1px solid #314056;border-radius:14px;background:#111c2d;min-height:88px;display:flex;flex-direction:column;gap:7px}
+.report-stat span{color:var(--muted);font-size:12px}.report-stat b{font-size:25px;color:#fff}.report-stat.accent b{color:var(--gold2)}
+.report-charts{display:grid;gap:12px;margin-top:16px}.report-charts.two-cols{grid-template-columns:repeat(2,minmax(0,1fr))}
+.report-chart-card{padding:16px;border:1px solid #314056;border-radius:14px;background:#111c2d}.report-chart-card h4{margin:0 0 14px;color:#eaf0f8}
+.report-bars{display:flex;flex-direction:column;gap:9px}.report-bar-row{display:grid;grid-template-columns:minmax(90px,145px) 1fr auto;gap:8px;align-items:center;font-size:12px}
+.report-bar-label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#dce6f2}.report-bar-track{height:10px;border-radius:999px;background:#223049;overflow:hidden}.report-bar-fill{height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--gold),var(--gold2));min-width:2px}.report-bar-value{font-weight:800;color:#fff;min-width:28px;text-align:left}
+.report-empty{color:var(--muted);padding:12px 0;text-align:center}.report-table-compact{min-width:760px}
+.report-modal-box{width:min(1000px,96vw);max-height:90vh;overflow:auto}.report-modal-content{line-height:1.8}.report-modal-actions{justify-content:flex-start;margin-top:18px;position:sticky;bottom:0;padding-top:12px;background:#162033}
+.report-title{color:var(--gold2);margin:0 0 12px}.report-info-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:12px 0}.report-info-item{padding:12px;border:1px solid #314056;border-radius:12px;background:#111c2d}.report-info-item small{display:block;color:var(--muted);margin-bottom:4px}.report-info-item b{word-break:break-word}
+.report-section-title{margin:22px 0 10px;color:var(--gold2)}.report-history{display:flex;flex-direction:column;gap:9px}.report-history-item{border-right:3px solid var(--gold);padding:8px 12px;background:#111c2d;border-radius:8px}.report-history-item small{display:block;color:var(--muted)}
+.report-note-area{margin-top:16px;padding:14px;border:1px solid #314056;border-radius:12px;background:#111c2d}.report-note-area label{display:block;font-weight:800;margin-bottom:8px}.report-note-area .actions{margin-top:9px}
+.status-pill{display:inline-block;padding:4px 9px;border-radius:999px;background:#26364f;font-size:12px;font-weight:800}.status-pill[data-status="مكتمل"],.status-pill[data-status="تم الحجز"]{background:#12351f;color:#9cf5ba}.status-pill[data-status="ملغي"]{background:#4a2025;color:#fecaca}.status-pill[data-status="جديد"]{background:#24334c;color:#bfdbfe}
+.booking-row-actions{display:flex;gap:6px;flex-wrap:wrap}.booking-row-actions .btn{padding:7px 9px;font-size:12px;white-space:nowrap}
+@media(max-width:900px){.report-filters{grid-template-columns:repeat(2,minmax(0,1fr))}.report-stats,.booking-report-stats{grid-template-columns:repeat(3,minmax(0,1fr))}.report-charts.two-cols{grid-template-columns:1fr}.report-info-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.report-filters{grid-template-columns:1fr}.report-stats,.booking-report-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.report-info-grid{grid-template-columns:1fr}.report-bar-row{grid-template-columns:90px 1fr auto}}
+@media print{body{background:#fff;color:#111}.top,.hero,.btn,.report-filters,.report-modal-actions{display:none!important}.card,.report-block,.report-chart-card,.report-stat,.report-info-item,.report-history-item{background:#fff!important;color:#111!important;border-color:#bbb!important}.table td,.table th{color:#111!important}}
+</style>
+
+<!-- =====================================================
+     REPORT MODAL
+====================================================== -->
+<div id="reportModal" class="modal report-modal" aria-hidden="true">
+  <div class="modal-box report-modal-box">
+    <div class="modal-header">
+      <h3 id="reportModalTitle">التقرير</h3>
+      <button id="reportModalClose" class="modal-close" type="button">×</button>
+    </div>
+    <div id="reportModalContent" class="report-modal-content"></div>
+    <div class="actions report-modal-actions">
+      <button id="reportModalDownload" class="btn" type="button">📥 تنزيل CSV</button>
+      <button id="reportModalPrint" class="btn gold" type="button">🖨️ طباعة التقرير</button>
+    </div>
+  </div>
+</div>
 
 <!-- =====================================================
      SINGLE MODULE SCRIPT
@@ -4426,21 +4560,12 @@ async function loadBookings() {
 
 
           <td>
-
-            <button
-              class="btn booking-save-btn"
-              data-booking-id="${escapeHtml(
-                bookingDoc.id
-              )}"
-              type="button"
-            >
-              حفظ الحالة
-            </button>
-
-          </td>
-
-          <td>
-            <button class="btn danger booking-delete-btn" data-booking-delete-id="${escapeHtml(bookingDoc.id)}" type="button">🗑️ حذف</button>
+            <div class="booking-row-actions">
+              <button class="btn booking-save-btn" data-booking-id="${escapeHtml(bookingDoc.id)}" type="button">💾 حفظ</button>
+              <button class="btn booking-report-btn" data-booking-report-id="${escapeHtml(bookingDoc.id)}" type="button">📄 تقرير الحجز</button>
+              <button class="btn booking-student-report-btn" data-booking-student-id="${escapeHtml(bookingDoc.id)}" type="button">👤 تقرير الطالب</button>
+              <button class="btn danger booking-delete-btn" data-booking-delete-id="${escapeHtml(bookingDoc.id)}" type="button">🗑️ حذف</button>
+            </div>
           </td>
 
         `;
@@ -4516,6 +4641,25 @@ async function loadBookings() {
                 }
 
               );
+
+              if (newStatus !== oldStatus) {
+                try {
+                  await addDoc(collection(db, 'bookingStatusHistory'), {
+                    bookingId,
+                    studentUid: booking.studentUid || null,
+                    studentName: booking.fullName || null,
+                    previousStatus: oldStatus,
+                    status: newStatus,
+                    changedByUid: auth.currentUser?.uid || null,
+                    changedByEmail: auth.currentUser?.email || null,
+                    changedByName: auth.currentUser?.displayName || null,
+                    changedAt: serverTimestamp(),
+                    clientChangedAt: new Date().toISOString()
+                  });
+                } catch (historyError) {
+                  console.warn('تعذر حفظ سجل تغيير حالة الحجز:', historyError);
+                }
+              }
 
 
               /*
@@ -4858,6 +5002,7 @@ onAuthStateChanged(
 
 </script>
 
+<script type="module" src="reports-admin.js"></script>
 <script type="module" src="admin-enhancements.js"></script>
 <script type="module" src="quiz-center-admin.js"></script>
 <script type="module" src="attendance-admin.js"></script>

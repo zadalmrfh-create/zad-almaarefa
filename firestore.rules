@@ -184,6 +184,19 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    // سجل تغييرات حالات الحجوزات للتقارير. الأدمن يملك الإدارة الكاملة،
+    // والمعلم المعتمد يستطيع فقط تسجيل تغيير حالة حجز مُعيّن له.
+    match /bookingStatusHistory/{historyId} {
+      allow read, update, delete: if isAdmin();
+      allow create: if isAdmin()
+        || (
+          isTeacher()
+          && request.resource.data.changedByUid == request.auth.uid
+          && request.resource.data.bookingId is string
+          && get(/databases/$(database)/documents/bookings/$(request.resource.data.bookingId)).data.teacherUid == request.auth.uid
+        );
+    }
+
     match /lessons/{lessonId} {
       allow read: if signedIn();
       allow create, update, delete: if isAdmin();
