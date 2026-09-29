@@ -4112,3 +4112,150 @@ body.dark #about .dl-icon{background:rgba(255,255,255,.055) !important}
   #about .dash-grid{grid-template-columns:1fr !important}
   #about .section-sub{font-size:.92rem !important}
 }
+
+
+/* ===== Home upgrade merged ===== */
+
+.nav-more{position:relative}.nav-more-btn{background:none;border:0;font:inherit;cursor:pointer}.nav-more-menu{position:absolute;top:calc(100% + 12px);right:0;min-width:210px;background:var(--bg-primary,#fff);border:1px solid rgba(201,168,76,.25);border-radius:16px;padding:8px;box-shadow:0 18px 50px rgba(0,0,0,.16);opacity:0;visibility:hidden;transform:translateY(-8px);transition:.2s;z-index:100}.nav-more:hover .nav-more-menu,.nav-more:focus-within .nav-more-menu{opacity:1;visibility:visible;transform:none}.nav-more-menu a{display:block;padding:11px 13px;border-radius:10px;color:inherit;text-decoration:none}.nav-more-menu a:hover{background:rgba(201,168,76,.12)}
+.home-quick-links{max-width:1180px;margin:-35px auto 40px;position:relative;z-index:8;padding:0 18px;display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.quick-link-card{background:rgba(16,29,51,.96);border:1px solid rgba(201,168,76,.28);box-shadow:0 14px 35px rgba(0,0,0,.16);border-radius:20px;padding:20px;text-align:center;color:#fff;text-decoration:none;display:grid;gap:5px;transition:.2s}.quick-link-card:hover{transform:translateY(-4px);border-color:#c9a84c}.quick-link-card span{font-size:30px}.quick-link-card strong{font-size:17px}.quick-link-card small{opacity:.72}.personal-home{max-width:1180px;margin:24px auto 42px;padding:28px;border:1px solid rgba(201,168,76,.28);border-radius:24px;background:linear-gradient(135deg,rgba(201,168,76,.12),rgba(124,111,205,.08));display:flex;align-items:center;justify-content:space-between;gap:20px}.personal-kicker{color:#c9a84c;font-weight:800}.personal-home h2{font-size:28px;font-weight:900;margin:5px 0}.personal-home p{opacity:.75}.personal-actions{display:flex;flex-wrap:wrap;gap:8px}.personal-actions a{padding:11px 14px;border-radius:12px;background:rgba(201,168,76,.16);border:1px solid rgba(201,168,76,.25);color:inherit;text-decoration:none;font-weight:800}.global-search-btn{border:1px solid rgba(201,168,76,.35);background:transparent;border-radius:12px;width:42px;height:42px;cursor:pointer}.global-search-modal{position:fixed;inset:0;background:rgba(2,6,23,.76);z-index:9999;display:grid;place-items:start center;padding:12vh 16px}.global-search-panel{position:relative;width:min(720px,100%);background:#fff;color:#111827;border-radius:22px;padding:24px;box-shadow:0 25px 90px rgba(0,0,0,.38)}.search-close{position:absolute;left:18px;top:18px;border:0;background:#f3f4f6;border-radius:50%;width:36px;height:36px;cursor:pointer}.global-search-panel input{width:100%;margin-top:18px;padding:15px 16px;border:1px solid #d1d5db;border-radius:14px;font:inherit}.global-search-results{display:grid;gap:8px;margin-top:12px;max-height:50vh;overflow:auto}.global-search-results a{padding:12px;border-radius:12px;background:#f8fafc;color:#111827;text-decoration:none}.mobile-bottom-nav{display:none}.mob-section-title{padding:8px 14px;opacity:.55;font-size:12px;font-weight:800}.home-stat-skeleton{height:74px;border-radius:16px;background:linear-gradient(90deg,rgba(148,163,184,.12),rgba(148,163,184,.28),rgba(148,163,184,.12));background-size:200% 100%;animation:zadSkeleton 1.2s infinite}@keyframes zadSkeleton{to{background-position:-200% 0}}
+@media(max-width:900px){.home-quick-links{grid-template-columns:repeat(2,1fr);margin-top:-20px}.personal-home{margin-inline:14px;flex-direction:column;align-items:flex-start}.mobile-bottom-nav{display:grid;grid-template-columns:repeat(5,1fr);position:fixed;bottom:0;left:0;right:0;z-index:950;background:rgba(9,17,31,.97);border-top:1px solid rgba(201,168,76,.24);padding:7px 6px calc(7px + env(safe-area-inset-bottom));box-shadow:0 -8px 30px rgba(0,0,0,.22)}.mobile-bottom-nav a{display:grid;place-items:center;gap:1px;color:#fff;text-decoration:none;font-size:18px}.mobile-bottom-nav small{font-size:10px}.mobile-bottom-nav a:nth-child(3){color:#e8c96d}.mobile-bottom-nav+*{}body{padding-bottom:68px}}@media(max-width:520px){.home-quick-links{grid-template-columns:1fr 1fr;padding:0 10px;gap:9px}.quick-link-card{padding:15px 8px}.quick-link-card strong{font-size:14px}.personal-home h2{font-size:22px}}
+
+.smart-account-wrap{position:relative}.smart-account-trigger{display:flex;align-items:center;gap:8px;border:1px solid rgba(201,168,76,.35);background:transparent;color:inherit;padding:7px 10px;border-radius:14px;font:inherit;cursor:pointer}.account-avatar{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:#c9a84c;color:#08111f;font-weight:900}.smart-account-menu{position:absolute;left:0;top:calc(100% + 10px);min-width:210px;background:#fff;color:#111827;border:1px solid #e5e7eb;border-radius:16px;padding:7px;box-shadow:0 20px 50px rgba(0,0,0,.18);display:none;z-index:1000}.smart-account-wrap.open .smart-account-menu{display:block}.smart-account-menu a,.smart-account-menu button{display:block;width:100%;padding:10px 12px;border-radius:10px;border:0;background:transparent;color:inherit;text-decoration:none;text-align:right;font:inherit;cursor:pointer}.smart-account-menu a:hover,.smart-account-menu button:hover{background:#f3f4f6}
+
+.global-search-modal[hidden]{display:none !important;}
+
+
+/* ===== تحسين زر المزيد واسم الحساب ===== */
+#navbar .nav-more{position:relative;display:flex;align-items:center}
+#navbar .nav-more-btn{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:10px 8px !important;
+  border:0;
+  background:transparent;
+  color:#ffffff !important;
+  font-family:"Cairo",sans-serif;
+  font-size:clamp(.76rem,.86vw,.94rem) !important;
+  font-weight:700;
+  line-height:1.3;
+  border-radius:9px;
+  transition:color .25s ease, background .25s ease, transform .25s ease;
+}
+#navbar .nav-more-btn:hover,
+#navbar .nav-more:focus-within .nav-more-btn,
+#navbar .nav-more:hover .nav-more-btn{
+  color:#f1cf68 !important;
+  background:rgba(241,207,104,.08);
+  transform:translateY(-1px);
+}
+#navbar .nav-more-btn span{
+  display:inline-block;
+  font-size:.95em;
+  transition:transform .2s ease;
+}
+#navbar .nav-more:hover .nav-more-btn span,
+#navbar .nav-more:focus-within .nav-more-btn span{transform:rotate(180deg)}
+#navbar .nav-more-menu{
+  top:calc(100% + 8px);
+  right:0;
+  min-width:240px;
+  padding:10px;
+  background:linear-gradient(180deg,rgba(7,20,39,.98),rgba(10,28,52,.98));
+  color:#fff;
+  border:1px solid rgba(241,207,104,.28);
+  border-radius:18px;
+  box-shadow:0 20px 60px rgba(0,0,0,.35);
+  z-index:999;
+}
+#navbar .nav-more-menu a{
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  padding:12px 14px;
+  color:#f8fafc !important;
+  font-weight:700;
+  border-radius:12px;
+  transition:background .2s ease,color .2s ease,transform .2s ease;
+}
+#navbar .nav-more-menu a:hover{
+  background:rgba(241,207,104,.14) !important;
+  color:#f1cf68 !important;
+  transform:translateX(-2px);
+}
+
+.smart-account-wrap{
+  position:relative;
+  display:flex;
+  align-items:center;
+  flex:0 0 auto;
+}
+#navbar .smart-account-trigger{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  min-height:44px;
+  padding:7px 10px !important;
+  border-radius:14px;
+  border:1px solid rgba(241,207,104,.45) !important;
+  background:rgba(255,255,255,.07) !important;
+  color:#fff !important;
+  font-family:"Cairo",sans-serif;
+  font-size:.84rem !important;
+  font-weight:800;
+  white-space:nowrap;
+}
+#navbar .smart-account-trigger:hover,
+.smart-account-wrap.open #navbar .smart-account-trigger,
+.smart-account-wrap.open .smart-account-trigger{
+  color:#f1cf68 !important;
+  background:rgba(241,207,104,.12) !important;
+}
+.account-avatar{
+  width:30px;
+  height:30px;
+  flex:0 0 30px;
+  border-radius:50%;
+  display:grid;
+  place-items:center;
+  background:#c9a84c;
+  color:#08111f;
+  font-weight:900;
+}
+.account-name{
+  max-width:112px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  color:inherit;
+}
+.account-caret{font-size:.9em;opacity:.9}
+.smart-account-menu{
+  left:0;
+  min-width:230px;
+  padding:9px;
+  background:linear-gradient(180deg,rgba(7,20,39,.98),rgba(10,28,52,.98));
+  color:#fff;
+  border:1px solid rgba(241,207,104,.26);
+  border-radius:18px;
+  box-shadow:0 20px 50px rgba(0,0,0,.35);
+}
+.smart-account-menu a,.smart-account-menu button{
+  display:block;
+  width:100%;
+  padding:11px 12px;
+  color:#f8fafc !important;
+  font-weight:700;
+  border-radius:12px;
+  text-align:right;
+}
+.smart-account-menu a:hover,.smart-account-menu button:hover{
+  background:rgba(241,207,104,.14);
+  color:#f1cf68 !important;
+}
+
+@media (max-width:1250px) and (min-width:1025px){
+  #navbar .smart-account-trigger{padding-inline:8px !important;font-size:.76rem !important}
+  .account-name{max-width:82px}
+  #navbar .nav-more-menu,.smart-account-menu{min-width:210px}
+}

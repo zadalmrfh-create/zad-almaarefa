@@ -105,7 +105,7 @@ form.addEventListener("submit", async event => {
     teacherUid: assignedTeacher.uid || null,
     teacherName: assignedTeacher.name,
     studentUid: currentUser?.uid || null,
-    status: "جديد",
+    status: "في انتظار التأكيد",
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
     source: "booking",
@@ -129,7 +129,7 @@ form.addEventListener("submit", async event => {
       readBy: []
     });
 
-    statusBox.textContent = `تم إرسال طلبك بنجاح، والمعلم المحدد هو ${assignedTeacher.name}.`;
+    statusBox.innerHTML = `<strong>✅ تم استلام طلب الحجز</strong><br>الحالة: <b>في انتظار التأكيد</b><br>المعلم المحدد: ${assignedTeacher.name}<br><small>يمكنك متابعة حالة الطلب من لوحة حسابك.</small>`;
     statusBox.className = "booking-status success";
     form.reset();
     if (initialSection && [...sectionSelect.options].some(o => o.value === initialSection)) sectionSelect.value = initialSection;

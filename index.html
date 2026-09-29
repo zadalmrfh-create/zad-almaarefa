@@ -96,78 +96,25 @@
 
 
     <div class="nav-links">
-
-      <a href="#hero" class="nav-link">
-        الرئيسية
-      </a>
-
-      <a href="#categories" class="nav-link">
-        الأقسام
-      </a>
-
-      <!-- طاقم التدريس -->
-      <a
-        href="./teachers/index.html"
-        class="nav-link"
-      >
-        طاقم التدريس
-      </a>
-
-      <!-- أحداث المنصة -->
-      <a
-        href="./events/events.html"
-        class="nav-link"
-      >
-        أحداث المنصة
-      </a>
-
-      <!-- الخدمات -->
-      <a
-        href="./sections/services/services.html"
-        class="nav-link"
-      >
-        الخدمات
-      </a>
-
-      <!-- المكتبة -->
-      <a
-        href="./sections/library.html"
-        class="nav-link"
-      >
-        المكتبة
-      </a>
-
-      <!-- لوحة الطالب -->
-      <a
-        href="./dashboard/student/index.html"
-        class="nav-link account-dashboard-link"
-      >
-        لوحة الطالب
-      </a>
-
-      <!-- الطلاب المتميزون -->
-      <a
-        href="./students/students.html"
-        class="nav-link"
-      >
-        الطلاب المتميزون
-      </a>
-
-      <!-- آراء الطلاب -->
-      <a
-        href="./reviews/index.html"
-        class="nav-link"
-      >
-        آراء الطلاب
-      </a>
-
+      <a href="#hero" class="nav-link">الرئيسية</a>
+      <a href="#categories" class="nav-link">الأقسام</a>
+      <a href="./sections/library.html" class="nav-link">المكتبة</a>
+      <a href="./teachers/index.html" class="nav-link">طاقم التدريس</a>
+      <div class="nav-more">
+        <button class="nav-link nav-more-btn" type="button">المزيد <span>⌄</span></button>
+        <div class="nav-more-menu">
+          <a href="./events/events.html">أحداث المنصة</a>
+          <a href="./sections/services/services.html">الخدمات</a>
+          <a href="./students/students.html">الطلاب المتميزون</a>
+          <a href="./reviews/index.html">آراء الطلاب</a>
+        </div>
+      </div>
     </div>
-
 
     <!-- تسجيل الدخول -->
     <a
       href="./login/index.html"
-      class="btn-nav login-nav-btn"
+      class="btn-nav login-nav-btn smart-account-btn"
     >
       <i class="fa-solid fa-right-to-bracket"></i>
       تسجيل الدخول
@@ -175,13 +122,10 @@
 
 
     <!-- ابدأ التعلم -->
-    <button
-      class="btn-nav"
-      onclick="smoothTo('categories')"
-    >
-      ابدأ التعلم
-    </button>
+    <a class="btn-nav" href="./start.html">ابدأ التعلم</a>
 
+
+    <button class="global-search-btn" id="globalSearchBtn" type="button" aria-label="البحث">🔎</button>
 
     <!-- الوضع الليلي -->
 <label class="theme-toggle" aria-label="تغيير الوضع">
@@ -245,70 +189,15 @@
     </svg>
   </button>
 
-  <a href="#hero" class="mob-btn" onclick="closeMob()">
-    الرئيسية
-  </a>
-
-  <a href="#categories" class="mob-btn" onclick="closeMob()">
-    الأقسام
-  </a>
-
-  <a
-    href="./teachers/index.html"
-    class="mob-btn"
-    onclick="closeMob()"
-  >
-    طاقم التدريس
-  </a>
-
-  <a
-    href="./events/events.html"
-    class="mob-btn"
-    onclick="closeMob()"
-  >
-    أحداث المنصة
-  </a>
-
-  <a
-    href="./sections/services/services.html"
-    class="mob-btn"
-    onclick="closeMob()"
-  >
-    الخدمات
-  </a>
-
-  <a
-    href="./sections/library.html"
-    class="mob-btn"
-    onclick="closeMob()"
-  >
-    المكتبة
-  </a>
-
-  <a
-    href="./dashboard/student/index.html"
-    class="mob-btn account-dashboard-link"
-    onclick="closeMob()"
-  >
-    لوحة الطالب
-  </a>
-
-  <a
-    href="./students/students.html"
-    class="mob-btn"
-    onclick="closeMob()"
-  >
-    الطلاب المتميزون
-  </a>
-
-  <a
-    href="./reviews/index.html"
-    class="mob-btn"
-    onclick="closeMob()"
-  >
-    آراء الطلاب
-  </a>
-
+  <a href="#hero" class="mob-btn" onclick="closeMob()">الرئيسية</a>
+  <a href="#categories" class="mob-btn" onclick="closeMob()">الأقسام</a>
+  <a href="./sections/library.html" class="mob-btn" onclick="closeMob()">المكتبة</a>
+  <a href="./teachers/index.html" class="mob-btn" onclick="closeMob()">طاقم التدريس</a>
+  <div class="mob-section-title">المزيد</div>
+  <a href="./events/events.html" class="mob-btn" onclick="closeMob()">أحداث المنصة</a>
+  <a href="./sections/services/services.html" class="mob-btn" onclick="closeMob()">الخدمات</a>
+  <a href="./students/students.html" class="mob-btn" onclick="closeMob()">الطلاب المتميزون</a>
+  <a href="./reviews/index.html" class="mob-btn" onclick="closeMob()">آراء الطلاب</a>
   <a
     href="./login/index.html"
     class="btn-primary login-mobile-btn"
@@ -319,7 +208,7 @@
 
   <button
     class="btn-primary"
-    onclick="smoothTo('categories'); closeMob();"
+    onclick="location.href='./start.html'"
   >
     ابدأ التعلم الآن
   </button>
@@ -331,24 +220,19 @@
       <div class="hero-overlay"></div>
       <div class="hero-container">
         <div class="hero-text">
-          <span class="hero-badge">منصتك التعليمية الشاملة</span>
+          <span class="hero-badge">تعلم أوضح • وصول أسرع • متابعة أفضل</span>
           <h1 class="hero-title">زاد المعرفة</h1>
           <p class="hero-desc">
-            منصة تعليمية إسلامية شاملة تجمع بين العلوم الشرعية والقرآن الكريم
-            واللغة العربية، لتكون رفيقك في رحلة طلب العلم
+            منصة تعليمية تجمع لك القرآن الكريم والعلوم الشرعية واللغة العربية والتعليم الأزهري في تجربة واحدة بسيطة ومنظمة.
           </p>
           <div class="hero-actions">
-            <a class="btn-primary" href="sections/booking/index.html">
-              احجز حصتك
-            </a>
-            <a class="btn-nav" href="login/index.html">
-              ابدأ الآن
-            </a>
+            <a class="btn-primary" href="start.html">ابدأ التعلم</a>
+            <a class="btn-nav" href="sections/booking/index.html">احجز حصتك</a>
           </div>
           <div class="hero-stats">
             <div class="student-counter-card" aria-live="polite" aria-label="إجمالي الطلاب المسجلين">
               <span class="counter-icon" aria-hidden="true">👨‍🎓</span>
-              <span class="num" id="studentCount">0</span>
+              <span class="num" id="studentCount">—</span>
               <span class="label">إجمالي الطلاب المسجلين</span>
             </div>
           </div>
@@ -358,6 +242,16 @@
         </div>
       </div>
     </section>
+<section class="home-quick-links" aria-label="اختصارات سريعة">
+  <a href="sections/library.html" class="quick-link-card"><span>📚</span><strong>المكتبة</strong><small>الكتب والاختبارات</small></a>
+  <a href="sections/library.html#tests" class="quick-link-card"><span>📝</span><strong>الاختبارات</strong><small>داخل المكتبة</small></a>
+  <a href="sections/booking/index.html" class="quick-link-card"><span>📅</span><strong>حجز الحصص</strong><small>اختر القسم والموعد</small></a>
+  <a href="sections/Azhar/azhar.html" class="quick-link-card"><span>🎓</span><strong>التعليم الأزهري</strong><small>المواد والمحتوى</small></a>
+</section>
+<section id="personalHome" class="personal-home" hidden>
+  <div><span class="personal-kicker">لوحتك السريعة</span><h2 id="personalWelcome">مرحبًا، ماذا تريد أن تكمل اليوم؟</h2><p>ارجع بسرعة إلى آخر ما كنت تتابعه أو افتح حسابك لمتابعة الحصص والإشعارات.</p></div>
+  <div class="personal-actions"><a href="sections/library.html">📚 مكتبتي</a><a class="account-dashboard-link" href="dashboard/student/index.html">👤 لوحتي</a><a href="sections/booking/index.html">📅 حجز حصة</a></div>
+</section>
 
 <!-- Mission Section -->
 <section id="mission" class="py-20 relative">
@@ -368,8 +262,8 @@
       <div class="relative reveal">
         <div class="absolute inset-0 bg-brand-600 rounded-3xl transform rotate-3 opacity-10"></div>
 
-        <img
-          src="https://picsum.photos/seed/reading/600/700.jpg"
+        <img loading="lazy"
+          src="images/platform-events.webp"
           alt="مكتبة"
           class="relative rounded-3xl shadow-xl w-full h-full object-cover"
         />
@@ -391,28 +285,9 @@
         <div class="w-20 h-1.5 bg-accent-500 rounded-full mb-8"></div>
 
 <div class="space-y-6 mission-text text-lg leading-loose text-justify">
-            <p>
-            تسعى منصة <strong>زاد المعرفة</strong> إلى تقديم محتوى تعليمي
-            متميز يجمع بين الجودة والسهولة، بهدف دعم الطلاب في رحلتهم
-            التعليمية وتمكينهم من تحقيق التفوق والنجاح.
-          </p>
-
-          <p>
-            ونعمل على توفير شروحات مبسطة، وملخصات شاملة، واختبارات تفاعلية،
-            ومواد تعليمية متنوعة تساعد الطلاب على فهم المناهج الدراسية
-            وإتقانها، مع توظيف أحدث الوسائل والتقنيات التعليمية لجعل عملية
-            التعلم أكثر فاعلية ومتعة.
-          </p>
-
-          <p>
-            كما تهدف المنصة إلى إعداد جيل من الطلاب المتميزين علميًا
-            وتربويًا، من خلال غرس القيم والأخلاق إلى جانب تنمية التحصيل
-            العلمي، وتقديم الاستشارات التربوية والنفسية التي تسهم في دعم
-            الطلاب وأولياء الأمور ومساعدتهم على مواجهة التحديات التعليمية
-            والتربوية المختلفة.
-          </p>
+          <p>نقدّم في <strong>زاد المعرفة</strong> محتوى تعليميًا منظمًا ومبسّطًا يساعد الطالب على الوصول للمعلومة ومتابعة تعلّمه بسهولة، مع الاهتمام بالقيم والأخلاق إلى جانب التحصيل العلمي.</p>
+          <p>هدفنا أن يجد الطالب الكتب والدروس والحصص والخدمات التعليمية التي يحتاجها في مكان واحد، بتجربة واضحة تعمل جيدًا على الهاتف والكمبيوتر.</p>
         </div>
-
         <div class="mt-10 grid grid-cols-2 gap-6">
 
           <div class="flex items-start gap-3">
@@ -580,8 +455,7 @@
     </section>
 
     <!--footer-->
-    <section id="why-zad" class="why-zad-section py-20"><div class="max-w-7xl mx-auto px-4"><div class="why-zad-shell"><div class="why-zad-head"><div><div class="section-label">لماذا زاد المعرفة؟</div><h2 class="section-title">أكثر من منصة… رحلة تعلم متكاملة</h2><p class="section-sub">نجمع لك المحتوى والخدمات والأدوات التعليمية في تجربة واحدة بسيطة ومنظمة، تساعدك على التعلم والمتابعة والاستمرار.</p></div><div class="why-zad-badge"><span>✦</span><strong>تعلم • تابع • تطور</strong></div></div><div class="why-zad-grid"><article class="why-zad-card"><div class="why-zad-icon">📚</div><div><span class="why-zad-kicker">محتوى متنوع</span><h3>كل ما تحتاجه في مكان واحد</h3><p>مكتبة واختبارات ومحاضرات وخدمات تعليمية مرتبة لتصل لما تحتاجه بسهولة.</p></div></article><article class="why-zad-card"><div class="why-zad-icon">📊</div><div><span class="why-zad-kicker">متابعة ذكية</span><h3>اعرف تقدمك باستمرار</h3><p>تابع نتائجك وحضورك ونشاطك داخل حسابك بدل ما تضيع وقتك في البحث عن بياناتك.</p></div></article><article class="why-zad-card"><div class="why-zad-icon">🎯</div><div><span class="why-zad-kicker">تعلم منظم</span><h3>خطوات أوضح نحو هدفك</h3><p>تنظيم الأقسام والاختبارات والمواعيد يساعدك على بناء روتين تعلم أكثر وضوحًا.</p></div></article><article class="why-zad-card"><div class="why-zad-icon">🤝</div><div><span class="why-zad-kicker">تجربة أسهل</span><h3>خدمات مصممة للطالب</h3><p>واجهة عربية واضحة تعمل على الهاتف والكمبيوتر وتجمع أهم الأدوات في مكان واحد.</p></div></article></div><div class="why-zad-bottom"><span>✨ هدفنا أن تكون رحلتك التعليمية أوضح وأسهل</span><a class="btn-primary" href="login/register.html">ابدأ الآن</a></div></div></div></section>
-<section id="live-stats" class="py-16"><div class="max-w-7xl mx-auto px-4"><div id="homeStatsGrid" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div></div></section>
+    <section id="live-stats" class="py-16"><div class="max-w-7xl mx-auto px-4"><div id="homeStatsGrid" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div></div></section>
 
 <section id="faq" class="py-20"><div class="max-w-4xl mx-auto px-4"><div class="cats-header sr"><div class="section-label">أسئلة شائعة</div><h2 class="section-title">الأسئلة المتكررة</h2></div><div class="space-y-3"><details class="faq-item"><summary>هل التسجيل مجاني؟</summary><p>يمكنك إنشاء حساب مجانًا، وتختلف الخدمات أو العضويات حسب المتاح داخل المنصة.</p></details><details class="faq-item"><summary>كيف أعرف مواعيد المحاضرات؟</summary><p>ستجد المواعيد في قسم الأحداث ولوحة حسابك.</p></details><details class="faq-item"><summary>كيف أتابع نتائج الاختبارات؟</summary><p>بعد إنهاء الاختبار تُحفظ النتيجة في حسابك.</p></details><details class="faq-item"><summary>كيف أتواصل مع الإدارة؟</summary><p>استخدم بيانات التواصل الموجودة أسفل الموقع.</p></details></div></div></section>
 
@@ -590,7 +464,7 @@
         <div class="footer-brand">
           <div class="logo">
             <div class="logo-img">
-              <img src="images/logo.png" alt="زاد المعرفة" class="logo-img" />
+              <img loading="lazy" src="images/logo.png" alt="زاد المعرفة" class="logo-img" />
             </div>
             <span class="logo-text">زاد <span>المعرفة</span></span>
           </div>
@@ -1149,8 +1023,42 @@ document.addEventListener("DOMContentLoaded", function () {
 import {db} from './firebase-config.js';
 import {collection,getDocs,query,orderBy,limit} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-async function loadHomeExtras(){let st={};try{const q=await getDocs(query(collection(db,'publicStats'),limit(20)));q.forEach(d=>{const x=d.data()||{};st[d.id]=Number(x.total||x.count||0)})}catch(e){};const cards=[['students','👨‍🎓','الطلاب'],['books','📚','كتب المكتبة'],['categories','👨‍🏫','المعلمون'],['tests','📝','الاختبارات']];const sg=document.getElementById('homeStatsGrid');if(sg)sg.innerHTML=cards.map(x=>`<div class="card text-center p-6"><div class="text-3xl">${x[1]}</div><div class="text-3xl font-black mt-2">${Number(st[x[0]]||0).toLocaleString('ar-EG')}</div><div>${x[2]}</div></div>`).join('');}
+async function loadHomeExtras(){let st={};const sg=document.getElementById('homeStatsGrid');if(sg)sg.innerHTML=Array.from({length:4},()=>'<div class="home-stat-skeleton"></div>').join('');try{const q=await getDocs(query(collection(db,'publicStats'),limit(20)));q.forEach(d=>{const x=d.data()||{};st[d.id]=Number(x.total||x.count||0)})}catch(e){};const cards=[['students','👨‍🎓','الطلاب'],['books','📚','كتب المكتبة'],['categories','👨‍🏫','المعلمون'],['tests','📝','الاختبارات']];if(sg)sg.innerHTML=cards.map(x=>`<div class="card text-center p-6"><div class="text-3xl">${x[1]}</div><div class="text-3xl font-black mt-2">${Number(st[x[0]]||0).toLocaleString('ar-EG')}</div><div>${x[2]}</div></div>`).join('');}
 document.addEventListener('DOMContentLoaded',loadHomeExtras);
 </script>
+
+<div id="globalSearchModal" class="global-search-modal" hidden>
+  <div class="global-search-panel">
+    <button id="closeGlobalSearch" class="search-close" type="button">✕</button>
+    <h2>ابحث في زاد المعرفة</h2>
+    <input id="globalSearchInput" type="search" placeholder="مثال: نحو، قرآن، حجز، معلم..." autocomplete="off">
+    <div id="globalSearchResults" class="global-search-results"></div>
+  </div>
+</div>
+<nav class="mobile-bottom-nav" aria-label="التنقل السريع">
+  <a href="#hero"><span>🏠</span><small>الرئيسية</small></a>
+  <a href="sections/library.html"><span>📚</span><small>المكتبة</small></a>
+  <a href="start.html"><span>🧭</span><small>ابدأ</small></a>
+  <a href="dashboard/student/index.html" class="account-dashboard-link"><span>🔔</span><small>الإشعارات</small></a>
+  <a href="login/index.html" class="login-mobile-btn"><span>👤</span><small>حسابي</small></a>
+</nav>
+
+<script type="module">
+
+import { auth, db } from './firebase-config.js';
+import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
+import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
+const modal=document.getElementById('globalSearchModal'),input=document.getElementById('globalSearchInput'),results=document.getElementById('globalSearchResults');
+const items=[
+['المكتبة والكتب','sections/library.html','كتب مذكرات تحميل'],['اختبارات المكتبة','sections/library.html#tests','اختبار نحو بلاغة توحيد'],['حجز حصة','sections/booking/index.html','حجز موعد حصة'],['التعليم الأزهري','sections/Azhar/azhar.html','ازهر أزهري'],['القرآن الكريم','sections/Quran/quran.html','قرآن تجويد حفظ'],['اللغة العربية','sections/Arabic/arabic.html','عربي نحو صرف بلاغة'],['العلوم الشرعية','sections/Sharia/sharia.html','شرعي فقه عقيدة'],['التزكية والتربية','sections/Tazkea/tazkea.html','تزكية تربية'],['طاقم التدريس','teachers/index.html','معلم مدرس'],['أحداث المنصة','events/events.html','أحداث اخبار'],['الخدمات','sections/services/services.html','خدمات'],['الطلاب المتميزون','students/students.html','شهادات تكريم'],['آراء الطلاب','reviews/index.html','آراء تقييمات']];
+function norm(x=''){return x.toLowerCase().replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي')}
+function draw(){const q=norm(input?.value||'');const arr=!q?items.slice(0,7):items.filter(x=>norm(x.join(' ')).includes(q));results.innerHTML=arr.map(x=>`<a href="${x[1]}"><strong>${x[0]}</strong><br><small>${x[2]}</small></a>`).join('')||'<p>لا توجد نتائج مطابقة.</p>'}
+document.getElementById('globalSearchBtn')?.addEventListener('click',()=>{modal.hidden=false;draw();setTimeout(()=>input.focus(),30)});document.getElementById('closeGlobalSearch')?.addEventListener('click',()=>modal.hidden=true);modal?.addEventListener('click',e=>{if(e.target===modal)modal.hidden=true});input?.addEventListener('input',draw);
+onAuthStateChanged(auth,async user=>{const box=document.getElementById('personalHome');if(!box)return;if(!user){box.hidden=true;return}box.hidden=false;let name=user.displayName||user.email?.split('@')[0]||'طالبنا';try{const snap=await getDoc(doc(db,'users',user.uid));if(snap.exists())name=snap.data().fullName||name}catch(e){}document.getElementById('personalWelcome').textContent=`مرحبًا ${name}، ماذا تريد أن تكمل اليوم؟`;});
+
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&modal&&!modal.hidden){modal.hidden=true;}});
+
+</script>
+
 </body>
 </html>

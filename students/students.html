@@ -149,7 +149,7 @@
   ============================================= -->
       <section id="students-section" class="students-section">
         <div class="section-label">المتميزون</div>
-        <h2 class="section-title"> الطلاب المتميزون</h2>
+        <h2 class="section-title"> الطلاب المتميزون</h2><div class="honor-filters" style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:14px 0 22px"><button class="honor-filter active" data-period="all">الكل</button><button class="honor-filter" data-period="current">هذا الشهر</button><button class="honor-filter" data-period="previous">السابق</button></div>
 <!-- SEARCH FOR STAR STUDENTS -->
 <div class="search-wrap">
   <span>🔍</span>
@@ -164,7 +164,7 @@
         <div class="students-grid">
           <!-- ========== طالب 1 ========== -->
           <div class="card">
-            <!-- <img class="card-photo" src="رابط-الصورة" alt="اسم الطالب"> -->
+            <!-- <img loading="lazy" class="card-photo" src="رابط-الصورة" alt="اسم الطالب"> -->
             <div class="card-no-photo">👨‍🎓</div>
             <div class="card-body">
               <div>
@@ -443,7 +443,7 @@ function certPreview(raw,name){
         row.className = "cert-student-row";
 
         row.innerHTML =
-            '<img src="' + s.img + '" class="cert-image" onerror="this.onerror=null;this.src=\'../images/image-not-available.svg\';" onclick="openImage(\'' + s.img + '\')">';
+            '<img loading="lazy" src="' + s.img + '" class="cert-image" onerror="this.onerror=null;this.src=\'../images/image-not-available.svg\';" onclick="openImage(\'' + s.img + '\')">';
 
         grid.appendChild(row);
     });
@@ -489,7 +489,7 @@ function certPreview(raw,name){
     <div id="imageModal" class="image-modal">
       <span class="close-image" onclick="closeImage()">&times;</span>
 
-      <img id="modalImage" class="modal-image" />
+      <img loading="lazy" id="modalImage" class="modal-image" />
     </div>
-  </body>
+  <style>.honor-filter{border:1px solid #c9a84c;background:transparent;color:inherit;border-radius:999px;padding:8px 14px;cursor:pointer;font-family:inherit}.honor-filter.active{background:#c9a84c;color:#111827}</style><script>document.querySelectorAll('.honor-filter').forEach(b=>b.onclick=()=>{document.querySelectorAll('.honor-filter').forEach(x=>x.classList.remove('active'));b.classList.add('active');const p=b.dataset.period;document.querySelectorAll('#students-section .card').forEach(c=>{const period=c.dataset.period||'current';c.style.display=(p==='all'||period===p)?'':'none'})})</script></body>
 </html>
