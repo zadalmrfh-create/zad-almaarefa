@@ -4314,22 +4314,21 @@ body.dark #about .dl-icon{background:rgba(255,255,255,.055) !important}
   display:flex;
   flex-direction:column;
   align-items:flex-start;
-  line-height:1.15;
+  line-height:1.05;
   position:relative;
   z-index:1;
-  direction:rtl;
-  text-align:right;
+  direction:ltr;
 }
 .developer-badge__text small{
   font-size:8px;
   font-weight:700;
-  letter-spacing:0;
+  letter-spacing:1.4px;
   color:#cbd5e1;
 }
 .developer-badge__text strong{
   margin-top:4px;
   font-size:12px;
-  letter-spacing:0;
+  letter-spacing:.6px;
   color:#f6d978;
   font-weight:900;
 }
