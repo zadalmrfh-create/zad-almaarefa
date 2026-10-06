@@ -703,7 +703,7 @@ const SUBJECTS = {
 {
   name: "المرشد صرف الصف الثالث الثانوي",
   level: "ثانوي",
-  link: "https://drive.google.com/file/d/1BGoKxDyH0rcVShAIQ02t6_wHuVpJ-Yz8/view?usp=drivesdk",
+  link: "https://drive.google.com/file/d/1BGoKxDyH0rcVShAIQ02t6_wHuVpJ-Yz8/view?usp=sharing",
 },
 
 {
@@ -721,7 +721,7 @@ const SUBJECTS = {
 {
   name: "المرشد توحيد الصف الثالث الثانوي",
   level: "ثانوي",
-  link: "https://drive.google.com/file/d/11VAt_MIseziqXD8HnkL3CCDU1CaeR2jv/view?usp=drivesdk",
+  link: "https://drive.google.com/file/d/1LtWQGEX2EbVqS5Gc4lg_yS2TGA4fB0T9/view?usp=sharing",
 },
 
 {
