@@ -105,7 +105,7 @@ form.addEventListener("submit", async event => {
     teacherUid: assignedTeacher.uid || null,
     teacherName: assignedTeacher.name,
     studentUid: currentUser?.uid || null,
-    status: "في انتظار التأكيد",
+    status: "جديد",
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
     source: "booking",
@@ -116,18 +116,24 @@ form.addEventListener("submit", async event => {
   try {
     const bookingRef = await addDoc(collection(db, "bookings"), payload);
 
-    await addDoc(collection(db, "notifications"), {
-      audience: "admin",
-      targetRole: "admin",
-      type: "booking",
-      title: "📅 طلب حجز حصة جديد",
-      message: `الطالب ${data.fullName || "غير معروف"} أرسل طلب حجز في قسم ${data.section || "غير محدد"} لمادة ${data.subject || "غير محدد"}. المعلم المحدد تلقائيًا: ${assignedTeacher.name}.`,
-      bookingId: bookingRef.id,
-      studentUid: currentUser?.uid || null,
-      createdBy: currentUser?.uid || null,
-      createdAt: serverTimestamp(),
-      readBy: []
-    });
+    // إنشاء الإشعار خطوة منفصلة حتى لا يظهر للطالب أن الحجز فشل
+    // إذا تعطل الإشعار لأي سبب بعد نجاح حفظ الحجز نفسه.
+    try {
+      await addDoc(collection(db, "notifications"), {
+        audience: "admin",
+        targetRole: "admin",
+        type: "booking",
+        title: "📅 طلب حجز حصة جديد",
+        message: `الطالب ${data.fullName || "غير معروف"} أرسل طلب حجز في قسم ${data.section || "غير محدد"} لمادة ${data.subject || "غير محدد"}. المعلم المحدد تلقائيًا: ${assignedTeacher.name}.`,
+        bookingId: bookingRef.id,
+        studentUid: currentUser?.uid || null,
+        createdBy: currentUser?.uid || null,
+        createdAt: serverTimestamp(),
+        readBy: []
+      });
+    } catch (notificationError) {
+      console.warn("تم حفظ الحجز، لكن تعذر إنشاء إشعار الإدارة:", notificationError);
+    }
 
     statusBox.innerHTML = `<strong>✅ تم استلام طلب الحجز</strong><br>الحالة: <b>في انتظار التأكيد</b><br>المعلم المحدد: ${assignedTeacher.name}<br><small>يمكنك متابعة حالة الطلب من لوحة حسابك.</small>`;
     statusBox.className = "booking-status success";
