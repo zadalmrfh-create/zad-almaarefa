@@ -217,7 +217,7 @@ const SUBJECTS = {
 {
   name: "المرشد نحو الصف الأول الثانوي",
   level: "1ث",
-  link: "https://mega.nz/file/f35yEa4B#FUDYLKUD6n88miqZSPDjoF8XREWWDRtgLKxkVHAVZ1U",
+  link: "https://mega.nz/file/6iwHzCqQ#wZbEYdJRAa0bIlF5EGQpJ9TRU1tnWd9DQNU8AMuHVs0",
 },
 {
   name: "الأضواء عربي الصف الأول الثانوي الترم الأول 2027",
@@ -334,7 +334,19 @@ const SUBJECTS = {
   level: "1ث",
   link: "https://drive.google.com/file/d/1JAAitPtVWADKM5wLBqHhX-FtCAz0pM0A/view?usp=drive_link",
 },
-    ],
+    
+    // كتب مضافة بتاريخ 2026-10-06
+{
+  name: "المرشد أدب ونصوص الصف الأول الثانوي ترم أول 2026",
+  level: "1ث",
+  link: "https://mega.nz/file/vvhQmAoY#ehm6Fpy5_hMkcuqPRkkLjPPULwjb9Oa0A_udH3QmM7k",
+},
+{
+  name: "سلاح الأزهري فقه شافعي الصف الأول الثانوي 2026",
+  level: "1ث",
+  link: "https://mega.nz/file/umZThA7B#fDFJW_55o4yNMXNuau_moxqA1kzgwHpgprrduWJgL84",
+},
+],
     exams:[
 
     ],
@@ -466,7 +478,84 @@ const SUBJECTS = {
   name: "كتاب الحديث الصف الثاني الثانوي",
   level: "ثانوي",
   link: "https://drive.google.com/file/d/10fb9EuCsFonyb4Kg1A6zuTDjBP_MSigw/view?usp=drive_link",
-},],
+},
+    // كتب مضافة بتاريخ 2026-10-06
+{
+  name: "كتاب مندليف كيمياء أسئلة تانية ثانوي ترم أول 2023",
+  level: "2ث",
+  link: "https://mega.nz/file/ijoyWA7C#0ngKA0aZp-CYj2vfHxbk3vmpO4P3HiGmcV8TyjMTJfg",
+},
+{
+  name: "إجابات المعاصر رياضيات 2ث بكالوريا 2027",
+  level: "2ث",
+  link: "https://mega.nz/file/T2oXia7B#8z1p6Gmnfn9ShM35KeGU_h8nEplnJgkv_Pl62Fue3xY",
+},
+{
+  name: "المذكرة النهائية لتانية عام (مش بكالوريا)",
+  level: "2ث",
+  link: "https://mega.nz/file/y3oRRJyK#L9PajE8mv3DA0MKFSKcIUMCdfAj0DXPMxY5V4L6zKSY",
+},
+{
+  name: "كتاب التدريبات محمد صلاح 2 بكالوريا 2027",
+  level: "2ث",
+  link: "https://mega.nz/file/qvYlCYbS#Ptr0EQmWC0PWJB5t9JVw1xlSfnHnGQEFwDUCR6PXdLE",
+},
+{
+  name: "محمد صلاح روائع الأدب 2 بكالوريا 2027",
+  level: "2ث",
+  link: "https://mega.nz/file/ymAXCZ7Z#R8glPkbztKxODcZYQyqnoK55c3ogqv8UmujX365JbSQ",
+},
+{
+  name: "محمد صلاح شرح الجزء الأول 2 بكالوريا 2027",
+  level: "2ث",
+  link: "https://mega.nz/file/b75TjZrR#PIvu2WfJAArRDi8ZTXZcCjrxC1FMadhXvCJI0dAB6HI",
+},
+{
+  name: "محمد صلاح شرح الجزء الثاني 2 بكالوريا 2027",
+  level: "2ث",
+  link: "https://mega.nz/file/aqYA2RaD#X-rpnCQBoLmlj6TFDduJZoAvAe0yCPFqY8ynoodwR7A",
+},
+{
+  name: "محمد صلاح طلع الأديب 2 بكالوريا 2027",
+  level: "2ث",
+  link: "https://mega.nz/file/O2ZVCZoS#NDxCWTaJLf-mluL0qxeKH6ySmQnV8KcoEKvXWS4xuKk",
+},
+{
+  name: "محمد صلاح قاف ثاء 2 بكالوريا 2027",
+  level: "2ث",
+  link: "https://mega.nz/file/GzYBnBQY#9cH5O7FTmb7AVIOWpUcfZzrutNS10X4RFBEdY_vKqYw",
+},
+{
+  name: "محمد صلاح كتالوج 2 بكالوريا 2027",
+  level: "2ث",
+  link: "https://mega.nz/file/2vQ1ELhQ#nqlD9cV38gSFR3T3PGMEPqnFvIXU9bXRjf20KLoQJD4",
+},
+{
+  name: "سلاح الأزهري حديث تانية ثانوي",
+  level: "2ث",
+  link: "https://drive.google.com/file/d/1dhSQW2ylHgPrukXXgvKYiY8eVie0ggjt/view?usp=drivesdk",
+},
+{
+  name: "سلاح الأزهري تفسير الجزء العلمي تانية ثانوي",
+  level: "2ث",
+  link: "https://drive.google.com/file/d/1ZDwplO-3Ove3gOZpQbyh3OGo7_WvdVvF/view?usp=drivesdk",
+},
+{
+  name: "سلاح الأزهري تفسير الجزء الأدبي تانية ثانوي",
+  level: "2ث",
+  link: "https://drive.google.com/file/d/1Hk2yvGCPGA-WKInaG4C9tdyUzkAqHvXn/view?usp=drivesdk",
+},
+{
+  name: "سلاح الأزهري توحيد تانية ثانوي",
+  level: "2ث",
+  link: "https://drive.google.com/file/d/1W8qB0rR8phgzp5MutriRLVG6b9psJ4QJ/view?usp=drivesdk",
+},
+{
+  name: "سلاح الأزهري صرف تانية ثانوي",
+  level: "2ث",
+  link: "https://drive.google.com/file/d/1duJz3E4kZ5vAb5BphQeziw-B-7fMjXXt/view?usp=drivesdk",
+},
+],
     exams: [],
 
   video: [ ],
@@ -682,7 +771,39 @@ const SUBJECTS = {
   level: "ثانوي",
   link: "https://drive.google.com/file/d/1ti2q5g9jP-ukEob7MI4X8bFUw1hnH59B/view?usp=drivesdk",
 },
-    ],
+    
+    // كتب مضافة بتاريخ 2026-10-06
+{
+  name: "أحياء كراسة الذهبي الصف الثالث الثانوي 2026",
+  level: "3ث",
+  link: "https://mega.nz/file/Cip0BDjI#0g1ovANQp8iVyW_JngNzR_tz2kp7k4iKAFcofZGLOKE",
+},
+{
+  name: "الطيب كيمياء الصف الثالث الثانوي 2027",
+  level: "3ث",
+  link: "https://mega.nz/file/a7JFFTLT#XuYWxry0gMDIJF0v9ByLUCZkNp_Hd_BDs5DwYfTXDy0",
+},
+{
+  name: "الطيب كيمياء الصف الثالث الثانوي إجابات 2027",
+  level: "3ث",
+  link: "https://mega.nz/file/i2pA2b7I#umgbZ5gEnnn_nbFOn23YSH-OuMrUDCPRZDkoF5Uje9I",
+},
+{
+  name: "بوكلت سلاح الأزهري النحو الصف الثالث الثانوي 2026",
+  level: "3ث",
+  link: "https://mega.nz/file/b7pVESjT#9banVppcOfLgWAUkYG_p1X7TJKS4bKfRd5cMPlEI8cY",
+},
+{
+  name: "سلاح الأزهري توحيد الصف الثالث الثانوي 2026",
+  level: "3ث",
+  link: "https://mega.nz/file/GzhXWb6B#iqqXoAYDXOSxJ2RN2r0vJzOvyO3Ixb4VRXIYM2cTxNU",
+},
+{
+  name: "سلاح الأزهري فقه شافعي الصف الثالث الثانوي 2026",
+  level: "3ث",
+  link: "https://mega.nz/file/ejYG0ZiC#XkAY94gny5EbstpgaEpb5u28eNb7yfOZSlHRlLBYJdw",
+},
+],
     exams: [
 
     ],
