@@ -338,7 +338,7 @@ html.light .favorite-btn.favorite-active,body.light .favorite-btn.favorite-activ
     </div>
     <div id="content-type-grid" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
       <button class="hierarchy-card" onclick="selectContentType('books')"><div class="h-icon">📚</div><div class="h-title">الكتب</div><div class="h-sub">الكتب الخارجية والكتب الدراسية الكاملة</div></button>
-      <button class="hierarchy-card" onclick="selectContentType('summaries')"><div class="h-icon">📝</div><div class="h-title">الملخصات</div><div class="h-sub">سيتم إضافة الملخصات هنا لاحقًا</div></button>
+      <button class="hierarchy-card" onclick="selectContentType('summaries')"><div class="h-icon">📝</div><div class="h-title">الملخصات</div><div class="h-sub">ملخصات ومراجعات مرتبة حسب الصف والمادة</div></button>
       <button class="hierarchy-card" onclick="selectContentType('questions')"><div class="h-icon">❓</div><div class="h-title">الأسئلة</div><div class="h-sub">سيتم إضافة ملفات الأسئلة هنا لاحقًا</div></button>
     </div>
   </section>
@@ -1132,6 +1132,59 @@ var books = [
     date: 20260923,
     popular: 88
   },
+   /* =======================================================
+     ملخصات الصف الثاني الثانوي الأزهري — التوحيد
+  ======================================================= */
+  {
+    title: "ملخص علم التوحيد",
+    icon: "📝",
+    cat: "مواد شرعية",
+    grade: "2sec",
+    contentType: "summaries",
+    desc: "ملخص علم التوحيد للصف الثاني الثانوي الأزهري",
+    url: "summaries/tawheed-summary.pdf",
+    date: 20261007,
+    popular: 100
+  },
+  {
+    title: "ملخص علم التوحيد الشامل",
+    icon: "📑",
+    cat: "مواد شرعية",
+    grade: "2sec",
+    contentType: "summaries",
+    desc: "ملخص شامل في علم التوحيد للصف الثاني الثانوي الأزهري",
+    url: "summaries/tawheed-summary-comprehensive.pdf",
+    date: 20261007,
+    popular: 100
+  },
+
+   /* =======================================================
+     أسئلة الصف الثاني الثانوي الأزهري
+     ملاحظة: المطلوب حاليًا النحو والتوحيد فقط. البلاغة غير مضافة هنا.
+  ======================================================= */
+  {
+    title: "اختبار النحو للصف الثاني الثانوي",
+    icon: "✍️",
+    cat: "لغة عربية",
+    grade: "2sec",
+    contentType: "questions",
+    desc: "اختبار النحو للصف الثاني الثانوي الأزهري",
+    url: "tests/nahw.html",
+    date: 20261007,
+    popular: 100
+  },
+  {
+    title: "اختبار التوحيد للصف الثاني الثانوي",
+    icon: "☝️",
+    cat: "مواد شرعية",
+    grade: "2sec",
+    contentType: "questions",
+    desc: "اختبار التوحيد للصف الثاني الثانوي الأزهري",
+    url: "tests/tawheed.html",
+    date: 20261007,
+    popular: 100
+  },
+
    /* =======================================================
      ثانية ثانوي
   ======================================================= */
@@ -2617,6 +2670,9 @@ function renderBooks(filtered) {
   filtered.forEach(
     (book, index) => {
 
+      const materialType = getMaterialType(book);
+      const isQuestion = materialType === "questions";
+      const isSummary = materialType === "summaries";
       const card =
         document.createElement("div");
 
@@ -2679,7 +2735,7 @@ function renderBooks(filtered) {
 
 
         <div class="book-tools" style="margin-bottom:10px">
-          <a class="book-tool" style="text-align:center;text-decoration:none" href="book.html?title=${encodeURIComponent(book.title)}&url=${encodeURIComponent(book.url)}&cat=${encodeURIComponent(book.cat||'')}&grade=${encodeURIComponent(book.grade||'')}&desc=${encodeURIComponent(book.desc||'')}&icon=${encodeURIComponent(book.icon||'📘')}">ℹ️ التفاصيل والمعاينة</a>
+          ${isQuestion ? `<a class="book-tool" style="text-align:center;text-decoration:none" href="${book.url}">📝 فتح الاختبار مباشرة</a>` : `<a class="book-tool" style="text-align:center;text-decoration:none" href="book.html?title=${encodeURIComponent(book.title)}&url=${encodeURIComponent(book.url)}&cat=${encodeURIComponent(book.cat||'')}&grade=${encodeURIComponent(book.grade||'')}&desc=${encodeURIComponent(book.desc||'')}&icon=${encodeURIComponent(book.icon||'📘')}">ℹ️ التفاصيل والمعاينة</a>`}
         </div>
         <!-- DOWNLOAD -->
 
@@ -2695,8 +2751,8 @@ function renderBooks(filtered) {
             text-decoration:none;
           "
         >
-          <i data-lucide="download" style="width:18px;height:18px;"></i>
-          تحميل / فتح الكتاب
+          <i data-lucide="${isQuestion ? 'circle-play' : (isSummary ? 'file-text' : 'download')}" style="width:18px;height:18px;"></i>
+          ${isQuestion ? 'ابدأ الاختبار' : (isSummary ? 'فتح / تحميل الملخص' : 'تحميل / فتح الكتاب')}
         </a>
         <div class="book-tools">
           <button type="button" class="book-tool favorite-btn" data-book-key="${encodeURIComponent(book.title + "|" + book.url)}">☆ المفضلة</button>
