@@ -244,6 +244,21 @@ html.light .favorite-btn.favorite-active,body.light .favorite-btn.favorite-activ
 .test-library-btn{background:linear-gradient(135deg,#f0c040,#d9a92f);color:#0f172a;text-decoration:none;box-shadow:0 8px 22px rgba(240,192,64,.18);transition:transform .2s ease,box-shadow .2s ease}
 .test-library-btn:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(240,192,64,.28)}
 </style>
+
+<style id="library-hierarchy-style">
+  .hierarchy-card{transition:all .25s ease;cursor:pointer;border:1px solid #334155;background:#1e293b;color:#f0c040;border-radius:20px;padding:24px;text-align:right;box-shadow:0 10px 25px rgba(0,0,0,.12)}
+  .hierarchy-card:hover{transform:translateY(-5px);border-color:#f0c040;box-shadow:0 16px 34px rgba(0,0,0,.2)}
+  .hierarchy-card .h-icon{width:58px;height:58px;display:flex;align-items:center;justify-content:center;border-radius:16px;background:#0f172a;font-size:30px;margin-bottom:14px}
+  .hierarchy-card .h-title{font-weight:900;font-size:1.08rem}
+  .hierarchy-card .h-sub{color:#94a3b8;font-size:.78rem;margin-top:7px;line-height:1.8}
+  .hierarchy-back{display:inline-flex;align-items:center;gap:7px;padding:9px 14px;border-radius:10px;background:#1e293b;color:#cbd5e1;border:1px solid #334155;font-weight:800;cursor:pointer}
+  .hierarchy-back:hover{border-color:#f0c040;color:#f0c040}
+  .crumbs{color:#94a3b8;font-size:.8rem;margin-top:6px}
+  html.light .hierarchy-card,body.light .hierarchy-card{background:#fff;color:#d97706;border-color:#e2e8f0}
+  html.light .hierarchy-card .h-icon,body.light .hierarchy-card .h-icon{background:#f8fafc}
+  html.light .hierarchy-back,body.light .hierarchy-back{background:#fff;color:#475569;border-color:#cbd5e1}
+</style>
+
 <link rel="stylesheet" href="../assets/translation.css">
 <script src="../assets/translation.js"></script>
 <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
@@ -297,7 +312,7 @@ html.light .favorite-btn.favorite-active,body.light .favorite-btn.favorite-activ
       class="text-lg"
       style="color:#94a3b8"
     >
-      جميع الكتب والمذكرات التعليمية في مكان واحد 🚀
+      الكتب والملخصات والأسئلة التعليمية في مكان واحد 🚀
     </p>
 
     <button
@@ -309,23 +324,35 @@ html.light .favorite-btn.favorite-active,body.light .favorite-btn.favorite-activ
       🌙 وضع داكن
     </button>
 
-    <a
-      href="tests/index.html"
-      class="mt-4 md:mt-4 inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold test-library-btn"
-    >
-      <span id="tests"></span>📝 قسم الاختبارات
-    </a>
 
   </header>
 
+
+  <!-- =========================================
+       CONTENT TYPE SELECTION
+  ========================================== -->
+  <section id="content-type-section" class="max-w-6xl mx-auto px-4 pt-8 pb-4">
+    <div class="text-center mb-6">
+      <h2 class="text-xl md:text-2xl font-bold" style="color:#f0c040">ماذا تريد أن تفتح؟</h2>
+      <p class="text-sm mt-2" style="color:#94a3b8">اختر القسم أولًا، وبعدها المرحلة ثم الصف ثم المادة</p>
+    </div>
+    <div id="content-type-grid" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <button class="hierarchy-card" onclick="selectContentType('books')"><div class="h-icon">📚</div><div class="h-title">الكتب</div><div class="h-sub">الكتب الخارجية والكتب الدراسية الكاملة</div></button>
+      <button class="hierarchy-card" onclick="selectContentType('summaries')"><div class="h-icon">📝</div><div class="h-title">الملخصات</div><div class="h-sub">سيتم إضافة الملخصات هنا لاحقًا</div></button>
+      <button class="hierarchy-card" onclick="selectContentType('questions')"><div class="h-icon">❓</div><div class="h-title">الأسئلة</div><div class="h-sub">سيتم إضافة ملفات الأسئلة هنا لاحقًا</div></button>
+    </div>
+  </section>
 
   <!-- =========================================
        STAGE SELECTION
   ========================================== -->
 
   <section
+    id="stage-section"
     class="max-w-6xl mx-auto px-4 pt-7"
+    style="display:none"
   >
+    <button onclick="backToContentTypes()" class="hierarchy-back mb-5">→ الرجوع للأقسام</button>
 
     <div
       class="text-center mb-5"
@@ -359,7 +386,7 @@ html.light .favorite-btn.favorite-active,body.light .favorite-btn.favorite-activ
         class="stage-btn active px-5 py-3 rounded-xl text-sm font-bold"
         style="background-color:#f0c040;color:#0f172a"
       >
-        📖 القسم الإعدادي
+        📖 المرحلة الإعدادية
       </button>
 
 
@@ -369,7 +396,7 @@ html.light .favorite-btn.favorite-active,body.light .favorite-btn.favorite-activ
         class="stage-btn px-5 py-3 rounded-xl text-sm font-bold"
         style="background-color:#1e293b;color:#94a3b8"
       >
-        🏫 القسم الثانوي
+        🏫 المرحلة الثانوية الأزهرية
       </button>
 
     </div>
@@ -384,7 +411,9 @@ html.light .favorite-btn.favorite-active,body.light .favorite-btn.favorite-activ
   <section
     id="grade-section"
     class="max-w-6xl mx-auto px-4 py-8"
+    style="display:none"
   >
+    <button onclick="backToStages()" class="hierarchy-back mb-5">→ الرجوع للمراحل</button>
 
     <div
       class="flex items-center justify-between mb-5"
@@ -421,6 +450,18 @@ html.light .favorite-btn.favorite-active,body.light .favorite-btn.favorite-activ
 
 
   <!-- =========================================
+       SUBJECT SELECTION
+  ========================================== -->
+  <section id="subject-section" class="max-w-6xl mx-auto px-4 pb-10" style="display:none">
+    <button onclick="backToGrades()" class="hierarchy-back mb-5">→ الرجوع للصفوف</button>
+    <div class="mb-6">
+      <div id="subject-crumbs" class="crumbs"></div>
+      <h2 class="text-xl md:text-2xl font-bold mt-1" style="color:#f0c040">اختر المادة</h2>
+    </div>
+    <div id="subject-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+  </section>
+
+  <!-- =========================================
        LIBRARY
   ========================================== -->
 
@@ -438,11 +479,11 @@ html.light .favorite-btn.favorite-active,body.light .favorite-btn.favorite-activ
       <div>
 
         <button
-          onclick="backToGrades()"
+          onclick="backToSubjects()"
           class="back-btn mb-3 px-4 py-2 rounded-lg text-sm font-semibold"
           style="background-color:#1e293b;color:#94a3b8"
         >
-          → الرجوع للصفوف
+          → الرجوع للمواد
         </button>
 
         <div
@@ -542,7 +583,9 @@ html.light .favorite-btn.favorite-active,body.light .favorite-btn.favorite-activ
     <!-- FILTERS -->
 
     <div
+      id="legacy-filter-row"
       class="flex flex-wrap justify-center gap-2 mb-7"
+      style="display:none"
     >
 
       <button
@@ -603,7 +646,7 @@ html.light .favorite-btn.favorite-active,body.light .favorite-btn.favorite-activ
   </section>
 
 
-  <section id="library-smart" style="max-width:1200px;margin:0 auto 30px;padding:0 16px"><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px"><div class="book-card"><h3>🕘 آخر الكتب</h3><div id="lastBooksList">لا توجد كتب مفتوحة مؤخرًا.</div></div><div class="book-card"><h3>⭐ المفضلة</h3><div id="favoriteBooksList">لا توجد كتب مفضلة بعد.</div></div><div class="book-card"><h3>💡 اقتراحات لك</h3><div id="suggestedBooksList">اختر صفك لرؤية اقتراحات مناسبة.</div></div></div></section>
+  <section id="library-smart" style="display:none;max-width:1200px;margin:0 auto 30px;padding:0 16px"><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px"><div class="book-card"><h3>🕘 آخر الكتب</h3><div id="lastBooksList">لا توجد كتب مفتوحة مؤخرًا.</div></div><div class="book-card"><h3>⭐ المفضلة</h3><div id="favoriteBooksList">لا توجد كتب مفضلة بعد.</div></div><div class="book-card"><h3>💡 اقتراحات لك</h3><div id="suggestedBooksList">اختر صفك لرؤية اقتراحات مناسبة.</div></div></div></section>
 
 <!-- =========================================
        FOOTER
@@ -2082,8 +2125,8 @@ function renderGrades() {
 
   label.textContent =
     currentStage === "prep"
-      ? "القسم الإعدادي"
-      : "القسم الثانوي";
+      ? "المرحلة الإعدادية"
+      : "المرحلة الثانوية الأزهرية";
 
 
   grades[currentStage].forEach(
@@ -2143,7 +2186,7 @@ function renderGrades() {
                   ${isDarkMode ? "#94a3b8" : "#64748b"};
               "
             >
-              📚 عرض الكتب
+              ${contentTypeMeta[currentContentType]?.icon || "📚"} عرض ${contentTypeMeta[currentContentType]?.name || "المحتوى"}
             </div>
 
           </div>
@@ -2819,7 +2862,7 @@ const defaultConfig = {
     "المكتبة التعليمية",
 
   subtitle:
-    "جميع الكتب والمذكرات التعليمية في مكان واحد 🚀",
+    "الكتب والملخصات والأسئلة التعليمية في مكان واحد 🚀",
 
   search_placeholder:
     "ابحث عن الكتاب...",
@@ -3119,6 +3162,188 @@ function initBookTools(){
   });
 }
 
+
+/* =========================================================
+   NEW LIBRARY HIERARCHY
+   النوع ← المرحلة ← الصف ← المادة ← الملفات
+========================================================= */
+
+let currentContentType = null;
+let currentSubject = null;
+
+const contentTypeMeta = {
+  books: {name:"الكتب", icon:"📚"},
+  summaries: {name:"الملخصات", icon:"📝"},
+  questions: {name:"الأسئلة", icon:"❓"}
+};
+
+function getMaterialType(book){
+  // الأقسام الجديدة تُحدَّد صراحةً فقط عند إضافة ملفات جديدة لاحقًا.
+  // كل المحتوى الموجود حاليًا — بما فيه ملفات الأسئلة/التدريبات/الامتحانات القديمة — يبقى داخل قسم الكتب.
+  const explicitType=(book.contentType||book.materialType||"").toLowerCase();
+  if(explicitType==="summaries") return "summaries";
+  if(explicitType==="questions") return "questions";
+  if(explicitType==="books") return "books";
+  return "books";
+}
+
+function getBookSubject(book){
+  const t=((book.title||"")+" "+(book.desc||"")).toLowerCase();
+  const subjects=[
+    ["القرآن الكريم",/قرآن|القران|تجويد|قراءات/],
+    ["التفسير",/تفسير/],
+    ["التوحيد",/توحيد|عقيدة/],
+    ["الحديث",/حديث/],
+    ["الفقه",/فقه/],
+    ["السيرة",/سيرة/],
+    ["النحو",/نحو/],
+    ["الصرف",/صرف/],
+    ["البلاغة",/بلاغة/],
+    ["الأدب",/أدب|ادب/],
+    ["اللغة العربية",/لغة عربية|عربي/],
+    ["العلوم المتكاملة",/علوم متكاملة/],
+    ["العلوم",/علوم/],
+    ["الرياضيات",/رياضيات|جبر|هندسة|تفاضل|تكامل|حساب مثلثات/],
+    ["اللغة الإنجليزية",/إنجليزي|انجليزي|english/],
+    ["اللغة الفرنسية",/فرنساوي|فرنسي|french/],
+    ["الفلسفة والمنطق",/فلسفة|منطق/],
+    ["التاريخ",/تاريخ/],
+    ["الدراسات الاجتماعية",/دراسات/],
+    ["البرمجة وتكنولوجيا المعلومات",/برمجة|تكنولوجيا|حاسب|كمبيوتر|ict/]
+  ];
+  for(const [name,re] of subjects){ if(re.test(t)) return name; }
+  if(book.cat==="مواد شرعية") return "العلوم الشرعية";
+  if(book.cat==="لغة عربية") return "اللغة العربية";
+  if(book.cat==="مواد علمية") return "مواد علمية";
+  if(book.cat==="لغات") return "اللغات";
+  return book.cat || "مواد متنوعة";
+}
+
+function subjectIcon(subject){
+  const m={
+    "القرآن الكريم":"📖","التفسير":"📖","التوحيد":"☝️","الحديث":"🕌","الفقه":"⚖️","السيرة":"🌙",
+    "النحو":"✍️","الصرف":"🔤","البلاغة":"🗣️","الأدب":"📜","اللغة العربية":"📘",
+    "العلوم المتكاملة":"🔬","العلوم":"🧪","الرياضيات":"📐","اللغة الإنجليزية":"🇬🇧","اللغة الفرنسية":"🇫🇷",
+    "الفلسفة والمنطق":"💭","التاريخ":"🏛️","الدراسات الاجتماعية":"🌍","البرمجة وتكنولوجيا المعلومات":"💻",
+    "العلوم الشرعية":"🕌","مواد علمية":"🔬","اللغات":"🌐","مواد متنوعة":"📚"
+  };
+  return m[subject]||"📚";
+}
+
+function stageName(){ return currentStage==="prep" ? "المرحلة الإعدادية" : "المرحلة الثانوية الأزهرية"; }
+function gradeName(id){
+  return ({"1prep":"الصف الأول الإعدادي","2prep":"الصف الثاني الإعدادي","3prep":"الصف الثالث الإعدادي","1sec":"الصف الأول الثانوي","2sec":"الصف الثاني الثانوي","3sec":"الصف الثالث الثانوي"})[id]||id;
+}
+
+function selectContentType(type){
+  currentContentType=type; currentSubject=null; currentGrade=null;
+  document.getElementById("content-type-section").style.display="none";
+  document.getElementById("stage-section").style.display="block";
+  document.getElementById("grade-section").style.display="none";
+  document.getElementById("subject-section").style.display="none";
+  document.getElementById("library-section").style.display="none";
+  document.getElementById("library-smart").style.display="none";
+  document.getElementById("stage-title").textContent="اختر المرحلة — "+contentTypeMeta[type].name;
+  document.getElementById("stage-section").scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+function selectStage(stage){
+  currentStage=stage; currentGrade=null; currentSubject=null;
+  updateStageButtons(); renderGrades();
+  document.getElementById("grade-section").style.display="block";
+  document.getElementById("subject-section").style.display="none";
+  document.getElementById("library-section").style.display="none";
+  document.getElementById("library-smart").style.display="none";
+  document.getElementById("grade-section").scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+function selectGrade(grade){
+  currentGrade=grade; currentSubject=null; currentFilter="all"; currentSort="popular";
+  const search=document.getElementById("search-input"); if(search) search.value="";
+  renderSubjects();
+  document.getElementById("subject-section").style.display="block";
+  document.getElementById("library-section").style.display="none";
+  document.getElementById("library-smart").style.display="none";
+  document.getElementById("subject-section").scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+function renderSubjects(){
+  const grid=document.getElementById("subject-grid");
+  const crumb=document.getElementById("subject-crumbs");
+  const typeName=contentTypeMeta[currentContentType]?.name||"المحتوى";
+  crumb.textContent=typeName+" ← "+stageName()+" ← "+gradeName(currentGrade);
+  const relevant=books.filter(b=>b.grade===currentGrade && getMaterialType(b)===currentContentType);
+  const counts={}; relevant.forEach(b=>{const s=getBookSubject(b);counts[s]=(counts[s]||0)+1;});
+  const subjects=Object.keys(counts).sort((a,b)=>a.localeCompare(b,"ar"));
+  if(!subjects.length){
+    grid.innerHTML=`<div class="empty-box col-span-full rounded-2xl text-center py-14 px-5" style="background:#1e293b;color:#94a3b8"><div class="text-5xl mb-4">📭</div><div class="text-lg font-bold mb-2">لا يوجد محتوى مضاف هنا حاليًا</div><div class="text-sm">سيظهر هنا بمجرد إضافة ملفات لهذا الصف والقسم.</div></div>`;
+    return;
+  }
+  grid.innerHTML=subjects.map(subject=>`<button class="hierarchy-card" onclick="selectSubject(${JSON.stringify(subject).replace(/"/g,'&quot;')})"><div class="h-icon">${subjectIcon(subject)}</div><div class="h-title">${subject}</div><div class="h-sub">${counts[subject]} ${counts[subject]===1?'ملف':'ملفات'} — اضغط للعرض</div></button>`).join("");
+}
+
+function selectSubject(subject){
+  currentSubject=subject; currentFilter="all"; currentSort="popular";
+  const typeName=contentTypeMeta[currentContentType]?.name||"المحتوى";
+  document.getElementById("library-label").textContent=typeName+" — "+gradeName(currentGrade);
+  document.getElementById("library-title").textContent=subject+" — "+typeName;
+  document.getElementById("search-input").placeholder="ابحث داخل "+subject+"...";
+  document.getElementById("library-section").style.display="block";
+  document.getElementById("library-smart").style.display="block";
+  updateSortButtons(); applySort();
+  setTimeout(()=>document.getElementById("library-section").scrollIntoView({behavior:"smooth",block:"start"}),80);
+}
+
+function getFilteredBooks(){
+  let filtered=books.filter(book=>
+    book.grade===currentGrade &&
+    getMaterialType(book)===currentContentType &&
+    (!currentSubject || getBookSubject(book)===currentSubject)
+  );
+  const searchTerm=(document.getElementById("search-input")?.value||"").trim().toLowerCase();
+  if(searchTerm){filtered=filtered.filter(book=>((book.title||"")+" "+(book.desc||"")+" "+(book.cat||"")).toLowerCase().includes(searchTerm));}
+  return filtered;
+}
+
+function backToContentTypes(){
+  document.getElementById("stage-section").style.display="none";
+  document.getElementById("grade-section").style.display="none";
+  document.getElementById("subject-section").style.display="none";
+  document.getElementById("library-section").style.display="none";
+  document.getElementById("library-smart").style.display="none";
+  document.getElementById("content-type-section").style.display="block";
+  currentContentType=null; currentGrade=null; currentSubject=null;
+  document.getElementById("content-type-section").scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+function backToStages(){
+  document.getElementById("grade-section").style.display="none";
+  document.getElementById("subject-section").style.display="none";
+  document.getElementById("library-section").style.display="none";
+  document.getElementById("library-smart").style.display="none";
+  document.getElementById("stage-section").style.display="block";
+  currentGrade=null; currentSubject=null;
+  document.getElementById("stage-section").scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+function backToGrades(){
+  document.getElementById("subject-section").style.display="none";
+  document.getElementById("library-section").style.display="none";
+  document.getElementById("library-smart").style.display="none";
+  document.getElementById("grade-section").style.display="block";
+  currentSubject=null;
+  document.getElementById("grade-section").scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+function backToSubjects(){
+  document.getElementById("library-section").style.display="none";
+  document.getElementById("library-smart").style.display="none";
+  document.getElementById("subject-section").style.display="block";
+  currentSubject=null;
+  document.getElementById("subject-section").scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+
 /* =========================================================
    INITIALIZE
 ========================================================= */
@@ -3129,9 +3354,12 @@ document.addEventListener(
 
     renderGrades();
 
-    document
-      .getElementById("library-section")
-      .style.display = "none";
+    document.getElementById("content-type-section").style.display = "block";
+    document.getElementById("stage-section").style.display = "none";
+    document.getElementById("grade-section").style.display = "none";
+    document.getElementById("subject-section").style.display = "none";
+    document.getElementById("library-section").style.display = "none";
+    document.getElementById("library-smart").style.display = "none";
 
     updateStageButtons();
 
@@ -3169,6 +3397,7 @@ document.addEventListener(
         books.push({
           title:b.title, icon:b.icon||'📚', cat:b.category||'مواد متنوعة',
           grade:b.grade||'', desc:b.description||'', url:b.url,
+          contentType:b.contentType||b.materialType||'',
           date:Number(b.date||Date.now()), popular:Number(b.popular||0)
         });
       });
