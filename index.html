@@ -1222,5 +1222,99 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&modal&&!modal.hidde
 
 </script>
 
+    <!-- ═══════════ CHATBOT SECTION (المضاف حديثاً) ═══════════ -->
+    <!-- ═══════════ CHATBOT SECTION (الألوان المتناسقة مع الهوية) ═══════════ -->
+    <button
+      id="chat-toggle-btn"
+      class="fixed bottom-20 right-6 w-14 h-14 bg-[#0f172a] hover:bg-[#1e293b] text-[#c9a84c] rounded-full flex items-center justify-center z-50 transition-all duration-300 transform hover:scale-110 focus:outline-none border border-[#c9a84c] shadow-[0_0_25px_rgba(201,168,76,0.6)] animate-pulse"
+    >
+      <i class="fas fa-comments text-xl"></i>
+    </button>
+
+    <div
+      id="chat-box"
+      class="fixed bottom-36 right-6 w-[min(360px,calc(100vw-32px))] h-[480px] max-h-[calc(100dvh-140px)] bg-white rounded-2xl shadow-2xl border border-gray-100 flex flex-col z-50 transition-all duration-300 hidden overflow-hidden"
+      style="font-family: &quot;Cairo&quot;, sans-serif"
+    >
+      <div
+        class="bg-[#0f172a] p-4 text-white flex justify-between items-center shadow-md border-b border-[#c9a84c]/20"
+      >
+        <div class="flex items-center gap-3">
+          <div
+            class="w-9 h-9 bg-white/5 rounded-full flex items-center justify-center border border-[#c9a84c]/30"
+          >
+            <i class="fas fa-robot text-[#e8c96d]"></i>
+          </div>
+          <div>
+            <h6 class="m-0 font-bold text-sm text-[#e8c96d]">
+              مساعد زاد المعرفة 🤖
+            </h6>
+            <span class="text-[10px] text-gray-300 block"
+              >مساعد دراسي ذكي لمساعدتك في التعلم</span
+            >
+          </div>
+        </div>
+        <div class="zad-chat-actions"><button type="button" id="chat-new" title="محادثة جديدة" aria-label="محادثة جديدة">↻</button>
+        <button type="button" id="chat-expand" title="تكبير أو تصغير" aria-label="تكبير الشات">⛶</button>
+        <button
+          id="close-chat"
+          class="text-gray-400 hover:text-white transition-colors focus:outline-none"
+        >
+          <i class="fas fa-times text-lg"></i>
+        </button></div>
+      </div>
+
+      <div
+        id="chat-messages"
+        class="flex-1 p-4 overflow-y-auto bg-gray-50 space-y-3"
+        style="scroll-behavior: smooth"
+      >
+        <div class="flex justify-start">
+          <div
+            class="bg-white text-gray-800 p-3 rounded-2xl rounded-tr-none shadow-sm max-w-[85%] text-xs leading-relaxed border border-gray-100"
+          >
+            مرحباً بك يا طالب العلم في منصة زاد المعرفة! 📚 كيف يمكنني مساعدتك
+            اليوم في المواد الشرعية أو العربية؟
+          </div>
+        </div>
+      </div>
+
+      <div class="zad-chat-quick" aria-label="اختصارات مساعد زاد المعرفة">
+<button type="button" data-chat-prompt="اشرح لي درس المبتدأ والخبر في النحو مع أمثلة وتدريب">📘 شرح درس</button>
+<button type="button" data-chat-prompt="اختبرني بثلاثة أسئلة نحو للثانوي، سؤالًا واحدًا في كل مرة">🧠 اختبرني</button>
+<button type="button" data-chat-prompt="لخص لي الفرق بين أركان الإسلام وأركان الإيمان بشكل مبسط">📝 تلخيص</button>
+<button type="button" data-chat-prompt="ساعدني أعمل جدول مذاكرة متوازن لمدة أسبوع">📅 خطة مذاكرة</button>
+<button type="button" data-chat-prompt="ابحث عن توحيد الثاني الثانوي">🔎 ابحث في المكتبة</button>
+<a href="sections/library.html">📚 المكتبة ↗</a>
+<a href="sections/booking/index.html">🗓️ احجز حصة ↗</a>
+<a href="login/register.html">👤 التسجيل ↗</a>
+</div>
+      <p id="chat-status" class="zad-chat-status" role="status" aria-live="polite">مساعد تعليمي — قد يخطئ، فتأكد من المعلومات المهمة</p>
+      <div class="p-3 bg-white border-t border-gray-100">
+        <form id="chat-form" class="flex items-center gap-2">
+          <input
+            id="chat-input"
+            type="text"
+            maxlength="2000"
+            aria-label="سؤالك للمساعد"
+            class="flex-1 bg-gray-100 border-0 p-2 px-4 rounded-full text-xs focus:ring-2 focus:ring-[#c9a84c] focus:bg-white outline-none text-gray-800"
+            placeholder="اسأل عن درسك، أو ابحث عن كتاب..."
+            autocomplete="off"
+          />
+          <button
+            id="chat-submit"
+            type="submit"
+            class="w-8 h-8 bg-[#0f172a] hover:bg-[#1e293b] text-[#c9a84c] rounded-full flex items-center justify-center shrink-0 transition-colors shadow-md"
+          >
+            <i class="fas fa-paper-plane text-xs transform rotate-180"></i>
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- استدعاء سكريبت البوت المنفصل -->
+    <link rel="stylesheet" href="chatbot-enhanced.css" />
+    <script src="chatbot.js" defer></script>
+
 </body>
 </html>
