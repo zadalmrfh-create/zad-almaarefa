@@ -14,6 +14,24 @@ const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-3.8-flash";
 const ai = GEMINI_API_KEY ? new GoogleGenAI({ apiKey: GEMINI_API_KEY }) : null;
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+const GEMINI_TIMEOUT_MS = 12000;
+// Allow the existing GitHub Pages site to call only the public chatbot endpoints.
+const allowedOrigins = new Set([
+  "https://zadalmrfh-create.github.io",
+  "http://localhost:3000",
+  "http://127.0.0.1:3000"
+]);
+app.use("/api", (req, res, next) => {
+  const origin = req.get("origin");
+  if (origin && allowedOrigins.has(origin)) {
+    res.set("Access-Control-Allow-Origin", origin);
+    res.set("Vary", "Origin");
+    res.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+    res.set("Access-Control-Allow-Headers", "Content-Type");
+  }
+  if (req.method === "OPTIONS") return res.sendStatus(origin && !allowedOrigins.has(origin) ? 403 : 204);
+  next();
+});
 
 // فهرسة النصوص مباشرة جوه الكود لضمان استقرار بيئة Serverless بنسبة 100%
 const ALL_BOOKS_PARAGRAPHS = [
@@ -142,24 +160,25 @@ app.post("/api/chat", limitChat, async (req, res) => {
     const request = {
       model: GEMINI_MODEL,
       contents,
-      config: { systemInstruction, maxOutputTokens: 1600, temperature: 0.5 }
+      config: { systemInstruction, maxOutputTokens: 1600, temperature: 0.5, httpOptions: { timeout: GEMINI_TIMEOUT_MS } }
     };
 
     let response;
-    for (let attempt = 0; attempt < 3; attempt++) {
+    for (let attempt = 0; attempt < 2; attempt++) {
       try {
         response = await ai.models.generateContent(request);
         break;
       } catch (error) {
-        if (![429, 500, 502, 503, 504].includes(error.status) || attempt === 2) throw error;
-        await sleep(1000 * (2 ** attempt));
+        if (![429, 500, 502, 503, 504].includes(error.status) || attempt === 1) throw error;
+        await sleep(700);
       }
     }
     res.json({ reply: response.text || "لم يصل رد من Gemini، حاول مرة أخرى.", sources:booksFound.slice(0,4), excerpts:excerpts.map(({title,url})=>({title,url})) });
   } catch (error) {
     console.error("Gemini API Error:", error.status, String(error.message).slice(0, 350));
     const status = error.status;
-    const errorText = status === 400 || status === 401
+    const timedOut = /timeout|timed out|abort/i.test(String(error.message || "")) || error.name === "AbortError";
+    const errorText = timedOut ? "تأخر رد Gemini. حاول مرة أخرى بعد قليل." : status === 400 || status === 401
       ? "مفتاح Gemini غير صحيح أو الطلب غير مقبول. راجع إعدادات المفتاح."
       : status === 404
         ? `النموذج ${GEMINI_MODEL} غير متاح لهذا المفتاح. غيّر GEMINI_MODEL في .env.`
@@ -168,7 +187,7 @@ app.post("/api/chat", limitChat, async (req, res) => {
           : status === 503
             ? "خدمة Gemini مشغولة حاليًا. حاول بعد شوية."
             : "تعذر الحصول على رد من Gemini حاليًا.";
-    res.status([400,401,404,429,503].includes(status) ? status : 502).json({ error: errorText });
+    res.status(timedOut ? 504 : ([400,401,404,429,503].includes(status) ? status : 502)).json({ error: errorText });
   }
 });
 

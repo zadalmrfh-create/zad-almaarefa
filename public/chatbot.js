@@ -1,4 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
+ const API_BASE = (location.hostname === "zadalmrfh-create.github.io") ? "https://zad-almaarefa.vercel.app" : "";
  const $=id=>document.getElementById(id), panel=$("chat-box"),toggle=$("chat-toggle-btn"),messages=$("chat-messages"),form=$("chat-form"),input=$("chat-input"),submit=$("chat-submit");
  if(!panel||!toggle||!messages||!form||!input)return;
  let history=[],busy=false,controller=null,typingTimer=null;
@@ -29,18 +30,18 @@ document.addEventListener("DOMContentLoaded", () => {
  async function localLibrary(question){
   const match=question.match(/^(?:ابحث(?: لي)? عن|دور(?: لي)? على)\s+(.+)/);
   if(!match)return false;
-  const result=await fetch("/api/library-search?q="+encodeURIComponent(match[1])).then(r=>r.ok?r.json():Promise.reject(new Error("تعذر البحث في فهرس المكتبة")));
+  const result=await fetch(API_BASE + "/api/library-search?q="+encodeURIComponent(match[1])).then(r=>r.ok?r.json():Promise.reject(new Error("تعذر البحث في فهرس المكتبة")));
   bubble(result.results.length?"لقيت الكتب دي في فهرس المنصة. اضغط على أي عنوان لفتحه:":"ملقتش كتاب مطابق في فهرس المنصة. جرّب اسم المادة أو الصف.");
   sources(result.results,"نتائج المكتبة");return true;
  }
  form.addEventListener("submit",async e=>{
   e.preventDefault();if(busy)return;const q=input.value.trim();if(!q||q.length>2000)return;
-  bubble(q,"user");input.value="";setBusy(true);controller=new AbortController();const current=controller;const timeout=setTimeout(()=>current.abort(),60000);
+  bubble(q,"user");input.value="";setBusy(true);controller=new AbortController();const current=controller;const timeout=setTimeout(()=>current.abort(),35000);
   let pending=null;
   try{
    if(await localLibrary(q))return;
    pending=bubble("جارٍ التفكير في إجابتك…");
-   const response=await fetch("/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({message:q,history:history.slice(-10)}),signal:current.signal});
+   const response=await fetch(API_BASE + "/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({message:q,history:history.slice(-10)}),signal:current.signal});
    const data=await response.json().catch(()=>({}));pending.line.remove();pending=null;
    if(!response.ok||!data.reply)throw new Error(data.error||"تعذر الحصول على رد، حاول مرة أخرى.");
    const reply=String(data.reply).slice(0,14000);const result=bubble("");
