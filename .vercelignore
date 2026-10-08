@@ -1,0 +1,10 @@
+.env
+.env.*
+!.env.example
+node_modules
+.git
+.gitignore
+start-local.bat
+local-server.js
+firestore.rules
+README-GITHUB-AR.md

@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>إنشاء حساب | زاد المعرفة</title>
+  <link rel="icon" type="image/png" href="../images/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="login.css">
+  <style>
+    .register-options { margin-top: 8px; }
+    .field { margin-bottom: 14px; }
+    .field label { display:block; margin-bottom:7px; }
+    .field input, .role-select {
+      width:100%; box-sizing:border-box; padding:12px 13px;
+      border-radius:12px; border:1px solid var(--border);
+      background:rgba(255,255,255,.05); color:var(--text);
+      font-family:inherit; outline:none;
+    }
+    .role-select option { color:#111827; background:#fff; }
+    .password-wrap { position:relative; }
+    .password-wrap input { padding-left:48px; }
+    #togglePassword {
+      position:absolute; left:8px; top:50%; transform:translateY(-50%);
+      border:0; background:transparent; color:var(--muted); cursor:pointer;
+      font-size:18px;
+    }
+    .small-note { color:var(--muted); font-size:12px; margin:8px 0 0; line-height:1.7; }
+  
+    .hidden-field { display:none !important; }
+
+    .hidden { display:none !important; }
+</style>
+
+<link rel="stylesheet" href="../assets/translation.css">
+<script src="../assets/translation.js"></script>
+<script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+<script src="../content-protection.js" defer></script>
+</head>
+<body>
+<main class="login-page">
+  <a class="back-home" href="../index.html">← العودة إلى المنصة</a>
+
+  <section class="login-card">
+    <div class="brand">
+      <img src="../images/logo.png" alt="زاد المعرفة">
+      <h1>إنشاء حساب</h1>
+      <p>انضم إلى منصة زاد المعرفة 👋</p>
+    </div>
+
+    <p id="message" class="message" role="alert" aria-live="polite"></p>
+
+    <div class="register-options">
+      <div class="field">
+        <label for="role">نوع الحساب</label>
+        <select id="role" class="role-select">
+          <option value="student">🎓 طالب</option>
+          <option value="teacher">👨‍🏫 معلم</option>
+        </select>
+      </div>
+
+      <form id="emailRegisterForm">
+        <div class="field">
+          <label for="fullName">الاسم بالكامل</label>
+          <input id="fullName" type="text" placeholder="اكتب اسمك بالكامل" autocomplete="name" required>
+        </div>
+
+        <div class="field">
+          <label for="phone">رقم الهاتف</label>
+          <input id="phone" type="tel" placeholder="مثال: 01012345678" autocomplete="tel" required>
+        </div>
+
+        <div class="field">
+          <label for="grade" id="gradeLabel">الصف الدراسي</label>
+          <input id="grade" type="text" placeholder="مثال: أولى ثانوي أزهري" autocomplete="off" required>
+        </div>
+
+        <div class="field">
+          <label for="country">البلد</label>
+          <input id="country" type="text" placeholder="مثال: مصر" autocomplete="country-name" required>
+        </div>
+
+        <div class="field">
+          <label for="city">المدينة</label>
+          <input id="city" type="text" placeholder="مثال: القاهرة" autocomplete="address-level2" required>
+        </div>
+
+        <div class="field">
+          <label for="registerEmail">البريد الإلكتروني</label>
+          <input id="registerEmail" type="email" placeholder="example@email.com" autocomplete="email" required>
+        </div>
+
+        <div class="field">
+          <label for="registerPassword">كلمة المرور</label>
+          <div class="password-wrap">
+            <input id="registerPassword" type="password" placeholder="6 أحرف على الأقل" autocomplete="new-password" minlength="6" required>
+            <button id="togglePassword" type="button" aria-label="إظهار كلمة المرور">👁</button>
+          </div>
+        </div>
+
+        <button id="emailRegisterBtn" class="submit-btn" type="submit">إنشاء الحساب</button>
+      </form>
+
+    </div>
+
+    <p class="register">
+      لديك حساب بالفعل؟
+      <a href="index.html">تسجيل الدخول</a>
+    </p>
+  </section>
+</main>
+
+<script type="module" src="register.js"></script>
+</body>
+</html>
