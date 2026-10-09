@@ -50,6 +50,24 @@
 <link rel="stylesheet" href="../../assets/translation.css">
 <script src="../../assets/translation.js"></script>
 <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+<style id="zad-admin-gate-style">html:not(.zad-admin-authorized) body{visibility:hidden}html.zad-admin-denied body{visibility:visible}</style>
+<script type="module">
+import {auth, db} from '../../firebase-config.js';
+import {onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
+import {doc, getDoc} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
+onAuthStateChanged(auth, async (user) => {
+  if (!user) { location.replace('../../login/index.html'); return; }
+  try {
+    const approved = (await getDoc(doc(db, 'admins', user.uid))).exists()
+       || (user.email?.toLowerCase() === 'maleksameh121@gmail.com' && user.emailVerified);
+    if (!approved) { location.replace('../../index.html'); return; }
+    document.documentElement.classList.add('zad-admin-authorized');
+  } catch (error) {
+    console.error('Admin permission check failed:', error);
+    location.replace('../../index.html');
+  }
+});
+</script>
 </head>
 
 
@@ -5115,6 +5133,17 @@ onAuthStateChanged(
 <script type="module" src="reports-admin.js"></script>
 <script type="module" src="admin-enhancements.js"></script>
 <script type="module" src="attendance-admin.js"></script>
+
+<section id="zad-study-inbox" dir="rtl" style="max-width:1200px;margin:32px auto;padding:22px;background:#151f32;color:#f5e9cc;border:1px solid #b7964b;border-radius:18px;font-family:Cairo,Tajawal,Arial,sans-serif">
+<h2 style="margin:0 0 10px">📩 أسئلة الطلاب الدراسية</h2><p>الأسئلة الواردة من مساعد الصفحة الرئيسية. يظهر الرد للطالب داخل لوحة الطالب.</p>
+<div id="zad-study-items" aria-live="polite">جاري التحميل...</div></section>
+<script type="module">
+import {auth,db} from '../../firebase-config.js';
+import {onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
+import {collection,onSnapshot,query,orderBy,doc,updateDoc,serverTimestamp} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
+const panel=document.getElementById('zad-study-items');
+onAuthStateChanged(auth,user=>{if(!user){panel.textContent='سجل الدخول كمسؤول لعرض الأسئلة.';return}onSnapshot(query(collection(db,'studyQuestions'),orderBy('createdAt','desc')),snap=>{panel.replaceChildren();if(snap.empty){panel.textContent='لا توجد أسئلة حتى الآن.';return}snap.docs.slice(0,100).forEach(item=>{const d=item.data(),article=document.createElement('article');article.style.cssText='margin:12px 0;padding:14px;border:1px solid #65542f;border-radius:12px';const question=document.createElement('p');question.textContent=(d.studentName||'طالب')+' — '+(d.question||'');article.appendChild(question);const status=document.createElement('small');status.textContent=d.status==='answered'?'تم الرد':'بانتظار الرد';article.appendChild(status);const input=document.createElement('textarea');input.rows=2;input.maxLength=3000;input.placeholder='اكتب الرد للطالب...';input.value=d.reply||'';input.style.cssText='display:block;width:100%;margin:8px 0;background:#fff;color:#111;padding:8px;border-radius:8px';article.appendChild(input);const btn=document.createElement('button');btn.type='button';btn.textContent='إرسال الرد';btn.style.cssText='background:#c9a84c;color:#111;padding:8px 15px;border:0;border-radius:8px;cursor:pointer';btn.onclick=async()=>{if(!input.value.trim())return;btn.disabled=true;try{await updateDoc(doc(db,'studyQuestions',item.id),{reply:input.value.trim(),status:'answered',answeredAt:serverTimestamp()})}catch(e){alert('تعذر حفظ الرد: '+e.message)}finally{btn.disabled=false}};article.appendChild(btn);panel.appendChild(article)})},e=>{panel.textContent='تعذر تحميل الأسئلة: '+e.message})});
+</script>
 </body>
 
 </html>

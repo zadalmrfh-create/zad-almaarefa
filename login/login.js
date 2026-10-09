@@ -121,7 +121,9 @@ async function redirectAfterLogin(user) {
   try {
     const snap = await getDoc(doc(db, 'users', user.uid));
     const profile = snap.exists() ? snap.data() : {};
-    if (profile.role === 'admin') {
+    // تأكيد صلاحية الإدارة من سجل admins المخصص، لا من واجهة المستخدم وحدها.
+    const adminSnap = await getDoc(doc(db, 'admins', user.uid));
+    if (adminSnap.exists() || (user.email?.toLowerCase() === 'maleksameh121@gmail.com' && user.emailVerified)) {
       window.location.replace('../dashboard/admin/index.html');
     } else if (profile.role === 'teacher' && profile.status === 'active') {
       window.location.replace('../dashboard/teacher/index.html');

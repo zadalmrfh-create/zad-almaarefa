@@ -50,7 +50,6 @@ service cloud.firestore {
         );
 
       allow read: if isOwner(uid) || isAdmin()
-        || (isTeacher() && resource.data.role == 'student')
         || (signedIn() && resource.data.role == 'teacher' && resource.data.status == 'active');
 
       // المستخدم يستطيع تعديل بياناته الأساسية فقط.
@@ -69,7 +68,7 @@ service cloud.firestore {
           ])
         );
 
-      allow delete: if isOwner(uid) || isAdmin();
+      allow delete: if isAdmin();
     }
 
     match /users/{uid}/fcmTokens/{tokenId} {
@@ -117,7 +116,10 @@ service cloud.firestore {
         && request.resource.data.userId == request.auth.uid
         && request.resource.data.bookTitle is string
         && request.resource.data.bookUrl is string
-        && request.resource.data.source in ['general', 'azhar'];
+        && request.resource.data.source in ['general', 'azhar']
+        && request.resource.data.bookTitle.size() > 0
+        && request.resource.data.bookTitle.size() <= 250
+        && request.resource.data.bookUrl.size() <= 2048;
       allow read, update, delete: if isAdmin();
     }
 
@@ -143,11 +145,15 @@ service cloud.firestore {
       allow update: if signedIn()
         && resource.data.audience == 'user'
         && resource.data.targetUid == request.auth.uid
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['readBy']);
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['readBy'])
+        && request.resource.data.readBy is list
+        && request.resource.data.readBy.hasAll(resource.data.get('readBy', []));
 
       allow update: if signedIn()
         && resource.data.audience == 'all'
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['readBy']);
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['readBy'])
+        && request.resource.data.readBy is list
+        && request.resource.data.readBy.hasAll(resource.data.get('readBy', []));
     }
 
     match /bookings/{bookingId} {
@@ -182,6 +188,8 @@ service cloud.firestore {
           isTeacher()
           && resource.data.teacherUid == request.auth.uid
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'updatedAt'])
+          && request.resource.data.status is string
+          && request.resource.data.status.size() <= 40
         );
 
       allow delete: if isAdmin();
@@ -303,6 +311,22 @@ service cloud.firestore {
       allow update, delete: if isAdmin();
     }
 
+
+    match /studyQuestions/{questionId} {
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['studentUid','studentName','question','status','reply','createdAt'])
+        && request.resource.data.studentUid == request.auth.uid
+        && request.resource.data.question is string
+        && request.resource.data.question.size() > 2
+        && request.resource.data.question.size() <= 500
+        && request.resource.data.studentName is string
+        && request.resource.data.studentName.size() <= 90
+        && request.resource.data.status == 'pending'
+        && request.resource.data.reply == ''
+        && request.resource.data.createdAt == request.time;
+      allow read: if isAdmin() || (signedIn() && resource.data.studentUid == request.auth.uid);
+      allow update, delete: if isAdmin();
+    }
 
     match /auditLogs/{logId} {
       allow read: if isAdmin();

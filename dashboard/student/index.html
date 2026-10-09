@@ -236,6 +236,21 @@
       <div id="studentProgressMessage" class="notice" style="margin-top:14px">سيظهر ملخص تقدمك هنا.</div>
     </section>
 
+
+<section class="card student-panel" data-student-panel="progress" id="recentBooksCard" style="margin-top:14px">
+<h3>📚 آخر الكتب المفتوحة على هذا الجهاز</h3><p style="color:var(--muted);font-size:.9rem">السجل محفوظ في هذا المتصفح فقط، ولا يمثل نشاط الطالب على جميع الأجهزة.</p>
+<div id="zadStudentRecentBooks" class="student-info-list"></div>
+</section>
+<script>
+(function(){const container=document.getElementById('zadStudentRecentBooks');if(!container)return;
+try{const keys=JSON.parse(localStorage.getItem('zadRecentBooks')||'[]');const items=Array.isArray(keys)?keys.slice(0,6):[];
+if(!items.length){container.textContent='لم تفتح أي كتب على هذا الجهاز حتى الآن.';return;}
+items.forEach(key=>{const parts=String(key).split('|');if(parts.length<2)return;const a=document.createElement('a');a.textContent='📖 '+parts[0];a.href=parts.slice(1).join('|');if(!/^https:\/\//.test(a.href)&&!/^http:\/\//.test(a.href)){return;}a.target='_blank';a.rel='noopener noreferrer';a.style.cssText='display:block;padding:10px;color:inherit';container.appendChild(a)});
+if(!container.children.length)container.textContent='لا توجد كتب محفوظة.';
+}catch(e){container.textContent='تعذر قراءة السجل المحلي.'}
+})();
+</script>
+
     <section class="card student-panel" data-student-panel="profile" id="profileCard">
       <div class="actions" style="justify-content:space-between"><div><h3>👤 ملفي الشخصي</h3><p id="profileLocationSummary" style="color:var(--muted);margin:4px 0">جارٍ التحميل…</p></div></div>
       <form id="profileForm" class="profile-grid" style="margin-top:12px">
@@ -1171,5 +1186,11 @@ document
 ></script>
 
 <script type="module" src="../student/student-enhancements.js"></script>
-<script>document.addEventListener('DOMContentLoaded',()=>{try{const recent=JSON.parse(localStorage.getItem('zadRecentBooks')||'[]');const fav=JSON.parse(localStorage.getItem('zadFavorites')||'[]');const reads=JSON.parse(localStorage.getItem('zadReadBooks')||'[]');const score=Math.min(100,(recent.length*8)+(fav.length*5)+(reads.length*12));const bar=document.getElementById('smartProgressBar'),txt=document.getElementById('smartProgressText');if(bar)bar.style.width=score+'%';if(txt)txt.textContent=score+'%';}catch(e){}});</script></body>
+<script>document.addEventListener('DOMContentLoaded',()=>{try{const recent=JSON.parse(localStorage.getItem('zadRecentBooks')||'[]');const fav=JSON.parse(localStorage.getItem('zadFavorites')||'[]');const reads=JSON.parse(localStorage.getItem('zadReadBooks')||'[]');const score=Math.min(100,(recent.length*8)+(fav.length*5)+(reads.length*12));const bar=document.getElementById('smartProgressBar'),txt=document.getElementById('smartProgressText');if(bar)bar.style.width=score+'%';if(txt)txt.textContent=score+'%';}catch(e){}});</script>
+<section dir="rtl" style="max-width:1000px;margin:25px auto;padding:20px;border-radius:16px;background:#17233b;color:#f4e8cd;border:1px solid #b5964a"><h2>📨 أسئلتي المرسلة للإدارة</h2><div id="zad-my-questions">جاري التحميل...</div></section>
+<script type="module">
+import {auth,db} from '../../firebase-config.js';import {onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';import {collection,query,where,onSnapshot} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
+const box=document.getElementById('zad-my-questions');onAuthStateChanged(auth,user=>{if(!user){box.textContent='سجل دخولك لمتابعة الأسئلة.';return}onSnapshot(query(collection(db,'studyQuestions'),where('studentUid','==',user.uid)),snap=>{box.replaceChildren();if(snap.empty){box.textContent='لم ترسل أسئلة بعد.';return}snap.docs.sort((a,b)=>(b.data().createdAt?.seconds||0)-(a.data().createdAt?.seconds||0)).forEach(it=>{let x=it.data(),p=document.createElement('div');p.style.cssText='padding:12px;border-bottom:1px solid #76663f';const q=document.createElement('strong');q.textContent=x.question||'';p.appendChild(q);const answer=document.createElement('p');answer.textContent=x.status==='answered'?'رد الإدارة: '+(x.reply||''):'⏳ بانتظار رد الإدارة';p.appendChild(answer);box.appendChild(p)})},e=>box.textContent='تعذر عرض الأسئلة: '+e.message)});
+</script>
+</body>
 </html>

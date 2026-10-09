@@ -4397,3 +4397,9 @@ html[dir="ltr"] #zad-translate-toggle{
   #zad-translate-toggle{right:12px !important;left:auto !important;bottom:12px !important;}
   html[dir="ltr"] #zad-translate-toggle{right:12px !important;left:auto !important;}
 }
+
+/* Zad 2.0: unified accessibility and responsive refinements */
+:focus-visible{outline:3px solid #c9a84c!important;outline-offset:3px!important}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}}
+img{max-width:100%;height:auto}button,a,input,select,textarea{touch-action:manipulation}
+@media(max-width:600px){.global-search-panel{padding:22px 16px;max-height:82vh;overflow:auto}.personal-home{padding:20px 16px}.home-quick-links{gap:9px}.quick-link-card{padding:14px 10px}}
