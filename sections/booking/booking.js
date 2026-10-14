@@ -87,7 +87,9 @@ async function loadBookingTeachers() {
 sectionSelect?.addEventListener("change", updateAssignedTeacher);
 subjectInput?.addEventListener("input", updateAssignedTeacher);
 
+let bookingSubmitting = false;
 form.addEventListener("submit", async event => {
+  if (bookingSubmitting) { event.preventDefault(); return; }
   event.preventDefault();
   if (!requireLogin()) return;
 
@@ -113,6 +115,9 @@ form.addEventListener("submit", async event => {
     autoAssignedTeacher: true
   };
 
+  bookingSubmitting = true;
+  const submitButton = form.querySelector('[type="submit"]');
+  if (submitButton) submitButton.disabled = true;
   try {
     const bookingRef = await addDoc(collection(db, "bookings"), payload);
 
@@ -135,7 +140,7 @@ form.addEventListener("submit", async event => {
       console.warn("تم حفظ الحجز، لكن تعذر إنشاء إشعار الإدارة:", notificationError);
     }
 
-    statusBox.innerHTML = `<strong>✅ تم استلام طلب الحجز</strong><br>الحالة: <b>في انتظار التأكيد</b><br>المعلم المحدد: ${assignedTeacher.name}<br><small>يمكنك متابعة حالة الطلب من لوحة حسابك.</small>`;
+    statusBox.innerHTML = `<strong>✅ تم استلام طلب الحجز</strong><br>الحالة: <b>في انتظار التأكيد وتحديد الموعد</b><br>المعلم المحدد: ${assignedTeacher.name}<br><small>يمكنك متابعة حالة الطلب من لوحة حسابك.</small>`;
     statusBox.className = "booking-status success";
     form.reset();
     if (initialSection && [...sectionSelect.options].some(o => o.value === initialSection)) sectionSelect.value = initialSection;
@@ -144,5 +149,8 @@ form.addEventListener("submit", async event => {
     console.error(error);
     statusBox.textContent = "تعذر إرسال الطلب: " + (error.code || error.message);
     statusBox.className = "booking-status error";
+  } finally {
+    bookingSubmitting = false;
+    if (submitButton) submitButton.disabled = false;
   }
 });

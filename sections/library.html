@@ -27,8 +27,6 @@
 
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
-  <script src="/_sdk/element_sdk.js"></script>
-  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
 
   <link
     href="https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@400;600;700;800&display=swap"
@@ -340,6 +338,7 @@ html.light .favorite-btn.favorite-active,body.light .favorite-btn.favorite-activ
       <button class="hierarchy-card" onclick="selectContentType('books')"><div class="h-icon">📚</div><div class="h-title">الكتب</div><div class="h-sub">الكتب الخارجية والكتب الدراسية الكاملة</div></button>
       <button class="hierarchy-card" onclick="selectContentType('summaries')"><div class="h-icon">📝</div><div class="h-title">الملخصات</div><div class="h-sub">ملخصات ومراجعات مرتبة حسب الصف والمادة</div></button>
       <button class="hierarchy-card" onclick="selectContentType('questions')"><div class="h-icon">❓</div><div class="h-title">الأسئلة</div><div class="h-sub">سيتم إضافة ملفات الأسئلة هنا لاحقًا</div></button>
+      <a class="hierarchy-card" href="tests/code-exams.html" style="text-decoration:none;color:inherit"><div class="h-icon">📝</div><div class="h-title">الامتحانات الإلكترونية</div><div class="h-sub">امتحانات تفاعلية ينشرها المسؤول</div></a>
     </div>
   </section>
 
@@ -3525,6 +3524,9 @@ document.addEventListener(
   const smartLibrary = document.getElementById('library-smart');
   if(smartLibrary) observer.observe(smartLibrary,{childList:true,subtree:true});
 </script>
+
+
+
 
 </body>
 </html>
