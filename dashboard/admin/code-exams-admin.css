@@ -1,1 +1,14 @@
 #codeExamsManagement .codeexam-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}#codeExamsManagement label{display:grid;gap:7px;font-weight:700}#codeExamsManagement input,#codeExamsManagement select,#codeExamsManagement textarea{width:100%;box-sizing:border-box;border:1px solid #4b5870;border-radius:10px;background:#101827;color:#fff;padding:12px;font:inherit}#ceCode{min-height:280px;font-family:Consolas,monospace!important;direction:ltr;resize:vertical;text-align:left}#codeExamsManagement .codeexam-code-label{margin-top:15px}#ceList .ce-item{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px;border:1px solid #344055;border-radius:12px;margin:9px 0;flex-wrap:wrap}#ceList .ce-item small{display:block;color:#bbc4d6}#ceList .ce-actions{display:flex;gap:6px;flex-wrap:wrap}#ceStatus{min-height:1.5em;color:#e8c96d}@media(max-width:650px){#codeExamsManagement .codeexam-fields{grid-template-columns:1fr}#ceList .ce-actions{width:100%}#ceFrame{height:400px!important}}
+/* Clear electronic-exam cards and result panels */
+a.hierarchy-card[href*="code-exams"]{color:#f8ead0!important;background:#26364e!important;border:2px solid #c9a84c!important;box-shadow:0 5px 18px #0003!important}
+a.hierarchy-card[href*="code-exams"] .h-title{color:#ffda67!important;font-weight:900!important}
+a.hierarchy-card[href*="code-exams"] .h-sub{color:#f1f4f9!important;font-weight:700!important;opacity:1!important}
+.zad-student-exam-section{max-width:1000px;margin:30px auto;padding:22px;border:1px solid #b5964a;background:#17233b;color:#f4e8cd;border-radius:16px}
+.zad-exam-result-row{border:1px solid #8c774c;border-radius:12px;padding:15px;margin:12px 0;background:#22324a;color:#fff;overflow-wrap:anywhere}
+.zad-exam-result-row button,.exam-result-actions button{background:#c9a84c;color:#15223a;border:0;border-radius:10px;padding:10px 17px;cursor:pointer;font-weight:800}
+/* Admin result management */
+#codeExamResultsList .zad-result-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px}
+#codeExamResultsList .zad-delete-result{background:#7f1d1d;color:#fff;border:1px solid #fca5a5;border-radius:10px;padding:9px 14px;cursor:pointer;font:inherit}
+#codeExamResultsList .zad-delete-result:hover{background:#991b1b}
+#codeExamResultsList .zad-delete-result:disabled{opacity:.6;cursor:wait}
+#codeExamResultsList .zad-delete-status{font-size:.85rem}

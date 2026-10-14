@@ -339,6 +339,29 @@ service cloud.firestore {
       }
     }
 
+    // Client-reported results: learners may not change or remove earlier submissions.
+    // These scores are not administratively verified.
+    match /codeExamResults/{resultId} {
+      allow read: if isAdmin() || (signedIn() && resource.data.studentUid == request.auth.uid);
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['examId','examTitle','studentUid','studentName','score','total','percent','answers','excellent','source','verified','createdAt'])
+        && request.resource.data.studentUid == request.auth.uid
+        && request.resource.data.examId is string && request.resource.data.examId.size() <= 150
+        && request.resource.data.examTitle is string && request.resource.data.examTitle.size() <= 120
+        && request.resource.data.studentName is string && request.resource.data.studentName.size() <= 200
+        && request.resource.data.score is int && request.resource.data.total is int
+        && request.resource.data.total > 0 && request.resource.data.total <= 1000
+        && request.resource.data.score >= 0 && request.resource.data.score <= request.resource.data.total
+        && request.resource.data.percent is int && request.resource.data.percent >= 0 && request.resource.data.percent <= 100
+        && request.resource.data.excellent == (request.resource.data.percent >= 85)
+        && request.resource.data.answers is string && request.resource.data.answers.size() <= 12000
+        && request.resource.data.source == 'client-reported'
+        && request.resource.data.verified == false
+        && request.resource.data.createdAt == request.time
+        && exists(/databases/$(database)/documents/codeExams/$(request.resource.data.examId));
+      allow update, delete: if isAdmin();
+    }
+
     match /studyQuestions/{questionId} {
       allow create: if signedIn()
         && request.resource.data.keys().hasOnly(['studentUid','studentName','question','status','reply','createdAt'])
