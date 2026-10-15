@@ -1,0 +1,24 @@
+.zad-admin-tabs{display:flex;gap:9px;overflow-x:auto;scrollbar-width:thin;background:#101b2e;border:1px solid #33445b;border-radius:16px;padding:9px;margin:18px 0;position:sticky;top:0;z-index:45;scroll-margin-top:88px}
+.zad-admin-tab{border:1px solid #39485f;border-radius:12px;color:#f2f4f9;background:#1b293f;white-space:nowrap;padding:11px 15px;font-weight:800;font-family:inherit;cursor:pointer}
+.zad-admin-tab.active{color:#111;background:#e5bd3d;border-color:#e5bd3d}
+.zad-admin-panel[hidden]{display:none!important}
+.zad-admin-panel{display:grid;gap:16px;min-width:0;animation:zadPanelFade .18s ease}
+.zad-admin-panel>.card{min-width:0;margin:0}
+@keyframes zadPanelFade{from{opacity:.55;transform:translateY(3px)}to{opacity:1;transform:none}}
+@media(max-width:760px){
+  .zad-admin-tabs{position:sticky;top:0;z-index:65;margin:12px 0;padding:7px;border-radius:12px}
+  .zad-admin-tab{padding:11px 12px;font-size:13px}
+  .zad-admin-panels .table-wrap:not(.users-table-wrap){overflow:visible;max-width:100%;border:0}
+  .zad-admin-panels .table-wrap:not(.users-table-wrap) table{min-width:0!important;width:100%;border:0;display:block}
+  .zad-admin-panels .table-wrap:not(.users-table-wrap) thead{display:none}
+  .zad-admin-panels .table-wrap:not(.users-table-wrap) tbody{display:grid;gap:11px;width:100%}
+  .zad-admin-panels .table-wrap:not(.users-table-wrap) tbody tr{display:grid;gap:7px;border:1px solid #34445b;border-radius:14px;padding:11px;background:#101c30;min-width:0}
+  .zad-admin-panels .table-wrap:not(.users-table-wrap) tbody tr td{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;text-align:start;max-width:100%;min-width:0;width:100%;padding:7px 2px;white-space:normal!important;overflow-wrap:anywhere;border-bottom:1px solid #26364b}
+  .zad-admin-panels .table-wrap:not(.users-table-wrap) tbody tr td::before{content:attr(data-col-label);color:#e5bd3d;flex:0 0 39%;font-weight:800;font-size:12px}
+  .zad-admin-panels .table-wrap:not(.users-table-wrap) tbody tr td.zad-table-empty::before{content:none}
+  .zad-admin-panels .table-wrap:not(.users-table-wrap) tbody tr td.zad-table-empty{display:block}
+  .zad-admin-panels .table-wrap:not(.users-table-wrap) tbody tr td:last-child{border-bottom:0}
+  .zad-admin-panels .table-wrap:not(.users-table-wrap) td button,.zad-admin-panels .table-wrap:not(.users-table-wrap) td select{max-width:100%}
+}
+
+.manual-attendance-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:18px 0 25px}.manual-attendance-form label{display:grid;gap:7px;font-weight:700}.manual-attendance-form input,.manual-attendance-form select,.manual-attendance-form textarea{width:100%;min-width:0;padding:12px;background:#101a2b;color:#fff;border:1px solid #43516a;border-radius:10px;font-family:inherit}.manual-attendance-form .attendance-full{grid-column:1/-1}.attendance-actions{display:flex;flex-wrap:wrap;align-items:center;gap:10px}@media(max-width:700px){.manual-attendance-form{grid-template-columns:1fr}.manual-attendance-form .attendance-full{grid-column:1}}

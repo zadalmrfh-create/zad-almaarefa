@@ -59,7 +59,7 @@ async function load(){
   }catch(e){ console.error('Admin enhancements:',e); const el=$('enhDataStatus'); if(el) el.textContent='تعذر تحميل بعض الإحصائيات. تأكد من قواعد Firestore.'; }
 }
 
-onAuthStateChanged(auth, async user=>{ if(!user) return; try { const {doc,getDoc}=await import('https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js');const snap=await getDoc(doc(db,'admins',user.uid));if(!snap.exists() && !(user.email?.toLowerCase()==='maleksameh121@gmail.com' && user.emailVerified)) return;await load();}catch(e){console.warn('Admin statistics unavailable',e);} });
+onAuthStateChanged(auth, async user=>{ if(!user) return; try { const {doc,getDoc}=await import('https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js');const snap=await getDoc(doc(db,'admins',user.uid));if(!snap.exists() && !(user.email?.toLowerCase()==='maleksameh121@gmail.com' && user.emailVerified)){ const {getDoc,doc}=await import('https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js');const profile=await getDoc(doc(db,'users',user.uid));if(profile.data()?.role!=='admin')return; }await load();}catch(e){console.warn('Admin statistics unavailable',e);} });
 $('enhUserSearch')?.addEventListener('input',applyFilters);
 $('enhRoleFilter')?.addEventListener('change',applyFilters);
 $('enhStatusFilter')?.addEventListener('change',applyFilters);

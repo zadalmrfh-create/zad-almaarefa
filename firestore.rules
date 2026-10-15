@@ -238,17 +238,22 @@ service cloud.firestore {
     }
 
     match /lessonAttendance/{attendanceId} {
-      allow create: if (signedIn() && request.resource.data.studentUid == request.auth.uid)
-        || isAdmin()
+      allow create: if isAdmin()
         || (isTeacher()
           && request.resource.data.teacherUid == request.auth.uid
-          && request.resource.data.studentUid is string);
+          && request.resource.data.studentUid is string
+          && request.resource.data.paid == false);
 
       allow read: if isAdmin()
         || (signedIn() && resource.data.studentUid == request.auth.uid)
         || (isTeacher() && resource.data.teacherUid == request.auth.uid);
 
-      allow update, delete: if isAdmin()
+      allow update: if isAdmin()
+        || (isTeacher() && resource.data.teacherUid == request.auth.uid
+          && request.resource.data.teacherUid == resource.data.teacherUid
+          && request.resource.data.studentUid == resource.data.studentUid
+          && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['paid','paidAt']));
+      allow delete: if isAdmin()
         || (isTeacher() && resource.data.teacherUid == request.auth.uid);
     }
 

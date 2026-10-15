@@ -201,7 +201,7 @@ function renderAttendance(){
   if($('attendanceExcused'))$('attendanceExcused').textContent=excused;
   if($('attendanceRate'))$('attendanceRate').textContent=percent(present,present+absent)+'%';
   if(!$('attendanceRows'))return;
-  $('attendanceRows').innerHTML=rows.length?rows.map(x=>`<tr><td>${esc(studentName(x.studentUid,x.studentName))}</td><td>${esc(x.date||formatDate(x.createdAt))}</td><td>${esc(x.subject||'-')}</td><td><span class="teacher-status ${x.status==='حاضر'?'present':x.status==='غائب'?'absent':'excused'}">${esc(x.status||'-')}</span></td><td>${esc(x.note||'-')}</td><td><button class="btn danger compact-btn" data-attendance-delete="${esc(x.id)}">حذف</button></td></tr>`).join(''):'<tr><td colspan="6">لا توجد سجلات.</td></tr>';
+  $('attendanceRows').innerHTML=rows.length?rows.map(x=>`<tr><td>${esc(studentName(x.studentUid,x.studentName))}</td><td>${esc(x.date||formatDate(x.createdAt))}</td><td>${esc(x.subject||'-')}</td><td><span class="teacher-status ${x.status==='حاضر'?'present':x.status==='غائب'?'absent':'excused'}">${esc(x.status||'-')}</span></td><td>${Number(x.price||0).toLocaleString('ar-EG')} ج.م</td><td>${esc(x.note||'-')}</td><td><button class="btn danger compact-btn" data-attendance-delete="${esc(x.id)}">حذف</button></td></tr>`).join(''):'<tr><td colspan="6">لا توجد سجلات.</td></tr>';
   $('attendanceRows').querySelectorAll('[data-attendance-delete]').forEach(btn=>btn.addEventListener('click',()=>deleteAttendance(btn.dataset.attendanceDelete)));
 }
 async function deleteAttendance(id){
@@ -294,7 +294,7 @@ function bindForms(){
     const studentUid=$('attendanceStudent').value,student=state.studentMap.get(studentUid);
     if(!student){setStatus('attendanceFormStatus','اختر طالبًا أولًا.',false);return;}
     try{
-      const data={teacherUid:state.user.uid,teacherName:state.profile.fullName||state.profile.name||state.user.email,studentUid,studentName:student.fullName||student.name||student.email,date:$('attendanceDate').value,status:$('attendanceStatus').value,subject:text($('attendanceSubject').value),note:text($('attendanceNote').value),createdAt:serverTimestamp(),updatedAt:serverTimestamp(),source:'teacher-dashboard'};
+      const data={teacherUid:state.user.uid,teacherName:state.profile.fullName||state.profile.name||state.user.email,studentUid,studentName:student.fullName||student.name||student.email,date:$('attendanceDate').value,status:$('attendanceStatus').value,subject:text($('attendanceSubject').value),price:Number($('attendancePrice').value),paid:false,currency:'EGP',note:text($('attendanceNote').value),createdAt:serverTimestamp(),updatedAt:serverTimestamp(),source:'teacher-dashboard'};
       const ref=await addDoc(collection(db,'lessonAttendance'),data);
       state.attendance.unshift({id:ref.id,...data,createdAt:new Date()});
       $('attendanceNote').value='';setStatus('attendanceFormStatus','تم حفظ الحضور بنجاح.');renderAll();

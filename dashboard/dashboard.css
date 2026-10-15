@@ -530,3 +530,85 @@ body{
 }
 
 .teacher-check-label{display:flex!important;grid-template-columns:auto 1fr!important;align-items:center;gap:9px!important;padding:10px 12px;border:1px solid #34445c;border-radius:10px;background:#111b2b}.teacher-check-label input{width:18px;height:18px;accent-color:var(--gold)}
+
+
+/* =====================================================
+   ADMIN DASHBOARD — mobile polish + section nav
+===================================================== */
+.section-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.admin-quick-nav-card{position:relative;overflow:hidden}
+.admin-quick-nav{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:12px;margin-top:16px}
+.admin-quick-link{display:grid;gap:6px;padding:16px;border:1px solid #32435b;border-radius:16px;background:linear-gradient(180deg,#101a2a,#152136);color:#fff;text-decoration:none;transition:.2s}
+.admin-quick-link:hover{transform:translateY(-2px);border-color:var(--gold);box-shadow:0 10px 24px rgba(0,0,0,.18)}
+.admin-quick-link span{font-size:24px}
+.admin-quick-link strong{color:#fff;font-size:15px}
+.admin-quick-link small{color:var(--muted);font-size:12px}
+.mini-badge{display:inline-flex;align-items:center;gap:4px;padding:4px 9px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid #34445c;color:#e8edf5;font-size:11px;font-weight:800}
+.mini-badge-admin{background:rgba(229,189,61,.15);border-color:rgba(229,189,61,.45);color:var(--gold2)}
+.action-assigned{border-color:rgba(229,189,61,.45);background:rgba(229,189,61,.12);color:var(--gold2)}
+.action-assign-teacher:hover,.action-assign-admin:hover{border-color:var(--gold);background:#17243a}
+.user-mobile-list{display:none;gap:12px;margin-top:12px}
+.user-mobile-card{background:#111b2b;border:1px solid #2f3d52;border-radius:16px;padding:14px;display:grid;gap:12px}
+.user-mobile-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.user-mobile-head h3{margin:0;font-size:18px;line-height:1.5}
+.user-mobile-tags{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px}
+.user-mobile-meta{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.user-mobile-meta>div{padding:10px 11px;border-radius:12px;background:#0f1929;border:1px solid #2f3d52}
+.user-mobile-meta>div.full{grid-column:1/-1}
+.user-mobile-meta span{display:block;color:var(--muted);font-size:11px;margin-bottom:5px}
+.user-mobile-meta strong{display:block;color:#fff;word-break:break-word;line-height:1.55}
+.user-mobile-actions{display:flex;flex-wrap:wrap;gap:8px}
+.user-mobile-actions .action-btn{flex:1 1 calc(50% - 8px);height:auto;min-height:38px;padding:9px 10px}
+.user-mobile-wa{justify-self:start}
+.user-mobile-empty{padding:18px;border:1px dashed #34445c;border-radius:14px;text-align:center;color:var(--muted);background:#111b2b}
+.status-banned{background:#3f1014;color:#fda4af}
+.card{scroll-margin-top:88px}
+
+@media(max-width:900px){
+  .wrap{width:min(96%,100%)}
+  .top{padding:16px 0 10px;position:sticky;top:0;z-index:60;background:rgba(11,18,32,.94);backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,255,255,.06)}
+  .top .actions{width:100%}
+  .top .actions .btn{flex:1 1 180px;text-align:center}
+  .card{padding:18px}
+  .hero{padding:16px 0 22px}
+  .hero h2{font-size:29px}
+}
+@media(max-width:760px){
+  .brand img{width:44px;height:44px}
+  .brand h1{font-size:18px}
+  .hero p,.notice{font-size:14px;line-height:1.8}
+  .admin-quick-nav{grid-template-columns:1fr 1fr}
+  .users-table-wrap{display:none}
+  .user-mobile-list{display:grid}
+  .users-filter-summary .btn{width:100%}
+  .card h2{font-size:22px}
+  .table-wrap{overflow:auto hidden;-webkit-overflow-scrolling:touch}
+}
+@media(max-width:520px){
+  .wrap{width:min(97%,100%)}
+  .top .actions .btn{flex:1 1 100%;width:100%}
+  .card{padding:14px;border-radius:16px}
+  .admin-quick-nav{grid-template-columns:1fr}
+  .user-mobile-meta{grid-template-columns:1fr}
+  .user-mobile-actions .action-btn{flex:1 1 100%}
+  .users-filter-summary{align-items:stretch}
+}
+
+/* Attendance financial overview and clear teacher workspace */
+.attendance-summary{margin-top:24px;padding:18px;background:#0e192b;border:1px solid #42516b;border-radius:16px}
+.attendance-summary h3{margin:0 0 6px;color:#f5d76e}
+.attendance-summary p{color:#aeb9c9;font-size:13px}
+.attendance-summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-top:14px}
+.attendance-summary-card{display:grid;gap:7px;padding:15px;border:1px solid #35435b;border-radius:14px;background:#17253b}
+.attendance-summary-card strong{color:#fff;overflow-wrap:anywhere}
+.attendance-summary-card span{color:#d4dfec;font-size:13px}
+.attendance-summary-card b{color:#f5d76e}
+.student-payment-total{padding:12px 16px;margin:12px 0;background:#122d27;border:1px solid #267553;border-radius:12px;color:#e4ffed}
+.teacher-dashboard-page .teacher-panel>.card,.teacher-dashboard-page .teacher-two-col>.card{border-radius:18px;box-shadow:0 12px 38px #050b1530}
+.teacher-dashboard-page .teacher-topbar{border-bottom:1px solid #34445c}
+.teacher-dashboard-page .teacher-tabs{border:1px solid #3b4b61;border-radius:16px;gap:10px}
+.teacher-dashboard-page .teacher-tab{padding:12px 16px}
+.teacher-dashboard-page .teacher-input{min-height:43px}
+@media(max-width:700px){.attendance-summary{padding:12px}.attendance-summary-grid{grid-template-columns:1fr}.teacher-dashboard-page .teacher-tabs{position:sticky;top:0}.teacher-dashboard-page .teacher-wrap{width:96%}}
+
+.attendance-summary-controls{display:grid;grid-template-columns:2fr 1fr 1fr;gap:12px;margin:16px 0} .attendance-summary-controls label{display:grid;gap:6px;color:#f5d76e;font-weight:700;font-size:13px} .attendance-summary-controls input,.attendance-summary-controls select{width:100%;min-width:0;padding:12px;background:#111d31;color:#fff;border:1px solid #455470;border-radius:10px;font:inherit} .attendance-summary-controls input:focus,.attendance-summary-controls select:focus{outline:2px solid #e5bd3d;outline-offset:1px} @media(max-width:760px){.attendance-summary-controls{grid-template-columns:1fr}}

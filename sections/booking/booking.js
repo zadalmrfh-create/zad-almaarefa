@@ -41,19 +41,50 @@ function normalizeArabic(value = "") {
     .trim()
     .toLowerCase();
 }
-function isProgrammingChoice() {
+function detectTeacherAssignment() {
   const combined = normalizeArabic(`${sectionSelect?.value || ""} ${subjectInput?.value || ""}`);
-  return combined.includes("برمج");
+
+  if (combined.includes("برمج") || combined.includes("تكنولوجيا المعلومات")) {
+    return {
+      key: "programming",
+      targetName: "مالك سامح",
+      hint: "تم اختيار مالك سامح تلقائيًا لأن المادة/القسم برمجة أو تكنولوجيا معلومات."
+    };
+  }
+
+  if (combined.includes("انجليز") || combined.includes("english") || combined.includes("اللغه الانجليزيه") || combined.includes("اللغة الإنجليزية")) {
+    return {
+      key: "english",
+      targetName: "علي عبد الحميد",
+      hint: "تم اختيار الأستاذ علي عبد الحميد تلقائيًا لأن المادة/القسم لغة إنجليزية."
+    };
+  }
+
+  if (normalizeArabic(sectionSelect?.value || "") === normalizeArabic("العلوم") || (!sectionSelect?.value && normalizeArabic(subjectInput?.value || "") === normalizeArabic("العلوم"))) {
+    return {
+      key: "science",
+      targetName: "فاطمة أشرف",
+      hint: "تم اختيار الأستاذة فاطمة أشرف تلقائيًا لأن المادة/القسم علوم."
+    };
+  }
+
+  return {
+    key: "default",
+    targetName: "ضياء الدين نبيل",
+    hint: "تم اختيار ضياء الدين نبيل تلقائيًا لهذه المادة."
+  };
 }
-function matchesTeacher(teacher, programming) {
+function matchesTeacher(teacher, assignmentKey) {
   const n = normalizeArabic(teacher.name);
-  return programming ? (n.includes("مالك") && n.includes("سامح")) : (n.includes("ضياء") && n.includes("نبيل"));
+  if (assignmentKey === "programming") return n.includes("مالك") && n.includes("سامح");
+  if (assignmentKey === "english") return n.includes("علي") && n.includes("عبد") && n.includes("الحميد");
+  if (assignmentKey === "science") return n.includes("فاطمه") && n.includes("اشرف");
+  return n.includes("ضياء") && (n.includes("نبيل") || n.includes("الدين"));
 }
 function updateAssignedTeacher() {
-  const programming = isProgrammingChoice();
-  const targetName = programming ? "مالك سامح" : "ضياء الدين نبيل";
-  const found = activeTeachers.find(t => matchesTeacher(t, programming));
-  assignedTeacher = { uid: found?.uid || null, name: targetName };
+  const assignment = detectTeacherAssignment();
+  const found = activeTeachers.find(t => matchesTeacher(t, assignment.key));
+  assignedTeacher = { uid: found?.uid || null, name: assignment.targetName };
 
   if (teacherSelect) {
     teacherSelect.innerHTML = "";
@@ -64,9 +95,7 @@ function updateAssignedTeacher() {
     teacherSelect.appendChild(option);
   }
   if (teacherAutoHint) {
-    teacherAutoHint.textContent = programming
-      ? "تم اختيار مالك سامح تلقائيًا لأن المادة/القسم برمجة."
-      : "تم اختيار ضياء الدين نبيل تلقائيًا لهذه المادة.";
+    teacherAutoHint.textContent = assignment.hint;
   }
 }
 

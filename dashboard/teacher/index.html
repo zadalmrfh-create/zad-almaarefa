@@ -106,7 +106,7 @@
               <label>الطالب<select id="attendanceStudent" class="teacher-input" required></select></label>
               <label>التاريخ<input id="attendanceDate" class="teacher-input" type="date" required></label>
               <label>الحالة<select id="attendanceStatus" class="teacher-input" required><option value="حاضر">حاضر</option><option value="غائب">غائب</option><option value="اعتذر">اعتذر</option></select></label>
-              <label>المادة<input id="attendanceSubject" class="teacher-input" placeholder="مثال: النحو"></label>
+              <label>المادة<select id="attendanceSubject" class="teacher-input" required><option value="">اختر المادة</option><option>اللغة العربية</option><option>المواد الشرعية</option><option>الفلسفة والمنطق الحديث</option><option>المنطق القديم</option><option>اللغة الإنجليزية</option><option>العلوم</option><option>البرمجة وتكنولوجيا المعلومات</option></select></label><label>سعر الحصة (جنيه مصري)<input id="attendancePrice" class="teacher-input" type="number" min="0" max="100000" step="0.01" value="0" required></label>
               <label class="full">ملاحظة<textarea id="attendanceNote" class="teacher-input" rows="3" placeholder="ملاحظة اختيارية..."></textarea></label>
               <div class="full teacher-form-actions"><button class="btn gold" type="submit">حفظ الحضور</button><span id="attendanceFormStatus" class="teacher-form-status"></span></div>
             </form>
@@ -123,7 +123,7 @@
         </div>
         <section class="card">
           <div class="teacher-section-head"><div><h3>📋 سجل الحضور</h3><p>آخر سجلات الحضور والغياب.</p></div><select id="attendanceFilterStudent" class="teacher-input teacher-filter"><option value="">كل الطلاب</option></select></div>
-          <div class="table-wrap teacher-table-wrap"><table class="table teacher-table"><thead><tr><th>الطالب</th><th>التاريخ</th><th>المادة</th><th>الحالة</th><th>الملاحظة</th><th>إجراء</th></tr></thead><tbody id="attendanceRows"><tr><td colspan="6">لا توجد سجلات.</td></tr></tbody></table></div>
+          <div class="table-wrap teacher-table-wrap"><table class="table teacher-table"><thead><tr><th>الطالب</th><th>التاريخ</th><th>المادة</th><th>الحالة</th><th>سعر الحصة</th><th>الملاحظة</th><th>إجراء</th></tr></thead><tbody id="attendanceRows"><tr><td colspan="6">لا توجد سجلات.</td></tr></tbody></table></div>
         </section>
       </section>
 

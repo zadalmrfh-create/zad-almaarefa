@@ -78,7 +78,8 @@ function renderDashboard(){
   if($('studentAbsentCount'))$('studentAbsentCount').textContent=absent;
   if($('studentExcusedCount'))$('studentExcusedCount').textContent=excused;
   if($('studentAttendanceRate'))$('studentAttendanceRate').textContent=percent(present,relevant)+'%';
-  if($('studentAttendanceRows'))$('studentAttendanceRows').innerHTML=rows.length?rows.map(x=>`<tr><td>${esc(x.date||fmt(x.createdAt||x.openedAt))}</td><td>${esc(x.subject||x.lessonTitle||'-')}</td><td>${esc(x.teacherName||'-')}</td><td>${esc(x.status||'-')}</td><td>${esc(x.note||'-')}</td></tr>`).join(''):'<tr><td colspan="5">لا توجد سجلات حضور حتى الآن.</td></tr>';
+  if($('studentPaidTotal'))$('studentPaidTotal').textContent=rows.filter(x=>x.paid===true).reduce((sum,x)=>sum+(Number(x.price)||0),0).toLocaleString('ar-EG')+' ج.م';
+  if($('studentAttendanceRows'))$('studentAttendanceRows').innerHTML=rows.length?rows.map(x=>`<tr><td>${esc(x.date||fmt(x.createdAt||x.openedAt))}</td><td>${esc(x.subject||x.lessonTitle||'-')}</td><td>${esc(x.teacherName||'-')}</td><td>${esc(x.status||'-')}</td><td>${Number(x.price||0).toLocaleString('ar-EG')} ج.م</td><td>${x.paid===true?'✅ مدفوعة':'⏳ غير مدفوعة'}</td><td>${esc(x.note||'-')}</td></tr>`).join(''):'<tr><td colspan="7">لا توجد سجلات حضور حتى الآن.</td></tr>';
 
   if($('studentNotesList'))$('studentNotesList').innerHTML=notes.length?notes.map(n=>`<article class="student-note"><strong>${esc(n.teacherName||'المعلم')} — ${esc(n.category||'متابعة')}</strong><p>${esc(n.text||'')}</p><small>${fmt(n.createdAt,true)}</small></article>`).join(''):'<div class="notice">لا توجد ملاحظات ظاهرة لك حتى الآن.</div>';
 
