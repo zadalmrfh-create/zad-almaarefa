@@ -68,7 +68,8 @@ service cloud.firestore {
           ])
         );
 
-      allow delete: if isAdmin();
+      // حذف الحساب مسموح لصاحبه فقط، ولا يمنح حق حذف حسابات الآخرين.
+      allow delete: if isAdmin() || isOwner(uid);
     }
 
     match /users/{uid}/fcmTokens/{tokenId} {

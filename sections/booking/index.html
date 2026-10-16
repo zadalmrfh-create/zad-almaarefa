@@ -58,8 +58,8 @@ body{margin:0;font-family:Cairo,Arial,sans-serif;background:linear-gradient(135d
 
 </style>
 
-<link rel="stylesheet" href="../../assets/translation.css">
-<script src="../../assets/translation.js"></script>
+<link rel="stylesheet" href="../../assets/translation.css?v=20261016-globe2">
+<script src="../../assets/translation.js?v=20261016-globe2"></script>
 <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 <script src="../../content-protection.js" defer></script>
 </head>
@@ -91,11 +91,13 @@ body{margin:0;font-family:Cairo,Arial,sans-serif;background:linear-gradient(135d
             </select>
           </label>
 
-          <label>نظام التعليم (اختياري)
-            <select name="educationType">
+          <label>نظام التعليم <span style="color:#b91c1c">*</span>
+            <select name="educationType" id="bookingEducationType" required aria-required="true">
+              <option value="" selected disabled>اختر نظام التعليم</option>
               <option value="غير مرتبط بنظام تعليمي">غير مرتبط بنظام تعليمي</option>
               <option value="أزهري">أزهري</option>
               <option value="عام">عام</option>
+              <option value="لغات">لغات</option>
             </select>
           </label>
         </div>

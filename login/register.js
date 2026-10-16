@@ -13,8 +13,10 @@ import {
 
 import {
   doc,
+  collection,
   getDoc,
   setDoc,
+  addDoc,
   writeBatch,
   runTransaction,
   increment,
@@ -141,6 +143,22 @@ async function saveUserProfile(user, role, provider, extraData = {}) {
   // المهم: إنشاء ملف users أولًا.
   // عداد الطلاب خدمة إضافية؛ إذا فشل لا نفشل إنشاء الحساب نفسه.
   await setDoc(userRef, profileData, { merge: true });
+
+  // إشعار حساب جديد: الفشل لا يؤثر في إنشاء حساب المستخدم.
+  try {
+    await addDoc(collection(db, 'notifications'), {
+      audience: 'admin',
+      studentUid: user.uid,
+      type: 'signup',
+      title: '👤 حساب جديد في زاد المعرفة',
+      message: `${name} (${user.email || 'لا يوجد بريد'}) — ${role === 'teacher' ? 'معلم بانتظار الاعتماد' : 'طالب'}`,
+      createdAt: serverTimestamp(),
+      readBy: []
+    });
+  } catch (notifyError) {
+    console.warn('تم تسجيل الحساب، لكن تعذر إرسال إشعار الإدارة:', notifyError);
+  }
+
 
   if (role === 'student') {
     try {

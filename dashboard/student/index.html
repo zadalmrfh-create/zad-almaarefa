@@ -80,8 +80,8 @@
 }
 </style>
 
-<link rel="stylesheet" href="../../assets/translation.css">
-<script src="../../assets/translation.js"></script>
+<link rel="stylesheet" href="../../assets/translation.css?v=20261016-globe2">
+<script src="../../assets/translation.js?v=20261016-globe2"></script>
 <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
 <script src="../../content-protection.js" defer></script>
@@ -98,6 +98,10 @@
 @media(max-width:600px){.student-progress-grid,.stats-grid{grid-template-columns:1fr!important}}
 </style>
 
+<style>
+/* تهيئة لوحة الطالب لشاشات الهاتف */
+@media(max-width:680px){.wrap{width:95%;max-width:100%}.top{flex-wrap:wrap;gap:12px}.top .actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:100%;gap:8px}.top .actions .btn{min-width:0;padding:11px 6px;font-size:12px}.student-tabs{top:0;overflow-x:auto;scrollbar-width:thin;padding:6px}.student-tab{min-height:40px}.student-progress-card{min-width:0}.table-wrap{overflow-x:auto;max-width:100%}}
+</style>
 </head>
 
 <body>
@@ -375,7 +379,9 @@ import {
 import {
     signOut,
     onAuthStateChanged,
-    deleteUser
+    deleteUser,
+    EmailAuthProvider,
+    reauthenticateWithCredential
 } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
 
 import {
@@ -829,9 +835,22 @@ document
    تسجيل الدخول
 ========================================================= */
 
+// إظهار رسالة مفيدة إذا لم تكتمل تهيئة Firebase أو تأخرت الشبكة.
+let zadAuthResolved = false;
+const zadAuthTimer = setTimeout(() => {
+    if (zadAuthResolved) return;
+    const notice = document.getElementById('loading');
+    if (notice) {
+      notice.style.display = 'block';
+      notice.textContent = 'تأخر التحقق من الحساب. تأكد من اتصال الإنترنت، ثم أعد تحميل الصفحة. إذا استمرت المشكلة، سجّل الخروج وادخل مرة أخرى.';
+    }
+}, 12000);
+
 onAuthStateChanged(
     auth,
     async user => {
+        zadAuthResolved = true;
+        clearTimeout(zadAuthTimer);
 
         const loadingElem =
             document.getElementById(
@@ -861,6 +880,11 @@ onAuthStateChanged(
         }
 
 
+        // الاسم والبريد يُعرضان أولًا حتى لو فشلت قراءة الملف الشخصي.
+        currentStudentUid = user.uid;
+        if (nameElem) nameElem.textContent = user.displayName || (user.email ? user.email.split('@')[0] : 'الطالب');
+        if (emailElem) emailElem.textContent = user.email || '';
+        if (loadingElem) loadingElem.style.display = 'none';
         try {
 
             const snap =
@@ -924,25 +948,18 @@ onAuthStateChanged(
             }
 
 
-            await loadMyBookings(
-                user.uid
-            );
-
-
-
-            await loadLiveLessons(
-                user.uid,
-                window.currentStudentGrade || ''
-            );
+            // تحميل كل قسم مستقل حتى لا يُعلق الترحيب بسبب طلب شبكة بطيء.
+            void loadMyBookings(user.uid).catch(error => console.warn('Bookings unavailable:',error));
+            void loadLiveLessons(user.uid, window.currentStudentGrade || '').catch(error => console.warn('Lessons unavailable:',error));
 
 
         } catch (err) {
 
-            console.error(
-                'خطأ:',
-                err
-            );
-
+            console.error('تعذر تحميل بيانات حساب الطالب:', err);
+            if (loadingElem) {
+                loadingElem.style.display = 'block';
+                loadingElem.textContent = 'تم تسجيل الدخول، لكن تعذر جلب بيانات الحساب: ' + (err.code || err.message) + '. تأكد من قواعد Firestore واتصال الإنترنت.';
+            }
         } finally {
 
             if (loadingElem) {
@@ -954,6 +971,16 @@ onAuthStateChanged(
 
         }
 
+    },
+    error => {
+      zadAuthResolved = true;
+      clearTimeout(zadAuthTimer);
+      console.error('تعذر التحقق من حساب الطالب:', error);
+      const notice = document.getElementById('loading');
+      if (notice) {
+        notice.style.display = 'block';
+        notice.textContent = 'تعذر الاتصال بنظام تسجيل الدخول: ' + (error.code || error.message || 'خطأ غير معروف') + '. حاول إعادة تحميل الصفحة.';
+      }
     }
 );
 
@@ -1089,14 +1116,30 @@ document
 
 
             try {
+                // التأكد من هوية صاحب الحساب قبل الحذف النهائي.
+                const providerIds = user.providerData.map(item => item.providerId);
+                if (providerIds.includes('password')) {
+                    const password = prompt('لإتمام الحذف بأمان، أدخل كلمة مرور حسابك:');
+                    if (!password) throw new Error('تم إلغاء التحقق. لم يُحذف الحساب.');
+                    await reauthenticateWithCredential(user, EmailAuthProvider.credential(user.email, password));
+                } else if (providerIds.includes('google.com')) {
+                    // لا نستخدم popups لأنها قد تُحظر في المتصفح/على الموبايل.
+                    // حذف Firebase Auth يتطلب تسجيل دخول حديثًا.
+                    const lastLogin = Date.parse(user.metadata.lastSignInTime || '');
+                    const recent = Number.isFinite(lastLogin) && Date.now() - lastLogin < 4 * 60 * 1000;
+                    if (!recent) {
+                        throw Object.assign(new Error('لسلامة الحساب، سجّل الخروج ثم ادخل بحساب Google مرة أخرى، وارجع مباشرةً واضغط حذف الحساب خلال 4 دقائق.'), { code: 'auth/requires-recent-login' });
+                    }
+                } else {
+                    throw new Error('طريقة تسجيل الدخول غير مدعومة للحذف من هذه الصفحة. تواصل مع الإدارة.');
+                }
 
-                await deleteDoc(
-                    doc(
-                        db,
-                        'users',
-                        user.uid
-                    )
-                );
+                // إزالة البيانات الفرعية المعروفة قبل حذف مستند الحساب.
+                for (const subcollection of ['fcmTokens','library']) {
+                    const children = await getDocs(collection(db, 'users', user.uid, subcollection));
+                    for (const item of children.docs) await deleteDoc(item.ref);
+                }
+                await deleteDoc(doc(db, 'users', user.uid));
 
 
                 await deleteUser(
@@ -1135,13 +1178,13 @@ document
                 ) {
 
                     alert(
-                        'لأمان حسابك، سجّل الخروج ثم سجّل الدخول مرة أخرى، وبعدها حاول حذف الحساب.'
+                        'لأمان حسابك، سجّل الخروج ثم ادخل بحسابك مجددًا، وبعدها حاول حذف الحساب فورًا. تأكد أن المتصفح يسمح بتسجيل الدخول.'
                     );
 
                 } else {
 
                     alert(
-                        'تعذر حذف الحساب. رمز الخطأ: ' +
+                        'تعذر إكمال الحذف: ' +
                         (
                             error.code ||
                             error.message

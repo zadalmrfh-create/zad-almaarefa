@@ -47,8 +47,8 @@
 </style>
 
 
-<link rel="stylesheet" href="../../assets/translation.css">
-<script src="../../assets/translation.js"></script>
+<link rel="stylesheet" href="../../assets/translation.css?v=20261016-globe2">
+<script src="../../assets/translation.js?v=20261016-globe2"></script>
 <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 <style id="zad-admin-gate-style">html:not(.zad-admin-authorized) body{visibility:hidden}html.zad-admin-denied body{visibility:visible}</style>
 <script type="module">
@@ -145,6 +145,11 @@ onAuthStateChanged(auth, async (user) => {
   ====================================================== -->
 
   <main>
+    <section id="zadActivityAlerts" class="card zad-activity-alerts" dir="rtl">
+      <div class="zad-activity-heading"><div><h2>🔔 إشعارات نشاط المنصة <span id="zadActivityUnread" class="zad-activity-counter" hidden>0</span></h2><p>التسجيلات الجديدة، حجوزات الحصص، وتنزيلات الكتب.</p></div><button id="zadActivityReadAll" type="button" class="btn">تحديد الكل كمقروء</button></div>
+      <div id="zadActivityList" class="zad-activity-list" aria-live="polite">جارٍ تحميل الإشعارات…</div>
+    </section>
+
 
 
     <div
@@ -4927,6 +4932,7 @@ onAuthStateChanged(auth,user=>{if(!user){panel.textContent='سجل الدخول 
 </script>
 
 <script src="admin-workspace.js" defer></script>
+<script type="module" src="admin-activity-alerts.js"></script>
 </body>
 
 </html>

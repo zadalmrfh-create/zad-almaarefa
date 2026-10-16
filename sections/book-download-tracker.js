@@ -59,7 +59,7 @@ export async function trackBookDownload(book = {}) {
   const url = String(book.url || "").trim();
   if (!title || !url) return;
 
-  await addDoc(collection(db, "libraryDownloads"), {
+  const downloadRef = await addDoc(collection(db, "libraryDownloads"), {
     userId: profile.uid,
     userName: profile.name,
     userEmail: profile.email,
@@ -74,4 +74,20 @@ export async function trackBookDownload(book = {}) {
     downloadedAt: serverTimestamp(),
     clientDownloadedAt: new Date().toISOString()
   });
+
+  // إشعار بعد نجاح تسجيل التنزيل، دون تعطيل فتح الكتاب عند فشل الإشعار.
+  try {
+    await addDoc(collection(db, 'notifications'), {
+      audience: 'admin',
+      studentUid: profile.uid,
+      type: 'book-download',
+      title: '📚 تنزيل كتاب من المكتبة',
+      message: `${profile.name} (${profile.email || 'لا يوجد بريد'}) نزّل كتاب: ${title}`,
+      downloadId: downloadRef.id,
+      createdAt: serverTimestamp(),
+      readBy: []
+    });
+  } catch (notifyError) {
+    console.warn('تم تسجيل التنزيل، لكن تعذر إرسال إشعار الإدارة:', notifyError);
+  }
 }

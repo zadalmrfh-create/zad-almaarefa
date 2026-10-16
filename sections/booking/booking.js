@@ -124,6 +124,12 @@ form.addEventListener("submit", async event => {
 
   updateAssignedTeacher();
   const data = Object.fromEntries(new FormData(form).entries());
+  if (!data.educationType || !["غير مرتبط بنظام تعليمي", "أزهري", "عام", "لغات"].includes(data.educationType)) {
+    statusBox.textContent = "من فضلك اختر نظام التعليم أولًا.";
+    statusBox.className = "booking-status error";
+    form.elements.educationType?.focus();
+    return;
+  }
 
   if (data.preferredDay1 === data.preferredDay2) {
     statusBox.textContent = "اختر يومين مختلفين للحصة.";
