@@ -4403,3 +4403,6 @@ html[dir="ltr"] #zad-translate-toggle{
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}}
 img{max-width:100%;height:auto}button,a,input,select,textarea{touch-action:manipulation}
 @media(max-width:600px){.global-search-panel{padding:22px 16px;max-height:82vh;overflow:auto}.personal-home{padding:20px 16px}.home-quick-links{gap:9px}.quick-link-card{padding:14px 10px}}
+
+/* مفتاح الوضع الليلي بجوار المزيد */
+#navbar .nav-links > .theme-toggle{flex:0 0 92px;align-self:center;margin-inline:6px}

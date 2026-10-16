@@ -1,1 +1,31 @@
-#google_translate_element{position:fixed!important;width:1px!important;height:1px!important;overflow:hidden!important;opacity:0!important;pointer-events:none!important;z-index:-1!important}.goog-te-banner-frame.skiptranslate,.goog-te-banner-frame,body>.skiptranslate{display:none!important}body{top:0!important}#zad-translate-toggle{position:fixed;right:18px;bottom:18px;z-index:2147483000;border:0;border-radius:999px;padding:11px 16px;display:inline-flex;align-items:center;gap:8px;cursor:pointer;font:700 14px/1.2 Arial,sans-serif;color:#fff;background:linear-gradient(135deg,#6b4f2a,#9b7442);box-shadow:0 8px 25px rgba(0,0,0,.2)}#zad-translate-toggle:hover{transform:translateY(-2px)}html[dir=rtl] #zad-translate-toggle{right:18px;left:auto}html[dir=ltr] #zad-translate-toggle{left:18px;right:auto}@media(max-width:600px){#zad-translate-toggle{bottom:12px;padding:10px 13px}}
+#google_translate_element{position:fixed!important;width:1px!important;height:1px!important;overflow:hidden!important;opacity:0!important;pointer-events:none!important;z-index:-1!important}
+.goog-te-banner-frame.skiptranslate,.goog-te-banner-frame,body>.skiptranslate{display:none!important}
+body{top:0!important}
+#zad-language-widget{position:fixed;top:14px;left:14px;right:auto;z-index:1300;direction:rtl;font-family:Cairo,Tajawal,Arial,sans-serif}
+.zad-language-trigger{display:grid;place-items:center;width:45px;height:45px;padding:0;border:1.5px solid #d8af4c;border-radius:14px;background:linear-gradient(145deg,#223957 0%,#111d32 70%);color:#f6d575;box-shadow:0 7px 18px rgba(0,0,0,.23),inset 0 1px 0 rgba(255,231,150,.16);cursor:pointer;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}
+.zad-language-trigger:hover,.zad-language-trigger[aria-expanded="true"]{transform:translateY(-1px);border-color:#f3cd65;box-shadow:0 9px 24px rgba(0,0,0,.3),0 0 0 2px rgba(216,175,76,.12)}
+.zad-language-trigger__icon{display:block;width:22px;height:22px}
+.zad-language-panel{position:absolute;top:calc(100% + 9px);left:0;min-width:190px;padding:12px;border:1px solid #d8af4c;border-radius:15px;background:#111d32;box-shadow:0 18px 35px rgba(0,0,0,.3);display:grid;gap:8px;color:#f6d575}
+.zad-language-panel[hidden]{display:none!important}
+.zad-language-label{font-size:12px;font-weight:800;color:#f6d575}
+#zad-language-select{width:100%;min-height:40px;border:1px solid rgba(215,174,75,.55);border-radius:10px;background:#20324e;color:#fff;font:700 13px Cairo,Tajawal,Arial,sans-serif;padding:8px 10px;cursor:pointer;direction:auto}
+#zad-language-select:focus,.zad-language-trigger:focus-visible{outline:2px solid #ecc655;outline-offset:2px}
+@media(max-width:900px){#zad-language-widget{top:74px;left:10px}.zad-language-trigger{width:42px;height:42px}}
+@media(max-width:650px){#zad-language-widget{top:72px;left:8px}.zad-language-trigger{width:40px;height:40px;border-radius:12px}.zad-language-panel{min-width:170px;padding:10px}}
+html[dir="ltr"] #zad-language-widget{left:auto;right:14px}
+html[dir="ltr"] .zad-language-panel{left:auto;right:0}
+@media(max-width:900px){html[dir="ltr"] #zad-language-widget{right:10px}}
+@media(max-width:650px){html[dir="ltr"] #zad-language-widget{right:8px}}
+
+/* وضع أيقونة اللغة داخل النافبار في الرئيسية فقط */
+#zad-language-widget.zad-language-in-nav{position:relative!important;top:auto!important;left:auto!important;right:auto!important;bottom:auto!important;z-index:110;flex:0 0 auto;margin:0}
+#zad-language-widget.zad-language-in-nav .zad-language-panel{top:calc(100% + 10px);left:0;right:auto}
+html[dir="ltr"] #zad-language-widget.zad-language-in-nav{left:auto!important;right:auto!important}
+html[dir="ltr"] #zad-language-widget.zad-language-in-nav .zad-language-panel{left:auto;right:0}
+@media(max-width:900px){#zad-language-widget.zad-language-in-nav{position:relative!important;top:auto!important;left:auto!important;right:auto!important}}
+
+/* اختيار اللغة بنقرة واحدة من قائمة الكرة الأرضية */
+.zad-language-panel{min-width:180px;padding:8px;gap:3px}
+.zad-language-option{width:100%;display:block;text-align:start;direction:auto;border:1px solid transparent;background:transparent;color:#f7f4e9;border-radius:10px;padding:10px 12px;font:700 14px Cairo,Tajawal,Arial,sans-serif;cursor:pointer}
+.zad-language-option:hover,.zad-language-option:focus-visible{background:#263a57;border-color:#b99442;outline:0}
+.zad-language-option[aria-pressed="true"]{background:rgba(216,175,76,.16);color:#f6d575}
