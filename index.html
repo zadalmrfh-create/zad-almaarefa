@@ -1186,9 +1186,62 @@ export function redirectAfterLogin(userData){window.location.href=pathFor(userDa
 
 <script type="module">
 import {db} from './firebase-config.js';
-import {collection,getDocs,query,orderBy,limit} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
+import {collection,getDocs,onSnapshot,query,orderBy,limit} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-async function loadHomeExtras(){let st={};const sg=document.getElementById('homeStatsGrid');if(sg)sg.innerHTML=Array.from({length:4},()=>'<div class="home-stat-skeleton"></div>').join('');try{const q=await getDocs(query(collection(db,'publicStats'),limit(20)));q.forEach(d=>{const x=d.data()||{};st[d.id]=Number(x.total||x.count||0)})}catch(e){};const cards=[['students','👨‍🎓','الطلاب'],['books','📚','كتب المكتبة'],['teachers','👨‍🏫','المعلمون'],['categories','📚','الأقسام']];if(sg)sg.innerHTML=cards.map(x=>`<div class="card text-center p-6"><div class="text-3xl">${x[1]}</div><div class="text-3xl font-black mt-2">${Number(x[0]==='teachers' ? (st.teachers || 4) : (st[x[0]]||0)).toLocaleString('ar-EG')}</div><div>${x[2]}</div></div>`).join('');}
+async function loadHomeExtras(){
+  const sg=document.getElementById('homeStatsGrid');
+  if(!sg)return;
+  let st={};
+  sg.innerHTML=Array.from({length:4},()=>'<div class="home-stat-skeleton"></div>').join('');
+  const cards=[['students','👨‍🎓','الطلاب'],['books','📚','كتب المكتبة'],['teachers','👨‍🏫','المعلمون'],['categories','📚','الأقسام']];
+  const draw=()=>{sg.innerHTML=cards.map(x=>`<div class="card text-center p-6"><div class="text-3xl">${x[1]}</div><div class="text-3xl font-black mt-2">${(x[0]==='books'&&st.books===undefined?'—':Number(x[0]==='teachers'?(st.teachers||4):(st[x[0]]||0)).toLocaleString('ar-EG'))}</div><div>${x[2]}</div></div>`).join('');};
+  draw();
+  // قراءة نفس مصفوفة الكتب التي تستخدمها المكتبة، لا قيمة ثابتة ولا فهرس قديم.
+  // كل عنصر في مصفوفة الكتب له رابط URL، والعداد يمثل عدد العناصر المعروضة.
+  const normalizeUrl=u=>String(u||'').trim();
+  let staticBookURLs=[];
+  try {
+    const response=await fetch('./sections/library.html',{cache:'no-store'});
+    if(!response.ok)throw new Error('تعذر تحميل مصدر المكتبة');
+    const source=await response.text();
+    const beginning=source.indexOf('var books = [');
+    if(beginning<0)throw new Error('مصفوفة كتب المكتبة غير موجودة');
+    const ending=source.indexOf('\n];',beginning);
+    if(ending<0)throw new Error('نهاية مصفوفة الكتب غير موجودة');
+    const catalog=source.slice(beginning,ending);
+    staticBookURLs=Array.from(catalog.matchAll(/["']?url["']?\s*:\s*["']([^"']+)["']/g),m=>normalizeUrl(m[1])).filter(Boolean);
+    st.books=staticBookURLs.length;
+    draw();
+  }catch(error){
+    console.warn('لم يمكن قراءة عدد كتب المكتبة؛ لن نعرض عددًا تخمينيًا',error);
+    draw();
+    return;
+  }
+  // التحديث اللحظي عند إضافة/حذف كتاب من لوحة الإدارة في Firebase.
+  // العنصر المسجل في القائمة الأساسية لا يُحسب ثانية عند نسخه إلى الإدارة.
+  const baseUrls=new Set(staticBookURLs);
+  const updateAdminBooks=snapshot=>{
+    const keys=new Set();
+    snapshot.forEach(d=>{
+      const book=d.data()||{};
+      if(book.visible===false||!book.title||!book.url)return;
+      const url=normalizeUrl(book.url);
+      if(!url||baseUrls.has(url))return;
+      keys.add(url);
+    });
+    st.books=staticBookURLs.length+keys.size;
+    draw();
+  };
+  onSnapshot(collection(db,'libraryBooks'),updateAdminBooks,error=>{
+    console.info('عداد المكتبة يعرض الكتب المحلية فقط؛ لا توجد صلاحية لقراءة الإضافات',error);
+  });
+  // بقية الإحصائيات تُقرأ بصورة مستقلة، ولا تستطيع استبدال عداد الكتب.
+  try{
+    const q=await getDocs(query(collection(db,'publicStats'),limit(20)));
+    q.forEach(d=>{const x=d.data()||{};if(d.id!=='books')st[d.id]=Number(x.total||x.count||0);});
+    draw();
+  }catch(error){console.info('تعذر تحميل بعض إحصائيات الرئيسية',error);}
+}
 document.addEventListener('DOMContentLoaded',loadHomeExtras);
 </script>
 

@@ -12,3 +12,7 @@ a.hierarchy-card[href*="code-exams"] .h-sub{color:#f1f4f9!important;font-weight:
 #codeExamResultsList .zad-delete-result:hover{background:#991b1b}
 #codeExamResultsList .zad-delete-result:disabled{opacity:.6;cursor:wait}
 #codeExamResultsList .zad-delete-status{font-size:.85rem}
+
+/* شهادة منفصلة لكل نتيجة، باستخدام زر طباعة واضح بجانب عرض الإجابات */
+.zad-result-actions .zad-result-print-certificate{background:#d7ad3e!important;color:#101c33!important;border:1px solid #e8ca68!important;font-weight:800;white-space:nowrap}
+.zad-result-actions .zad-result-edit-certificate{white-space:nowrap}
