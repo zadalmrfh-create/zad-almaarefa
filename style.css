@@ -4467,3 +4467,20 @@ img{max-width:100%;height:auto}button,a,input,select,textarea{touch-action:manip
  #navbar .nav-inner .smart-account-trigger .account-name{max-width:32px!important}
  #navbar .logo>div{width:30px!important;height:30px!important}
 }
+
+/* One active Firebase notification bell in mobile navbar */
+@media(max-width:1024px){
+#navbar .nav-inner > .zad-notifications-wrap{display:flex!important;order:3!important;flex:0 0 36px!important;width:36px!important;height:36px!important;margin:0!important;position:relative!important;align-items:center!important;justify-content:center!important}
+#navbar .nav-inner > .zad-notifications-wrap #zadNotificationsBell{display:flex!important;width:36px!important;height:36px!important;min-width:36px!important;align-items:center!important;justify-content:center!important}
+}
+@media(max-width:430px){
+#navbar .nav-inner > .zad-notifications-wrap,#navbar .nav-inner > .zad-notifications-wrap #zadNotificationsBell{width:32px!important;min-width:32px!important;height:34px!important;flex-basis:32px!important}
+}
+
+/* على الكمبيوتر فقط: زر المساعدة يمين الشاشة */
+@media(min-width:901px){html body #zad-reception{left:auto!important;right:18px!important}}
+
+/* Help button: bottom-right on desktop; mobile position remains unchanged. */
+@media (min-width:901px){
+  html body #zad-reception{position:fixed!important;right:12px!important;left:auto!important;bottom:12px!important;}
+}

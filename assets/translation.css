@@ -29,3 +29,21 @@ html[dir="ltr"] #zad-language-widget.zad-language-in-nav .zad-language-panel{lef
 .zad-language-option{width:100%;display:block;text-align:start;direction:auto;border:1px solid transparent;background:transparent;color:#f7f4e9;border-radius:10px;padding:10px 12px;font:700 14px Cairo,Tajawal,Arial,sans-serif;cursor:pointer}
 .zad-language-option:hover,.zad-language-option:focus-visible{background:#263a57;border-color:#b99442;outline:0}
 .zad-language-option[aria-pressed="true"]{background:rgba(216,175,76,.16);color:#f6d575}
+
+/* زر اللغة واضح في الوضعين */
+html #navbar #zad-language-widget.zad-language-in-nav .zad-language-trigger {
+  background:linear-gradient(145deg,#10264d,#071832)!important;
+  color:#ffdf78!important;
+  border:2px solid #e7bb42!important;
+  box-shadow:0 0 0 2px rgba(231,187,66,.12),0 5px 14px rgba(0,0,0,.27)!important;
+  opacity:1!important;filter:none!important;
+}
+html #navbar #zad-language-widget.zad-language-in-nav .zad-language-trigger svg {
+  color:#ffdf78!important;stroke:#ffdf78!important;
+  opacity:1!important;fill:none!important;
+}
+html #navbar #zad-language-widget.zad-language-in-nav .zad-language-trigger:hover,
+html #navbar #zad-language-widget.zad-language-in-nav .zad-language-trigger:focus-visible {
+  border-color:#fff0a8!important;
+  box-shadow:0 0 0 3px rgba(231,187,66,.28),0 7px 18px rgba(0,0,0,.3)!important;
+}
