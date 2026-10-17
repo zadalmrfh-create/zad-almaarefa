@@ -144,29 +144,14 @@
 </label>
     </div>
 
-    <!-- تسجيل الدخول -->
-    <a
-      href="./login/index.html"
-      class="btn-nav login-nav-btn smart-account-btn"
-    >
-      <i class="fa-solid fa-right-to-bracket"></i>
-      تسجيل الدخول
-    </a>
-
-
-    <!-- ابدأ التعلم -->
-    <a class="btn-nav" href="./start.html">ابدأ التعلم</a>
-
-
-    <button class="global-search-btn" id="globalSearchBtn" type="button" aria-label="البحث">🔎</button>
-
-
-
     <!-- قائمة الهاتف -->
     <button
       class="hamburger"
       id="hamBtn"
       onclick="openMob()"
+      aria-label="فتح قائمة صفحات المنصة"
+      aria-controls="mobile-overlay"
+      aria-expanded="false"
       type="button"
     >
       <svg
@@ -184,6 +169,28 @@
         />
       </svg>
     </button>
+
+
+    <!-- تسجيل الدخول -->
+    <a
+      href="./login/index.html"
+      class="btn-nav login-nav-btn smart-account-btn"
+    >
+      <i class="fa-solid fa-right-to-bracket"></i>
+      تسجيل الدخول
+    </a>
+
+
+    <!-- ابدأ التعلم -->
+    <a class="btn-nav" href="./start.html">ابدأ التعلم</a>
+
+
+    <button class="global-search-btn" id="globalSearchBtn" type="button" aria-label="البحث">🔎</button>
+    <a id="mobileNotifications" class="zad-mobile-notifications" href="dashboard/student/index.html?tab=notifications" aria-label="الإشعارات">🔔</a>
+    <button id="zadMobileTheme" class="zad-mobile-theme" type="button" aria-label="تغيير الوضع الليلي والنهاري" title="تغيير الوضع">🌙</button>
+
+
+
 
   </div>
 </nav>
@@ -245,7 +252,7 @@
             منصة تعليمية تجمع لك القرآن الكريم والعلوم الشرعية واللغة العربية والتعليم الأزهري في تجربة واحدة بسيطة ومنظمة.
           </p>
           <div class="hero-actions">
-            <a class="btn-primary" href="start.html">ابدأ التعلم</a>
+            <a class="btn-primary" href="login/index.html">تسجيل الدخول</a>
             <a class="btn-nav" href="sections/booking/index.html">احجز حصتك</a>
           </div>
           <div class="hero-stats">
@@ -261,12 +268,6 @@
         </div>
       </div>
     </section>
-<section class="home-quick-links" aria-label="اختصارات سريعة">
-  <a href="sections/library.html" class="quick-link-card"><span>📚</span><strong>المكتبة</strong><small>الكتب والملخصات والأسئلة</small></a>
-  <a href="sections/library.html" class="quick-link-card"><span>📖</span><strong>الملخصات والأسئلة</strong><small>مصادر للمراجعة</small></a>
-  <a href="sections/booking/index.html" class="quick-link-card"><span>📅</span><strong>حجز الحصص</strong><small>اختر القسم والموعد</small></a>
-  <a href="sections/Azhar/azhar.html" class="quick-link-card"><span>🎓</span><strong>التعليم الأزهري</strong><small>المواد والمحتوى</small></a>
-</section>
 <section id="personalHome" class="personal-home" hidden>
   <div><span class="personal-kicker">لوحتك السريعة</span><h2 id="personalWelcome">مرحبًا، ماذا تريد أن تكمل اليوم؟</h2><p>ارجع بسرعة إلى آخر ما كنت تتابعه أو افتح حسابك لمتابعة الحصص والإشعارات.</p></div>
   <div class="personal-actions"><a href="sections/library.html">📚 مكتبتي</a><a class="account-dashboard-link" href="dashboard/student/index.html">👤 لوحتي</a><a href="sections/booking/index.html">📅 حجز حصة</a></div>
@@ -674,7 +675,7 @@
         },
         {
           id: "arabic",
-          icon: "🅰️",
+          icon: "ض",
           name: "اللغة العربية",
           desc: "نحو، صرف، بلاغة، وأدب عربي بأسلوب مبسط ومتدرج.",
           topics: ["النحو", "البلاغة", "الأدب العربي", "الخط العربي"],
@@ -760,6 +761,7 @@
       function closeModal() {
         document.getElementById("modal-overlay").classList.remove("open");
         document.body.style.overflow = "";
+        document.getElementById("hamBtn")?.setAttribute("aria-expanded", "false");
       }
       function handleModalClick(e) {
         if (e.target === document.getElementById("modal-overlay")) closeModal();
@@ -779,6 +781,7 @@
       function openMob() {
         document.getElementById("mobile-overlay").classList.add("open");
         document.body.style.overflow = "hidden";
+        document.getElementById("hamBtn")?.setAttribute("aria-expanded", "true");
       }
       function closeMob() {
         document.getElementById("mobile-overlay").classList.remove("open");
@@ -1186,7 +1189,7 @@ export function redirectAfterLogin(userData){window.location.href=pathFor(userDa
 import {db} from './firebase-config.js';
 import {collection,getDocs,query,orderBy,limit} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-async function loadHomeExtras(){let st={};const sg=document.getElementById('homeStatsGrid');if(sg)sg.innerHTML=Array.from({length:4},()=>'<div class="home-stat-skeleton"></div>').join('');try{const q=await getDocs(query(collection(db,'publicStats'),limit(20)));q.forEach(d=>{const x=d.data()||{};st[d.id]=Number(x.total||x.count||0)})}catch(e){};const cards=[['students','👨‍🎓','الطلاب'],['books','📚','كتب المكتبة'],['teachers','👨‍🏫','المعلمون'],['categories','📚','الأقسام']];if(sg)sg.innerHTML=cards.map(x=>`<div class="card text-center p-6"><div class="text-3xl">${x[1]}</div><div class="text-3xl font-black mt-2">${Number(st[x[0]]||0).toLocaleString('ar-EG')}</div><div>${x[2]}</div></div>`).join('');}
+async function loadHomeExtras(){let st={};const sg=document.getElementById('homeStatsGrid');if(sg)sg.innerHTML=Array.from({length:4},()=>'<div class="home-stat-skeleton"></div>').join('');try{const q=await getDocs(query(collection(db,'publicStats'),limit(20)));q.forEach(d=>{const x=d.data()||{};st[d.id]=Number(x.total||x.count||0)})}catch(e){};const cards=[['students','👨‍🎓','الطلاب'],['books','📚','كتب المكتبة'],['teachers','👨‍🏫','المعلمون'],['categories','📚','الأقسام']];if(sg)sg.innerHTML=cards.map(x=>`<div class="card text-center p-6"><div class="text-3xl">${x[1]}</div><div class="text-3xl font-black mt-2">${Number(x[0]==='teachers' ? (st.teachers || 4) : (st[x[0]]||0)).toLocaleString('ar-EG')}</div><div>${x[2]}</div></div>`).join('');}
 document.addEventListener('DOMContentLoaded',loadHomeExtras);
 </script>
 
@@ -1198,14 +1201,6 @@ document.addEventListener('DOMContentLoaded',loadHomeExtras);
     <div id="globalSearchResults" class="global-search-results"></div>
   </div>
 </div>
-<nav class="mobile-bottom-nav" aria-label="التنقل السريع">
-  <a href="#hero"><span>🏠</span><small>الرئيسية</small></a>
-  <a href="sections/library.html"><span>📚</span><small>المكتبة</small></a>
-  <a href="start.html"><span>🧭</span><small>ابدأ</small></a>
-  <a href="dashboard/student/index.html" class="account-dashboard-link"><span>🔔</span><small>الإشعارات</small></a>
-  <a href="login/index.html" class="login-mobile-btn"><span>👤</span><small>حسابي</small></a>
-</nav>
-
 <script type="module">
 
 import { auth, db } from './firebase-config.js';
@@ -1283,6 +1278,16 @@ return {text:'أقدر أساعدك تحجز حصة، تسجل حساب، تلا
 async function ask(q){if(!q.trim())return;const message=q.trim();input.value='';bubble('user',message);if(isStudyQuestion(message)){bubble('bot','جاري إرسال سؤالك للإدارة...');try{const r=await submitStudyQuestion(message);bubble('bot',r.text,r.links)}catch(err){console.error('Study question failed',err);bubble('bot','تعذر إرسال السؤال حاليًا. تأكد من اتصال الإنترنت وتسجيل الدخول ونشر قواعد Firestore الجديدة، ثم حاول مرة أخرى.')}return}const r=reply(message);bubble('bot',r.text,r.links)}
 root.querySelector('#zad-help-form').addEventListener('submit',e=>{e.preventDefault();ask(input.value)});root.querySelectorAll('[data-ask]').forEach(b=>b.addEventListener('click',()=>ask(b.dataset.ask)));
 bubble('bot','السلام عليكم! 👋 أنا مساعد خدمات زاد المعرفة. اسألني إزاي تحجز، تسجّل، أو تلاقي كتاب في المكتبة.');
+})();
+</script>
+<script>
+(function(){
+ const theme=document.getElementById('themeToggle');
+ const mobile=document.getElementById('zadMobileTheme');
+ if(!mobile||!theme)return;
+ function update(){mobile.textContent=theme.checked?'☀️':'🌙';}
+ mobile.addEventListener('click',()=>{theme.checked=!theme.checked;theme.dispatchEvent(new Event('change',{bubbles:true}));update();});
+ theme.addEventListener('change',update);setTimeout(update,250);
 })();
 </script>
 </body>

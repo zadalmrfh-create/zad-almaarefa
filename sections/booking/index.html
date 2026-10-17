@@ -192,6 +192,41 @@ body{margin:0;font-family:Cairo,Arial,sans-serif;background:linear-gradient(135d
       </form>
     </div>
   </main>
+  <!-- تحديث اسم المعلم فور اختيار القسم، حتى قبل تحميل Firebase. -->
+  <script>
+    (function () {
+      const section = document.getElementById('bookingSection');
+      const subject = document.querySelector('#bookingForm [name="subject"]');
+      const teacher = document.getElementById('bookingTeacher');
+      const hint = document.getElementById('teacherAutoHint');
+      function norm(text) {
+        return String(text || '').normalize('NFKD').replace(/[\u064B-\u065F\u0670]/g, '')
+          .replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي').toLowerCase().trim();
+      }
+      function refresh() {
+        const chosenSection = norm(section?.value);
+        const chosenSubject = norm(subject?.value);
+        const combined = chosenSection + ' ' + chosenSubject;
+        let name = '';
+        if (chosenSection.includes('برمج') || chosenSection.includes('تكنولوجيا') || combined.includes('برمج')) name = 'مالك سامح';
+        else if (chosenSection.includes('انجليز') || chosenSection.includes('english') || combined.includes('انجليز') || combined.includes('english')) name = 'علي عبد الحميد';
+        else if (chosenSection === 'العلوم' || (!chosenSection && chosenSubject === 'العلوم')) name = 'فاطمة أشرف';
+        else if (chosenSection) name = 'ضياء الدين نبيل';
+        if (!name) return;
+        // يحافظ ملف booking.js على حساب Firebase UID، ولا يغيّر هذا الكود بيانات الحجز.
+        if (teacher) {
+          let option = teacher.options[0];
+          if (!option) { option = document.createElement('option'); teacher.appendChild(option); }
+          option.textContent = name;
+          option.selected = true;
+        }
+        if (hint) hint.textContent = 'تم اختيار المعلم تلقائيًا: ' + name;
+      }
+      section?.addEventListener('change', refresh);
+      subject?.addEventListener('input', refresh);
+      refresh();
+    })();
+  </script>
   <script type="module" src="./booking.js"></script>
 </body>
 </html>

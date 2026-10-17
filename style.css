@@ -4406,3 +4406,64 @@ img{max-width:100%;height:auto}button,a,input,select,textarea{touch-action:manip
 
 /* مفتاح الوضع الليلي بجوار المزيد */
 #navbar .nav-links > .theme-toggle{flex:0 0 92px;align-self:center;margin-inline:6px}
+
+/* إصلاح زر قائمة الموبايل: ظاهر دائمًا جنب الشعار ومتاح باللمس */
+@media (max-width:1024px){
+  #navbar .nav-inner{display:flex!important;align-items:center!important;gap:8px!important;flex-wrap:nowrap!important;overflow:visible!important}
+  #navbar .nav-inner .logo{flex:0 0 auto!important;min-width:0!important}
+  #navbar #hamBtn.hamburger{display:inline-flex!important;visibility:visible!important;opacity:1!important;position:relative!important;z-index:1002!important;flex:0 0 44px!important;width:44px!important;height:44px!important;min-width:44px!important;padding:9px!important;align-items:center!important;justify-content:center!important;order:0!important;color:#f3d36b!important;background:#15243b!important;border:1.5px solid #d4ac48!important;border-radius:12px!important;cursor:pointer!important;pointer-events:auto!important;transform:none!important}
+  #navbar #hamBtn.hamburger svg{display:block!important;width:23px!important;height:23px!important;stroke:#f3d36b!important;flex:none!important}
+  #navbar .nav-inner .smart-account-btn{min-width:0!important}
+  #mobile-overlay{z-index:10000!important}
+  #mobile-overlay.open{opacity:1!important;visibility:visible!important;pointer-events:auto!important}
+}
+@media(max-width:420px){
+  #navbar #hamBtn.hamburger{flex-basis:40px!important;width:40px!important;min-width:40px!important;height:40px!important;padding:7px!important}
+  #navbar .nav-inner{gap:5px!important}
+}
+
+/* Zad navigation and mobile cleanup — 2026 */
+.mobile-bottom-nav,.home-quick-links{display:none!important}
+#navbar .nav-links>.theme-toggle{flex-basis:64px!important;width:64px!important;min-width:64px!important}
+#navbar .nav-inner{gap:9px!important}
+#navbar .nav-inner .nav-link{font-size:12px!important}
+#navbar .nav-inner>.btn-nav{font-size:12px!important;padding:9px 12px!important}
+#navbar .nav-inner>.global-search-btn{width:40px!important;height:40px!important}
+.zad-mobile-notifications,.zad-mobile-theme{display:none}
+#homeStatsGrid .card{min-width:0!important;overflow:visible!important}
+#homeStatsGrid .card div{overflow-wrap:anywhere!important}
+/* Keep table names readable on desktops: do not clip first characters */
+#usersManagement .users-table-wrap{overflow-x:auto!important}
+#usersManagement .users-table{width:max-content!important;min-width:100%!important;table-layout:auto!important}
+#usersManagement .users-table td:first-child,#usersManagement .users-table th:first-child{min-width:180px!important;max-width:none!important;white-space:normal!important;text-align:right!important;overflow:visible!important}
+@media(max-width:1024px){
+ body{padding-bottom:0!important}
+ #navbar .nav-inner{direction:ltr!important;gap:5px!important;min-height:56px!important;padding:7px!important;justify-content:flex-start!important}
+ #navbar #hamBtn.hamburger{order:1!important;width:36px!important;height:36px!important;min-width:36px!important;flex:0 0 36px!important;padding:7px!important}
+ #navbar .nav-inner>.smart-account-wrap,#navbar .nav-inner>.login-nav-btn{order:2!important;display:flex!important;flex:0 1 auto!important;min-width:0!important;max-width:95px!important}
+ #navbar .nav-inner>.login-nav-btn{font-size:10px!important;line-height:1.1!important;padding:4px 6px!important;height:36px!important;white-space:normal!important;text-align:center!important}
+ #navbar .nav-inner .smart-account-trigger{padding:4px 5px!important;min-height:36px!important;gap:3px!important}
+ #navbar .nav-inner .smart-account-trigger .account-name{max-width:54px!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;font-size:10px!important}
+ #navbar .nav-inner .smart-account-trigger .account-avatar{width:25px!important;height:25px!important;min-width:25px!important}
+ #navbar .nav-inner .smart-account-trigger .account-caret{display:none!important}
+ #mobileNotifications{display:inline-flex!important;order:3!important;align-items:center;justify-content:center;width:36px;height:36px;flex:0 0 36px;border:1px solid #ae903e;border-radius:11px;background:#15243b;text-decoration:none;font-size:18px}
+ #navbar #globalSearchBtn{order:4!important;display:inline-flex!important;align-items:center;justify-content:center;flex:0 0 36px!important;width:36px!important;height:36px!important;font-size:16px!important}
+ #navbar #zad-language-widget.zad-language-in-nav{order:5!important;flex:0 0 36px!important}
+ #navbar .zad-language-trigger{width:36px!important;height:36px!important;padding:6px!important;display:flex!important;align-items:center;justify-content:center}
+ #zadMobileTheme{display:inline-flex!important;order:6!important;align-items:center;justify-content:center;flex:0 0 36px;width:36px;height:36px;border:1px solid #ae903e;border-radius:11px;background:#15243b;color:#f6d575;font-size:18px;cursor:pointer}
+ #navbar .nav-inner>.logo{order:7!important;margin-left:auto!important;min-width:0!important;flex:0 0 auto!important}
+ #navbar .logo-text{display:none!important}
+ #navbar .logo>div{width:34px!important;height:34px!important}
+ #navbar .nav-inner>.btn-nav:not(.login-nav-btn){display:none!important}
+ .floating-share{position:fixed!important;left:auto!important;right:10px!important;bottom:12px!important;width:45px!important;height:45px!important;z-index:1100!important}
+ #zad-reception{left:10px!important;right:auto!important;bottom:12px!important;z-index:1090!important}
+ #zad-help-launch{font-size:12px!important;padding:9px 10px!important}
+}
+@media(max-width:430px){
+ #navbar .nav-inner{gap:3px!important;padding:6px 4px!important}
+ #navbar #hamBtn.hamburger,#mobileNotifications,#navbar #globalSearchBtn,#navbar #zad-language-widget.zad-language-in-nav,#zadMobileTheme{flex-basis:32px!important;min-width:32px!important;width:32px!important;height:34px!important}
+ #navbar .zad-language-trigger{width:32px!important;height:34px!important}
+ #navbar .nav-inner>.smart-account-wrap,#navbar .nav-inner>.login-nav-btn{max-width:70px!important}
+ #navbar .nav-inner .smart-account-trigger .account-name{max-width:32px!important}
+ #navbar .logo>div{width:30px!important;height:30px!important}
+}
