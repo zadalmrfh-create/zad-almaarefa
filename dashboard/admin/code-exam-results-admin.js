@@ -35,7 +35,7 @@ onAuthStateChanged(auth,async user=>{
         grade:pct>=90?'ممتاز':pct>=80?'جيد جدًا':pct>=65?'جيد':'تقدير مشاركة',
         description:`تقديرًا لمشاركته في ${exam}، وحصوله على ${x.score??0} من ${x.total??0} (${Math.round(pct)}%).`,
         issueDate:new Date().toLocaleDateString('ar-EG'),
-        signature:'إدارة منصة زاد المعرفة'
+        signature:''
       };
       cert.onclick=()=>printable(certificateData);
       editCert.onclick=()=>window.dispatchEvent(new CustomEvent('zad:certificate-from-exam',{detail:certificateData}));

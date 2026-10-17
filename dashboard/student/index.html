@@ -133,6 +133,32 @@
     <div id="loading" class="notice">
         جارٍ التحقق من الحساب…
     </div>
+    <script>
+    /* مراقب مستقل عن Firebase: يعمل حتى إذا فشل استيراد ملفات JavaScript الخارجية. */
+    (function(){
+      window.zadStudentAuthReady = false;
+      var timeout = setTimeout(function(){
+        if (window.zadStudentAuthReady) return;
+        var el = document.getElementById('loading');
+        if (!el) return;
+        el.style.display = 'block';
+        el.innerHTML = '';
+        var msg = document.createElement('span');
+        msg.textContent = 'تعذر إكمال التحقق من الحساب. قد يكون الاتصال بخدمات Firebase متوقفًا أو يوجد خطأ في تحميل ملفات الصفحة.';
+        var retry = document.createElement('button');
+        retry.type = 'button';
+        retry.className = 'btn gold';
+        retry.textContent = '🔄 إعادة المحاولة';
+        retry.style.marginInlineStart = '12px';
+        retry.addEventListener('click', function(){location.reload();});
+        el.append(msg, retry);
+      }, 12000);
+      window.zadStudentMarkAuthReady = function(){
+        window.zadStudentAuthReady = true;
+        clearTimeout(timeout);
+      };
+    })();
+    </script>
 
 
     <section class="hero">
@@ -851,6 +877,7 @@ onAuthStateChanged(
     async user => {
         zadAuthResolved = true;
         clearTimeout(zadAuthTimer);
+        window.zadStudentMarkAuthReady?.();
 
         const loadingElem =
             document.getElementById(
@@ -960,21 +987,13 @@ onAuthStateChanged(
                 loadingElem.style.display = 'block';
                 loadingElem.textContent = 'تم تسجيل الدخول، لكن تعذر جلب بيانات الحساب: ' + (err.code || err.message) + '. تأكد من قواعد Firestore واتصال الإنترنت.';
             }
-        } finally {
-
-            if (loadingElem) {
-
-                loadingElem.style.display =
-                    'none';
-
-            }
-
         }
 
     },
     error => {
       zadAuthResolved = true;
       clearTimeout(zadAuthTimer);
+      window.zadStudentMarkAuthReady?.();
       console.error('تعذر التحقق من حساب الطالب:', error);
       const notice = document.getElementById('loading');
       if (notice) {

@@ -1,12 +1,49 @@
-export const SUBJECTS = ['اللغة العربية','المواد الشرعية','الفلسفة والمنطق الحديث','المنطق القديم','اللغة الإنجليزية','العلوم','البرمجة وتكنولوجيا المعلومات'];
+export const SUBJECTS = [
+  'النحو',
+  'الصرف',
+  'البلاغة',
+  'الأدب والنصوص',
+  'التفسير',
+  'الحديث',
+  'التوحيد',
+  'الفلسفة والمنطق الحديث',
+  'المنطق القديم',
+  'اللغة الإنجليزية',
+  'العلوم',
+  'البرمجة وتكنولوجيا المعلومات'
+];
 
+const DIYAA_SUBJECTS = new Set([
+  'النحو',
+  'الصرف',
+  'البلاغة',
+  'الأدب والنصوص',
+  'الأدب',
+  'النصوص',
+  'التفسير',
+  'الحديث',
+  'التوحيد',
+  'الفلسفة والمنطق الحديث',
+  'المنطق القديم',
+  'اللغة العربية',
+  'المواد الشرعية',
+  'العلوم الشرعية'
+]);
 
-// Exact subject-based assignment: 'العلوم الشرعية' must NOT be classified as science.
-export function teacherForSubject(subject) {
-  const name=String(subject||'').trim();
+function teacherForSingleSubject(subject) {
+  const name = String(subject || '').trim();
   if (!name) return '';
-  if (name==='العلوم' || name==='مادة العلوم') return 'فاطمة أشرف';
-  if (name==='اللغة الإنجليزية' || name==='الانجليزي' || name==='الإنجليزي') return 'علي عبد الحميد';
-  if (name==='البرمجة وتكنولوجيا المعلومات' || name==='البرمجة') return 'مالك سامح';
+  if (name === 'العلوم' || name === 'مادة العلوم') return 'فاطمة أشرف';
+  if (name === 'اللغة الإنجليزية' || name === 'الانجليزي' || name === 'الإنجليزي') return 'علي عبد الحميد';
+  if (name === 'البرمجة وتكنولوجيا المعلومات' || name === 'البرمجة') return 'مالك سامح';
+  if (DIYAA_SUBJECTS.has(name)) return 'ضياء الدين نبيل';
   return 'ضياء الدين نبيل';
+}
+
+export function teacherForSubject(subject) {
+  if (Array.isArray(subject)) {
+    const teachers = [...new Set(subject.map(teacherForSingleSubject).filter(Boolean))];
+    return teachers.join('، ');
+  }
+  return teacherForSingleSubject(subject);
 }
