@@ -8,7 +8,7 @@
     {id:'home',label:'نظرة عامة',icon:'🏠',sections:['platformAnalytics','studentCounterManagement']},
     {id:'users',label:'المستخدمون',icon:'👥',sections:['usersManagement']},
     {id:'bookings',label:'الحجوزات',icon:'📅',sections:['bookingsManagement']},
-    {id:'exams',label:'الامتحانات',icon:'📝',sections:['codeExamsManagement','codeExamResultsSection']},
+    {id:'exams',label:'الامتحانات',icon:'📝',sections:['codeExamsManagement','adminCertificatesSection','codeExamResultsSection']},
     {id:'library',label:'المكتبة',icon:'📚',sections:['libraryDownloadTracking']},
     {id:'lessons',label:'الحضور والغياب',icon:'✅',sections:['attendanceManagement']},
     {id:'content',label:'المحتوى',icon:'⚙️',sections:['contentManagement']},
@@ -61,6 +61,7 @@
     }
     if(updateHash) history.replaceState(null,'',`#panel-${target}`);
   }
+  window.addEventListener('zad:open-admin-tab', event => { activate(event.detail?.tab || 'exams'); });
   tabs.addEventListener('click',e=>{
     const b=e.target.closest('[data-admin-tab]');
     if(b){activate(b.dataset.adminTab);tabs.scrollIntoView({block:'start',behavior:'smooth'});}

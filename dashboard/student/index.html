@@ -137,6 +137,19 @@
     /* مراقب مستقل عن Firebase: يعمل حتى إذا فشل استيراد ملفات JavaScript الخارجية. */
     (function(){
       window.zadStudentAuthReady = false;
+      window.addEventListener('error', function(e){
+        if(window.zadStudentAuthReady) return;
+        var notice=document.getElementById('loading');
+        if(notice && (e.target?.tagName === 'SCRIPT' || /module|firebase|import/i.test(e.message||''))){
+          notice.style.display='block';
+          notice.textContent='تعذر تحميل أحد ملفات تسجيل الدخول. تأكد من الإنترنت وافتح أدوات المطور (F12) لمعرفة الملف الذي فشل.';
+        }
+      },true);
+      window.addEventListener('unhandledrejection',function(e){
+        if(window.zadStudentAuthReady) return;
+        var notice=document.getElementById('loading');
+        if(notice){notice.style.display='block';notice.textContent='حدث خطأ أثناء تهيئة حساب الطالب: '+(e.reason?.code||e.reason?.message||'تعذر تحميل البيانات');}
+      });
       var timeout = setTimeout(function(){
         if (window.zadStudentAuthReady) return;
         var el = document.getElementById('loading');

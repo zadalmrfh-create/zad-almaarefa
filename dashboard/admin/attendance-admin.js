@@ -9,12 +9,20 @@ const summary = $('attendanceStudentSummary');
 const form = $('manualAttendanceForm'), studentSelect = $('attendanceStudent'), search = $('attendanceStudentSearch'), rows = $('attendanceRows'), message = $('attendanceMessage');
 const subjectSelect = $('attendanceSubject');
 
-if (subjectSelect) {
+const optionsBox = $('attendanceSubjectOptions');
+const pickerSummary = $('attendanceSubjectSummary');
+if (subjectSelect && optionsBox) {
   subjectSelect.innerHTML = SUBJECTS.map(x => `<option value="${esc(x)}">${esc(x)}</option>`).join('');
   subjectSelect.multiple = true;
-  subjectSelect.size = Math.min(8, Math.max(6, SUBJECTS.length));
-  subjectSelect.setAttribute('aria-label', 'اختر مادة أو أكثر');
-  subjectSelect.title = 'يمكنك اختيار أكثر من مادة بالضغط على Ctrl في الكمبيوتر أو باللمس في الهاتف';
+  optionsBox.innerHTML = SUBJECTS.map((x,i) => `<label><input type="checkbox" data-subject-index="${i}"><span>${esc(x)}</span></label>`).join('');
+  optionsBox.addEventListener('change', event => {
+    if (!event.target.matches('input[type="checkbox"]')) return;
+    const i = Number(event.target.dataset.subjectIndex);
+    if (subjectSelect.options[i]) subjectSelect.options[i].selected = event.target.checked;
+    const values = getSelectedSubjects();
+    pickerSummary.textContent = values.length ? values.join('، ') : 'اختر مادة أو أكثر';
+    syncAttendanceTeacher();
+  });
 }
 
 function getSelectedSubjects() {

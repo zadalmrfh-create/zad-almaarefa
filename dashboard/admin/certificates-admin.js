@@ -209,11 +209,13 @@ onAuthStateChanged(auth, async user => {
 window.addEventListener('zad:certificate-from-exam', event => {
   const x = event.detail || {};
   if (!form) return;
+  window.dispatchEvent(new CustomEvent('zad:open-admin-tab', {detail:{tab:'exams'}}));
   reset();
   for (const el of form.elements) {
     if (el.name && Object.prototype.hasOwnProperty.call(x, el.name)) el.value = x[el.name] ?? '';
   }
   const message = $('certificateAdminStatus');
   if (message) message.textContent = 'تم تجهيز بيانات الشهادة من نتيجة الامتحان. يمكنك تعديلها ثم إصدار الشهادة وحفظها.';
-  document.getElementById('adminCertificatesSection')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  requestAnimationFrame(() => document.getElementById('adminCertificatesSection')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+  form.querySelector('[name=studentName]')?.focus({preventScroll:true});
 });

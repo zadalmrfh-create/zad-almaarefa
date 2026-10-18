@@ -73,7 +73,17 @@ onAuthStateChanged(auth, async (user) => {
 });
 </script>
 <link rel="stylesheet" href="admin-workspace.css">
-</head>
+<style>
+.zad-subject-picker{position:relative;width:100%;min-width:0;color:#f7e5aa}
+.zad-subject-picker summary{list-style:none;cursor:pointer;border:1px solid #586a89;background:#111d32;padding:12px 15px;border-radius:11px;min-height:45px;user-select:none}
+.zad-subject-picker summary::-webkit-details-marker{display:none}
+.zad-subject-picker summary::after{content:'⌄';float:left;font-weight:900}
+.zad-subject-picker[open] summary{border-color:#d8b447;border-radius:11px 11px 0 0}
+.zad-subject-options{max-height:260px;overflow:auto;background:#101d32;border:1px solid #d4ad41;border-top:0;border-radius:0 0 11px 11px;padding:9px;display:grid;gap:3px}
+.zad-subject-options label{display:flex!important;gap:10px;align-items:center;cursor:pointer;padding:9px 10px;border-radius:7px;margin:0!important;color:#fff}
+.zad-subject-options label:hover{background:#263953}
+.zad-subject-options input{width:18px;height:18px;accent-color:#d6ab32;margin:0;flex:none}
+</style></head>
 
 
 <body>
@@ -686,7 +696,7 @@ onAuthStateChanged(auth, async (user) => {
         <label>بحث عن الطالب<input id="attendanceStudentSearch" type="search" placeholder="ابحث باسم الطالب أو البريد الإلكتروني" autocomplete="off"></label>
         <label>حساب الطالب<select id="attendanceStudent" required><option value="">جارٍ تحميل الطلاب...</option></select></label>
         <label>تاريخ الحصة<input id="attendanceDate" type="date" required></label>
-        <label>المواد <small style="color:#94a3b8;font-weight:400">(يمكن اختيار أكثر من مادة)</small><select id="attendanceSubject" required multiple size="8"></select></label>
+        <label>المواد <small style="color:#94a3b8;font-weight:400">(يمكن اختيار أكثر من مادة)</small><details id="attendanceSubjectPicker" class="zad-subject-picker"><summary id="attendanceSubjectSummary">اختر مادة أو أكثر ▾</summary><div id="attendanceSubjectOptions" class="zad-subject-options"></div></details><select id="attendanceSubject" multiple hidden aria-hidden="true" tabindex="-1"></select></label>
         <label>المعلم<input id="attendanceTeacherName" type="text" readonly value="" aria-label="المعلم المحدد تلقائيًا" style="background:#121e30;color:#f5d76e;font-weight:bold;cursor:not-allowed"></label>
         <label>الحالة<select id="attendanceStatus" required><option value="حاضر">✅ حاضر</option><option value="غائب">❌ غائب</option></select></label>
         <label>سعر الحصة (بالجنيه المصري)<input id="attendancePrice" type="number" min="0" max="100000" step="0.01" value="0" required></label>
