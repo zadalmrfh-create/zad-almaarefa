@@ -165,11 +165,24 @@
         retry.style.marginInlineStart = '12px';
         retry.addEventListener('click', function(){location.reload();});
         el.append(msg, retry);
+        var bookings=document.getElementById('myBookingRows');
+        if(bookings && /تحميل/.test(bookings.textContent)) bookings.innerHTML='<tr><td colspan="5">تعذر بدء تحميل الحجوزات. افحص اتصال Firebase وأخطاء Console.</td></tr>';
+        var lessons=document.getElementById('liveLessonsList');
+        if(lessons && /تحميل/.test(lessons.textContent)) lessons.textContent='تعذر بدء تحميل المحاضرات. افحص اتصال Firebase وأخطاء Console.';
       }, 12000);
       window.zadStudentMarkAuthReady = function(){
         window.zadStudentAuthReady = true;
         clearTimeout(timeout);
+        var notice = document.getElementById('loading');
+        if(notice) notice.style.display='none';
       };
+      // بعض أجزاء اللوحة تُعرض قبل اكتمال طلب بيانات Firebase؛ لا تترك تنبيه تحميل قديمًا.
+      var readyObserver=new MutationObserver(function(){
+        var name=document.querySelector('[data-name]');
+        var notice=document.getElementById('loading');
+        if(window.zadStudentAuthReady && notice && name && name.textContent.trim() && name.textContent.trim()!=='...') notice.style.display='none';
+      });
+      readyObserver.observe(document.body,{subtree:true,childList:true,characterData:true});
     })();
     </script>
 
@@ -438,6 +451,20 @@ import {
 
 
 
+/* معرّف الطالب الحالي: لازم يتعرّف قبل استعماله داخل JavaScript module */
+let currentStudentUid = null;
+
+/* أي طلب Firestore بطيء لا يترك الواجهة في حالة تحميل بلا نهاية */
+function studentRequest(promise, label, ms = 10000) {
+    let timer;
+    return Promise.race([
+        promise,
+        new Promise((_, reject) => {
+            timer = setTimeout(() => reject(new Error('انتهت مهلة تحميل ' + label + '؛ افحص الاتصال وصلاحيات Firestore')), ms);
+        })
+    ]).finally(() => clearTimeout(timer));
+}
+
 /* =========================================================
    الحجوزات
 ========================================================= */
@@ -451,12 +478,12 @@ async function loadMyBookings(uid) {
 
     try {
 
-        const snap = await getDocs(
+        const snap = await studentRequest(getDocs(
             query(
                 collection(db, 'bookings'),
                 where('studentUid', '==', uid)
             )
-        );
+        ), 'الحجوزات');
 
         body.innerHTML = '';
 
@@ -637,13 +664,7 @@ async function loadLiveLessons(
 
     try {
 
-        const snap =
-            await getDocs(
-                collection(
-                    db,
-                    'lessons'
-                )
-            );
+        const snap = await studentRequest(getDocs(collection(db, 'lessons')), 'المحاضرات');
 
 
         const lessons = [];
@@ -925,16 +946,12 @@ onAuthStateChanged(
         if (nameElem) nameElem.textContent = user.displayName || (user.email ? user.email.split('@')[0] : 'الطالب');
         if (emailElem) emailElem.textContent = user.email || '';
         if (loadingElem) loadingElem.style.display = 'none';
+        // تحميل الحجوزات والمحاضرات مباشرة، دون انتظار ملف المستخدم.
+        void loadMyBookings(user.uid).catch(error => console.warn('Bookings unavailable:', error));
+        void loadLiveLessons(user.uid, '').catch(error => console.warn('Lessons unavailable:', error));
         try {
 
-            const snap =
-                await getDoc(
-                    doc(
-                        db,
-                        'users',
-                        user.uid
-                    )
-                );
+            const snap = await studentRequest(getDoc(doc(db, 'users', user.uid)), 'ملف الطالب');
 
 
             const profile =
@@ -951,15 +968,12 @@ onAuthStateChanged(
                 profile.grade || '';
 
 
-            if (
-                snap.exists() &&
-                snap.data().fullName
-            ) {
+            if (snap.exists() && (profile.fullName || profile.name || profile.displayName)) {
 
                 if (nameElem) {
 
                     nameElem.textContent =
-                        snap.data().fullName;
+                        profile.fullName || profile.name || profile.displayName;
 
                 }
 
@@ -989,16 +1003,19 @@ onAuthStateChanged(
 
 
             // تحميل كل قسم مستقل حتى لا يُعلق الترحيب بسبب طلب شبكة بطيء.
-            void loadMyBookings(user.uid).catch(error => console.warn('Bookings unavailable:',error));
-            void loadLiveLessons(user.uid, window.currentStudentGrade || '').catch(error => console.warn('Lessons unavailable:',error));
+            // المحاضرات أعيد تحميلها بعد معرفة صف الطالب لتطبيق فلتر الصف.
+            if (window.currentStudentGrade) {
+                void loadLiveLessons(user.uid, window.currentStudentGrade).catch(console.warn);
+            }
 
 
         } catch (err) {
 
             console.error('تعذر تحميل بيانات حساب الطالب:', err);
+            // ما زال بالإمكان استخدام الأقسام بعد تسجيل الدخول ولو تعذر جلب الملف الشخصي.
             if (loadingElem) {
                 loadingElem.style.display = 'block';
-                loadingElem.textContent = 'تم تسجيل الدخول، لكن تعذر جلب بيانات الحساب: ' + (err.code || err.message) + '. تأكد من قواعد Firestore واتصال الإنترنت.';
+                loadingElem.textContent = 'تعذر تحديث بيانات الملف الشخصي: ' + (err.code || err.message) + '. الحجوزات والمحاضرات يتم تحميلها بشكل مستقل.';
             }
         }
 

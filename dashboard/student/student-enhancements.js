@@ -37,14 +37,14 @@ function fill(p={}){
 
 async function loadDashboardData(){
   if(!uid)return;
-  const results=await Promise.allSettled([
+  const results=await Promise.race([Promise.allSettled([
     getDocs(query(collection(db,'lessonAttendance'),where('studentUid','==',uid))),
     getDocs(query(collection(db,'teacherStudentNotes'),where('studentUid','==',uid),where('visibleToStudent','==',true))),
     getDocs(query(collection(db,'bookings'),where('studentUid','==',uid))),
     getDocs(query(collection(db,'notifications'),where('audience','==','user'),where('targetUid','==',uid))),
     getDocs(query(collection(db,'notifications'),where('audience','==','all'))),
     getDocs(collection(db,'users',uid,'library'))
-  ]);
+  ]), new Promise((resolve) => setTimeout(() => resolve(Array.from({length:6}, () => ({status:'rejected',reason:new Error('مهلة تحميل بيانات لوحة الطالب')}))), 12000))]);
   const [attR,notesR,bookR,personalR,allR,libR]=results;
   attendance=attR.status==='fulfilled'?attR.value.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>dateKey(b.createdAt||b.date||b.openedAt)-dateKey(a.createdAt||a.date||a.openedAt)):[];
   notes=notesR.status==='fulfilled'?notesR.value.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>dateKey(b.createdAt)-dateKey(a.createdAt)):[];

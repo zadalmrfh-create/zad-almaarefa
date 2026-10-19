@@ -52,6 +52,8 @@ function filterStudents() {
   const list = students.filter(x => [x.fullName, x.name, x.email].join(' ').toLowerCase().includes(q));
   studentSelect.innerHTML = '<option value="">اختر الطالب</option>' + list.map(x => `<option value="${esc(x.id)}">${esc(x.fullName || x.name || x.email || 'طالب')} — ${esc(x.email || '')}</option>`).join('');
   if (list.some(x => x.id === prev)) studentSelect.value = prev;
+  else if (q && list.length === 1) studentSelect.value = list[0].id;
+  // اختيار الطالب الوحيد المطابق تلقائيًا لتجنب خطأ HTML required
 }
 
 function money(v) {
@@ -114,8 +116,12 @@ async function load() {
 search?.addEventListener('input', filterStudents);
 form?.addEventListener('submit', async e => {
   e.preventDefault();
-  const student = students.find(x => x.id === studentSelect.value);
-  if (!student) { message.textContent = 'اختر الطالب أولًا.'; return; }
+  let student = students.find(x => x.id === studentSelect.value);
+  if (!student) {
+    const matches = students.filter(x => [x.fullName, x.name, x.email].join(' ').toLowerCase().includes((search.value || '').trim().toLowerCase()));
+    if (matches.length === 1) { studentSelect.value = matches[0].id; student = matches[0]; }
+    else { message.textContent = matches.length > 1 ? 'ظهر أكثر من طالب، اختر الطالب الصحيح من القائمة.' : 'اختر الطالب أولًا أو ابحث بالاسم الصحيح.'; return; }
+  }
 
   const selectedSubjects = getSelectedSubjects();
   if (!selectedSubjects.length) { message.textContent = 'اختر مادة واحدة على الأقل.'; return; }
@@ -142,13 +148,15 @@ form?.addEventListener('submit', async e => {
       updatedAt: serverTimestamp()
     };
 
-    await Promise.all(selectedSubjects.map(subject => addDoc(collection(db, 'lessonAttendance'), {
+    // حصة واحدة بس مهما كان عدد المواد المختارة؛ السعر والدفع والحضور يحسبون مرة واحدة.
+    await addDoc(collection(db, 'lessonAttendance'), {
       ...commonData,
-      subject,
-      teacherName: teacherForSubject(subject) || 'غير محدد'
-    })));
+      subjects: selectedSubjects,
+      subject: selectedSubjects.join('، '),
+      teacherName: teacherForSubject(selectedSubjects) || 'غير محدد'
+    });
 
-    message.textContent = `✅ تم حفظ ${selectedSubjects.length} سجل/سجلات حضور بنجاح`;
+    message.textContent = `✅ تم حفظ حصة واحدة (${selectedSubjects.join('، ')}) بنجاح`;
     await load();
   } catch (err) {
     console.error(err);
