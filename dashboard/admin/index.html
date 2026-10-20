@@ -281,6 +281,20 @@ onAuthStateChanged(auth, async (user) => {
         </div>
       </div>
 
+
+      <details style="margin:16px 0;background:#101c30;padding:17px;border:1px solid #b9943b;border-radius:12px">
+        <summary style="cursor:pointer;font-weight:800;color:#f1cc65">➕ إضافة حساب طالب يدوي — باسم مستخدم وكلمة مرور</summary>
+        <p style="color:#aab7cf">يمكن للطالب تسجيل الدخول باسم المستخدم وكلمة المرور، ولا يحتاج بريد Gmail. لا تُحفظ كلمة المرور في قاعدة البيانات.</p>
+        <form id="manualStudentSignup" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px">
+          <label>اسم الطالب بالكامل<input name="fullName" required minlength="2" maxlength="120" placeholder="اسم الطالب" style="width:100%;padding:12px"></label>
+          <label>اسم المستخدم (إنجليزي)<input name="username" required pattern="[a-zA-Z0-9._-]{4,32}" placeholder="مثال: ahmed2026" autocomplete="off" style="width:100%;padding:12px" dir="ltr"></label>
+          <label>كلمة مرور مؤقتة<input name="password" type="password" required minlength="8" autocomplete="new-password" placeholder="8 أحرف على الأقل" style="width:100%;padding:12px"></label>
+          <label>رقم الهاتف (اختياري)<input name="phone" type="tel" style="width:100%;padding:12px"></label>
+          <label>الصف الدراسي (اختياري)<input name="grade" style="width:100%;padding:12px"></label>
+          <div style="grid-column:1/-1"><button type="submit" class="btn gold">إنشاء حساب الطالب</button><p id="manualStudentSignupStatus" role="status" aria-live="polite"></p></div>
+        </form>
+      </details>
+
       <div class="enh-toolbar users-filter-toolbar" style="margin-top:14px">
         <input id="enhUserSearch" type="search" placeholder="ابحث بالاسم أو البريد أو الهاتف أو المدينة">
         <select id="enhRoleFilter">
@@ -1471,28 +1485,6 @@ function showUser(user) {
     ).join('');
 
 
-  userInfo.innerHTML += `
-    <div class="card" style="margin-top:14px">
-      <h4>✏️ تعديل البيانات الأساسية</h4>
-      <form id="enhEditUserForm" class="admin-form" style="display:grid;gap:8px;margin-top:10px">
-        <input id="enhEditName" value="${escapeHtml(user.fullName || user.name || '')}" placeholder="الاسم">
-        <input id="enhEditPhone" value="${escapeHtml(user.phone || '')}" placeholder="الهاتف">
-        <input id="enhEditCountry" value="${escapeHtml(user.country || '')}" placeholder="البلد">
-        <input id="enhEditCity" value="${escapeHtml(user.city || '')}" placeholder="المدينة">
-        <input id="enhEditGrade" value="${escapeHtml(user.role === 'teacher' ? (user.subject || user.grade || '') : (user.grade || user.studyGrade || ''))}" placeholder="الصف / المادة">
-        <button class="btn gold" type="submit">💾 حفظ التعديلات</button>
-        <span id="enhEditStatus" class="notice" style="display:none"></span>
-      </form>
-    </div>`;
-  document.getElementById('enhEditUserForm')?.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    const out=document.getElementById('enhEditStatus'); out.style.display='block'; out.textContent='جارٍ الحفظ…';
-    try {
-      const patch={fullName:document.getElementById('enhEditName').value.trim(),name:document.getElementById('enhEditName').value.trim(),phone:document.getElementById('enhEditPhone').value.trim(),country:document.getElementById('enhEditCountry').value.trim(),city:document.getElementById('enhEditCity').value.trim(),updatedAt:serverTimestamp()};
-      if(user.role==='teacher') patch.subject=document.getElementById('enhEditGrade').value.trim(); else patch.grade=document.getElementById('enhEditGrade').value.trim();
-      await updateDoc(doc(db,'users',user.uid),patch); out.textContent='تم الحفظ بنجاح.'; out.classList.add('success'); await loadUsers();
-    } catch(error){ console.error(error); out.textContent='تعذر حفظ التعديلات.'; }
-  });
 
   modal.classList.add('show');
 
@@ -1567,7 +1559,7 @@ function adminBadgeMarkup(isAdmin) {
 
 function buildUserActionButtons({ isTeacher, isPending, isDisabled, isBanned, isAdmin }) {
   let buttons = `
-    <button class="action-btn action-view" title="عرض البيانات" data-action="view" type="button">👁️</button>
+    <button class="action-btn action-view" title="عرض بيانات الطالب" data-action="view" type="button">👁️ عرض البيانات</button>
     <button class="action-btn ${isTeacher ? 'action-assigned' : 'action-assign-teacher'}" title="تعيين كمعلّم" data-action="assign-teacher" type="button">👨‍🏫 ${isTeacher ? 'معلم' : 'تعيين معلم'}</button>
     <button class="action-btn ${isAdmin ? 'action-assigned' : 'action-assign-admin'}" title="تعيين كأدمن" data-action="assign-admin" type="button">👑 ${isAdmin ? 'أدمن' : 'تعيين أدمن'}</button>
   `;
@@ -4944,6 +4936,7 @@ onAuthStateChanged(auth,user=>{if(!user){panel.textContent='سجل الدخول 
 
 <script src="admin-workspace.js" defer></script>
 <script type="module" src="admin-activity-alerts.js"></script>
+<script type="module" src="manual-students-admin.js"></script>
 </body>
 
 </html>

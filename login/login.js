@@ -503,10 +503,11 @@ emailLoginForm?.addEventListener(
     }
 
 
-    const email =
-      document.getElementById(
-        'email'
-      ).value.trim();
+    const enteredLogin = document.getElementById('email').value.trim();
+
+    const email = enteredLogin.includes('@')
+      ? enteredLogin
+      : enteredLogin.toLowerCase()+'@students.zad-almaarefa.example';
 
 
     const password =

@@ -65,7 +65,7 @@ function render() {
     <td>${esc(x.studentName || '-')}</td><td>${esc(x.date || '-')}</td><td>${esc(x.subject || '-')}</td>
     <td>${esc(x.status || '-')}</td><td>${money(x.price)}</td>
     <td><button type="button" class="btn ${x.paid === true ? 'gold' : ''}" data-paid="${esc(x.id)}" aria-label="تغيير حالة الدفع">${x.paid === true ? '✅ مدفوعة' : '⏳ غير مدفوعة'}</button></td>
-    <td>${esc(x.teacherName || 'الإدارة')}</td><td><button type="button" class="btn" data-edit="${esc(x.id)}">تعديل</button> <button type="button" class="btn danger" data-del="${esc(x.id)}">حذف</button></td></tr>`).join('') : '<tr><td colspan="8">لا توجد سجلات حضور بعد.</td></tr>';
+    <td>${esc(x.teacherName || 'الإدارة')}</td><td><button type="button" class="btn" data-edit="${esc(x.id)}">✏️ تعديل الحصة</button> <button type="button" class="btn danger" data-del="${esc(x.id)}">حذف</button></td></tr>`).join('') : '<tr><td colspan="8">لا توجد سجلات حضور بعد.</td></tr>';
 
   const summarySearch = String($('attendanceSummarySearch')?.value || '').trim().toLocaleLowerCase('ar');
   const subjectFilter = $('attendanceSummarySubject')?.value || 'all';
@@ -166,6 +166,71 @@ form?.addEventListener('submit', async e => {
   }
 });
 
+
+// تعديل سجل الحضور نفسه: الطالب والتاريخ والمواد والحضور والدفع والسعر.
+const attendanceEditDialog = document.createElement('dialog');
+attendanceEditDialog.id='zadAttendanceEditDialog';
+attendanceEditDialog.dir='rtl';
+attendanceEditDialog.style.cssText='background:#111e34;color:#f7f7fc;border:1px solid #c9a84c;border-radius:16px;padding:22px;width:min(650px,95vw);max-height:90vh;overflow:auto;box-shadow:0 20px 90px #0009';
+attendanceEditDialog.innerHTML=`<form id="zadAttendanceEditForm" style="display:grid;gap:12px">
+<h3 style="margin:0;color:#e8c96d">✏️ تعديل بيانات الحصة</h3>
+<label>الطالب<select name="studentUid" required style="width:100%;padding:10px"></select></label>
+<label>تاريخ الحصة<input name="date" type="date" required style="width:100%;padding:10px"></label>
+<fieldset style="border:1px solid #64748b;border-radius:8px"><legend>المواد (يمكن اختيار أكثر من مادة، وتحسب حصة واحدة)</legend><div data-edit-subjects style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px"></div></fieldset>
+<label>حالة الحضور<select name="status" style="width:100%;padding:10px"><option>حاضر</option><option>غائب</option></select></label>
+<label>سعر الحصة بالجنيه<input name="price" type="number" min="0" max="100000" step="0.01" required style="width:100%;padding:10px"></label>
+<label>حالة الدفع<select name="paid" style="width:100%;padding:10px"><option value="false">غير مدفوعة</option><option value="true">مدفوعة</option></select></label>
+<label>ملاحظات<textarea name="note" rows="3" style="width:100%;padding:10px"></textarea></label>
+<p data-edit-error role="alert" style="color:#ffb4a2;margin:0"></p>
+<div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn gold" type="submit">💾 حفظ التعديلات</button><button class="btn" type="button" data-cancel>إلغاء</button></div>
+</form>`;
+document.body.append(attendanceEditDialog);
+const attendanceEditForm=attendanceEditDialog.querySelector('form');
+let attendanceEditingId=null;
+attendanceEditDialog.querySelector('[data-cancel]').addEventListener('click',()=>attendanceEditDialog.close());
+function openAttendanceEditor(record){
+  attendanceEditingId=record.id;
+  attendanceEditForm.elements.studentUid.innerHTML=students.map(st=>`<option value="${esc(st.id)}">${esc(st.fullName||st.name||st.email||st.id)}</option>`).join('');
+  attendanceEditForm.elements.studentUid.value=record.studentUid||'';
+  attendanceEditForm.elements.date.value=record.date||'';
+  attendanceEditForm.elements.status.value=record.status||'حاضر';
+  attendanceEditForm.elements.price.value=Number(record.price)||0;
+  attendanceEditForm.elements.paid.value=record.paid===true?'true':'false';
+  attendanceEditForm.elements.note.value=record.note||'';
+  const selected=Array.isArray(record.subjects)?record.subjects:String(record.subject||'').split('،').map(v=>v.trim());
+  attendanceEditForm.querySelector('[data-edit-subjects]').innerHTML=[...new Set([...SUBJECTS,...selected.filter(Boolean)])].map(v=>`<label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="subjectItem" value="${esc(v)}" ${selected.includes(v)?'checked':''}>${esc(v)}</label>`).join('');
+  attendanceEditForm.querySelector('[data-edit-error]').textContent='';
+  attendanceEditDialog.showModal();
+}
+attendanceEditForm.addEventListener('submit',async event=>{
+  event.preventDefault();
+  const error=attendanceEditForm.querySelector('[data-edit-error]');
+  const student=students.find(st=>st.id===attendanceEditForm.elements.studentUid.value);
+  const selected=[...attendanceEditForm.querySelectorAll('input[name="subjectItem"]:checked')].map(input=>input.value);
+  const price=Number(attendanceEditForm.elements.price.value);
+  if(!student){error.textContent='اختر طالبًا صحيحًا.';return;}
+  if(!selected.length){error.textContent='اختر مادة واحدة على الأقل.';return;}
+  if(!Number.isFinite(price)||price<0||price>100000){error.textContent='سعر الحصة غير صحيح.';return;}
+  const original=records.find(r=>r.id===attendanceEditingId);
+  if(!original){error.textContent='السجل غير موجود؛ حدّث الصفحة.';return;}
+  const paid=attendanceEditForm.elements.paid.value==='true';
+  const submit=attendanceEditForm.querySelector('button[type="submit"]');submit.disabled=true;
+  try{
+    await updateDoc(doc(db,'lessonAttendance',attendanceEditingId),{
+      studentUid:student.id,studentName:student.fullName||student.name||student.email||'',
+      date:attendanceEditForm.elements.date.value,
+      subjects:selected,subject:selected.join('، '),
+      teacherName:teacherForSubject(selected)||'غير محدد',
+      status:attendanceEditForm.elements.status.value,
+      price,paid,paidAt:paid?(original.paidAt||serverTimestamp()):null,
+      note:attendanceEditForm.elements.note.value.trim(),updatedAt:serverTimestamp()
+    });
+    attendanceEditDialog.close();await load();
+    message.textContent='✅ تم تعديل الحصة بنجاح؛ المواد المتعددة تظل حصة واحدة.';
+  }catch(e){console.error(e);error.textContent='تعذر حفظ التعديل: '+(e.code||e.message);}
+  finally{submit.disabled=false;}
+});
+
 rows?.addEventListener('click', async e => {
   const edit = e.target.closest('[data-edit]'), del = e.target.closest('[data-del]'), paid = e.target.closest('[data-paid]');
   const x = records.find(r => r.id === (edit?.dataset.edit || del?.dataset.del || paid?.dataset.paid));
@@ -179,14 +244,9 @@ rows?.addEventListener('click', async e => {
       if (!confirm('هل تريد حذف سجل الحضور هذا؟')) return;
       await deleteDoc(doc(db, 'lessonAttendance', x.id));
     } else if (edit) {
-      const status = prompt('الحالة الجديدة: حاضر أو غائب', x.status);
-      if (status === null) return;
-      if (!['حاضر', 'غائب'].includes(status.trim())) { alert('اختر حاضر أو غائب'); return; }
-      const priceText = prompt('سعر الحصة بالجنيه', String(x.price || 0));
-      if (priceText === null) return;
-      const price = Number(priceText);
-      if (!Number.isFinite(price) || price < 0 || price > 100000) { alert('سعر غير صحيح'); return; }
-      await updateDoc(doc(db, 'lessonAttendance', x.id), { status: status.trim(), price, updatedAt: serverTimestamp() });
+      openAttendanceEditor(x);
+      return;
+
     }
     await load();
   } catch (err) {
