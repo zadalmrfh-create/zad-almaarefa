@@ -10,6 +10,16 @@
 *{box-sizing:border-box}body{margin:0;font-family:"Noto Kufi Arabic",Tahoma,Arial,sans-serif;background:var(--bg);color:#e2e8f0;min-height:100vh}.wrap{max-width:1150px;margin:auto;padding:24px 16px 60px}.top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:22px}.back{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:12px;background:var(--card);color:var(--gold);text-decoration:none;font-weight:800;border:1px solid var(--line)}.hero{text-align:center;padding:34px 18px;border-radius:24px;background:radial-gradient(circle at top,rgba(240,192,64,.14),transparent 45%),linear-gradient(135deg,#1e293b,#0f172a);border:1px solid var(--line)}.hero .icon{font-size:54px}.hero h1{margin:8px 0;color:var(--gold);font-size:32px}.hero p{margin:0;color:var(--muted)}.group{margin-top:24px;background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:22px}.group h2{margin:0 0 8px;color:var(--gold);font-size:22px}.group .desc{margin:0 0 18px;color:var(--muted);font-size:14px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px}.choice,.subject{position:relative;display:block;width:100%;padding:20px;border-radius:16px;background:var(--card);color:var(--text);text-decoration:none;border:1px solid var(--line);transition:.2s;min-height:105px;text-align:right;font:inherit;cursor:pointer}.choice:hover,.choice.selected,.subject:hover:not(.disabled){transform:translateY(-3px);border-color:var(--gold)}.choice.selected{box-shadow:0 0 0 2px rgba(240,192,64,.12);background:linear-gradient(145deg,#24334a,#17243a)}.emoji{font-size:28px}.choice strong,.subject strong{display:block;margin-top:8px;font-size:17px}.choice small,.subject small{display:block;margin-top:5px;color:var(--muted);line-height:1.7}.subject.disabled{opacity:.58;cursor:not-allowed}.soon{position:absolute;top:12px;left:12px;background:#334155;color:#cbd5e1;border-radius:999px;padding:3px 8px;font-size:11px}.active{border-color:rgba(240,192,64,.55);background:linear-gradient(145deg,#1e293b,#17243a)}.hidden{display:none!important}.crumb{margin-top:18px;padding:12px 14px;background:#0b1323;border:1px solid var(--line);border-radius:12px;color:#cbd5e1;font-size:13px}.crumb b{color:var(--gold)}.empty{padding:18px;border:1px dashed #475569;border-radius:14px;color:#94a3b8;text-align:center}.reset{margin-top:14px;border:0;background:transparent;color:var(--gold);font:inherit;font-weight:700;cursor:pointer}.available-note{margin-top:14px;color:#cbd5e1;font-size:13px}.available-note b{color:var(--gold)}@media(max-width:600px){.hero h1{font-size:25px}.group{padding:16px}.grid{grid-template-columns:1fr}.choice,.subject{min-height:95px}}
 </style>
 <link rel="stylesheet" href="../../assets/translation.css?v=20261016-globe2"><script src="../../assets/translation.js?v=20261016-globe2"></script><script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit" async></script>
+<style id="zad-exam-auth-style">
+html:not(.zad-exam-auth-ok) body > * { visibility: hidden !important; }
+html:not(.zad-exam-auth-ok) body::before {
+  content: "🔐 جارٍ التحقق من تسجيل الدخول...";
+  position: fixed; inset: 0; z-index: 2147483647;
+  display: flex; align-items: center; justify-content: center;
+  background: #101c33; color: #e8c96d;
+  font: bold 18px Tahoma, Arial, sans-serif; text-align:center; padding:20px;
+}
+</style>
 </head>
 <body>
 <div class="wrap">
@@ -100,5 +110,6 @@ function resetStage(){
   selectedStage=null;selectedGrade=null;gradeSection.classList.add('hidden');subjectsSection.classList.add('hidden');document.querySelectorAll('[data-stage]').forEach(b=>b.classList.remove('selected'));stageSection.scrollIntoView({behavior:'smooth',block:'start'});
 }
 </script>
+<script type="module" src="exam-auth-gate.js"></script>
 </body>
 </html>

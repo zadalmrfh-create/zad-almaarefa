@@ -173,6 +173,8 @@ service cloud.firestore {
           'العلوم',
           'البرمجة وتكنولوجيا المعلومات'
         ]
+        // Bookings from all four UI languages are saved using canonical Arabic enums.
+        && request.resource.data.educationType in ['غير مرتبط بنظام تعليمي', 'أزهري', 'عام', 'لغات']
         && request.resource.data.subject is string
         && request.resource.data.lessonType is string
         && request.resource.data.preferredDay1 is string
@@ -322,7 +324,7 @@ service cloud.firestore {
 
     // Only administrators can create/edit/delete code exams; visitors see published ones.
     match /codeExams/{examId} {
-      allow read: if isAdmin() || resource.data.published == true;
+      allow read: if isAdmin() || (signedIn() && resource.data.published == true);
       allow create: if isAdmin()
         && request.resource.data.keys().hasOnly(['title','stage','grade','subject','code','chunkCount','published','createdAt','updatedAt','createdBy'])
         && request.resource.data.createdBy == request.auth.uid
@@ -338,7 +340,7 @@ service cloud.firestore {
         && request.resource.data.published is bool;
       allow delete: if isAdmin();
       match /chunks/{chunkId} {
-        allow read: if isAdmin() || (exists(/databases/$(database)/documents/codeExams/$(examId)) && get(/databases/$(database)/documents/codeExams/$(examId)).data.published == true);
+        allow read: if isAdmin() || (signedIn() && exists(/databases/$(database)/documents/codeExams/$(examId)) && get(/databases/$(database)/documents/codeExams/$(examId)).data.published == true);
         allow create, update: if isAdmin()
           && request.resource.data.keys().hasOnly(['index','content'])
           && request.resource.data.index is int && request.resource.data.index >= 0 && request.resource.data.index < 100

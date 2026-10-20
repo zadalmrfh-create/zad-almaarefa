@@ -195,6 +195,18 @@ async function saveUserProfile(user, role, provider, extraData = {}) {
   return true;
 }
 function goHome() {
+  // إذا جاء الطالب للتسجيل من امتحان، نعيده إليه بعد نجاح إنشاء الحساب.
+  const target = sessionStorage.getItem('redirectAfterLogin');
+  if (target && getRole() === 'student') {
+    try {
+      const examUrl = new URL(target, window.location.origin);
+      if (examUrl.origin === window.location.origin && /\/sections\/tests\/(?:index|code-exams|code-exam|nahw|balagha|tawheed)\.html$/.test(examUrl.pathname)) {
+        sessionStorage.removeItem('redirectAfterLogin');
+        window.location.replace(examUrl.href);
+        return;
+      }
+    } catch (error) { console.warn('تعذر استعادة رابط الامتحان:', error); }
+  }
   window.location.replace('../index.html');
 }
 

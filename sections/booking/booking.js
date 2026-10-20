@@ -26,6 +26,37 @@ const sectionSelect = document.getElementById("bookingSection");
 const subjectInput = form?.elements?.subject;
 const teacherAutoHint = document.getElementById("teacherAutoHint");
 
+// Google Translate (or the browser translator) changes visible <option> text.
+// Never use translated text as a stored Firestore enum value. The selected
+// position stays stable across Arabic, English, French, and Russian.
+const BOOKING_SELECT_VALUES = Object.freeze({
+  section: [
+    "", "القرآن الكريم", "التزكية والتربية", "اللغة العربية",
+    "العلوم الشرعية", "التعليم الأزهري", "اللغة الإنجليزية",
+    "العلوم", "البرمجة وتكنولوجيا المعلومات"
+  ],
+  educationType: ["", "غير مرتبط بنظام تعليمي", "أزهري", "عام", "لغات"],
+  lessonType: [
+    "حصة فردية", "مراجعة", "حل تدريبات / امتحانات",
+    "تأسيس", "متابعة", "تحفيظ"
+  ],
+  preferredDay1: ["", "السبت", "الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة"],
+  preferredDay2: ["", "السبت", "الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة"],
+  preferredPeriod: ["صباحًا", "ظهرًا", "مساءً"],
+  lessonMode: ["أونلاين", "حضوري"]
+});
+
+function canonicalBookingSelection(name) {
+  const select = form?.elements?.namedItem?.(name) || form?.elements?.[name];
+  const choices = BOOKING_SELECT_VALUES[name];
+  if (!select || !choices || !Array.isArray(choices)) return "";
+  const index = select.selectedIndex;
+  return Number.isInteger(index) && index >= 0 && index < choices.length
+    ? choices[index]
+    : "";
+}
+
+
 const params = new URLSearchParams(window.location.search);
 const initialSection = params.get("section");
 if (initialSection && [...sectionSelect.options].some(o => o.value === initialSection)) sectionSelect.value = initialSection;
@@ -42,7 +73,8 @@ function normalizeArabic(value = "") {
     .toLowerCase();
 }
 function detectTeacherAssignment() {
-  const combined = normalizeArabic(`${sectionSelect?.value || ""} ${subjectInput?.value || ""}`);
+  const canonicalSection = canonicalBookingSelection("section");
+  const combined = normalizeArabic(`${canonicalSection} ${subjectInput?.value || ""}`);
 
   if (combined.includes("برمج") || combined.includes("تكنولوجيا المعلومات")) {
     return {
@@ -60,7 +92,7 @@ function detectTeacherAssignment() {
     };
   }
 
-  if (normalizeArabic(sectionSelect?.value || "") === normalizeArabic("العلوم") || (!sectionSelect?.value && normalizeArabic(subjectInput?.value || "") === normalizeArabic("العلوم"))) {
+  if (normalizeArabic(canonicalSection) === normalizeArabic("العلوم") || (!canonicalSection && normalizeArabic(subjectInput?.value || "") === normalizeArabic("العلوم"))) {
     return {
       key: "science",
       targetName: "فاطمة أشرف",
@@ -124,6 +156,16 @@ form.addEventListener("submit", async event => {
 
   updateAssignedTeacher();
   const data = Object.fromEntries(new FormData(form).entries());
+  // Normalize every dropdown to the Arabic database value before validation
+  // and before writing to Firestore, regardless of interface language.
+  for (const name of Object.keys(BOOKING_SELECT_VALUES)) {
+    data[name] = canonicalBookingSelection(name);
+  }
+  if (Object.keys(BOOKING_SELECT_VALUES).some(name => !data[name])) {
+    statusBox.textContent = "من فضلك أكمل اختيارات الحجز قبل الإرسال.";
+    statusBox.className = "booking-status error";
+    return;
+  }
   if (!data.educationType || !["غير مرتبط بنظام تعليمي", "أزهري", "عام", "لغات"].includes(data.educationType)) {
     statusBox.textContent = "من فضلك اختر نظام التعليم أولًا.";
     statusBox.className = "booking-status error";

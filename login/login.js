@@ -100,6 +100,19 @@ function clearMsg() {
 
 async function redirectAfterLogin(user) {
   const target = sessionStorage.getItem('redirectAfterLogin');
+  // إعادة الطالب إلى نفس الامتحان بعد تسجيل الدخول.
+  if (target) {
+    try {
+      const examUrl = new URL(target, window.location.origin);
+      if (examUrl.origin === window.location.origin && /\/sections\/tests\/(?:index|code-exams|code-exam|nahw|balagha|tawheed)\.html$/.test(examUrl.pathname)) {
+        sessionStorage.removeItem('redirectAfterLogin');
+        window.location.replace(examUrl.href);
+        return;
+      }
+    } catch (error) {
+      console.warn('رابط العودة إلى الامتحان غير صالح:', error);
+    }
+  }
   if (target && target.includes('/sections/library.html')) {
     sessionStorage.removeItem('redirectAfterLogin');
     window.location.replace('../sections/library.html');
