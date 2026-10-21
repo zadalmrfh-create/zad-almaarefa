@@ -83,7 +83,8 @@ onAuthStateChanged(auth, async (user) => {
 .zad-subject-options label{display:flex!important;gap:10px;align-items:center;cursor:pointer;padding:9px 10px;border-radius:7px;margin:0!important;color:#fff}
 .zad-subject-options label:hover{background:#263953}
 .zad-subject-options input{width:18px;height:18px;accent-color:#d6ab32;margin:0;flex:none}
-</style></head>
+</style><link rel="stylesheet" href="student-comprehensive-report.css">
+</head>
 
 
 <body>
@@ -1560,6 +1561,7 @@ function adminBadgeMarkup(isAdmin) {
 function buildUserActionButtons({ isTeacher, isPending, isDisabled, isBanned, isAdmin }) {
   let buttons = `
     <button class="action-btn action-view" title="عرض بيانات الطالب" data-action="view" type="button">👁️ عرض البيانات</button>
+    ${!isTeacher && !isAdmin ? '<button class="action-btn zad-rpt-open" title="التقرير الشامل للطالب" data-action="comprehensive-report" type="button">📊 التقرير الشامل</button>' : ''}
     <button class="action-btn ${isTeacher ? 'action-assigned' : 'action-assign-teacher'}" title="تعيين كمعلّم" data-action="assign-teacher" type="button">👨‍🏫 ${isTeacher ? 'معلم' : 'تعيين معلم'}</button>
     <button class="action-btn ${isAdmin ? 'action-assigned' : 'action-assign-admin'}" title="تعيين كأدمن" data-action="assign-admin" type="button">👑 ${isAdmin ? 'أدمن' : 'تعيين أدمن'}</button>
   `;
@@ -1592,6 +1594,9 @@ function buildUserActionButtons({ isTeacher, isPending, isDisabled, isBanned, is
 
 function bindUserEntryActions(root, { user, userDoc, name, isTeacher, isPending, isDisabled, isBanned, isAdmin }) {
   root.querySelector('[data-action="view"]')?.addEventListener('click', () => showUser(user));
+  root.querySelector('[data-action="comprehensive-report"]')?.addEventListener('click', () => {
+    window.dispatchEvent(new CustomEvent('zad:student-report', {detail:{uid:userDoc.id}}));
+  });
 
   root.querySelector('[data-action="assign-teacher"]')?.addEventListener('click', async (event) => {
     if (isAdmin) { alert('لا يمكن تحويل حساب أدمن إلى معلم من هذا الزر.'); return; }
@@ -4918,6 +4923,22 @@ onAuthStateChanged(
 );
 
 </script>
+
+
+<!-- تقرير الطالب: نسخة إدارية قابلة للطباعة PDF (ملخص / تفصيلي) -->
+<dialog id="zadStudentReportModal" dir="rtl" aria-labelledby="zadStudentReportHeading">
+  <div class="zad-rpt-modal-header">
+    <h2 id="zadStudentReportHeading">📊 التقرير الشامل للطالب</h2>
+    <button id="zadStudentReportClose" type="button" aria-label="إغلاق التقرير">×</button>
+  </div>
+  <div id="zadStudentReportStatus" role="status" aria-live="polite"></div>
+  <div id="zadStudentReportBody"></div>
+  <div class="zad-rpt-modal-buttons">
+    <button id="zadStudentReportPrintShort" class="btn gold" type="button" disabled>🖨️ طباعة ملخص (صفحة A4)</button>
+    <button id="zadStudentReportPrintFull" class="btn" type="button" disabled>📄 طباعة التقرير الكامل / PDF</button>
+  </div>
+</dialog>
+<script type="module" src="student-comprehensive-report.js"></script>
 
 <script type="module" src="reports-admin.js"></script>
 <script type="module" src="admin-enhancements.js"></script>
