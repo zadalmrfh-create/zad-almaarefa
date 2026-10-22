@@ -1,3 +1,4 @@
+import {amountPaid,amountRemaining,money as paymentMoney} from '../payment-utils.js';
 /* زاد المعرفة — تقرير الطالب الشامل (للإدارة فقط)
    قراءة فقط: لا تعديل لبيانات الطالب ولا سجلاته. */
 import { auth, db } from '../../firebase-config.js';
@@ -31,6 +32,7 @@ const section = (id, title, header, body, countLabel = '') => `<section class="z
 
 const sources = [
   ['attendance','الحضور والغياب','lessonAttendance','studentUid'],
+  ['vodafonePayments','تحويلات فودافون كاش','vodafonePayments','studentUid'],
   ['codeExams','نتائج الامتحانات الإلكترونية','codeExamResults','studentUid'],
   ['quizzes','نتائج الاختبارات الأخرى','quizAttempts','studentUid'],
   ['bookings','الحجوزات','bookings','studentUid'],
@@ -120,8 +122,8 @@ function buildMetrics(data) {
   const present = a.filter(r=>r.status==='حاضر').length;
   const absent = a.filter(r=>r.status==='غائب').length;
   const excused = a.filter(r=>r.status==='اعتذر').length;
-  const paid = a.filter(r=>r.paid===true).reduce((total,r)=>total+(Number(r.price)||0),0);
-  const unpaid = a.filter(r=>r.paid!==true).reduce((total,r)=>total+(Number(r.price)||0),0);
+  const paid = a.reduce((total,r)=>total+amountPaid(r)/100,0);
+  const unpaid = a.reduce((total,r)=>total+amountRemaining(r)/100,0);
   const due = paid + unpaid;
   const rate = present+absent ? `${num(Math.round(present/(present+absent)*100))}٪` : '—';
   const completed = data.bookings.filter(b=>['تم الحجز','مكتمل','مؤكد'].includes(b.status)).length;
@@ -167,7 +169,9 @@ function detailedSections(data) {
     items.push(section(key,label,heads,renderRows(records,cols,err?'تعذر تحميل هذا القسم':'لا توجد بيانات مسجلة'),!err?num(records.length):'غير متاح'));
   };
   add('attendance','تفاصيل الحضور والغياب',['التاريخ','المواد (الحصة الواحدة تحسب مرة)','المعلم','الحالة','السعر','الدفع'],[
-    x=>x.date||date(x.createdAt),x=>(Array.isArray(x.subjects)&&x.subjects.length?x.subjects.join('، '):x.subject)||'—',x=>x.teacherName||'—',x=>x.status||'—',x=>money(x.price),x=>x.paid===true?'مدفوعة':'غير مدفوعة'],'date');
+    x=>x.date||date(x.createdAt),x=>(Array.isArray(x.subjects)&&x.subjects.length?x.subjects.join('، '):x.subject)||'—',x=>x.teacherName||'—',x=>x.status||'—',x=>money(x.price),x=>amountRemaining(x)===0?'مدفوعة':amountPaid(x)>0?'مدفوع جزئيًا '+paymentMoney(amountPaid(x)):'غير مدفوعة'],'date');
+  add('vodafonePayments','تحويلات فودافون كاش',['التاريخ','المبلغ','حالة التحويل','رقم المرجع','ملاحظات'],[
+    x=>date(x.createdAt),x=>paymentMoney(x.amountPiastres),x=>x.status==='approved'?'معتمد':x.status==='rejected'?'مرفوض':'قيد المراجعة',x=>x.reference||'—',x=>x.adminNote||'—']);
   add('codeExams','الامتحانات الإلكترونية',['الامتحان','الدرجة','النسبة','نوع النتيجة','التاريخ'],[
     x=>x.examTitle||'—',x=>`\u200e${x.score??0} / ${x.total??'—'}\u200e`,x=>x.percent!=null?`${x.percent}٪`:'—',x=>x.verified===true?'مراجَعة':'غير معتمدة (إبلاغ المتصفح)',x=>date(x.createdAt)]);
   add('quizzes','الاختبارات والواجبات القصيرة',['الامتحان','الدرجة','النسبة','الحالة','التاريخ'],[

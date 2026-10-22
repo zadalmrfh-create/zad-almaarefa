@@ -84,6 +84,7 @@ onAuthStateChanged(auth, async (user) => {
 .zad-subject-options label:hover{background:#263953}
 .zad-subject-options input{width:18px;height:18px;accent-color:#d6ab32;margin:0;flex:none}
 </style><link rel="stylesheet" href="student-comprehensive-report.css">
+<link rel="stylesheet" href="../vodafone-payment.css">
 </head>
 
 
@@ -1083,6 +1084,16 @@ onAuthStateChanged(auth, async (user) => {
         جارٍ التحميل…
       </div>
 
+    </section>
+
+
+    <section class="card zad-pay-card" id="zadVodafoneAdminPanel" dir="rtl">
+      <h2>💳 إدارة تحويلات فودافون كاش</h2>
+      <p>محفظة استقبال التحويلات: <b dir="ltr">01154015353</b>. راجع المبلغ والمرجع في محفظتك الفعلية قبل اعتماد الطلب. الموقع لا يتحقق تلقائيًا من التحويل.</p>
+      <div class="zad-pay-grid"><div class="zad-pay-metric"><small>طلبات بانتظار المراجعة</small><strong id="zadVodafonePendingCount">—</strong></div><div class="zad-pay-metric"><small>إجمالي التحويلات المعتمدة</small><strong id="zadVodafoneApprovedAmount">—</strong></div></div>
+      <div class="actions"><label for="zadVodafoneFilter">حالة الطلب</label><select id="zadVodafoneFilter" style="width:auto"><option value="pending">بانتظار المراجعة</option><option value="approved">المعتمدة</option><option value="rejected">المرفوضة</option><option value="all">الكل</option></select><button class="btn gold" id="zadVodafoneRefreshAdmin" type="button">🔄 تحديث الطلبات</button></div>
+      <p id="zadVodafoneAdminMessage" role="status" aria-live="polite"></p>
+      <div id="zadVodafoneRequests">جارٍ التحميل...</div>
     </section>
 
   </main>
@@ -4958,6 +4969,7 @@ onAuthStateChanged(auth,user=>{if(!user){panel.textContent='سجل الدخول 
 <script src="admin-workspace.js" defer></script>
 <script type="module" src="admin-activity-alerts.js"></script>
 <script type="module" src="manual-students-admin.js"></script>
+<script type="module" src="vodafone-payments-admin.js"></script>
 </body>
 
 </html>

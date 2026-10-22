@@ -1,0 +1,18 @@
+.zad-pay-card{direction:rtl;border:1px solid #c9a84c;border-radius:18px;background:#142034;color:#f6f1e4;padding:24px;margin:18px 0}
+.zad-pay-card h2,.zad-pay-card h3{color:#f1d479;margin:0 0 12px}
+.zad-pay-card p{line-height:1.85}
+.zad-pay-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:15px 0}
+.zad-pay-metric{border:1px solid #35485e;background:#101b2c;border-radius:12px;padding:14px;text-align:center}
+.zad-pay-metric small,.zad-pay-metric strong{display:block}.zad-pay-metric strong{font-size:22px;color:#ebc556;padding-top:7px}
+.zad-pay-number{border:1px solid #c9a84c;background:#101b2c;border-radius:12px;padding:16px;display:flex;flex-wrap:wrap;align-items:center;gap:12px;justify-content:space-between;margin:14px 0}
+.zad-pay-number strong{font-size:24px;color:#f9d86a;direction:ltr;unicode-bidi:isolate}
+.zad-pay-form{display:grid;gap:14px}.zad-pay-form label{font-weight:700;display:grid;gap:6px}
+.zad-pay-form input:not([type=checkbox]),.zad-pay-form select,.zad-pay-form textarea,.zad-pay-card select{width:100%;min-height:44px;background:#0d192a;color:#fff;border:1px solid #586a80;border-radius:10px;padding:10px;font:inherit}
+.zad-pay-form textarea{min-height:72px}.zad-pay-choices{max-height:230px;overflow:auto;border:1px solid #384a5e;border-radius:10px;padding:9px}
+.zad-pay-lesson{padding:9px;display:flex!important;align-items:center;gap:9px;border-bottom:1px solid #334155;cursor:pointer}
+.zad-pay-lesson input{accent-color:#c9a84c;width:19px;height:19px}.zad-pay-lesson small{display:block;color:#cbd5e1;margin-top:4px}
+.zad-pay-ok{color:#f5da7c}.zad-pay-error{color:#ffa5a5;font-weight:700}.zad-pay-small{font-size:13px;color:#cdd5e0}
+.zad-pay-table{overflow-x:auto}.zad-pay-table table{width:100%;border-collapse:collapse;min-width:570px}.zad-pay-table td,.zad-pay-table th{padding:12px;border-bottom:1px solid #334155;text-align:right}
+.zad-pay-request{padding:16px;margin:10px 0;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;border:1px solid #43516a;border-radius:12px;background:#101b2d}
+.zad-pay-request small{display:block;padding-top:6px;color:#cbd5e1}.zad-pay-request-actions{display:flex;gap:9px;flex-wrap:wrap}
+@media(max-width:650px){.zad-pay-grid{grid-template-columns:1fr}.zad-pay-card{padding:15px}.zad-pay-request-actions>*{flex:1}}

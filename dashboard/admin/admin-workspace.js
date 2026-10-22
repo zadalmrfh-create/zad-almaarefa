@@ -11,6 +11,7 @@
     {id:'exams',label:'الامتحانات',icon:'📝',sections:['codeExamsManagement','adminCertificatesSection','codeExamResultsSection']},
     {id:'library',label:'المكتبة',icon:'📚',sections:['libraryDownloadTracking']},
     {id:'lessons',label:'الحضور والغياب',icon:'✅',sections:['attendanceManagement']},
+    {id:'payments',label:'المدفوعات',icon:'💳',sections:['zadVodafoneAdminPanel']},
     {id:'content',label:'المحتوى',icon:'⚙️',sections:['contentManagement']},
     {id:'logs',label:'سجلات وتقارير',icon:'📊',sections:['loginLogsManagement']},
     {id:'other',label:'الإشعارات والمزيد',icon:'🔔',sections:[]}

@@ -1,3 +1,4 @@
+import {amountPaid,amountRemaining,money} from '../payment-utils.js';
 import { auth, db } from '../../firebase-config.js';
 import { onAuthStateChanged, updatePassword } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
 import { arrayUnion, doc, getDoc, updateDoc, collection, query, where, getDocs, serverTimestamp } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
@@ -78,8 +79,8 @@ function renderDashboard(){
   if($('studentAbsentCount'))$('studentAbsentCount').textContent=absent;
   if($('studentExcusedCount'))$('studentExcusedCount').textContent=excused;
   if($('studentAttendanceRate'))$('studentAttendanceRate').textContent=percent(present,relevant)+'%';
-  if($('studentPaidTotal'))$('studentPaidTotal').textContent=rows.filter(x=>x.paid===true).reduce((sum,x)=>sum+(Number(x.price)||0),0).toLocaleString('ar-EG')+' ج.م';
-  if($('studentAttendanceRows'))$('studentAttendanceRows').innerHTML=rows.length?rows.map(x=>`<tr><td>${esc(x.date||fmt(x.createdAt||x.openedAt))}</td><td>${esc(x.subject||x.lessonTitle||'-')}</td><td>${esc(x.teacherName||'-')}</td><td>${esc(x.status||'-')}</td><td>${Number(x.price||0).toLocaleString('ar-EG')} ج.م</td><td>${x.paid===true?'✅ مدفوعة':'⏳ غير مدفوعة'}</td><td>${esc(x.note||'-')}</td></tr>`).join(''):'<tr><td colspan="7">لا توجد سجلات حضور حتى الآن.</td></tr>';
+  if($('studentPaidTotal'))$('studentPaidTotal').textContent=money(rows.reduce((sum,x)=>sum+amountPaid(x),0));
+  if($('studentAttendanceRows'))$('studentAttendanceRows').innerHTML=rows.length?rows.map(x=>`<tr><td>${esc(x.date||fmt(x.createdAt||x.openedAt))}</td><td>${esc(x.subject||x.lessonTitle||'-')}</td><td>${esc(x.teacherName||'-')}</td><td>${esc(x.status||'-')}</td><td>${Number(x.price||0).toLocaleString('ar-EG')} ج.م</td><td>${amountRemaining(x)===0?'✅ مدفوعة':amountPaid(x)>0?'🟡 مدفوع جزئيًا '+money(amountPaid(x)):'⏳ غير مدفوعة'}</td><td>${esc(x.note||'-')}</td></tr>`).join(''):'<tr><td colspan="7">لا توجد سجلات حضور حتى الآن.</td></tr>';
 
   if($('studentNotesList'))$('studentNotesList').innerHTML=notes.length?notes.map(n=>`<article class="student-note"><strong>${esc(n.teacherName||'المعلم')} — ${esc(n.category||'متابعة')}</strong><p>${esc(n.text||'')}</p><small>${fmt(n.createdAt,true)}</small></article>`).join(''):'<div class="notice">لا توجد ملاحظات ظاهرة لك حتى الآن.</div>';
 
@@ -147,6 +148,7 @@ $('passwordForm')?.addEventListener('submit',async event=>{
 
 $('markAllStudentNotifications')?.addEventListener('click',()=>markAllRead().catch(console.error));
 initTabs();
+window.addEventListener('zad:payments-updated',()=>{if(uid)loadDashboardData().catch(console.error);});
 onAuthStateChanged(auth,async user=>{
   if(!user)return;uid=user.uid;
   try{const snap=await getDoc(doc(db,'users',uid));if(snap.exists())fill(snap.data());else setStatus('لم يتم العثور على بيانات حسابك في قاعدة البيانات.');await loadDashboardData();}

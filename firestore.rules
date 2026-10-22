@@ -242,6 +242,57 @@ service cloud.firestore {
       allow update, delete: if isAdmin();
     }
 
+    // Index of reviewed transfer references: written/read only by admins.
+    match /vodafoneReferenceClaims/{referenceId} {
+      allow read: if isAdmin();
+      allow create: if isAdmin()
+        && request.resource.data.paymentId is string
+        && request.resource.data.reviewedBy == request.auth.uid;
+      allow update, delete: if false;
+    }
+
+    // Vodafone Cash: student only submits a pending request; only admins can approve/reject.
+    match /vodafonePayments/{paymentId} {
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly([
+          'studentUid','studentName','amountPiastres','targetType','lessonIds',
+          'senderPhone','reference','note','method','status','createdAt'
+        ])
+        && request.resource.data.studentUid == request.auth.uid
+        && request.resource.data.studentName is string
+        && request.resource.data.studentName.size() <= 120
+        && request.resource.data.amountPiastres is int
+        && request.resource.data.amountPiastres >= 100
+        && request.resource.data.amountPiastres <= 100000000
+        && request.resource.data.targetType in ['balance','lessons']
+        && request.resource.data.lessonIds is list
+        && request.resource.data.lessonIds.size() <= 30
+        && (
+          (request.resource.data.targetType == 'balance' && request.resource.data.lessonIds.size() == 0)
+          ||
+          (request.resource.data.targetType == 'lessons' && request.resource.data.lessonIds.size() > 0)
+        )
+        && request.resource.data.senderPhone is string
+        && request.resource.data.senderPhone.matches('^01[0-9]{9}$')
+        && request.resource.data.reference is string
+        && request.resource.data.reference.size() <= 100
+        && request.resource.data.note is string
+        && request.resource.data.note.size() <= 350
+        && request.resource.data.method == 'vodafone-cash'
+        && request.resource.data.status == 'pending'
+        && request.resource.data.createdAt == request.time;
+      allow get, list: if isAdmin()
+        || (signedIn() && resource.data.studentUid == request.auth.uid);
+      allow update: if isAdmin()
+        && resource.data.status == 'pending'
+        && request.resource.data.status in ['approved','rejected']
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'status','reviewedAt','reviewedBy','allocations','approvedPiastres','adminNote'
+        ])
+        && request.resource.data.reviewedBy == request.auth.uid;
+      allow delete: if false;
+    }
+
     match /lessonAttendance/{attendanceId} {
       allow create: if isAdmin()
         || (isTeacher()

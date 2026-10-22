@@ -1,3 +1,4 @@
+import {amountDue,amountPaid,amountRemaining,money as cashMoney} from '../payment-utils.js';
 import { db, auth } from '../../firebase-config.js';
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 import { SUBJECTS, teacherForSubject } from '../attendance-subjects.js';
@@ -64,7 +65,7 @@ function render() {
   rows.innerHTML = records.length ? records.map(x => `<tr>
     <td>${esc(x.studentName || '-')}</td><td>${esc(x.date || '-')}</td><td>${esc(x.subject || '-')}</td>
     <td>${esc(x.status || '-')}</td><td>${money(x.price)}</td>
-    <td><button type="button" class="btn ${x.paid === true ? 'gold' : ''}" data-paid="${esc(x.id)}" aria-label="تغيير حالة الدفع">${x.paid === true ? '✅ مدفوعة' : '⏳ غير مدفوعة'}</button></td>
+    <td><button type="button" class="btn ${x.paid === true ? 'gold' : ''}" data-paid="${esc(x.id)}" aria-label="تغيير حالة الدفع">${amountRemaining(x)===0?'✅ مدفوعة':amountPaid(x)>0?'🟡 مدفوع جزئيًا '+cashMoney(amountPaid(x)):'⏳ غير مدفوعة'}</button></td>
     <td>${esc(x.teacherName || 'الإدارة')}</td><td><button type="button" class="btn" data-edit="${esc(x.id)}">✏️ تعديل الحصة</button> <button type="button" class="btn danger" data-del="${esc(x.id)}">حذف</button></td></tr>`).join('') : '<tr><td colspan="8">لا توجد سجلات حضور بعد.</td></tr>';
 
   const summarySearch = String($('attendanceSummarySearch')?.value || '').trim().toLocaleLowerCase('ar');
@@ -88,8 +89,8 @@ function render() {
     const st = stats.get(id);
     if (x.status === 'حاضر') st.present++;
     if (x.status === 'غائب') st.absent++;
-    if (x.paid === true) st.paid += Number(x.price) || 0;
-    else st.unpaid += Number(x.price) || 0;
+    st.paid += amountPaid(x) / 100;
+    st.unpaid += amountRemaining(x) / 100;
   }
   const cards = [...stats.values()].filter(st => st.name.toLocaleLowerCase('ar').includes(summarySearch));
   cards.sort((a, b) => sortOrder === 'most-present' ? (b.present - a.present || a.name.localeCompare(b.name, 'ar')) : sortOrder === 'most-paid' ? (b.paid - a.paid || a.name.localeCompare(b.name, 'ar')) : a.name.localeCompare(b.name, 'ar'));
@@ -214,6 +215,7 @@ attendanceEditForm.addEventListener('submit',async event=>{
   const original=records.find(r=>r.id===attendanceEditingId);
   if(!original){error.textContent='السجل غير موجود؛ حدّث الصفحة.';return;}
   const paid=attendanceEditForm.elements.paid.value==='true';
+  if (Number(original.cashPaidPiastres||0)>0 && (student.id!==original.studentUid||Math.round(price*100)!==amountDue(original)||paid!==(original.paid===true))){error.textContent='هذه الحصة مرتبطة بتحويل معتمد. لا يمكن تغيير الطالب أو السعر أو حالة الدفع حتى لا تختل الحسابات. يمكنك تغيير التاريخ والمادة والملاحظات.';return;}
   const submit=attendanceEditForm.querySelector('button[type="submit"]');submit.disabled=true;
   try{
     await updateDoc(doc(db,'lessonAttendance',attendanceEditingId),{
@@ -237,10 +239,12 @@ rows?.addEventListener('click', async e => {
   if (!x) return;
   try {
     if (paid) {
+      if(Number(x.cashPaidPiastres||0)>0){ alert('هذه الحصة مرتبطة بتحويل معتمد؛ لا يمكن تغيير حالة الدفع مباشرة.'); return; }
       const newPaid = x.paid !== true;
       if (!confirm(`هل تريد تغيير حالة الحصة إلى ${newPaid ? 'مدفوعة' : 'غير مدفوعة'}؟`)) return;
       await updateDoc(doc(db, 'lessonAttendance', x.id), { paid: newPaid, paidAt: newPaid ? serverTimestamp() : null, updatedAt: serverTimestamp() });
     } else if (del) {
+      if(Number(x.cashPaidPiastres||0)>0){ alert('لا يمكن حذف حصة مرتبطة بتحويل مالي معتمد.'); return; }
       if (!confirm('هل تريد حذف سجل الحضور هذا؟')) return;
       await deleteDoc(doc(db, 'lessonAttendance', x.id));
     } else if (edit) {
