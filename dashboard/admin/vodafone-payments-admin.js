@@ -15,7 +15,7 @@ function render(){
 async function load(){try{message('جارٍ تحميل طلبات التحويل...');const snap=await getDocs(collection(db,'vodafonePayments'));list=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));render();message('تحقّق من وصول التحويل للمحفظة قبل الموافقة.');}catch(e){console.error(e);message('تعذر تحميل طلبات الدفع: '+(e.code||e.message),true);}}
 async function approve(p){
  if(p.reference && list.some(x=>x.id!==p.id && x.status==='approved' && x.reference?.trim()===p.reference.trim() && x.senderPhone===p.senderPhone)) throw new Error('هذا الرقم المرجعي مستخدم بالفعل في تحويل معتمد من نفس الهاتف.');
- if(!window.confirm('هل تأكدت بنفسك من وصول '+money(p.amountPiastres)+' لمحفظة 01154015353، وأن رقم العملية لم يُعتمد من قبل؟'))return;
+ if(!window.confirm('هل تأكدت بنفسك من وصول '+money(p.amountPiastres)+' لمحفظة 01042239704، وأن رقم العملية لم يُعتمد من قبل؟'))return;
  // القراءة الأولية لترتيب سجلات الطالب؛ يعيد Firestore التحقق منها داخل المعاملة.
  const found=await getDocs(query(collection(db,'lessonAttendance'),where('studentUid','==',p.studentUid)));
  const candidates=found.docs.map(d=>({id:d.id,ref:d.ref,...d.data()})).filter(isCharge)

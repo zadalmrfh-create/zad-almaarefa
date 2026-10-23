@@ -32,7 +32,7 @@ async function load(){
   window.dispatchEvent(new Event('zad:payments-updated'));
  }catch(e){console.error('Vodafone payment student load:',e);feedback('تعذر تحميل البيانات: '+(e.code||e.message),true);}
 }
-$('zadVodafoneCopy')?.addEventListener('click',async()=>{try{await navigator.clipboard.writeText('01154015353');feedback('تم نسخ رقم المحفظة.');}catch{feedback('رقم المحفظة: 01154015353');}});
+$('zadVodafoneCopy')?.addEventListener('click',async()=>{try{await navigator.clipboard.writeText('01042239704');feedback('تم نسخ رقم المحفظة.');}catch{feedback('رقم المحفظة: 01042239704');}});
 $('zadVodafoneRefresh')?.addEventListener('click',load);
 $('zadVodafoneMode')?.addEventListener('change',()=>{$('zadVodafoneChooseLessons').hidden=$('zadVodafoneMode').value!=='lessons';});
 form?.addEventListener('submit',async e=>{
@@ -48,7 +48,7 @@ form?.addEventListener('submit',async e=>{
  if(!/^01\d{9}$/.test(sender)){feedback('أدخل رقم هاتف مصري صحيح مكوّن من 11 رقمًا.',true);return;}
  if(!Number.isSafeInteger(amt)||amt<100||amt>100000000){feedback('المبلغ يجب أن يكون من جنيه واحد إلى مليون جنيه.',true);return;}
  if(amt>cap){feedback('المبلغ أكبر من المستحق في '+(mode==='lessons'?'الحصص المختارة.':'حسابك.')+' المتبقي '+money(cap),true);return;}
- if(!window.confirm('هل حوّلت '+money(amt)+' بالفعل إلى 01154015353؟ تقديم الطلب لا يؤكد وصول المبلغ.'))return;
+ if(!window.confirm('هل حوّلت '+money(amt)+' بالفعل إلى 01042239704؟ تقديم الطلب لا يؤكد وصول المبلغ.'))return;
  busy=true;draw();feedback('جارٍ إرسال طلب المراجعة...');
  try{
   await addDoc(collection(db,'vodafonePayments'),{
