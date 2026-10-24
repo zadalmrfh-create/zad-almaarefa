@@ -1,3 +1,4 @@
+import {getPreviewContext} from '../admin-preview-core.js';
 import {amountPaid,amountRemaining,money} from '../payment-utils.js';
 import { auth, db } from '../../firebase-config.js';
 import { onAuthStateChanged, updatePassword } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
@@ -59,7 +60,7 @@ async function loadDashboardData(){
   renderDashboard();
 }
 
-function realAttendance(){return attendance.filter(x=>x.status==='حاضر'||x.status==='غائب'||x.status==='اعتذر');}
+function realAttendance(){return attendance.filter(x=>x.deleted!==true&&(x.status==='حاضر'||x.status==='غائب'||x.status==='اعتذر'));}
 function renderDashboard(){
   const rows=realAttendance();
   const present=rows.filter(x=>x.status==='حاضر').length;
@@ -150,7 +151,7 @@ $('markAllStudentNotifications')?.addEventListener('click',()=>markAllRead().cat
 initTabs();
 window.addEventListener('zad:payments-updated',()=>{if(uid)loadDashboardData().catch(console.error);});
 onAuthStateChanged(auth,async user=>{
-  if(!user)return;uid=user.uid;
+  if(!user)return;const pv=await getPreviewContext(user,'student');if(pv.denied)return;uid=pv.uid;
   try{const snap=await getDoc(doc(db,'users',uid));if(snap.exists())fill(snap.data());else setStatus('لم يتم العثور على بيانات حسابك في قاعدة البيانات.');await loadDashboardData();}
   catch(error){console.error('Student enhancements:',error);setStatus('تعذر تحميل بيانات الحساب.');}
 });

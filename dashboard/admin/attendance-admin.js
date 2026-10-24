@@ -1,11 +1,12 @@
 import {amountDue,amountPaid,amountRemaining,money as cashMoney} from '../payment-utils.js';
+import {archiveAttendance,restoreAttendance} from './attendance-archive.js';
 import { db, auth } from '../../firebase-config.js';
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 import { SUBJECTS, teacherForSubject } from '../attendance-subjects.js';
 
 const $ = id => document.getElementById(id);
 const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-let students = [], records = [];
+let students = [], records = [], cancelledRecords = [];
 const summary = $('attendanceStudentSummary');
 const form = $('manualAttendanceForm'), studentSelect = $('attendanceStudent'), search = $('attendanceStudentSearch'), rows = $('attendanceRows'), message = $('attendanceMessage');
 const subjectSelect = $('attendanceSubject');
@@ -62,6 +63,10 @@ function money(v) {
 }
 
 function render() {
+  const history=$('zadArchivedAttendanceList');
+  if(history){
+    history.innerHTML=cancelledRecords.length?cancelledRecords.map(x=>`<article class="zad-pay-archived-row"><span><b>${esc(x.studentName||'طالب')}</b> · ${esc(x.date||'—')} · ${esc(x.subject||'حصة')}<small>السعر: ${money(x.price)} · المدفوع المسجل: ${cashMoney(amountPaid(x))}${Number(x.cashPaidPiastres||0)>0?' · ⚠️ يحتاج مراجعة مالية':''}</small></span><button type="button" class="btn" data-restore-attendance="${esc(x.id)}">↩ استرجاع الحصة</button></article>`).join(''):'<p>لا توجد حصص ملغاة.</p>';
+  }
   rows.innerHTML = records.length ? records.map(x => `<tr>
     <td>${esc(x.studentName || '-')}</td><td>${esc(x.date || '-')}</td><td>${esc(x.subject || '-')}</td>
     <td>${esc(x.status || '-')}</td><td>${money(x.price)}</td>
@@ -104,7 +109,10 @@ async function load() {
     message.textContent = 'جارٍ التحميل...';
     const [us, att] = await Promise.all([getDocs(collection(db, 'users')), getDocs(collection(db, 'lessonAttendance'))]);
     students = us.docs.map(d => ({ id: d.id, ...d.data() })).filter(x => x.role === 'student');
-    records = att.docs.map(d => ({ id: d.id, ...d.data() })).filter(x => x.source === 'manual-attendance' || x.source === 'teacher-dashboard').sort((a, b) => String(b.date).localeCompare(String(a.date)));
+    const allRecords=att.docs.map(d=>({id:d.id,...d.data()}))
+      .filter(x=>x.source==='manual-attendance'||x.source==='teacher-dashboard');
+    records=allRecords.filter(x=>x.deleted!==true).sort((a,b)=>String(b.date).localeCompare(String(a.date)));
+    cancelledRecords=allRecords.filter(x=>x.deleted===true).sort((a,b)=>String(b.deletedAt?.seconds||'').localeCompare(String(a.deletedAt?.seconds||'')));
     filterStudents();
     render();
     message.textContent = '';
@@ -244,9 +252,13 @@ rows?.addEventListener('click', async e => {
       if (!confirm(`هل تريد تغيير حالة الحصة إلى ${newPaid ? 'مدفوعة' : 'غير مدفوعة'}؟`)) return;
       await updateDoc(doc(db, 'lessonAttendance', x.id), { paid: newPaid, paidAt: newPaid ? serverTimestamp() : null, updatedAt: serverTimestamp() });
     } else if (del) {
-      if(Number(x.cashPaidPiastres||0)>0){ alert('لا يمكن حذف حصة مرتبطة بتحويل مالي معتمد.'); return; }
-      if (!confirm('هل تريد حذف سجل الحضور هذا؟')) return;
-      await deleteDoc(doc(db, 'lessonAttendance', x.id));
+      const linked=Number(x.cashPaidPiastres||0)>0;
+      const text=linked
+        ? `هل تريد إلغاء حصة ${x.subject||''} للطالب ${x.studentName||''}؟\n\nتم سداد ${cashMoney(amountPaid(x))}. سيختفي سجل الحصة من الحضور والمستحقات، لكن سيبقى تحويل فودافون كاش محفوظًا في سجل المدفوعات بملاحظة «يحتاج تسوية/رد مبلغ». لن يُرَد المبلغ أو يُنقَل لحصة أخرى تلقائيًا.`
+        : `هل تريد إلغاء حصة ${x.subject||''} للطالب ${x.studentName||''}؟\nسنبقي نسخة مؤرشفة يمكن للإدارة استرجاعها.`;
+      if(!confirm(text))return;
+      await archiveAttendance(x.id);
+      window.dispatchEvent(new Event('zad:attendance-archived'));
     } else if (edit) {
       openAttendanceEditor(x);
       return;
@@ -263,3 +275,11 @@ $('attendanceSummarySearch')?.addEventListener('input', render);
 $('attendanceSummarySubject')?.addEventListener('change', render);
 $('attendanceSummarySort')?.addEventListener('change', render);
 load();
+
+$('zadArchivedAttendanceList')?.addEventListener('click',async e=>{
+  const button=e.target.closest('[data-restore-attendance]');if(!button)return;
+  if(!confirm('استرجاع الحصة سيعيد إدراجها في الحضور والمستحقات بنفس قيم الدفع السابقة. هل تريد المتابعة؟'))return;
+  button.disabled=true;
+  try{await restoreAttendance(button.dataset.restoreAttendance);await load();message.textContent='✅ تم استرجاع الحصة.';window.dispatchEvent(new Event('zad:attendance-archived'));}
+  catch(err){alert('تعذر الاسترجاع: '+(err.code||err.message));button.disabled=false;}
+});

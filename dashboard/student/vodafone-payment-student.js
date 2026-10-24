@@ -1,7 +1,9 @@
+import {getPreviewContext} from '../admin-preview-core.js';
 import {auth,db} from '../../firebase-config.js';
 import {onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
 import {collection,addDoc,getDocs,query,where,serverTimestamp} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 import {toPiastres,amountDue,amountPaid,amountRemaining,money,html,isCharge} from '../payment-utils.js';
+import {isCurrentPayment} from '../payment-ledger-period.js';
 const $=id=>document.getElementById(id);
 let uid='',lessons=[],requests=[],profile={},busy=false;
 const statusText={pending:'⏳ قيد مراجعة الإدارة',approved:'✅ معتمد',rejected:'❌ مرفوض'};
@@ -14,7 +16,21 @@ function draw(){
  $('zadVodafoneDue').textContent=money(total);$('zadVodafonePaid').textContent=money(paid);$('zadVodafoneRemaining').textContent=money(total-paid);
  const chosen=new Set([...document.querySelectorAll('[name="zadVodafoneLesson"]:checked')].map(c=>c.value));
  $('zadVodafoneLessons').innerHTML=dueLessons.length?dueLessons.map(x=>`<label class="zad-pay-lesson"><input type="checkbox" name="zadVodafoneLesson" value="${html(x.id)}" ${chosen.has(x.id)?'checked':''}><span><b>${html(x.subject||'حصة')}</b> — ${html(x.date||'بلا تاريخ')}<small>المتبقي ${money(amountRemaining(x))} من ${money(amountDue(x))}</small></span></label>`).join(''):'<p>لا توجد حصص مستحقة حاليًا.</p>';
- $('zadVodafoneHistory').innerHTML=requests.length?requests.map(x=>`<tr><td>${money(x.amountPiastres)}</td><td>${x.targetType==='lessons'?'حصص محددة':'من المستحقات'}</td><td>${html(x.reference||'—')}</td><td>${statusText[x.status]||'—'}</td><td>${html(x.adminNote||'—')}</td></tr>`).join(''):'<tr><td colspan="5">لا توجد طلبات تحويل بعد.</td></tr>';
+ $('zadVodafoneHistory').innerHTML=requests.length?requests.map(x=>{
+   const related=(Array.isArray(x.allocations)&&x.allocations.length?x.allocations.map(a=>({id:a.attendanceId,amount:a.amountPiastres})):Array.isArray(x.lessonIds)?x.lessonIds.map(id=>({id,amount:null})):[]);
+   const cancelled=related.filter(a=>{
+     const item=lessons.find(l=>l.id===a.id);
+     return !item||item.deleted===true;
+   });
+   const warning=x.status==='approved'&&cancelled.length?'⚠️ مبلغ مرتبط بحصة ملغاة، يرجى مراجعة الإدارة للتسوية. ':'';
+   const subjectList=related.map(a=>{
+     const item=lessons.find(l=>l.id===a.id);
+     return item?(item.subject||'حصة')+(item.deleted===true?' (ملغاة)':''):'حصة غير متاحة';
+   }).join('، ');
+   const date=x.createdAt?.toDate?x.createdAt.toDate().toLocaleString('ar-EG'):'تاريخ غير مسجل';
+   const purpose=subjectList||'سداد مستحقات عامة';
+   return `<tr><td>${money(x.amountPiastres)}</td><td>${html(purpose)}<small style="display:block">${html(date)}</small></td><td>${html(x.reference||'—')}</td><td>${statusText[x.status]||'—'}</td><td>${html(warning+(x.adminNote||''))||'—'}</td></tr>`;
+ }).join(''):'<tr><td colspan="5">لا توجد طلبات تحويل بعد.</td></tr>';
  const canPay=dueLessons.length>0;$('zadVodafoneSend').disabled=!canPay||busy;
  $('zadVodafoneNoDue').hidden=canPay;
 }
@@ -27,7 +43,7 @@ async function load(){
    getDocs(query(collection(db,'vodafonePayments'),where('studentUid','==',uid)))
   ]);
   lessons=as.docs.map(d=>({id:d.id,...d.data()}));
-  requests=ps.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+  requests=ps.docs.map(d=>({id:d.id,...d.data()})).filter(isCurrentPayment).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
   draw();feedback('راجع رقم المحفظة وتأكد من إتمام التحويل قبل إرسال الطلب.');
   window.dispatchEvent(new Event('zad:payments-updated'));
  }catch(e){console.error('Vodafone payment student load:',e);feedback('تعذر تحميل البيانات: '+(e.code||e.message),true);}
@@ -63,4 +79,4 @@ form?.addEventListener('submit',async e=>{
  }catch(err){console.error(err);feedback('تعذر إرسال الطلب: '+(err.code||err.message),true);}
  finally{busy=false;draw();}
 });
-onAuthStateChanged(auth,async user=>{if(!user){feedback('سجّل الدخول بحساب الطالب أولًا.',true);return;}uid=user.uid;try{const p=await import('https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js');const s=await p.getDoc(p.doc(db,'users',uid));profile=s.data()||{};}catch(e){console.warn(e);}await load();});
+onAuthStateChanged(auth,async user=>{if(!user){feedback('سجّل الدخول بحساب الطالب أولًا.',true);return;}const pv=await getPreviewContext(user,'student');if(pv.denied)return;uid=pv.uid;try{const p=await import('https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js');const s=await p.getDoc(p.doc(db,'users',uid));profile=s.data()||{};}catch(e){console.warn(e);}await load();});

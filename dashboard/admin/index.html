@@ -720,7 +720,7 @@ onAuthStateChanged(auth, async (user) => {
         <div class="attendance-full attendance-actions"><button class="btn gold" type="submit">💾 حفظ سجل الحضور</button><button id="refreshAttendance" class="btn" type="button">🔄 تحديث السجلات</button><span id="attendanceMessage" aria-live="polite"></span></div>
       </form>
       <h3>📚 سجل الحضور والغياب</h3>
-      <div class="table-wrap"><table class="table"><thead><tr><th>الطالب</th><th>التاريخ</th><th>المادة</th><th>الحالة</th><th>سعر الحصة</th><th>الدفع</th><th>سجله</th><th>إجراء</th></tr></thead><tbody id="attendanceRows"><tr><td colspan="8">جارٍ تحميل السجلات...</td></tr></tbody></table></div>
+      <div class="table-wrap"><table class="table"><thead><tr><th>الطالب</th><th>التاريخ</th><th>المادة</th><th>الحالة</th><th>سعر الحصة</th><th>الدفع</th><th>سجله</th><th>إجراء</th></tr></thead><tbody id="attendanceRows"><tr><td colspan="8">جارٍ تحميل السجلات...</td></tr></tbody></table></div><details class="zad-pay-archive-history" dir="rtl"><summary>🗃️ الحصص الملغاة — سجل محفوظ للمراجعة والاسترجاع</summary><div id="zadArchivedAttendanceList">جارٍ التحميل...</div></details>
       <div id="attendanceStudentSummary" class="attendance-summary" aria-live="polite">
 <h3>📊 ملخص حضور الطلاب والمبالغ المدفوعة</h3>
 <p>يظهر الطلاب الذين سُجل لهم حضور أو غياب فقط. الأرقام تُحدَّث حسب المادة المختارة.</p>
@@ -1090,9 +1090,10 @@ onAuthStateChanged(auth, async (user) => {
     <section class="card zad-pay-card" id="zadVodafoneAdminPanel" dir="rtl">
       <h2>💳 إدارة تحويلات فودافون كاش</h2>
       <p>محفظة استقبال التحويلات: <b dir="ltr">01042239704</b>. راجع المبلغ والمرجع في محفظتك الفعلية قبل اعتماد الطلب. الموقع لا يتحقق تلقائيًا من التحويل.</p>
-      <div class="zad-pay-grid"><div class="zad-pay-metric"><small>طلبات بانتظار المراجعة</small><strong id="zadVodafonePendingCount">—</strong></div><div class="zad-pay-metric"><small>إجمالي التحويلات المعتمدة</small><strong id="zadVodafoneApprovedAmount">—</strong></div></div>
-      <div class="actions"><label for="zadVodafoneFilter">حالة الطلب</label><select id="zadVodafoneFilter" style="width:auto"><option value="pending">بانتظار المراجعة</option><option value="approved">المعتمدة</option><option value="rejected">المرفوضة</option><option value="all">الكل</option></select><button class="btn gold" id="zadVodafoneRefreshAdmin" type="button">🔄 تحديث الطلبات</button></div>
+      <div class="zad-pay-grid"><div class="zad-pay-metric"><small>طلبات جديدة بانتظار المراجعة</small><strong id="zadVodafonePendingCount">—</strong></div><div class="zad-pay-metric"><small>إجمالي التحويلات المعتمدة (السجل الجديد)</small><strong id="zadVodafoneApprovedAmount">—</strong></div><div class="zad-pay-metric"><small>تسويات تخص السجل الجديد</small><strong id="zadVodafoneNeedSettlement">—</strong></div></div>
+      <div class="actions"><label for="zadVodafoneFilter">حالة الطلب</label><select id="zadVodafoneFilter" style="width:auto"><option value="all">كل التحويلات</option><option value="pending">بانتظار المراجعة</option><option value="approved">المعتمدة</option><option value="rejected">المرفوضة</option><option value="archived">📁 السجل السابق (أرشيف للقراءة فقط)</option></select><button class="btn gold" id="zadVodafoneRefreshAdmin" type="button">🔄 تحديث الطلبات</button></div>
       <p id="zadVodafoneAdminMessage" role="status" aria-live="polite"></p>
+      <p class="zad-pay-archived-notice">بدأ سجل جديد للمدفوعات؛ العمليات السابقة مؤرشفة للمراجعة، ولم تُحذف من Firebase ولم تتغير أرصدة الحصص القديمة.</p>
       <div id="zadVodafoneRequests">جارٍ التحميل...</div>
     </section>
 
@@ -1714,6 +1715,10 @@ function bindUserEntryActions(root, { user, userDoc, name, isTeacher, isPending,
         getDocs(query(collection(db, 'bookings'), where('studentUid', '==', uid))),
         getDocs(query(collection(db, 'notifications'), where('targetUid', '==', uid)))
       ]);
+      if(attendanceSnap.docs.some(d=>Number(d.data().cashPaidPiastres||0)>0||d.data().paid===true)) {
+        alert('هذا الطالب لديه سجلات مدفوعات أو حصص مسددة. يجب مراجعة وتسوية السجل المالي قبل حذف حسابه؛ لم يتم حذف أي بيانات.');
+        return;
+      }
       await Promise.all([
         ...tokensSnap.docs.map(d => deleteDoc(d.ref)),
         ...librarySnap.docs.map(d => deleteDoc(d.ref)),
@@ -2277,6 +2282,7 @@ async function loadLessonFollowUp() {
     });
     attendanceSnap.forEach(d => {
       const x = d.data();
+      if(x.deleted===true)return;
       rows.push({
         id: d.id,
         collection: 'lessonAttendance',
@@ -2315,7 +2321,12 @@ $('lessonFollowUpRows')?.addEventListener('click', async (event) => {
   if (!confirm('هل تريد حذف سجل المتابعة هذا نهائيًا؟')) return;
   try {
     button.disabled = true;
-    await deleteDoc(doc(db, button.dataset.collection, button.dataset.id));
+    if(button.dataset.collection==='lessonAttendance') {
+      const {archiveAttendance}=await import('./attendance-archive.js');
+      await archiveAttendance(button.dataset.id);
+    } else {
+      await deleteDoc(doc(db, button.dataset.collection, button.dataset.id));
+    }
     await loadLessonFollowUp();
   } catch (error) {
     console.error('خطأ في حذف سجل المتابعة:', error);
@@ -4970,6 +4981,7 @@ onAuthStateChanged(auth,user=>{if(!user){panel.textContent='سجل الدخول 
 <script type="module" src="admin-activity-alerts.js"></script>
 <script type="module" src="manual-students-admin.js"></script>
 <script type="module" src="vodafone-payments-admin.js"></script>
+<script type="module" src="../admin-switcher.js"></script>
 </body>
 
 </html>

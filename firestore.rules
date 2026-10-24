@@ -308,9 +308,15 @@ service cloud.firestore {
         || (isTeacher() && resource.data.teacherUid == request.auth.uid
           && request.resource.data.teacherUid == resource.data.teacherUid
           && request.resource.data.studentUid == resource.data.studentUid
-          && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['paid','paidAt']));
-      allow delete: if isAdmin()
-        || (isTeacher() && resource.data.teacherUid == request.auth.uid);
+          && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['paid','paidAt','cashPaidPiastres','deleted','deletedAt','deletedByUid','deletionReason','studentUid','price']));
+      // لا نسمح بالحذف النهائي لسجل له قيمة مدفوعة؛ الإلغاء يكون عبر
+      // deleted=true حتى يحتفظ النظام بربط الدفع والمبلغ والتاريخ للمراجعة.
+      allow delete: if (
+          isAdmin()
+          || (isTeacher() && resource.data.teacherUid == request.auth.uid)
+        )
+        && resource.data.paid != true
+        && resource.data.get('cashPaidPiastres', 0) == 0;
     }
 
     // واجبات المعلم للطلاب المرتبطين به.

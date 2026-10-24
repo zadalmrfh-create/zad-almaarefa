@@ -1,3 +1,4 @@
+import {isAdminAccount,getPreviewContext} from '../admin-preview-core.js';
 import { auth, db } from '../../firebase-config.js';
 import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
 import {
@@ -88,7 +89,7 @@ async function loadTeacherStudents(uid){
 async function loadAttendance(uid){
   try{
     const snap=await getDocs(query(collection(db,'lessonAttendance'),where('teacherUid','==',uid)));
-    state.attendance=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>dateKey(b.createdAt||b.date)-dateKey(a.createdAt||a.date));
+    state.attendance=snap.docs.map(d=>({id:d.id,...d.data()})).filter(x=>x.deleted!==true).sort((a,b)=>dateKey(b.createdAt||b.date)-dateKey(a.createdAt||a.date));
   }catch(err){console.warn('تعذر تحميل الحضور',err);state.attendance=[];}
 }
 async function loadNotes(uid){
@@ -205,9 +206,17 @@ function renderAttendance(){
   $('attendanceRows').querySelectorAll('[data-attendance-delete]').forEach(btn=>btn.addEventListener('click',()=>deleteAttendance(btn.dataset.attendanceDelete)));
 }
 async function deleteAttendance(id){
-  if(!confirm('حذف سجل الحضور؟'))return;
-  await deleteDoc(doc(db,'lessonAttendance',id));
-  state.attendance=state.attendance.filter(x=>x.id!==id);renderAll();
+  const item=state.attendance.find(x=>x.id===id);
+  if(!item)return;
+  if(item.paid===true||Number(item.cashPaidPiastres||0)>0){
+    alert('هذه الحصة عليها مبلغ مدفوع. يرجى طلب الإلغاء من الأدمن حتى يبقى سجل التحويل محفوظًا.');
+    return;
+  }
+  if(!confirm('حذف سجل الحضور غير المدفوع؟'))return;
+  try{
+    await deleteDoc(doc(db,'lessonAttendance',id));
+    state.attendance=state.attendance.filter(x=>x.id!==id);renderAll();
+  }catch(err){console.error(err);alert('تعذر حذف الحصة: '+(err.code||err.message));}
 }
 
 function renderNotes(){
@@ -336,17 +345,23 @@ function exportReportCsv(){
 }
 
 async function boot(user){
-  state.user=user;
-  const me=await getDoc(doc(db,'users',user.uid));
-  const p=me.exists()?me.data():{};
-  if(p.role!=='teacher'||p.status!=='active'){location.replace('../../dashboard/student/index.html');return;}
+  const preview=await getPreviewContext(user,'teacher');
+  if(preview.denied){location.replace('../../dashboard/admin/index.html');return;}
+  const admin=await isAdminAccount(user);
+  const effectiveUid=preview.active?preview.uid:user.uid;
+  const me=preview.active ? null : await getDoc(doc(db,'users',user.uid));
+  const p=preview.active?preview.profile:(me.exists()?me.data():{});
+  if(!preview.active && (p.role!=='teacher'||p.status!=='active')){
+    location.replace(admin?'../../dashboard/admin/index.html':'../../dashboard/student/index.html');return;
+  }
+  state.user=preview.active?{...user,uid:effectiveUid}:user;
   state.profile=p;
   document.querySelector('[data-name]').textContent=p.fullName||p.name||user.email;
-  document.querySelector('[data-email]').textContent=user.email||p.email||'';
+  document.querySelector('[data-email]').textContent=preview.active?(p.email||''): (user.email||p.email||'');
   setToday();initTabs();bindForms();
   if($('attendanceDate'))$('attendanceDate').value=new Date().toISOString().slice(0,10);
-  await loadTeacherStudents(user.uid);fillStudentSelects();
-  await Promise.all([loadAttendance(user.uid),loadNotes(user.uid),loadTeacherNotifications(user.uid)]);
+  await loadTeacherStudents(effectiveUid);fillStudentSelects();
+  await Promise.all([loadAttendance(effectiveUid),loadNotes(effectiveUid),loadTeacherNotifications(effectiveUid)]);
   renderProfile();renderAll();$('loading')?.remove();
 }
 onAuthStateChanged(auth,user=>{if(!user){location.replace('../../login/index.html');return;}boot(user).catch(err=>{console.error(err);if($('loading'))$('loading').textContent='تعذر تحميل لوحة المعلم: '+(err.code||err.message);});});

@@ -6,4 +6,4 @@ export const amountPaid = record => record.paid === true ? amountDue(record) : M
 export const amountRemaining = record => Math.max(0, amountDue(record) - amountPaid(record));
 export const money = pennies => (Number(pennies || 0) / 100).toLocaleString('ar-EG', {minimumFractionDigits:2,maximumFractionDigits:2}) + ' ج.م';
 export const html = s => String(s ?? '').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-export const isCharge = r => ['حاضر','غائب','اعتذر'].includes(r.status) && amountDue(r) > 0;
+export const isCharge = r => r?.deleted !== true && ['حاضر','غائب','اعتذر'].includes(r.status) && amountDue(r) > 0;

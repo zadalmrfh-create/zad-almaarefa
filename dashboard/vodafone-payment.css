@@ -16,3 +16,20 @@
 .zad-pay-request{padding:16px;margin:10px 0;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;border:1px solid #43516a;border-radius:12px;background:#101b2d}
 .zad-pay-request small{display:block;padding-top:6px;color:#cbd5e1}.zad-pay-request-actions{display:flex;gap:9px;flex-wrap:wrap}
 @media(max-width:650px){.zad-pay-grid{grid-template-columns:1fr}.zad-pay-card{padding:15px}.zad-pay-request-actions>*{flex:1}}
+
+/* ملخصات مالية واضحة لكل طلب دفع — تصلح للموبايل والكمبيوتر */
+.zad-pay-request-body{flex:1 1 360px;min-width:0;display:grid;gap:10px}
+.zad-pay-request-head{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.zad-pay-request-head strong{color:#f4d36a;font-size:1.15em}
+.zad-pay-detail-grid{display:grid;grid-template-columns:repeat(3,minmax(170px,1fr));gap:9px}
+.zad-pay-detail-grid>div{display:grid;gap:4px;background:#17263b;border:1px solid #384c60;border-radius:10px;padding:9px;overflow-wrap:anywhere}
+.zad-pay-detail-grid small{color:#b9c7da;padding:0}.zad-pay-detail-grid b{font-size:14px}
+.zad-pay-allocations{padding:12px;border:1px solid #52627a;border-radius:10px;background:#10192a;display:grid;gap:8px}
+.zad-pay-allocations>b{color:#f3d77c}.zad-pay-allocation{border-top:1px dashed #52627a;padding-top:8px;display:flex;align-items:center;gap:10px;justify-content:space-between;flex-wrap:wrap}
+.zad-pay-allocation strong{color:#f4d36a}.zad-pay-allocation small{flex-basis:100%;padding:2px 0}
+.zad-pay-cancelled,.zad-pay-missing{color:#ffca98!important}.zad-pay-alert{border:1px solid #e6a956;background:rgba(230,169,86,.12);padding:10px;border-radius:10px;color:#ffe1a7}
+.zad-pay-archive-history{margin:14px 0;padding:10px;border:1px solid #465773;border-radius:12px}
+.zad-pay-archive-history summary{cursor:pointer;color:#f5dc7e;font-weight:700;padding:7px}
+.zad-pay-archived-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;padding:10px;border-bottom:1px solid #37475f}
+.zad-pay-archived-row small{display:block;margin-top:4px;color:#cad4e4}
+@media(max-width:750px){.zad-pay-detail-grid{grid-template-columns:1fr}.zad-pay-request{padding:11px}}
