@@ -210,6 +210,7 @@ body{margin:0;font-family:Cairo,Arial,sans-serif;background:linear-gradient(135d
         let name = '';
         if (chosenSection.includes('برمج') || chosenSection.includes('تكنولوجيا') || combined.includes('برمج')) name = 'مالك سامح';
         else if (chosenSection.includes('انجليز') || chosenSection.includes('english') || combined.includes('انجليز') || combined.includes('english')) name = 'علي عبد الحميد';
+        else if (chosenSubject.includes('كيمياء') || chosenSubject.includes('chemistry')) name = 'محمد خالد محمود';
         else if (chosenSection === 'العلوم' || (!chosenSection && chosenSubject === 'العلوم')) name = 'فاطمة أشرف';
         else if (chosenSection) name = 'ضياء الدين نبيل';
         if (!name) return;

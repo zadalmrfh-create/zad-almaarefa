@@ -456,6 +456,36 @@ service cloud.firestore {
       allow create, update, delete: if isAdmin();
     }
 
+    // امتحانات الوحدة الأولى: الطالب يسلم محاولة واحدة فقط لكل مادة.
+    // لا يملك الطالب حق تعديل النتيجة أو اعتماد الأسئلة المقالية.
+    match /unitOneExamAttempts/{attemptId} {
+      allow read: if isAdmin() || (
+        signedIn() && resource.data.studentUid == request.auth.uid
+      );
+      allow create: if signedIn()
+        && attemptId == request.auth.uid + '_' + request.resource.data.examId
+        && request.resource.data.keys().hasOnly([
+          'studentUid','studentName','examId','answers','source','createdAt'
+        ])
+        && request.resource.data.studentUid == request.auth.uid
+        && request.resource.data.studentName is string
+        && request.resource.data.studentName.size() <= 150
+        && request.resource.data.examId in [
+          'business','history','arabic','literature','physics',
+          'math','english','novel','chemistry',
+          'chemistry-calculations-unit1-2026'
+        ]
+        && request.resource.data.answers is list
+        && request.resource.data.answers.size() == 30
+        && request.resource.data.source == 'unit-one-2026'
+        && request.resource.data.createdAt == request.time;
+      allow update: if isAdmin()
+        && request.resource.data.studentUid == resource.data.studentUid
+        && request.resource.data.examId == resource.data.examId
+        && request.resource.data.answers == resource.data.answers;
+      allow delete: if isAdmin();
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }

@@ -222,7 +222,7 @@ function renderEvents(categoryFilter) {
       ((event.status || "upcoming") === "upcoming" ? "⏳ قادم" : "✅ انتهى") +
       "</span>" +
       ((event.status || "upcoming") === "upcoming"
-        ? '<a href="https://wa.me/201515474939?text=عايز%20أحجز%20معاكم" target="_blank" class="whatsapp-btn">📲 احجز الآن</a>'
+        ? '<a href="https://wa.me/201042239704?text=عايز%20أحجز%20معاكم" target="_blank" class="whatsapp-btn">📲 احجز الآن</a>'
         : "") +
       "</div>";
     eventsGridEl.appendChild(card);

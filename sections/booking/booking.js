@@ -60,6 +60,8 @@ function canonicalBookingSelection(name) {
 const params = new URLSearchParams(window.location.search);
 const initialSection = params.get("section");
 if (initialSection && [...sectionSelect.options].some(o => o.value === initialSection)) sectionSelect.value = initialSection;
+const initialSubject = params.get('subject');
+if (initialSubject && subjectInput) subjectInput.value = initialSubject;
 
 function normalizeArabic(value = "") {
   return String(value)
@@ -92,6 +94,17 @@ function detectTeacherAssignment() {
     };
   }
 
+  // Chemistry is offered by Mohamed Khaled Mahmoud (secondary stage).
+  // Keep general science assigned to Fatma Ashraf as before.
+  if (normalizeArabic(subjectInput?.value || "").includes("كيمياء")
+      || normalizeArabic(subjectInput?.value || "").includes("chemistry")) {
+    return {
+      key: "chemistry",
+      targetName: "محمد خالد محمود",
+      hint: "تم اختيار الأستاذ محمد خالد محمود تلقائيًا لمادة الكيمياء (المرحلة الثانوية)."
+    };
+  }
+
   if (normalizeArabic(canonicalSection) === normalizeArabic("العلوم") || (!canonicalSection && normalizeArabic(subjectInput?.value || "") === normalizeArabic("العلوم"))) {
     return {
       key: "science",
@@ -111,6 +124,7 @@ function matchesTeacher(teacher, assignmentKey) {
   if (assignmentKey === "programming") return n.includes("مالك") && n.includes("سامح");
   if (assignmentKey === "english") return n.includes("علي") && n.includes("عبد") && n.includes("الحميد");
   if (assignmentKey === "science") return n.includes("فاطمه") && n.includes("اشرف");
+  if (assignmentKey === "chemistry") return n.includes("محمد") && n.includes("خالد") && n.includes("محمود");
   return n.includes("ضياء") && (n.includes("نبيل") || n.includes("الدين"));
 }
 function updateAssignedTeacher() {
@@ -221,6 +235,7 @@ form.addEventListener("submit", async event => {
     statusBox.className = "booking-status success";
     form.reset();
     if (initialSection && [...sectionSelect.options].some(o => o.value === initialSection)) sectionSelect.value = initialSection;
+    if (initialSubject && subjectInput) subjectInput.value = initialSubject;
     updateAssignedTeacher();
   } catch (error) {
     console.error(error);
