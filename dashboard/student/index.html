@@ -1318,11 +1318,11 @@ import {auth,db} from '../../firebase-config.js';import {onAuthStateChanged} fro
 const box=document.getElementById('zad-my-questions');onAuthStateChanged(auth,async user=>{if(!user){box.textContent='سجل دخولك لمتابعة الأسئلة.';return}const pv=await getPreviewContext(user,'student');if(pv.denied)return;onSnapshot(query(collection(db,'studyQuestions'),where('studentUid','==',pv.uid)),snap=>{box.replaceChildren();if(snap.empty){box.textContent='لم ترسل أسئلة بعد.';return}snap.docs.sort((a,b)=>(b.data().createdAt?.seconds||0)-(a.data().createdAt?.seconds||0)).forEach(it=>{let x=it.data(),p=document.createElement('div');p.style.cssText='padding:12px;border-bottom:1px solid #76663f';const q=document.createElement('strong');q.textContent=x.question||'';p.appendChild(q);const answer=document.createElement('p');answer.textContent=x.status==='answered'?'رد الإدارة: '+(x.reply||''):'⏳ بانتظار رد الإدارة';p.appendChild(answer);box.appendChild(p)})},e=>box.textContent='تعذر عرض الأسئلة: '+e.message)});
 </script>
 <section dir="rtl" class="zad-student-exam-section" aria-labelledby="zad-results-heading">
- <div class="zad-results-header"><div><span class="zad-results-eyebrow">سجل الإنجاز الدراسي</span><h2 id="zad-results-heading">نتائج امتحاناتي</h2><p>تابع نتائج امتحاناتك واطبع تقرير إجاباتك. تصدر شهادات التقدير من الإدارة فقط.</p></div><span class="zad-results-header-icon" aria-hidden="true">🏅</span></div>
+ <div class="zad-results-header"><div><span class="zad-results-eyebrow">سجل الإنجاز الدراسي</span><h2 id="zad-results-heading">نتائج امتحاناتي</h2><p>تابع نتائج امتحاناتك واطبع تقارير إجاباتك. إصدار شهادات التقدير وعرضها وتنزيلها من اختصاص الإدارة فقط.</p></div><span class="zad-results-header-icon" aria-hidden="true">📊</span></div>
  <div class="zad-results-stats" id="zad-results-stats" aria-label="ملخص النتائج"></div>
  <div class="zad-results-toolbar"><h3>سجل الامتحانات</h3><span>أحدث الامتحانات أولاً</span></div>
  <div id="zad-student-exam-results" class="zad-results-grid" aria-live="polite">جارٍ تحميل النتائج...</div>
- <p class="zad-results-disclaimer">النتائج آلية، أما شهادات التقدير فيصدرها الأدمن بعد المراجعة، ولا يستطيع الطالب تعديلها أو طباعتها من هذه الصفحة.</p>
+ <p class="zad-results-disclaimer">النتائج آلية، ولا تتيح لوحة الطالب إصدار شهادات أو استلامها أو عرضها أو طباعتها. إصدار الشهادات وحفظها لدى الإدارة فقط.</p>
 </section><link rel="stylesheet" href="exam-results-student.css"><script type="module" src="exam-results-student.js"></script><script type="module" src="vodafone-payment-student.js"></script>
 <script type="module" src="../admin-switcher.js"></script>
 </body>

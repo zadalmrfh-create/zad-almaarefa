@@ -16,3 +16,12 @@ a.hierarchy-card[href*="code-exams"] .h-sub{color:#f1f4f9!important;font-weight:
 /* شهادة منفصلة لكل نتيجة، باستخدام زر طباعة واضح بجانب عرض الإجابات */
 .zad-result-actions .zad-result-print-certificate{background:#d7ad3e!important;color:#101c33!important;border:1px solid #e8ca68!important;font-weight:800;white-space:nowrap}
 .zad-result-actions .zad-result-edit-certificate{white-space:nowrap}
+
+/* Admin-only answer review print action for every exam result */
+#codeExamResultsList .zad-result-actions .zad-print-answer-report {
+  display:inline-flex;align-items:center;justify-content:center;
+  border:1px solid #d6b962!important;background:#f6e7b0!important;
+  color:#10294d!important;font-weight:800!important;white-space:normal;
+  border-radius:10px;padding:10px 15px;cursor:pointer;
+}
+#codeExamResultsList .zad-result-actions .zad-print-answer-report:hover {background:#ffeb9a!important;}

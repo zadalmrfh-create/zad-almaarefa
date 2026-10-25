@@ -1,4 +1,5 @@
-import { printable } from './certificates-admin.js';
+import { printableExamResult } from './certificates-admin.js';
+import { printUnitExamAnswers, printCodeExamAnswers } from './exam-answer-report.js';
 import { auth, db } from '../../firebase-config.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
 import { collection, getDoc, doc, onSnapshot, deleteDoc } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
@@ -22,7 +23,7 @@ function renderCode(entry){
   const show=action('عرض الإجابات',()=>{pre.hidden=!pre.hidden;show.textContent=pre.hidden?'عرض الإجابات':'إخفاء الإجابات'});
   const pct=Number(x.percent ?? (Number(x.total)>0?Number(x.score)/Number(x.total)*100:0));
   const certData={studentUid:x.studentUid||'',studentName:x.studentName||'الطالب',title:x.examTitle||'الامتحان',grade:gradeFromPercent(pct),description:`تقديرًا لمشاركته في ${x.examTitle||'الامتحان'}، وحصوله على ${x.score??0} من ${x.total??0} (${Math.round(pct)}%).`,issueDate:new Date().toLocaleDateString('ar-EG'),signature:''};
-  const cert=action('🖨️ طباعة الشهادة',()=>printable(certData),'zad-result-print-certificate btn gold');
+  const cert=action('🖨️ طباعة الشهادة',()=>printableExamResult(certData),'zad-result-print-certificate btn gold');
   const edit=action('✏️ تعديل الشهادة',()=>window.dispatchEvent(new CustomEvent('zad:certificate-from-exam',{detail:certData})),'zad-result-edit-certificate btn');
   const status=make('span',undefined,'zad-delete-status');status.setAttribute('role','status');
   const del=action('🗑️ حذف النتيجة',async()=>{
@@ -30,7 +31,7 @@ function renderCode(entry){
     del.disabled=true;status.textContent='جارٍ الحذف...';
     try{await deleteDoc(doc(db,'codeExamResults',id))}catch(e){del.disabled=false;status.textContent='تعذر الحذف: '+(e.code||e.message)}
   },'zad-delete-result');
-  actions.append(show,cert,edit,del,status);row.append(actions,pre);return row;
+  actions.append(show,action('🖨️ طباعة تقرير الإجابات',()=>printCodeExamAnswers(x),'zad-print-answer-report btn'),cert,edit,del,status);row.append(actions,pre);return row;
 }
 function correct(q){if(!q)return '—';if(q.type==='mcq')return q.options?.[q.answer]??'—';if(q.type==='tf')return q.answer?'صح':'خطأ';if(q.type==='fill')return (q.answers||[]).join(' / ');return 'يصحّحه الأدمن'}
 function provided(q,a){if(a===null||a===undefined||a==='')return '— لم يُجب —';if(q?.type==='mcq')return q.options?.[a]??'—';if(q?.type==='tf')return a?'صح':'خطأ';return String(a)}
@@ -66,11 +67,11 @@ function renderUnit(entry){
       detail:{attemptId:id,studentName:name,examId:x.examId}
     }));
   },'btn');
-  actions.append(show,review);
+  actions.append(show,action('🖨️ طباعة تقرير الإجابات',()=>printUnitExamAnswers(exam,{...x,examId:x.examId}),'zad-print-answer-report btn'),review);
   if(graded){
     const pct=x.finalScore/30*100;
     const certData={studentUid:x.studentUid||'',studentName:name,title:exam?.title||'امتحان الوحدة الأولى',grade:gradeFromPercent(pct),description:`تقديرًا للحصول على ${x.finalScore} من 30 (${Math.round(pct)}%) في ${exam?.title||'امتحان الوحدة الأولى'}.`,issueDate:new Date().toLocaleDateString('ar-EG'),signature:''};
-    actions.append(action('🖨️ طباعة الشهادة',()=>printable(certData),'zad-result-print-certificate btn gold'));
+    actions.append(action('🖨️ طباعة الشهادة',()=>printableExamResult(certData),'zad-result-print-certificate btn gold'));
     actions.append(action('✏️ تعديل الشهادة',()=>window.dispatchEvent(new CustomEvent('zad:certificate-from-exam',{detail:certData})),'zad-result-edit-certificate btn'));
   }
   const status=make('span',undefined,'zad-delete-status');status.setAttribute('role','status');

@@ -30,6 +30,16 @@ service cloud.firestore {
       );
     }
 
+    // Administrative certificate access requires a trusted role or verified admin email.
+    function isCertificateAdmin() {
+      return signedIn() && (
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+        || (userExists(request.auth.uid) && getUser(request.auth.uid).data.role == 'admin')
+        || (request.auth.token.email == 'maleksameh121@gmail.com'
+            && request.auth.token.email_verified == true)
+      );
+    }
+
     function isTeacher() {
       return signedIn()
         && userExists(request.auth.uid)
@@ -102,8 +112,14 @@ service cloud.firestore {
     }
 
     match /featuredStudents/{id} {
-      allow read: if true;
-      allow create, update, delete: if isAdmin();
+      // Public listings may show achievements, never linked certificate files.
+      // Existing documents containing private certificate URLs must be cleaned.
+      allow read: if isAdmin() || !resource.data.keys().hasAny(['certificateLink', 'certificate']);
+      allow create: if isAdmin()
+        && !request.resource.data.keys().hasAny(['certificateLink', 'certificate']);
+      allow update: if isAdmin()
+        && !request.resource.data.keys().hasAny(['certificateLink', 'certificate']);
+      allow delete: if isAdmin();
     }
 
     match /libraryBooks/{id} {
@@ -451,17 +467,35 @@ service cloud.firestore {
       allow update, delete: if isAdmin();
     }
 
+    // Certificates are confidential administrative documents, even for their owner.
+    // This overrides no other path: the fallback below remains deny-by-default.
     match /certificates/{certificateId} {
-      allow read: if isAdmin() || (signedIn() && resource.data.studentUid == request.auth.uid);
-      allow create, update, delete: if isAdmin();
+      allow read, create, update, delete: if isCertificateAdmin();
     }
 
-    // امتحانات الوحدة الأولى: الطالب يسلم محاولة واحدة فقط لكل مادة.
-    // لا يملك الطالب حق تعديل النتيجة أو اعتماد الأسئلة المقالية.
+    // امتحانات الوحدة الأولى: قراءة محاولة الطالب تتم بمعرف وثيقة مشتق
+    // من UID الخاص به ومعرف الامتحان. يسمح هذا بفحص المحاولة حتى قبل إنشائها.
+    // منع list للطالب يحمي محاولات بقية الطلاب من الاستعراض الجماعي.
+    function isOwnUnitOneAttempt(attemptId) {
+      return signedIn() && attemptId in [
+        request.auth.uid + '_business',
+        request.auth.uid + '_history',
+        request.auth.uid + '_arabic',
+        request.auth.uid + '_literature',
+        request.auth.uid + '_physics',
+        request.auth.uid + '_math',
+        request.auth.uid + '_english',
+        request.auth.uid + '_novel',
+        request.auth.uid + '_chemistry',
+        request.auth.uid + '_chemistry-calculations-unit1-2026'
+      ];
+    }
+
     match /unitOneExamAttempts/{attemptId} {
-      allow read: if isAdmin() || (
-        signedIn() && resource.data.studentUid == request.auth.uid
-      );
+      // get works for missing documents too (first attempt).
+      allow get: if isAdmin() || isOwnUnitOneAttempt(attemptId);
+      // Admin needs collection queries to review all attempts.
+      allow list: if isAdmin();
       allow create: if signedIn()
         && attemptId == request.auth.uid + '_' + request.resource.data.examId
         && request.resource.data.keys().hasOnly([

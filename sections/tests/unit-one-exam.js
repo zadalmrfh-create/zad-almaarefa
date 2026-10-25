@@ -54,4 +54,9 @@ if(user){try{
  state.ends=Date.now()+exam.timeMinutes*60000;state.tick=setInterval(tick,1000);tick();
  }
  }
-}catch(e){say('تعذر تجهيز الامتحان: '+(e.code||e.message))}}
+}catch(e){
+ const hint=e?.code==='permission-denied'
+   ? 'لا توجد صلاحية لقراءة محاولة الامتحان. انشر ملف firestore.rules المرفق من Firebase Console ← Firestore Database ← Rules، ثم أعد فتح الامتحان.'
+   : 'تعذر تجهيز الامتحان: '+(e.code||e.message);
+ say(hint);
+}}
