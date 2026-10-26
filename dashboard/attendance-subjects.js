@@ -41,7 +41,7 @@ function teacherForSingleSubject(subject) {
   const name = String(subject || '').trim();
   if (!name) return '';
   if (name === 'الكيمياء' || name === 'مادة الكيمياء') return 'محمد خالد محمود';
-  if (name === 'العلوم' || name === 'مادة العلوم') return 'فاطمة أشرف';
+  if (name === 'العلوم' || name === 'مادة العلوم') return 'محمد خالد محمود';
   if (name === 'اللغة الإنجليزية' || name === 'الانجليزي' || name === 'الإنجليزي') return 'علي عبد الحميد';
   if (name === 'البرمجة وتكنولوجيا المعلومات' || name === 'البرمجة') return 'مالك سامح';
   if (DIYAA_SUBJECTS.has(name)) return 'ضياء الدين نبيل';
