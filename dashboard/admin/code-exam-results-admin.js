@@ -22,7 +22,7 @@ function renderCode(entry){
   const pre=make('pre',x.answers||'لم تتوفر بيانات الإجابات من كود الامتحان.');pre.hidden=true;pre.style.whiteSpace='pre-wrap';
   const show=action('عرض الإجابات',()=>{pre.hidden=!pre.hidden;show.textContent=pre.hidden?'عرض الإجابات':'إخفاء الإجابات'});
   const pct=Number(x.percent ?? (Number(x.total)>0?Number(x.score)/Number(x.total)*100:0));
-  const certData={studentUid:x.studentUid||'',studentName:x.studentName||'الطالب',title:x.examTitle||'الامتحان',grade:gradeFromPercent(pct),description:`تقديرًا لمشاركته في ${x.examTitle||'الامتحان'}، وحصوله على ${x.score??0} من ${x.total??0} (${Math.round(pct)}%).`,issueDate:new Date().toLocaleDateString('ar-EG'),signature:''};
+  const certData={studentUid:x.studentUid||'',studentName:x.studentName||'الطالب',title:x.examTitle||'الامتحان',grade:gradeFromPercent(pct),description:`تقديرًا لمشاركته في ${x.examTitle||'الامتحان'}، وحصوله على ${x.score??0} من ${x.total??0} (${Math.round(pct)}%).`,issueDate:new Date().toLocaleDateString('ar-EG')};
   const cert=action('🖨️ طباعة الشهادة',()=>printableExamResult(certData),'zad-result-print-certificate btn gold');
   const edit=action('✏️ تعديل الشهادة',()=>window.dispatchEvent(new CustomEvent('zad:certificate-from-exam',{detail:certData})),'zad-result-edit-certificate btn');
   const status=make('span',undefined,'zad-delete-status');status.setAttribute('role','status');
@@ -70,7 +70,7 @@ function renderUnit(entry){
   actions.append(show,action('🖨️ طباعة تقرير الإجابات',()=>printUnitExamAnswers(exam,{...x,examId:x.examId}),'zad-print-answer-report btn'),review);
   if(graded){
     const pct=x.finalScore/30*100;
-    const certData={studentUid:x.studentUid||'',studentName:name,title:exam?.title||'امتحان الوحدة الأولى',grade:gradeFromPercent(pct),description:`تقديرًا للحصول على ${x.finalScore} من 30 (${Math.round(pct)}%) في ${exam?.title||'امتحان الوحدة الأولى'}.`,issueDate:new Date().toLocaleDateString('ar-EG'),signature:''};
+    const certData={studentUid:x.studentUid||'',studentName:name,title:exam?.title||'امتحان الوحدة الأولى',grade:gradeFromPercent(pct),description:`تقديرًا للحصول على ${x.finalScore} من 30 (${Math.round(pct)}%) في ${exam?.title||'امتحان الوحدة الأولى'}.`,issueDate:new Date().toLocaleDateString('ar-EG')};
     actions.append(action('🖨️ طباعة الشهادة',()=>printableExamResult(certData),'zad-result-print-certificate btn gold'));
     actions.append(action('✏️ تعديل الشهادة',()=>window.dispatchEvent(new CustomEvent('zad:certificate-from-exam',{detail:certData})),'zad-result-edit-certificate btn'));
   }

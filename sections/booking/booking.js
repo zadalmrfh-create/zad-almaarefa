@@ -4,8 +4,7 @@ import { collection, getDocs, addDoc, serverTimestamp, query, where } from "http
 
 let currentUser = null;
 let activeTeachers = [];
-let assignedTeacher = { uid: null, name: "ضياء الدين نبيل", manualChoice: false };
-let selectedEnglishTeacherKey = null;
+let assignedTeacher = { uid: null, name: "ضياء الدين نبيل" };
 
 onAuthStateChanged(auth, async user => {
   currentUser = user;
@@ -63,9 +62,6 @@ const initialSection = params.get("section");
 if (initialSection && [...sectionSelect.options].some(o => o.value === initialSection)) sectionSelect.value = initialSection;
 const initialSubject = params.get('subject');
 if (initialSubject && subjectInput) subjectInput.value = initialSubject;
-const requestedTeacherName = params.get('teacher') || '';
-const requestedEnglishTeacherKey = englishTeacherKeyFromName(requestedTeacherName);
-if (requestedEnglishTeacherKey) selectedEnglishTeacherKey = requestedEnglishTeacherKey;
 
 function normalizeArabic(value = "") {
   return String(value)
@@ -78,36 +74,6 @@ function normalizeArabic(value = "") {
     .trim()
     .toLowerCase();
 }
-const ENGLISH_TEACHERS = [
-  { key: "ali-abdelhamid", name: "علي عبد الحميد", label: "الأستاذ علي عبد الحميد" },
-  { key: "fatma-diaa", name: "فاطمة ضياء", label: "الأستاذة فاطمة ضياء" }
-];
-
-function canonicalTeacherName(value = "") {
-  return normalizeArabic(value).replace(/^الاستاذه?\s*/, "").replace(/^استاذه?\s*/, "").trim();
-}
-
-function englishTeacherKeyFromName(value = "") {
-  const n = canonicalTeacherName(value);
-  if (n.includes("فاطمه ضياء") || n.includes("fatma diaa")) return "fatma-diaa";
-  if ((n.includes("علي") && n.includes("عبد") && n.includes("الحميد")) || n.includes("ali abdel hamid")) return "ali-abdelhamid";
-  return null;
-}
-
-function isRetiredFatmaAshrafName(value = "") {
-  const n = normalizeArabic(value);
-  return n.includes("فاطمه اشرف") || n.includes("fatma ashraf");
-}
-
-function findActiveTeacherByName(name) {
-  const target = canonicalTeacherName(name);
-  if (!target) return null;
-  return activeTeachers.find(teacher => {
-    const candidate = canonicalTeacherName(teacher.name);
-    return candidate === target || candidate.includes(target) || target.includes(candidate);
-  }) || null;
-}
-
 function detectTeacherAssignment() {
   const canonicalSection = canonicalBookingSelection("section");
   const combined = normalizeArabic(`${canonicalSection} ${subjectInput?.value || ""}`);
@@ -120,29 +86,30 @@ function detectTeacherAssignment() {
     };
   }
 
-  if (combined.includes("انجليز") || combined.includes("english") || combined.includes("اللغه الانجليزيه")) {
+  if (combined.includes("انجليز") || combined.includes("english") || combined.includes("اللغه الانجليزيه") || combined.includes("اللغة الإنجليزية")) {
     return {
       key: "english",
       targetName: "علي عبد الحميد",
-      hint: "اختر معلم اللغة الإنجليزية: الأستاذ علي عبد الحميد أو الأستاذة فاطمة ضياء."
+      hint: "تم اختيار الأستاذ علي عبد الحميد تلقائيًا لأن المادة/القسم لغة إنجليزية."
     };
   }
 
+  // Chemistry is offered by Mohamed Khaled Mahmoud (secondary stage).
+  // Keep general science assigned to Fatma Ashraf as before.
   if (normalizeArabic(subjectInput?.value || "").includes("كيمياء")
       || normalizeArabic(subjectInput?.value || "").includes("chemistry")) {
     return {
       key: "chemistry",
       targetName: "محمد خالد محمود",
-      hint: "تم اختيار الأستاذ محمد خالد محمود تلقائيًا لمادة الكيمياء."
+      hint: "تم اختيار الأستاذ محمد خالد محمود تلقائيًا لمادة الكيمياء (المرحلة الثانوية)."
     };
   }
 
-  if (normalizeArabic(canonicalSection) === normalizeArabic("العلوم")
-      || (!canonicalSection && normalizeArabic(subjectInput?.value || "") === normalizeArabic("العلوم"))) {
+  if (normalizeArabic(canonicalSection) === normalizeArabic("العلوم") || (!canonicalSection && normalizeArabic(subjectInput?.value || "") === normalizeArabic("العلوم"))) {
     return {
       key: "science",
-      targetName: "محمد خالد محمود",
-      hint: "تم اختيار الأستاذ محمد خالد محمود تلقائيًا لأن المادة/القسم علوم."
+      targetName: "فاطمة أشرف",
+      hint: "تم اختيار الأستاذة فاطمة أشرف تلقائيًا لأن المادة/القسم علوم."
     };
   }
 
@@ -152,47 +119,30 @@ function detectTeacherAssignment() {
     hint: "تم اختيار ضياء الدين نبيل تلقائيًا لهذه المادة."
   };
 }
-
+function matchesTeacher(teacher, assignmentKey) {
+  const n = normalizeArabic(teacher.name);
+  if (assignmentKey === "programming") return n.includes("مالك") && n.includes("سامح");
+  if (assignmentKey === "english") return n.includes("علي") && n.includes("عبد") && n.includes("الحميد");
+  if (assignmentKey === "science") return n.includes("فاطمه") && n.includes("اشرف");
+  if (assignmentKey === "chemistry") return n.includes("محمد") && n.includes("خالد") && n.includes("محمود");
+  return n.includes("ضياء") && (n.includes("نبيل") || n.includes("الدين"));
+}
 function updateAssignedTeacher() {
   const assignment = detectTeacherAssignment();
-  if (!teacherSelect) {
-    const found = findActiveTeacherByName(assignment.targetName);
-    assignedTeacher = { uid: found?.uid || null, name: assignment.targetName, manualChoice: false };
-    return;
-  }
+  const found = activeTeachers.find(t => matchesTeacher(t, assignment.key));
+  assignedTeacher = { uid: found?.uid || null, name: assignment.targetName };
 
-  if (assignment.key === "english") {
-    const currentKey = ENGLISH_TEACHERS.some(t => t.key === teacherSelect.value) ? teacherSelect.value : null;
-    const desiredKey = selectedEnglishTeacherKey || currentKey || requestedEnglishTeacherKey || "ali-abdelhamid";
-    teacherSelect.disabled = false;
-    teacherSelect.setAttribute("aria-disabled", "false");
+  if (teacherSelect) {
     teacherSelect.innerHTML = "";
-    ENGLISH_TEACHERS.forEach(teacher => {
-      const option = document.createElement("option");
-      option.value = teacher.key;
-      option.textContent = teacher.label;
-      teacherSelect.appendChild(option);
-    });
-    teacherSelect.value = ENGLISH_TEACHERS.some(t => t.key === desiredKey) ? desiredKey : "ali-abdelhamid";
-    selectedEnglishTeacherKey = teacherSelect.value;
-    const selected = ENGLISH_TEACHERS.find(t => t.key === teacherSelect.value) || ENGLISH_TEACHERS[0];
-    const found = findActiveTeacherByName(selected.name);
-    assignedTeacher = { uid: found?.uid || null, name: selected.name, manualChoice: true };
-    if (teacherAutoHint) teacherAutoHint.textContent = assignment.hint;
-    return;
+    const option = document.createElement("option");
+    option.value = assignedTeacher.uid || "";
+    option.textContent = assignedTeacher.name;
+    option.selected = true;
+    teacherSelect.appendChild(option);
   }
-
-  teacherSelect.disabled = true;
-  teacherSelect.setAttribute("aria-disabled", "true");
-  teacherSelect.innerHTML = "";
-  const found = findActiveTeacherByName(assignment.targetName);
-  const option = document.createElement("option");
-  option.value = found?.uid || "";
-  option.textContent = assignment.targetName;
-  option.selected = true;
-  teacherSelect.appendChild(option);
-  assignedTeacher = { uid: found?.uid || null, name: assignment.targetName, manualChoice: false };
-  if (teacherAutoHint) teacherAutoHint.textContent = assignment.hint;
+  if (teacherAutoHint) {
+    teacherAutoHint.textContent = assignment.hint;
+  }
 }
 
 async function loadBookingTeachers() {
@@ -200,8 +150,8 @@ async function loadBookingTeachers() {
     const snap = await getDocs(query(collection(db, "users"), where("role", "==", "teacher"), where("status", "==", "active")));
     activeTeachers = snap.docs.map(docSnap => {
       const data = docSnap.data() || {};
-      return { uid: docSnap.id, name: data.fullName || data.name || data.displayName || data.email || "معلم", role: data.role, status: data.status };
-    }).filter(teacher => !isRetiredFatmaAshrafName(teacher.name));
+      return { uid: docSnap.id, name: data.fullName || data.name || data.displayName || data.email || "معلم" };
+    });
   } catch (error) {
     console.warn("تعذر تحميل حسابات المعلمين، سيتم حفظ اسم المعلم المحدد تلقائيًا:", error);
     activeTeachers = [];
@@ -211,12 +161,6 @@ async function loadBookingTeachers() {
 
 sectionSelect?.addEventListener("change", updateAssignedTeacher);
 subjectInput?.addEventListener("input", updateAssignedTeacher);
-teacherSelect?.addEventListener("change", () => {
-  if (ENGLISH_TEACHERS.some(t => t.key === teacherSelect.value)) {
-    selectedEnglishTeacherKey = teacherSelect.value;
-    updateAssignedTeacher();
-  }
-});
 
 let bookingSubmitting = false;
 form.addEventListener("submit", async event => {
@@ -259,8 +203,7 @@ form.addEventListener("submit", async event => {
     updatedAt: serverTimestamp(),
     source: "booking",
     bookingVersion: 3,
-    autoAssignedTeacher: !assignedTeacher.manualChoice,
-    teacherSelectionMode: assignedTeacher.manualChoice ? "student-choice" : "auto"
+    autoAssignedTeacher: true
   };
 
   bookingSubmitting = true;
@@ -277,7 +220,7 @@ form.addEventListener("submit", async event => {
         targetRole: "admin",
         type: "booking",
         title: "📅 طلب حجز حصة جديد",
-        message: `الطالب ${data.fullName || "غير معروف"} أرسل طلب حجز في قسم ${data.section || "غير محدد"} لمادة ${data.subject || "غير محدد"}. المعلم المختار: ${assignedTeacher.name}.`,
+        message: `الطالب ${data.fullName || "غير معروف"} أرسل طلب حجز في قسم ${data.section || "غير محدد"} لمادة ${data.subject || "غير محدد"}. المعلم المحدد تلقائيًا: ${assignedTeacher.name}.`,
         bookingId: bookingRef.id,
         studentUid: currentUser?.uid || null,
         createdBy: currentUser?.uid || null,

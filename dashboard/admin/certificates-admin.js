@@ -37,9 +37,8 @@ export function printable(x) {
     ? safe(rawDescription)
     : matchScore ? 'الدرجة: ' + safe(matchScore[0]) : '';
   const issueDate = safe(x.issueDate || new Date().toLocaleDateString('ar-EG'));
-  // Use the typed teacher signature on issued and previewed certificates.
-  // Keep the space blank when the field was left empty for a handwritten signature.
-  const signature = safe(String(x.signature ?? '').trim());
+  // The teacher signature field is replaced by the platform's official stamp.
+  const stampLogoUrl = new URL('../../images/logo.png', import.meta.url).href;
 
   w.document.write(`<!doctype html>
 <html lang="ar" dir="rtl">
@@ -62,7 +61,7 @@ export function printable(x) {
     position:absolute; inset:0; z-index:0; display:block;
     width:100%;height:100%; object-fit:fill;pointer-events:none;
   }
-  .intro,.student-name,.divider,.achievement,.description,.blessing,.signature,.issue-date {
+  .intro,.student-name,.divider,.achievement,.description,.blessing,.official-stamp,.issue-date {
     position:absolute;z-index:1;
   }
   .intro {
@@ -91,18 +90,24 @@ export function printable(x) {
     top:73.4%;right:23%;left:23%;font-size:2.15cqw;
     font-weight:750;line-height:1.35;
   }
-  .signature {
-    bottom:10.6%;left:16.9%;width:21.3%;color:#071b43;
-    font-weight:700;font-size:2.0cqw;
+  .official-stamp {
+    position:absolute;z-index:1;bottom:5.4%;left:20.5%;width:11.5cqw;aspect-ratio:1;
+    color:#0b2854;transform:rotate(-7deg);
   }
-  .signature .blank {height:6.4cqw;}
-  .signature .signed {
-    height:6.4cqw;display:flex;align-items:flex-end;justify-content:center;
-    padding:0 0.5cqw 0.6cqw;line-height:1.27;font-size:1.8cqw;
-    text-align:center;white-space:pre-wrap;overflow-wrap:anywhere;
-    font-weight:800;color:#071b43;
+  .official-stamp .stamp-ring {
+    position:relative;width:100%;height:100%;border:0.55cqw double #b9821a;border-radius:50%;
+    background:rgba(255,250,236,.9);display:flex;flex-direction:column;align-items:center;
+    justify-content:center;gap:0.18cqw;padding:1.05cqw;
+    box-shadow:inset 0 0 0 0.3cqw #0b2854,0 0.2cqw 0.4cqw #0002;
   }
-  .signature .line {height:2px;margin:0 0 0.6cqw;background:linear-gradient(90deg,transparent,#a87818 18%,#d7a33a 50%,#a87818 82%,transparent);}
+  .official-stamp .stamp-ring::before {
+    content:"";position:absolute;inset:0.72cqw;border:0.18cqw dashed #b9821a;border-radius:50%;
+  }
+  .official-stamp img {
+    position:relative;z-index:1;width:46%;height:46%;object-fit:contain;border-radius:50%;mix-blend-mode:multiply;
+  }
+  .official-stamp .stamp-name {position:relative;z-index:1;font-size:1.08cqw;font-weight:900;line-height:1.1;white-space:nowrap;}
+  .official-stamp .stamp-subtitle {position:relative;z-index:1;font-size:0.7cqw;font-weight:800;line-height:1.1;white-space:nowrap;}
   .issue-date {
     bottom:9.2%;right:16%;width:22%;font-size:2.18cqw;
     font-weight:700;line-height:1.45;color:#071b43;
@@ -127,7 +132,7 @@ export function printable(x) {
     <div class="achievement">لحصوله على تقدير <span class="gold">${grade}</span><br>في ${title}</div>
     ${description ? `<div class="description">${description}</div>` : ''}
     <div class="blessing">نسأل الله له دوام التوفيق والنجاح</div>
-    <div class="signature">${signature ? `<div class="signed">${signature}</div>` : `<div class="blank"></div>`}<div class="line"></div><div>إمضاء المعلم</div></div>
+    <div class="official-stamp" aria-label="ختم زاد المعرفة"><div class="stamp-ring"><img src="${safe(stampLogoUrl)}" alt="شعار أكاديمية زاد المعرفة"><span class="stamp-name">زاد المعرفة</span><span class="stamp-subtitle">الختم الرسمي للأكاديمية</span></div></div>
     <div class="issue-date">تاريخ الإصدار<strong>${issueDate}</strong></div>
   </main>
 <script>
@@ -149,21 +154,11 @@ export function printable(x) {
   w.document.close();
 }
 
-// When printing again from an exam result, reuse the teacher signature of a
-// matching certificate already issued by the administrator (if present).
+// All administrator-issued certificates, including certificates printed from exam results,
+// use the same official Zad Al-Maarefa stamp.
 export function printableExamResult(result) {
   if (!certificateAdminAuthorized || !auth.currentUser) { alert('إصدار الشهادات متاح للإدارة فقط.'); return; }
-  const matches = state.items.filter(x => {
-    if (String(x.title || '').trim() !== String(result.title || '').trim()) return false;
-    const resultUid = String(result.studentUid || '').trim();
-    const certUid = String(x.studentUid || '').trim();
-    if (resultUid && certUid) return resultUid === certUid;
-    return String(x.studentName || '').trim() === String(result.studentName || '').trim();
-  });
-  const issued = matches.sort((a, b) =>
-    (b.updatedAt?.seconds || b.createdAt?.seconds || 0) - (a.updatedAt?.seconds || a.createdAt?.seconds || 0)
-  )[0];
-  printable({ ...result, signature: issued?.signature || result.signature || '' });
+  printable(result);
 }
 
 const form = $('certificateAdminForm'), list = $('certificateAdminList'), status = $('certificateAdminStatus');

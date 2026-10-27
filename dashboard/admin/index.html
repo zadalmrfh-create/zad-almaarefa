@@ -243,7 +243,7 @@ onAuthStateChanged(auth, async (user) => {
   <h3 style="margin-top:24px">الامتحانات المحفوظة</h3>
   <div id="ceList">جاري تحميل الامتحانات...</div>
 </section>
-<section class="card" dir="rtl" id="adminCertificatesSection"><h2>🏅 شهادات التقدير — للإدارة فقط</h2><p>إصدار شهادة للطالب بعد مراجعة النتيجة. يمكن تعديل الشهادة أو طباعتها أو حذفها من هنا فقط. انسخ معرّف حساب الطالب UID من بياناته في Firebase.</p><form id="certificateAdminForm" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin:18px 0"><label style="display:grid;gap:6px">معرّف حساب الطالب (UID)<input name="studentUid" value="" required style="width:100%;padding:10px;border-radius:9px;color:#17233b;background:#fff;border:1px solid #64748b;font:inherit"></label><label style="display:grid;gap:6px">اسم الطالب<input name="studentName" value="" required style="width:100%;padding:10px;border-radius:9px;color:#17233b;background:#fff;border:1px solid #64748b;font:inherit"></label><label style="display:grid;gap:6px">سبب التكريم أو اسم الامتحان<input name="title" value="" required style="width:100%;padding:10px;border-radius:9px;color:#17233b;background:#fff;border:1px solid #64748b;font:inherit"></label><label style="display:grid;gap:6px">التقدير<input name="grade" value="ممتاز"  style="width:100%;padding:10px;border-radius:9px;color:#17233b;background:#fff;border:1px solid #64748b;font:inherit"></label><label style="display:grid;gap:6px">عبارة الشهادة<input name="description" value=""  style="width:100%;padding:10px;border-radius:9px;color:#17233b;background:#fff;border:1px solid #64748b;font:inherit"></label><label style="display:grid;gap:6px">تاريخ الإصدار<input name="issueDate" value=""  style="width:100%;padding:10px;border-radius:9px;color:#17233b;background:#fff;border:1px solid #64748b;font:inherit"></label><label style="display:grid;gap:6px">التوقيع المطبوع<input name="signature" value="" placeholder="اكتب اسم المعلم أو إمضاءه، أو اتركه فارغًا للتوقيع باليد"  style="width:100%;padding:10px;border-radius:9px;color:#17233b;background:#fff;border:1px solid #64748b;font:inherit"></label><div style="display:flex;align-items:end;gap:8px"><button type="submit" class="btn gold" id="certificateSubmit">إصدار الشهادة</button><button type="button" class="btn" id="certificatePrintPreview">🖨️ معاينة وطباعة الإمضاء المكتوب</button><button type="button" class="btn" id="certificateCancel" hidden>إلغاء التعديل</button></div></form><p id="certificateAdminStatus" aria-live="polite"></p><div id="certificateAdminList"></div></section><script type="module" src="certificates-admin.js"></script>
+<section class="card" dir="rtl" id="adminCertificatesSection"><h2>🏅 شهادات التقدير — للإدارة فقط</h2><p>إصدار شهادة للطالب بعد مراجعة النتيجة. يمكن تعديل الشهادة أو طباعتها أو حذفها من هنا فقط. انسخ معرّف حساب الطالب UID من بياناته في Firebase.</p><form id="certificateAdminForm" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin:18px 0"><label style="display:grid;gap:6px">معرّف حساب الطالب (UID)<input name="studentUid" value="" required style="width:100%;padding:10px;border-radius:9px;color:#17233b;background:#fff;border:1px solid #64748b;font:inherit"></label><label style="display:grid;gap:6px">اسم الطالب<input name="studentName" value="" required style="width:100%;padding:10px;border-radius:9px;color:#17233b;background:#fff;border:1px solid #64748b;font:inherit"></label><label style="display:grid;gap:6px">سبب التكريم أو اسم الامتحان<input name="title" value="" required style="width:100%;padding:10px;border-radius:9px;color:#17233b;background:#fff;border:1px solid #64748b;font:inherit"></label><label style="display:grid;gap:6px">التقدير<input name="grade" value="ممتاز"  style="width:100%;padding:10px;border-radius:9px;color:#17233b;background:#fff;border:1px solid #64748b;font:inherit"></label><label style="display:grid;gap:6px">عبارة الشهادة<input name="description" value=""  style="width:100%;padding:10px;border-radius:9px;color:#17233b;background:#fff;border:1px solid #64748b;font:inherit"></label><label style="display:grid;gap:6px">تاريخ الإصدار<input name="issueDate" value=""  style="width:100%;padding:10px;border-radius:9px;color:#17233b;background:#fff;border:1px solid #64748b;font:inherit"></label><div style="display:grid;gap:6px;align-content:center;padding:12px;border:1px solid #b9821a;border-radius:10px;background:#101d31;color:#f1d17b"><strong>🏅 ختم زاد المعرفة</strong><span style="font-size:13px;line-height:1.6">يظهر الختم الرسمي تلقائيًا على الشهادة بدلًا من إمضاء المعلم.</span></div><div style="display:flex;align-items:end;gap:8px"><button type="submit" class="btn gold" id="certificateSubmit">إصدار الشهادة</button><button type="button" class="btn" id="certificatePrintPreview">🖨️ معاينة وطباعة الشهادة بالختم الرسمي</button><button type="button" class="btn" id="certificateCancel" hidden>إلغاء التعديل</button></div></form><p id="certificateAdminStatus" aria-live="polite"></p><div id="certificateAdminList"></div></section><script type="module" src="certificates-admin.js"></script>
 <section class="card" dir="rtl" id="codeExamResultsSection"><h2>📊 نتائج الامتحانات الإلكترونية</h2><p>تظهر هنا نتائج <strong>كل الامتحانات بالكود وامتحانات الوحدة الأولى التسعة</strong> حسب تاريخ التسليم. نتائج الوحدة الأولى مبدئية حتى اعتماد درجات المقالي من قسم التصحيح الموجود أسفل النتائج. استخدم زر «طباعة تقرير الإجابات» بجانب كل نتيجة لطباعة إجابات الطالب والإجابات الصحيحة المتاحة، أو حفظها PDF.</p><div id="codeExamResultsList">جارٍ تحميل النتائج...</div></section>
 <link rel="stylesheet" href="code-exams-admin.css">
 <script type="module" src="code-exam-results-admin.js"></script>
@@ -3469,15 +3469,6 @@ function setContentStatus(
 
 
 
-/* إزالة بيانات المعلمة السابقة من واجهة التدريس والحجوزات، مع تعطيل حسابها إن كان موجودًا. */
-function isRetiredFatmaAshrafRecord(record = {}) {
-  const normalize = value => String(value ?? '').normalize('NFKD').replace(/[\u064B-\u065F\u0670]/g, '').replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي').replace(/[^\u0600-\u06FFa-z0-9]+/g, ' ').toLowerCase().trim();
-  const key = String(record.legacyKey || '').trim();
-  const name = [record.name, record.fullName, record.displayName, record.email].filter(Boolean).join(' ');
-  const normalized = normalize(name);
-  return key === 'zad-fatma-ashraf' || normalized.includes('فاطمه اشرف') || normalized.includes('fatma ashraf');
-}
-
 /* مزامنة المعلمين القدامى مرة واحدة بدون استبدال أي بيانات موجودة */
 async function ensureLegacyTeachers() {
   const legacyTeachers = [
@@ -3518,59 +3509,27 @@ async function ensureLegacyTeachers() {
       visible: true
     },
     {
-      legacyKey: 'zad-fatma-diaa',
-      name: 'الأستاذة فاطمة ضياء',
-      subject: 'اللغة الإنجليزية, المرحلة الثانوية, الثانوية العامة, البكالوريا',
-      role: 'مدرسة اللغة الإنجليزية للمرحلة الثانوية (عام وبكالوريا)',
-      image: '../images/fatma-diaa-ad.webp',
-      bio: 'شرح مناهج اللغة الإنجليزية للمرحلة الثانوية، للثانوية العامة والبكالوريا، مع شرح مبسط ومراجعات وتدريبات ومتابعة مستمرة.',
-      advertisement: true,
-      firstLessonFree: true,
-      bookingSection: 'اللغة الإنجليزية',
-      bookingSubject: 'اللغة الإنجليزية',
+      legacyKey: 'zad-fatma-ashraf',
+      name: 'الأستاذة فاطمة أشرف',
+      subject: 'العلوم, المرحلة الإعدادية',
+      role: 'مدرسة مادة العلوم للمرحلة الإعدادية',
+      image: '../images/fatma-ashraf.webp',
+      bio: 'شرح مبسط لمادة العلوم، تأسيس قوي ومتابعة مستمرة للطلاب.',
       visible: true
-    },
+    }
   ];
 
   const snap = await getDocs(collection(db, 'teachers'));
-  const retiredTeacherDocs = snap.docs.filter(item => isRetiredFatmaAshrafRecord(item.data() || {}));
-  if (retiredTeacherDocs.length) {
-    await Promise.all(retiredTeacherDocs.map(item => deleteDoc(item.ref)));
-  }
-  const remainingTeacherDocs = snap.docs.filter(item => !isRetiredFatmaAshrafRecord(item.data() || {}));
-
-  // تعطيل أي حساب معلم مطابق للاسم القديم حتى لا يستطيع فتح لوحة المعلم بعد إزالته.
-  const usersSnap = await getDocs(collection(db, 'users'));
-  const retiredTeacherUsers = usersSnap.docs.filter(item => {
-    const data = item.data() || {};
-    return data.role === 'teacher' && isRetiredFatmaAshrafRecord(data);
-  });
-  await Promise.all(retiredTeacherUsers.filter(item => (item.data() || {}).status !== 'disabled').map(item =>
-    updateDoc(item.ref, { status: 'disabled', removedFromTeachingTeam: true, updatedAt: serverTimestamp() })
-  ));
-
   const existingDocs = new Map(
-    remainingTeacherDocs
+    snap.docs
       .map(d => [d.data()?.legacyKey, d])
       .filter(([key]) => !!key)
   );
 
   await Promise.all(legacyTeachers.map(t => {
     const existingDoc = existingDocs.get(t.legacyKey);
-    const sameNameDoc = remainingTeacherDocs.find(d => (d.data()?.name || '').trim() === t.name);
-    // الإعلان الجديد لفاطمة ضياء يُحدّث صورته وظهوره حتى لو كان له سجل قديم.
-    if (t.legacyKey === 'zad-fatma-diaa' && (existingDoc || sameNameDoc)) {
-      const target = existingDoc || sameNameDoc;
-      const { legacyKey, ...data } = t;
-      return setDoc(doc(db, 'teachers', target.id), {
-        ...data,
-        legacyKey,
-        visible: true,
-        updatedAt: serverTimestamp()
-      }, { merge: true });
-    }
-    if (t.legacyKey.startsWith('zad-') && (existingDoc || sameNameDoc)) {
-      return Promise.resolve(); // Keep other admin edits and prevent duplicate teachers.
+    if (t.legacyKey.startsWith('zad-') && (existingDoc || snap.docs.some(d => (d.data()?.name || '').trim() === t.name))) {
+      return Promise.resolve(); // Keep admin edits and prevent duplicate teachers.
     }
     const { legacyKey, ...data } = t;
     return setDoc(doc(db, 'teachers', existingDoc?.id || legacyKey), {
@@ -3636,7 +3595,7 @@ async function loadContent() {
     }
 
 
-    snap.docs.filter(item => !(activeContentType === 'teachers' && isRetiredFatmaAshrafRecord(item.data() || {}))).forEach(
+    snap.forEach(
       item => {
 
         const data =
@@ -4810,7 +4769,7 @@ async function syncAutomaticHomeStats() {
     const teacherKeys = new Set([...legacyKeys].map(key => `legacy:${key}`));
     teachersSnap.docs.forEach(item => {
       const teacher = item.data() || {};
-      if (teacher.visible === false || isRetiredFatmaAshrafRecord(teacher)) return;
+      if (teacher.visible === false) return;
       if (teacher.legacyKey && legacyKeys.has(String(teacher.legacyKey))) {
         teacherKeys.add(`legacy:${String(teacher.legacyKey)}`);
       } else {
@@ -4875,15 +4834,15 @@ guard(
   'admin',
   async () => {
 
+    await loadUsers();
+
+    await loadLoginLogs();
+
     try {
       await ensureLegacyTeachers();
     } catch (error) {
       console.error('Initial legacy teachers sync error:', error);
     }
-
-    await loadUsers();
-
-    await loadLoginLogs();
 
     await loadContent();
 
