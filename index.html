@@ -1323,7 +1323,7 @@ function reply(q){const s=norm(q);
 if(/كتاب|كتب|ملزمه|مذكره|ملخص|المرشد|المعاصر|سلاح|الامتحان|المكتبه/.test(s)&&!isStudyQuestion(q)){
 const desiredGrade=gradeOf(q),desiredSubject=subjectOf(q);
 const scored=books.map(b=>({b,score:scoreBook(q,b)})).filter(o=>o.score>= (desiredGrade||desiredSubject?8:4)).sort((a,b)=>b.score-a.score).slice(0,5);
-if(scored.length)return {text:'لقيت الكتب دي الأقرب لطلبك حسب الصف والمادة، اتأكد من اسم الكتاب قبل فتحه:',links:scored.map(o=>({title:o.b.title,url:o.b.url})).concat([{title:'تصفح المكتبة كاملة',url:'sections/library.html'}])};
+if(scored.length)return {text:'لقيت العناوين دي في المكتبة: '+scored.map(o=>o.b.title).join('، ')+' . افتح المكتبة بعد تسجيل الدخول واختَر الكتاب المطلوب.',links:[{title:'فتح المكتبة بعد تسجيل الدخول',url:'sections/library.html'}]};
 return {text:'ملقتش كتابًا مطابقًا للصف والمادة المطلوبين في الفهرس الحالي. تقدر تبحث بنفسك في المكتبة أو تبعت اسم الكتاب للإدارة.',links:[{title:'فتح المكتبة',url:'sections/library.html'}]};}
 const match=menu.find(item=>item.keys.some(k=>s.includes(k)));if(match){let text='تقدر توصل إلى «'+match.title+'» من الرابط ده.';if(match.title==='حجز حصة')text='افتح صفحة الحجز وحدد المجال والمادة وبيانات الحصة، ثم أرسل الطلب. الموعد لا يصبح مؤكدًا إلا بعد اعتماد الإدارة.';if(match.title==='إنشاء حساب')text='افتح صفحة التسجيل وسجّل بياناتك لإنشاء حساب مجانًا.';if(match.title==='تسجيل الدخول')text='افتح صفحة تسجيل الدخول. لو نسيت كلمة المرور، استخدم خيارات الاستعادة المتاحة بالصفحة.';return {text,links:[match]}}
 return {text:'أقدر أساعدك تحجز حصة، تسجل حساب، تلاقي كتاب موجود بالمكتبة أو توصل لقسم من المنصة. اكتب مثلًا: «عاوز كتاب المرشد نحو تانية ثانوي».',links:[menu[0],menu[3],menu[1]]};}

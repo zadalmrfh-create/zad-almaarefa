@@ -1,12 +1,8 @@
 <!doctype html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>حل الامتحان | زاد المعرفة</title><link rel="icon" href="../../images/logo.png"><link rel="stylesheet" href="code-exams.css"><link rel="stylesheet" href="../../assets/translation.css?v=20261016-globe2"><script src="../../assets/translation.js?v=20261016-globe2"></script><script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit" async></script>
-<style id="zad-exam-auth-style">
-html:not(.zad-exam-auth-ok) body > * { visibility: hidden !important; }
-html:not(.zad-exam-auth-ok) body::before {
-  content: "🔐 جارٍ التحقق من تسجيل الدخول...";
-  position: fixed; inset: 0; z-index: 2147483647;
-  display: flex; align-items: center; justify-content: center;
-  background: #101c33; color: #e8c96d;
-  font: bold 18px Tahoma, Arial, sans-serif; text-align:center; padding:20px;
-}
-</style>
+
+
+<!-- بوابة تسجيل الدخول الموحدة لجميع صفحات المحتوى التعليمي -->
+<script defer src="../../assets/content-auth-fallback.js"></script>
+<link rel="stylesheet" href="../../assets/content-auth-guard.css?v=20261029">
+<script type="module" src="../../assets/content-auth-guard.js"></script>
 </head><body><main class="wrap"><header><a href="code-exams.html">← جميع الامتحانات</a><h1 id="title">جارٍ تحميل الامتحان...</h1><p id="details"></p></header><p id="status" role="status"></p><iframe id="examFrame" title="الامتحان" sandbox="allow-scripts" referrerpolicy="no-referrer" hidden></iframe><section class="exam-result-panel" id="resultPanel" hidden><h2>نتيجتك في زاد المعرفة</h2><div id="resultInfo"></div><div class="exam-result-actions"><button id="printAnswers" type="button">🖨️ طباعة تقرير النتيجة والإجابات</button><a href="../../dashboard/student/index.html">🎓 لوحة الطالب والنتائج</a></div><p id="saveStatus"></p></section><p class="note">يلزم تسجيل الدخول لحفظ النتيجة. الشهادات تصدر من الإدارة فقط ولا يستطيع الطالب إصدارها أو تنزيلها. نتيجة الامتحان المُرسل بالكود تُسجّل تلقائيًا متى كان الكود يعرض درجة قابلة للتعرّف؛ وهي نتيجة آلية غير معتمدة من الإدارة.</p></main><script type="module" src="code-exam-runner.js"></script></body></html>

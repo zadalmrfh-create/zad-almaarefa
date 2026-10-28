@@ -1,0 +1,34 @@
+/* يتم تطبيق الإخفاء قبل عرض المحتوى، ثم يُزال فقط بعد تأكيد Firebase Auth. */
+html:not(.zad-content-auth-ok) body > :not(#zad-content-auth-screen) { visibility: hidden !important; }
+html:not(.zad-content-auth-ok) body::before {
+  content: '🔐 جارٍ التحقق من تسجيل الدخول...';
+  display: flex; position: fixed; inset: 0; z-index: 2147483645;
+  align-items: center; justify-content: center; padding: 20px;
+  background: #0c1528; color: #f2cf68; text-align: center;
+  font: bold 18px Tahoma, Arial, sans-serif;
+}
+html.zad-content-auth-blocked body::before { display: none; }
+#zad-content-auth-screen[hidden] { display: none !important; }
+#zad-content-auth-screen {
+  visibility: visible !important; position: fixed !important; inset: 0 !important;
+  z-index: 2147483646 !important; display: flex !important;
+  align-items: center !important; justify-content: center !important;
+  overflow-y: auto !important; padding: 22px !important;
+  background: #0c1528 !important; direction: rtl !important;
+  font-family: Tahoma, 'Cairo', Arial, sans-serif !important;
+  color: #fff !important; opacity: 1 !important;
+}
+#zad-content-auth-screen * { box-sizing: border-box; }
+#zad-content-auth-screen .zad-auth-card {
+  width: min(100%, 520px); padding: 34px 24px; border-radius: 22px;
+  border: 1px solid #b99637; background: #15233a;
+  box-shadow: 0 20px 60px #0005; text-align: center;
+}
+#zad-content-auth-screen .zad-auth-icon { font-size: 52px; margin-bottom: 6px; }
+#zad-content-auth-screen h1 { color: #f0c040; font-size: 25px; line-height: 1.5; margin: 9px 0; font-weight: 800; }
+#zad-content-auth-screen p { color: #d4deec; line-height: 2; font-size: 15px; margin: 0 0 22px; }
+#zad-content-auth-screen .zad-auth-actions { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; }
+#zad-content-auth-screen .zad-auth-actions a { min-width: 148px; display: inline-block; padding: 12px 20px; border-radius: 12px; font-weight: bold; text-decoration: none; font-size: 15px; }
+#zad-content-auth-screen .zad-auth-primary { color: #111d31; background: #f0c040; }
+#zad-content-auth-screen .zad-auth-secondary { color: #f0c040; border: 1px solid #9c8132; background: transparent; }
+#zad-content-auth-screen .zad-auth-home { display: inline-block; margin-top: 19px; color: #e4eafa; text-decoration: underline; }

@@ -93,6 +93,11 @@ function clearMsg() {
 
 
 
+// عند الدخول من صفحة تعليمية محمية، وضّح للمستخدم سبب طلب الدخول.
+if (new URLSearchParams(window.location.search).get('required') === '1') {
+  msg('يجب تسجيل الدخول أولًا للوصول إلى المكتبة والكتب والملخصات والامتحانات.', 'info');
+}
+
 /* =========================================================
    Firebase
 ========================================================= */
@@ -100,29 +105,23 @@ function clearMsg() {
 
 async function redirectAfterLogin(user) {
   const target = sessionStorage.getItem('redirectAfterLogin');
-  // إعادة الطالب إلى نفس الامتحان بعد تسجيل الدخول.
+  // عودة المستخدم لنفس صفحة المكتبة أو الكتاب أو الملخصات أو الامتحانات بعد تسجيل الدخول.
+  // المسار يُقبل فقط إذا كان من صفحات المحتوى الداخلي على نفس الموقع.
   if (target) {
     try {
-      const examUrl = new URL(target, window.location.origin);
-      if (examUrl.origin === window.location.origin && /\/sections\/tests\/(?:index|code-exams|code-exam|nahw|balagha|tawheed)\.html$/.test(examUrl.pathname)) {
+      const original = new URL(target, window.location.origin);
+      const isProtectedPage = /\/sections\/(?:library|book)\.html$/i.test(original.pathname)
+        || /\/sections\/(?:Arabic|Azhar|Quran|Sharia|Tazkea|tests)\/[^/]+\.html$/i.test(original.pathname);
+      if (target.startsWith('/') && !target.startsWith('//')
+          && original.origin === window.location.origin && isProtectedPage) {
         sessionStorage.removeItem('redirectAfterLogin');
-        window.location.replace(examUrl.href);
+        window.location.replace(original.href);
         return;
       }
     } catch (error) {
-      console.warn('رابط العودة إلى الامتحان غير صالح:', error);
+      console.warn('تعذر استعادة الصفحة المطلوبة:', error);
     }
-  }
-  if (target && target.includes('/sections/library.html')) {
     sessionStorage.removeItem('redirectAfterLogin');
-    window.location.replace('../sections/library.html');
-    return;
-  }
-
-  if (target && target.includes('/sections/Azhar/azhar.html')) {
-    sessionStorage.removeItem('redirectAfterLogin');
-    window.location.replace('../sections/Azhar/azhar.html');
-    return;
   }
 
   // الأدمن الأساسي دائمًا يذهب إلى لوحة الإدارة

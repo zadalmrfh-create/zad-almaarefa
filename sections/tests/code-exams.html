@@ -1,14 +1,10 @@
 <!doctype html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>الامتحانات الإلكترونية | زاد المعرفة</title><link rel="icon" href="../../images/logo.png"><link rel="stylesheet" href="code-exams.css"><link rel="stylesheet" href="../../assets/translation.css?v=20261016-globe2"><script src="../../assets/translation.js?v=20261016-globe2"></script><script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit" async></script>
-<style id="zad-exam-auth-style">
-html:not(.zad-exam-auth-ok) body > * { visibility: hidden !important; }
-html:not(.zad-exam-auth-ok) body::before {
-  content: "🔐 جارٍ التحقق من تسجيل الدخول...";
-  position: fixed; inset: 0; z-index: 2147483647;
-  display: flex; align-items: center; justify-content: center;
-  background: #101c33; color: #e8c96d;
-  font: bold 18px Tahoma, Arial, sans-serif; text-align:center; padding:20px;
-}
-</style>
+
+
+<!-- بوابة تسجيل الدخول الموحدة لجميع صفحات المحتوى التعليمي -->
+<script defer src="../../assets/content-auth-fallback.js"></script>
+<link rel="stylesheet" href="../../assets/content-auth-guard.css?v=20261029">
+<script type="module" src="../../assets/content-auth-guard.js"></script>
 </head><body><main class="wrap"><header><a href="../library.html">← المكتبة</a><img src="../../images/logo.png" alt="زاد المعرفة"><h1>📝 الامتحانات الإلكترونية</h1><p>اختَر امتحانك وابدأ الحل</p></header><div class="filters"><input id="search" placeholder="ابحث عن امتحان أو مادة أو صف..." aria-label="بحث الامتحانات"><select id="stage"><option value="">كل المراحل</option><option value="prep">الإعدادية</option><option value="secondary">الثانوية الأزهرية</option><option value="general">عام</option></select></div><p id="status" role="status">جارٍ تحميل الامتحانات...</p><h2 style="margin:30px 0 12px;color:#edd07a">📚 امتحانات الوحدة الأولى — الصف الثاني الثانوي والبكالوريا</h2><p class="note">9 امتحانات مستقلة، في كل امتحان 30 سؤالًا: اختر، صح وغلط، أكمل، ومقالي. الإجابات المقالية تراجعها الإدارة.</p><section class="grid" id="unitOneExams" aria-label="امتحانات الوحدة الأولى"></section><h2 style="margin-top:28px;color:#edd07a">الامتحانات الأخرى المنشورة</h2><section class="grid" id="exams"></section></main><script type="module">
 import {db} from '../../firebase-config.js';import {collection,query,where,onSnapshot} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';import {examAuthReady} from './exam-auth-gate.js';const box=document.getElementById('exams'),status=document.getElementById('status');let items=[];const names={prep:'الإعدادية',secondary:'الثانوية الأزهرية',general:'عام'};function render(){const term=document.getElementById('search').value.trim().toLowerCase(),stage=document.getElementById('stage').value;box.replaceChildren();const filtered=items.filter(x=>(!stage||x.stage===stage)&&[x.title,x.subject,x.grade].some(v=>String(v||'').toLowerCase().includes(term)));status.textContent=filtered.length?'الامتحانات المتاحة: '+filtered.length:'لا توجد امتحانات مطابقة حاليًا.';filtered.forEach(x=>{const card=document.createElement('article');card.className='card';const h=document.createElement('h2');h.textContent=x.title;const p=document.createElement('p');p.textContent=[names[x.stage]||'عام',x.grade,x.subject].filter(Boolean).join(' • ');const a=document.createElement('a');a.href='code-exam.html?id='+encodeURIComponent(x.id);a.textContent='ابدأ الامتحان ←';card.append(h,p,a);box.append(card)})}await examAuthReady;onSnapshot(query(collection(db,'codeExams'),where('published','==',true)),s=>{items=s.docs.map(d=>({id:d.id,...d.data()}));render()},e=>{status.textContent='تعذر تحميل الامتحانات: '+e.message});document.getElementById('search').addEventListener('input',render);document.getElementById('stage').addEventListener('change',render);
 </script><script type="module" src="exam-auth-gate.js"></script>

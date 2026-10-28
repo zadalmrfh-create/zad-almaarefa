@@ -195,18 +195,22 @@ async function saveUserProfile(user, role, provider, extraData = {}) {
   return true;
 }
 function goHome() {
-  // إذا جاء الطالب للتسجيل من امتحان، نعيده إليه بعد نجاح إنشاء الحساب.
+  // بعد إنشاء حساب طالب، ارجع إلى نفس الصفحة الدراسية المطلوبة.
   const target = sessionStorage.getItem('redirectAfterLogin');
   if (target && getRole() === 'student') {
     try {
-      const examUrl = new URL(target, window.location.origin);
-      if (examUrl.origin === window.location.origin && /\/sections\/tests\/(?:index|code-exams|code-exam|nahw|balagha|tawheed)\.html$/.test(examUrl.pathname)) {
+      const destination = new URL(target, window.location.origin);
+      const isAllowed = /\/sections\/(?:library|book)\.html$/i.test(destination.pathname)
+        || /\/sections\/(?:Arabic|Azhar|Quran|Sharia|Tazkea|tests)\/[^/]+\.html$/i.test(destination.pathname);
+      if (target.startsWith('/') && !target.startsWith('//')
+          && destination.origin === window.location.origin && isAllowed) {
         sessionStorage.removeItem('redirectAfterLogin');
-        window.location.replace(examUrl.href);
+        window.location.replace(destination.href);
         return;
       }
-    } catch (error) { console.warn('تعذر استعادة رابط الامتحان:', error); }
+    } catch (error) { console.warn('تعذر فتح الصفحة المطلوبة بعد إنشاء الحساب:', error); }
   }
+  if (target) sessionStorage.removeItem('redirectAfterLogin');
   window.location.replace('../index.html');
 }
 
