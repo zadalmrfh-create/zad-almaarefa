@@ -1544,7 +1544,39 @@ modal.addEventListener(
 const tbody =
   $('users');
 const usersCards = $('usersCards');
+const refreshUsersButton = $('refresh');
 let adminUidSet = new Set();
+let usersLoadInProgress = false;
+
+// انتظر استعادة جلسة Firebase قبل قراءة بيانات المستخدمين.
+async function waitForSignedInUser(timeoutMs = 10000) {
+  if (auth.currentUser) return auth.currentUser;
+  return await new Promise((resolve, reject) => {
+    let unsubscribe = () => {};
+    const timer = setTimeout(() => {
+      unsubscribe();
+      reject(new Error('انتهت مهلة انتظار تسجيل الدخول إلى Firebase. أعد تسجيل الدخول ثم حاول مرة أخرى.'));
+    }, timeoutMs);
+    unsubscribe = onAuthStateChanged(auth, user => {
+      if (user) {
+        clearTimeout(timer);
+        unsubscribe();
+        resolve(user);
+      }
+    }, error => {
+      clearTimeout(timer);
+      unsubscribe();
+      reject(error);
+    });
+  });
+}
+
+function getDocsWithTimeout(reference, timeoutMs = 15000) {
+  return Promise.race([
+    getDocs(reference),
+    new Promise((_, reject) => setTimeout(() => reject(new Error('استغرق الاتصال بقاعدة البيانات وقتًا أطول من المتوقع. تحقق من الإنترنت وصلاحيات Firestore ثم اضغط تحديث.')), timeoutMs))
+  ]);
+}
 
 
 window.applyAdminUserFilters = function applyAdminUserFilters() {
@@ -1751,6 +1783,10 @@ function bindUserEntryActions(root, { user, userDoc, name, isTeacher, isPending,
 }
 
 async function loadUsers() {
+  if (!tbody) return;
+  if (usersLoadInProgress) return;
+  usersLoadInProgress = true;
+  if (refreshUsersButton) { refreshUsersButton.disabled = true; refreshUsersButton.textContent = '⏳ جارٍ التحديث…'; }
 
   tbody.innerHTML = `
 
@@ -1766,7 +1802,8 @@ async function loadUsers() {
 
   try {
 
-    const snap = await getDocs(collection(db, 'users'));
+    await waitForSignedInUser();
+    const snap = await getDocsWithTimeout(collection(db, 'users'));
     adminUidSet = new Set(snap.docs.filter(d => d.data().role === 'admin').map(d => d.id));
 
 
@@ -1972,13 +2009,26 @@ async function loadUsers() {
       </tr>
 
     `;
-    if (usersCards) usersCards.innerHTML = `<div class="user-mobile-empty">❌ تعذر تحميل المستخدمين.</div>`;
+    const errorMessage = String(error.code || error.message || 'خطأ غير معروف');
+    if (usersCards) usersCards.innerHTML = `<div class="user-mobile-empty">❌ تعذر تحميل المستخدمين: ${escapeHtml(errorMessage)}<br><button class="btn gold" type="button" id="retryUsersLoad">إعادة المحاولة</button></div>`;
+    const resultCount = $('enhUsersResultCount');
+    if (resultCount) resultCount.textContent = 'تعذر تحميل المستخدمين — اضغط تحديث لإعادة المحاولة.';
 
+  } finally {
+    usersLoadInProgress = false;
+    if (refreshUsersButton) { refreshUsersButton.disabled = false; refreshUsersButton.textContent = '🔄 تحديث'; }
   }
 
 }
 
+// زر تحديث واضح، مع إعادة المحاولة من رسالة الخطأ على الهاتف.
+refreshUsersButton?.addEventListener('click', loadUsers);
+usersCards?.addEventListener('click', event => {
+  if (event.target.closest('#retryUsersLoad')) loadUsers();
+});
 
+// تحميل قائمة المستخدمين عند فتح لوحة الإدارة
+loadUsers();
 
 /* =====================================================
    LIVE GOOGLE MEET LESSONS
@@ -3508,3 +3558,196 @@ async function ensureLegacyTeachers() {
       bio: 'تأسيس قوي في اللغة الإنجليزية، شرح مبسط، متابعة مستمرة وتدريب على الأسئلة.',
       visible: true
     }
+  ];
+  // الاحتفاظ بالقائمة القديمة للرجوع إليها دون الكتابة فوق بيانات المعلمين الموجودة.
+  return legacyTeachers;
+}
+
+/* إصلاح استكمال دوال لوحة الإدارة التي انقطع ملفها. */
+const bookingRows = $('bookingRows');
+const bookingStatuses = ['جديد', 'قيد المراجعة', 'تم التواصل', 'تم الحجز', 'مكتمل', 'ملغي'];
+let bookingsCache = new Map();
+async function loadBookings() {
+  if (!bookingRows) return;
+  bookingRows.innerHTML = '<tr><td colspan="8">جارٍ تحميل الحجوزات…</td></tr>';
+  try {
+    const snap = await getDocsWithTimeout(collection(db, 'bookings'));
+    const rows = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    rows.sort((a, b) => (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0));
+    bookingsCache = new Map(rows.map(row => [row.id, row]));
+    bookingRows.innerHTML = rows.length ? rows.map(item => `
+      <tr>
+        <td>${escapeHtml(item.fullName || item.studentName || 'طالب')}<br><small>${escapeHtml(formatDate(item.createdAt))}</small></td>
+        <td>${escapeHtml(item.phone || '—')}<br>${escapeHtml(item.email || '—')}</td>
+        <td>${escapeHtml([item.educationType, item.stage, item.grade].filter(Boolean).join(' — ') || '—')}</td>
+        <td>${escapeHtml(item.subject || '—')}</td>
+        <td>${escapeHtml([item.preferredDay1, item.preferredDay2].filter(Boolean).join(' / ') || '—')}</td>
+        <td>${escapeHtml(item.teacherName || '—')}</td>
+        <td><select class="booking-status-select" data-id="${escapeHtml(item.id)}" aria-label="حالة الحجز">${bookingStatuses.map(status => `<option value="${status}" ${status === (item.status || 'جديد') ? 'selected' : ''}>${status}</option>`).join('')}</select></td>
+        <td><button type="button" class="btn gold booking-save-btn" data-id="${escapeHtml(item.id)}">حفظ</button> <button type="button" class="btn booking-report-btn" data-booking-report-id="${escapeHtml(item.id)}">تقرير</button></td>
+      </tr>
+    `).join('') : '<tr><td colspan="8">لا توجد طلبات حجز حتى الآن.</td></tr>';
+  } catch (error) {
+    console.error('تعذر تحميل طلبات الحجز:', error);
+    bookingRows.innerHTML = `<tr><td colspan="8">تعذر تحميل الحجوزات: ${escapeHtml(error.code || error.message)}</td></tr>`;
+  }
+}
+bookingRows?.addEventListener('click', async event => {
+  const button = event.target.closest('.booking-save-btn');
+  if (!button) return;
+  const booking = bookingsCache.get(button.dataset.id);
+  const status = button.closest('tr')?.querySelector('.booking-status-select')?.value;
+  if (!booking || !bookingStatuses.includes(status)) return;
+  const previous = booking.status || 'جديد';
+  if (previous === status) return;
+  button.disabled = true;
+  try {
+    await updateDoc(doc(db, 'bookings', booking.id), { status, updatedAt: serverTimestamp() });
+    try {
+      await addDoc(collection(db, 'bookingStatusHistory'), {
+        bookingId: booking.id, oldStatus: previous, newStatus: status, status,
+        changedBy: auth.currentUser?.uid || null, createdAt: serverTimestamp()
+      });
+    } catch (historyError) { console.warn('تعذر تسجيل تاريخ تغيير الحجز:', historyError); }
+    await loadBookings();
+  } catch (error) {
+    console.error('تعذر تحديث حالة الحجز:', error);
+    alert('تعذر حفظ الحجز: ' + (error.code || error.message));
+    button.disabled = false;
+  }
+});
+
+async function syncAutomaticHomeStats() {
+  // بيانات الإحصائيات يتم تحميلها بواسطة ملف admin-enhancements.js.
+  window.dispatchEvent(new Event('zad:admin-data-changed'));
+}
+$('syncStudentCounter')?.addEventListener('click', async () => {
+  const button = $('syncStudentCounter');
+  const status = $('studentCounterSyncStatus');
+  button.disabled = true;
+  status.textContent = 'جارٍ حساب الطلاب من قاعدة البيانات…';
+  try {
+    await waitForSignedInUser();
+    const snap = await getDocsWithTimeout(collection(db, 'users'));
+    const total = snap.docs.filter(d => d.data().role === 'student').length;
+    await setDoc(doc(db, 'publicStats', 'students'), { total, updatedAt: serverTimestamp() }, { merge: true });
+    status.textContent = `✅ تم تحديث العداد: ${total.toLocaleString('ar-EG')} طالب`;
+  } catch (error) {
+    console.error('خطأ مزامنة عداد الطلاب:', error);
+    status.textContent = '❌ تعذر تحديث عداد الطلاب: ' + (error.code || error.message);
+  } finally { button.disabled = false; }
+});
+
+// إدارة محتوى المنصة: قراءة وإضافة وتعديل وحذف دون المساس بالمحتوى القديم.
+function getContentTitle(row) { return row.title || row.name || row.subject || row.id || 'عنصر'; }
+async function loadContent() {
+  if (!contentRows) return;
+  contentRows.innerHTML = '<tr><td colspan="5">جارٍ تحميل المحتوى…</td></tr>';
+  try {
+    const snap = await getDocsWithTimeout(collection(db, activeContentType));
+    const items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    contentRows.innerHTML = items.length ? items.map(item => `
+      <tr>
+        <td>${escapeHtml(contentTypes[activeContentType])}</td>
+        <td>${escapeHtml(getContentTitle(item))}</td>
+        <td>${escapeHtml(item.description || item.bio || item.subject || item.grade || '—')}</td>
+        <td>${item.visible === false ? 'مخفي' : 'ظاهر'}</td>
+        <td><button type="button" class="btn" data-content-edit="${escapeHtml(item.id)}">تعديل</button> <button type="button" class="btn danger" data-content-delete="${escapeHtml(item.id)}">حذف</button></td>
+      </tr>
+    `).join('') : '<tr><td colspan="5">لا توجد عناصر في هذا القسم حتى الآن.</td></tr>';
+    contentRows._contentItems = new Map(items.map(item => [item.id, item]));
+  } catch (error) {
+    console.error('تعذر تحميل المحتوى:', error);
+    contentRows.innerHTML = `<tr><td colspan="5">تعذر تحميل المحتوى: ${escapeHtml(error.code || error.message)}</td></tr>`;
+  }
+}
+function switchContentTab(tab) {
+  if (!(tab in contentTypes)) return;
+  activeContentType = tab;
+  editingContentId = null;
+  $('contentType').value = tab;
+  $('contentId').value = '';
+  $('contentVisible').checked = true;
+  document.querySelectorAll('[data-content-tab]').forEach(button => button.classList.toggle('gold', button.dataset.contentTab === tab));
+  renderContentFields();
+  loadContent();
+}
+document.querySelectorAll('[data-content-tab]').forEach(button => button.addEventListener('click', () => switchContentTab(button.dataset.contentTab)));
+$('contentCancel')?.addEventListener('click', () => switchContentTab(activeContentType));
+$('contentForm')?.addEventListener('submit', async event => {
+  event.preventDefault();
+  const submit = event.currentTarget.querySelector('[type="submit"]');
+  const data = {};
+  for (const [key] of fieldSets[activeContentType] || []) data[key] = contentValue(key);
+  data.visible = $('contentVisible').checked;
+  data.updatedAt = serverTimestamp();
+  submit.disabled = true;
+  try {
+    if (editingContentId) {
+      await updateDoc(doc(db, activeContentType, editingContentId), data);
+    } else {
+      await addDoc(collection(db, activeContentType), { ...data, createdAt: serverTimestamp() });
+    }
+    setContentStatus('✅ تم حفظ المحتوى بنجاح.');
+    switchContentTab(activeContentType);
+  } catch (error) {
+    console.error('تعذر حفظ المحتوى:', error);
+    setContentStatus('❌ تعذر الحفظ: ' + (error.code || error.message), true);
+  } finally { submit.disabled = false; }
+});
+contentRows?.addEventListener('click', async event => {
+  const edit = event.target.closest('[data-content-edit]');
+  const del = event.target.closest('[data-content-delete]');
+  const id = edit?.dataset.contentEdit || del?.dataset.contentDelete;
+  if (!id) return;
+  const item = contentRows._contentItems?.get(id);
+  if (!item) return;
+  if (edit) {
+    editingContentId = id;
+    fillContentForm(item);
+    $('contentId').value = id;
+    $('contentForm').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  } else if (del && confirm('هل تريد حذف هذا العنصر نهائيًا؟')) {
+    del.disabled = true;
+    try {
+      await deleteDoc(doc(db, activeContentType, id));
+      await loadContent();
+    } catch (error) {
+      console.error('خطأ حذف المحتوى:', error);
+      alert('تعذر حذف العنصر: ' + (error.code || error.message));
+      del.disabled = false;
+    }
+  }
+});
+
+$('refreshNotifications')?.addEventListener('click', loadNotificationHistory);
+$('logout')?.addEventListener('click', async () => {
+  try { await signOut(auth); location.replace('../../login/index.html'); }
+  catch (error) { alert('تعذر تسجيل الخروج: ' + (error.message || error)); }
+});
+
+// تشغيل باقي الواجهات بعد التحقق من تسجيل الدخول.
+guard('admin', async () => {
+  switchContentTab('events');
+  await Promise.allSettled([
+    loadBookings(),
+    loadLoginLogs(),
+    loadNotificationHistory(),
+    loadLibraryDownloads()
+  ]);
+});
+</script>
+<!-- ملفات مستقلة كانت غير مُحمّلة بسبب انقطاع نهاية الصفحة -->
+<script type="module" src="admin-activity-alerts.js"></script>
+<script type="module" src="admin-enhancements.js"></script>
+<script type="module" src="admin-workspace.js"></script>
+<script type="module" src="attendance-admin.js"></script>
+<script type="module" src="manual-students-admin.js"></script>
+<script type="module" src="quiz-center-admin.js"></script>
+<script type="module" src="reports-admin.js"></script>
+<script type="module" src="student-comprehensive-report.js"></script>
+<script type="module" src="exam-answer-report.js"></script>
+<script type="module" src="vodafone-payments-admin.js"></script>
+<script type="module" src="../admin-switcher.js"></script>
+</body>
+</html>
