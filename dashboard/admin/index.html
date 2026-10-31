@@ -1096,6 +1096,23 @@ onAuthStateChanged(auth, async (user) => {
     </section>
 
 
+
+    <section class="card" id="librarySubscriptionsAdminPanel" dir="rtl">
+      <h2>🔐 إدارة اشتراكات المكتبتين</h2>
+      <p>الاشتراك الواحد يفتح المكتبة الرئيسية ومكتبة التعليم الأزهري. تصفح أسماء الكتب مجاني، وفتح الملفات يحتاج اعتمادًا من الإدارة.</p>
+      <div class="actions" style="align-items:center;flex-wrap:wrap">
+        <label>سعر الاشتراك بالجنيه (قابل للتعديل) <input type="number" id="libraryMembershipPrice" min="1" max="1000000" step="0.01" value="200.00" style="max-width:170px" placeholder="قيمة الاشتراك" /></label>
+        <button type="button" id="libraryMembershipSavePrice" class="btn gold">💾 حفظ سعر الاشتراك</button>
+        <button type="button" id="libraryMembershipReload" class="btn">🔄 تحديث الطلبات والطلاب</button>
+      </div>
+      <p id="libraryMembershipAdminMessage" role="status" aria-live="polite">جارٍ تحميل الاشتراكات...</p>
+      <h3>📨 طلبات دفع المكتبة</h3>
+      <div id="libraryMembershipRequests">جارٍ التحميل...</div>
+      <h3 style="margin-top:26px">👥 منح أو إلغاء الاشتراك لأي طالب</h3>
+      <input type="search" id="libraryMembershipSearch" placeholder="ابحث باسم الطالب أو البريد أو الهاتف" style="width:100%;padding:12px;margin-bottom:12px">
+      <div id="libraryMembershipUsers">جارٍ التحميل...</div>
+    </section>
+
     <section class="card zad-pay-card" id="zadVodafoneAdminPanel" dir="rtl">
       <h2>💳 إدارة تحويلات فودافون كاش</h2>
       <p>محفظة استقبال التحويلات: <b dir="ltr">01042239704</b>. راجع المبلغ والمرجع في محفظتك الفعلية قبل اعتماد الطلب. الموقع لا يتحقق تلقائيًا من التحويل.</p>
@@ -3748,6 +3765,7 @@ guard('admin', async () => {
 <script type="module" src="student-comprehensive-report.js"></script>
 <script type="module" src="exam-answer-report.js"></script>
 <script type="module" src="vodafone-payments-admin.js"></script>
+<script type="module" src="library-subscriptions-admin.js"></script>
 <script type="module" src="../admin-switcher.js"></script>
 </body>
 </html>

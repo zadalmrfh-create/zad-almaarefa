@@ -9,7 +9,7 @@
     {id:'users',label:'المستخدمون',icon:'👥',sections:['usersManagement']},
     {id:'bookings',label:'الحجوزات',icon:'📅',sections:['bookingsManagement']},
     {id:'exams',label:'الامتحانات',icon:'📝',sections:['codeExamsManagement','adminCertificatesSection','codeExamResultsSection','unitOneExamsAdmin']},
-    {id:'library',label:'المكتبة',icon:'📚',sections:['libraryDownloadTracking']},
+    {id:'library',label:'المكتبة',icon:'📚',sections:['librarySubscriptionsAdminPanel','libraryDownloadTracking']},
     {id:'lessons',label:'الحضور والغياب',icon:'✅',sections:['attendanceManagement']},
     {id:'payments',label:'المدفوعات',icon:'💳',sections:['zadVodafoneAdminPanel']},
     {id:'content',label:'المحتوى',icon:'⚙️',sections:['contentManagement']},

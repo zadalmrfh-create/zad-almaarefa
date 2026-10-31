@@ -110,7 +110,7 @@ async function redirectAfterLogin(user) {
   if (target) {
     try {
       const original = new URL(target, window.location.origin);
-      const isProtectedPage = /\/sections\/(?:library|book)\.html$/i.test(original.pathname)
+      const isProtectedPage = /\/sections\/(?:library|library-payment|book|book-access)\.html$/i.test(original.pathname)
         || /\/sections\/(?:Arabic|Azhar|Quran|Sharia|Tazkea|tests)\/[^/]+\.html$/i.test(original.pathname);
       if (target.startsWith('/') && !target.startsWith('//')
           && original.origin === window.location.origin && isProtectedPage) {

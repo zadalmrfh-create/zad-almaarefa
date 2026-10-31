@@ -122,6 +122,50 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    // Permission shared by both library interfaces. The UI must recheck on each open/download.
+    match /librarySubscriptions/{uid} {
+      allow get: if isOwner(uid) || isAdmin();
+      allow list: if isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /librarySettings/{id} {
+      allow get: if id == 'main';
+      allow list: if isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /libraryPaymentRequests/{id} {
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly([
+          'studentUid','studentEmail','amountPiastres','senderPhone',
+          'reference','note','status','createdAt'
+        ])
+        && request.resource.data.studentUid == request.auth.uid
+        && request.resource.data.studentEmail == (request.auth.token.email == null ? '' : request.auth.token.email)
+        && request.resource.data.amountPiastres is int
+        && request.resource.data.amountPiastres >= 100
+        && request.resource.data.amountPiastres <= 100000000
+        && request.resource.data.senderPhone is string
+        && request.resource.data.senderPhone.matches('^01[0-9]{9}$')
+        && request.resource.data.reference is string
+        && request.resource.data.reference.size() >= 4
+        && request.resource.data.reference.size() <= 100
+        && request.resource.data.note is string
+        && request.resource.data.note.size() <= 350
+        && request.resource.data.status == 'pending'
+        && request.resource.data.createdAt == request.time;
+      allow get, list: if isAdmin()
+        || (signedIn() && resource.data.studentUid == request.auth.uid);
+      allow update: if isAdmin()
+        && resource.data.status == 'pending'
+        && request.resource.data.status in ['approved','rejected']
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'status','reviewedAt','reviewedBy','adminNote'
+        ]) && request.resource.data.reviewedBy == request.auth.uid;
+      allow delete: if isAdmin();
+    }
+
     match /libraryBooks/{id} {
       allow read: if signedIn();
       allow create, update, delete: if isAdmin();

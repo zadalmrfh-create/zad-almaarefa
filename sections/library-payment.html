@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>اشتراك المكتبتين — زاد المعرفة</title><link rel="icon" href="../images/logo.png">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/library-payment.css"></head><body>
+<main class="shell">
+<header class="head"><img src="../images/logo.png" alt="شعار زاد المعرفة"><div><h1>📚 اشتراك المكتبتين</h1><p>اشتراك واحد للمكتبة العامة ومكتبة التعليم الأزهري</p></div></header>
+<a class="back" href="library.html">← رجوع إلى تصفح الكتب المجاني</a>
+<section class="panel"><h2>🔒 فتح الكتب والملخصات</h2><p>تصفح أسماء الكتب متاح للجميع. فتح أو تنزيل الملفات يتطلب تسجيل الدخول ثم اعتماد اشتراكك من الإدارة بعد التحقق من السداد.</p>
+<div id="libPrice" class="price">قيمة اشتراك المكتبتين: 200 جنيه مصري</div>
+<div class="number">رقم محفظة فودافون كاش: <b dir="ltr">01042239704</b> <button type="button" id="copyNumber">نسخ الرقم</button></div>
+<p class="small">تأكد من رقم المحفظة واسم المستلم قبل التحويل. لا تشارك كلمة مرور المحفظة أو رمز التأكيد. إرسال طلب الدفع لا يفعّل الاشتراك تلقائيًا.</p>
+<div id="payAccessStatus" role="status">جارٍ التحقق من حسابك واشتراكك...</div></section>
+<section class="panel" id="libPayFormPanel" hidden><h2>📨 أرسل بيانات التحويل للمراجعة</h2><form id="libPaymentForm">
+<label>المبلغ المحوّل (جنيه مصري)<input name="amount" type="number" required min="1" max="1000000" step="0.01" inputmode="decimal" value="200.00" readonly></label>
+<label>رقم الهاتف الذي تم التحويل منه<input name="phone" type="tel" required maxlength="11" pattern="01[0-9]{9}" inputmode="tel" placeholder="01xxxxxxxxx"></label>
+<label>الرقم المرجعي لعملية التحويل<input name="reference" type="text" required minlength="4" maxlength="100" placeholder="الرقم الموجود في رسالة التحويل"></label>
+<label>ملاحظات (اختياري)<textarea name="note" maxlength="350" rows="2"></textarea></label>
+<button type="submit" id="libPaySubmit">إرسال الطلب للإدارة</button></form></section>
+<section class="panel"><h2>📋 حالة طلبات الاشتراك</h2><div id="libPaymentHistory">سجّل الدخول لعرض حالة طلباتك.</div></section>
+<footer>أكاديمية زاد المعرفة — الاشتراك لا يتفعّل إلا بموافقة الإدارة</footer>
+</main><script type="module" src="../assets/library-payment.js"></script></body></html>

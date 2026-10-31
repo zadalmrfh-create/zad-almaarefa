@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>فتح الملف — زاد المعرفة</title><link rel="icon" href="../images/logo.png">
+<style>
+*{box-sizing:border-box}body{margin:0;background:#0f172a;color:#f8fafc;font-family:Tahoma,Arial,sans-serif;min-height:100vh;display:grid;place-items:center;padding:20px}
+.card{background:#1e293b;border:1px solid #31415b;max-width:600px;width:100%;border-radius:20px;padding:30px;text-align:center;box-shadow:0 20px 55px #0004}
+img{width:85px;height:85px;object-fit:contain;border-radius:50%}h1{color:#f2c94c;font-size:24px}#bookName{color:#e5e7eb;font-size:17px;overflow-wrap:anywhere}
+#accessStatus{min-height:54px;line-height:1.9;font-size:16px;margin:20px 0}a{display:inline-flex;padding:13px 15px;border-radius:10px;background:#f2c94c;color:#0f172a;text-decoration:none;font-weight:bold;margin:5px}a.secondary{background:#334155;color:#fff}
+small{display:block;color:#bac8dc;line-height:1.8;margin-top:16px}
+</style></head><body>
+<main class="card"><img src="../images/logo.png" alt="زاد المعرفة"><h1>🔐 التحقق من صلاحية فتح الكتاب</h1>
+<p id="bookName">الكتاب</p><div id="accessStatus" role="status" aria-live="polite">جارٍ فحص تسجيل الدخول وحالة اشتراك المكتبتين...</div>
+<div><a href="../login/index.html?required=1" id="accessLogin">تسجيل الدخول</a><a href="library-payment.html" id="accessPayment">الاشتراك في المكتبتين — 200 جنيه</a><a class="secondary" href="library.html">العودة للمكتبة</a></div>
+<small>تصفح الكتب متاح مجانًا. فتح الملفات متاح للمشتركين الذين اعتمدت الإدارة اشتراكهم. إذا تعذر التحقق فلن يُفتح الملف.</small>
+</main>
+<script>
+// Non-module fallback: even if Firebase modules are blocked or fail to load,
+// a visitor sees a clear error instead of a dead button.
+window.zadBookGateReady=false;
+setTimeout(function(){
+ if(window.zadBookGateReady) return;
+ document.getElementById('accessStatus').textContent='تعذّر تشغيل خدمة التحقق من الاشتراك. تأكد من اتصال الإنترنت وإعدادات Firebase، ثم حدّث الصفحة.';
+}, 10000);
+</script>
+<script type="module" src="../assets/library-book-access.js"></script>
+</body></html>

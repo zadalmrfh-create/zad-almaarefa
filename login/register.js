@@ -200,7 +200,7 @@ function goHome() {
   if (target && getRole() === 'student') {
     try {
       const destination = new URL(target, window.location.origin);
-      const isAllowed = /\/sections\/(?:library|book)\.html$/i.test(destination.pathname)
+      const isAllowed = /\/sections\/(?:library|library-payment|book|book-access)\.html$/i.test(destination.pathname)
         || /\/sections\/(?:Arabic|Azhar|Quran|Sharia|Tazkea|tests)\/[^/]+\.html$/i.test(destination.pathname);
       if (target.startsWith('/') && !target.startsWith('//')
           && destination.origin === window.location.origin && isAllowed) {

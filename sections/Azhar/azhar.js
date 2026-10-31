@@ -1,7 +1,6 @@
 import { auth, db } from "../../firebase-config.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
 import { getDocs, collection } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
-import { trackBookDownload } from "../book-download-tracker.js";
 /* =========================================================
    AZHAR EDUCATION PAGE — BEHAVIOR
    Organized in 3 independent parts:
@@ -51,7 +50,7 @@ function requireLogin(message) {
 }
 
 document.getElementById("ctaStart").addEventListener("click", function () {
-  if (!requireLogin("يجب تسجيل الدخول أولاً لبدء التعلم.")) return;
+  // تصفّح قائمة الكتب مجاني، وتبقى الحماية على زر الفتح / التحميل.
   document.getElementById("flowSection").scrollIntoView({ behavior: "smooth" });
 });
 
@@ -830,7 +829,14 @@ async function loadAdminAzharBooks(){
   }
 }
 
-await loadAdminAzharBooks();
+onAuthStateChanged(auth, user => {
+  if (!user) return;
+  loadAdminAzharBooks().then(() => {
+    if (state.resource === 'library' && state.grade) {
+      renderResults(document.getElementById('searchInput')?.value || '');
+    }
+  });
+});
 
 const RESOURCE_ICON = {
   library: "📖",
@@ -973,40 +979,34 @@ function renderResults(query) {
     const actionLabel =
       state.resource === "library" ? "تحميل الكتاب" : "فتح الامتحان";
 
+    const isBook = state.resource === "library";
+    const bookAccessHref = isBook ? "../book-access.html?" + new URLSearchParams({
+      url: subject.link,
+      title: subject.name,
+      grade: state.grade?.name || "",
+      cat: subject.level || "",
+      source: "azhar"
+    }).toString().replaceAll("&", "&amp;") : "";
+
     card.innerHTML = `
       <div class="result-header">${subject.name}</div>
       <div class="result-meta">
         <span class="meta-icon">🎓 ${subject.level}</span>
       </div>
       <div class="result-footer">
-        <button class="download-btn protected-download">
-          ${actionLabel}
-        </button>
+        ${isBook
+          ? `<a class="download-btn protected-download" href="${bookAccessHref}">${actionLabel}</a>`
+          : `<button type="button" class="download-btn protected-download">${actionLabel}</button>`}
       </div>
     `;
 
-    const downloadBtn = card.querySelector(".protected-download");
-    downloadBtn.addEventListener("click", function () {
-      if (state.resource === "library") {
-        if (!requireLogin("الكتب مجانية وبدون اشتراك، لكن يجب تسجيل الدخول أولاً حتى يتم تسجيل التحميل باسمك.")) {
-          try { sessionStorage.setItem("redirectAfterLogin", "../sections/Azhar/azhar.html"); } catch (e) {}
-          return;
-        }
-
-        trackBookDownload({
-          title: subject.name,
-          url: subject.link,
-          source: "azhar",
-          sourceLabel: "مكتبة التعليم الأزهري",
-          grade: state.grade?.name || subject.level || "",
-          category: subject.level || ""
-        }).catch((error) => console.warn("تعذر تسجيل تحميل الكتاب:", error));
-      } else if (!requireLogin("يجب تسجيل الدخول أولاً للوصول إلى هذا المحتوى.")) {
-        return;
-      }
-
-      window.open(subject.link, "_blank", "noopener,noreferrer");
-    });
+    if (!isBook) {
+      const examButton = card.querySelector(".protected-download");
+      examButton.addEventListener("click", function () {
+        if (!requireLogin("يجب تسجيل الدخول أولاً للوصول إلى هذا المحتوى.")) return;
+        window.location.assign(subject.link);
+      });
+    }
 
     resultsGrid.appendChild(card);
   });
