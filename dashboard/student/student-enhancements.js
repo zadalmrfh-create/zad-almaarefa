@@ -1,5 +1,6 @@
 import {getPreviewContext} from '../admin-preview-core.js';
 import {amountPaid,amountRemaining,money} from '../payment-utils.js';
+import {advanceSnapshot} from '../advance-credit.js';
 import { auth, db } from '../../firebase-config.js';
 import { onAuthStateChanged, updatePassword } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
 import { arrayUnion, doc, getDoc, updateDoc, collection, query, where, getDocs, serverTimestamp } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
@@ -8,6 +9,8 @@ const $ = id => document.getElementById(id);
 let uid = '';
 let profile = {};
 let attendance = [];
+let studentPayments = [];
+let paymentsLoaded = false;
 let notes = [];
 let bookings = [];
 let notifications = [];
@@ -45,10 +48,13 @@ async function loadDashboardData(){
     getDocs(query(collection(db,'bookings'),where('studentUid','==',uid))),
     getDocs(query(collection(db,'notifications'),where('audience','==','user'),where('targetUid','==',uid))),
     getDocs(query(collection(db,'notifications'),where('audience','==','all'))),
-    getDocs(collection(db,'users',uid,'library'))
-  ]), new Promise((resolve) => setTimeout(() => resolve(Array.from({length:6}, () => ({status:'rejected',reason:new Error('مهلة تحميل بيانات لوحة الطالب')}))), 12000))]);
-  const [attR,notesR,bookR,personalR,allR,libR]=results;
+    getDocs(collection(db,'users',uid,'library')),
+    getDocs(query(collection(db,'vodafonePayments'),where('studentUid','==',uid)))
+  ]), new Promise((resolve) => setTimeout(() => resolve(Array.from({length:7}, () => ({status:'rejected',reason:new Error('مهلة تحميل بيانات لوحة الطالب')}))), 12000))]);
+  const [attR,notesR,bookR,personalR,allR,libR,payR]=results;
   attendance=attR.status==='fulfilled'?attR.value.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>dateKey(b.createdAt||b.date||b.openedAt)-dateKey(a.createdAt||a.date||a.openedAt)):[];
+  paymentsLoaded=payR.status==='fulfilled';
+  studentPayments=paymentsLoaded?payR.value.docs.map(d=>({id:d.id,...d.data()})):[];
   notes=notesR.status==='fulfilled'?notesR.value.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>dateKey(b.createdAt)-dateKey(a.createdAt)):[];
   bookings=bookR.status==='fulfilled'?bookR.value.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>dateKey(b.createdAt)-dateKey(a.createdAt)):[];
   const merged=new Map();
@@ -63,6 +69,7 @@ async function loadDashboardData(){
 function realAttendance(){return attendance.filter(x=>x.deleted!==true&&(x.status==='حاضر'||x.status==='غائب'||x.status==='اعتذر'));}
 function renderDashboard(){
   const rows=realAttendance();
+  const credits=advanceSnapshot(rows,studentPayments);
   const present=rows.filter(x=>x.status==='حاضر').length;
   const absent=rows.filter(x=>x.status==='غائب').length;
   const excused=rows.filter(x=>x.status==='اعتذر').length;
@@ -81,7 +88,8 @@ function renderDashboard(){
   if($('studentExcusedCount'))$('studentExcusedCount').textContent=excused;
   if($('studentAttendanceRate'))$('studentAttendanceRate').textContent=percent(present,relevant)+'%';
   if($('studentPaidTotal'))$('studentPaidTotal').textContent=money(rows.reduce((sum,x)=>sum+amountPaid(x),0));
-  if($('studentAttendanceRows'))$('studentAttendanceRows').innerHTML=rows.length?rows.map(x=>`<tr><td>${esc(x.date||fmt(x.createdAt||x.openedAt))}</td><td>${esc(x.subject||x.lessonTitle||'-')}</td><td>${esc(x.teacherName||'-')}</td><td>${esc(x.status||'-')}</td><td>${Number(x.price||0).toLocaleString('ar-EG')} ج.م</td><td>${amountRemaining(x)===0?'✅ مدفوعة':amountPaid(x)>0?'🟡 مدفوع جزئيًا '+money(amountPaid(x)):'⏳ غير مدفوعة'}</td><td>${esc(x.note||'-')}</td></tr>`).join(''):'<tr><td colspan="7">لا توجد سجلات حضور حتى الآن.</td></tr>';
+  if($('studentAdvanceSummary'))$('studentAdvanceSummary').textContent=paymentsLoaded?'💰 رصيد مقدم متاح: '+money(credits.availableAdvancePiastres)+' · مقدم محسوب على الحصص: '+money(credits.usedAdvancePiastres):'تعذر تحميل الرصيد المقدم؛ حدّث الصفحة.';
+  if($('studentAttendanceRows'))$('studentAttendanceRows').innerHTML=rows.length?rows.map(x=>`<tr><td>${esc(x.date||fmt(x.createdAt||x.openedAt))}</td><td>${esc(x.subject||x.lessonTitle||'-')}</td><td>${esc(x.teacherName||'-')}</td><td>${esc(x.status||'-')}</td><td>${Number(x.price||0).toLocaleString('ar-EG')} ج.م</td><td>${credits.byLesson.get(x.id)?.afterPiastres===0?'✅ مدفوعة / مغطاة بالمقدم':credits.byLesson.get(x.id)?.advanceAppliedPiastres>0?'🟡 جزء مغطى بالمقدم · المتبقي '+money(credits.byLesson.get(x.id).afterPiastres):amountRemaining(x)===0?'✅ مدفوعة':amountPaid(x)>0?'🟡 مدفوع جزئيًا '+money(amountPaid(x)):'⏳ غير مدفوعة'}</td><td>${esc(x.note||'-')}</td></tr>`).join(''):'<tr><td colspan="7">لا توجد سجلات حضور حتى الآن.</td></tr>';
 
   if($('studentNotesList'))$('studentNotesList').innerHTML=notes.length?notes.map(n=>`<article class="student-note"><strong>${esc(n.teacherName||'المعلم')} — ${esc(n.category||'متابعة')}</strong><p>${esc(n.text||'')}</p><small>${fmt(n.createdAt,true)}</small></article>`).join(''):'<div class="notice">لا توجد ملاحظات ظاهرة لك حتى الآن.</div>';
 

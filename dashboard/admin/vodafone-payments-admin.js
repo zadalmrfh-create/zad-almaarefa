@@ -4,6 +4,7 @@ import {onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/12.18.0/fir
 import {collection,doc,getDocs,query,where,runTransaction,serverTimestamp} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 import {amountDue,amountPaid,amountRemaining,money,html,isCharge} from '../payment-utils.js';
 import {isCurrentPayment,ledgerStartedAt} from '../payment-ledger-period.js';
+import {advanceSnapshot} from '../advance-credit.js';
 const $=id=>document.getElementById(id);
 let list=[],lessonMap=new Map(),busy=false;
 const formatWhen=value=>{
@@ -35,7 +36,9 @@ function details(p){
   }
   if(p.targetType==='lessons')return `<div class="zad-pay-allocations"><b>الحصص التي طلب الطالب سدادها</b>
     ${planned.length?planned.map(id=>`<div class="zad-pay-allocation">${lessonLabel(id)}</div>`).join(''):'<small>لم تُحدد حصص.</small>'}</div>`;
-  return `<div class="zad-pay-allocations"><b>سداد مستحقات عامة</b><small>${p.status==='pending'?'سيحدد توزيع المبلغ على الحصص وقت اعتماد التحويل.':p.status==='rejected'?'لم يُعتمد أي مبلغ.':'لا تتوفر بيانات توزيع هذا التحويل القديم.'}</small></div>`;
+  const credit=Number(p.creditPiastres||0);
+  if(p.status==='approved'&&credit>0)return `<div class="zad-pay-allocations"><b>✅ رصيد مقدم مسجل: ${money(credit)}</b><small>المبلغ متاح للحصص القادمة، ويُحسب تلقائيًا عند ظهور مستحقات.</small></div>`;
+  return `<div class="zad-pay-allocations"><b>${p.targetType==='advance'?'دفعة مقدمة للحصص القادمة':'سداد مستحقات عامة'}</b><small>${p.status==='pending'?'سيحدد الرصيد المقدم والتوزيع وقت اعتماد التحويل.':p.status==='rejected'?'لم يُعتمد أي مبلغ.':'لا تتوفر بيانات توزيع هذا التحويل القديم.'}</small></div>`;
 }
 function render(){
   const filter=$('zadVodafoneFilter')?.value||'all';
@@ -56,9 +59,10 @@ function render(){
           <div><small>وقت إرسال طلب التحويل</small><b>${html(formatWhen(p.createdAt))}</b></div>
           <div><small>وقت مراجعة الإدارة</small><b>${html(formatWhen(p.reviewedAt))}</b></div>
           <div><small>مرجع عملية التحويل</small><b>${html(p.reference||'غير مذكور')}</b></div>
-          <div><small>نوع السداد</small><b>${p.targetType==='lessons'?'حصص محددة':'سداد من مستحقات الطالب'}</b></div>
+          <div><small>نوع السداد</small><b>${p.targetType==='lessons'?'حصص محددة':p.targetType==='advance'?'💰 دفع مقدم':'سداد عام (المتبقي مقدم)'}</b></div>
         </div>
         ${details(p)}
+        ${Number(p.creditPiastres||0)>0 && Array.isArray(p.allocations)&&p.allocations.length?`<p class="zad-pay-ok">✅ الجزء الباقي محفوظ كرصيد مقدم: ${money(p.creditPiastres)}</p>`:''}
         ${cancelledValue>0?`<p class="zad-pay-alert">⚠️ ${money(cancelledValue)} من هذا التحويل مرتبط بحصة ملغاة؛ يحتاج إلى تسوية مالية مع الطالب. لم يُرد المبلغ أو يُنقل تلقائيًا.</p>`:''}
         ${p.note?`<small>ملاحظات الطالب: ${html(p.note)}</small>`:''}
         ${p.adminNote?`<small>رد الإدارة: ${html(p.adminNote)}</small>`:''}
@@ -74,6 +78,11 @@ function render(){
     return n+(!x||x.deleted===true?Number(a.amountPiastres||0):0);
   },0):0),0);
   const box=$('zadVodafoneNeedSettlement');if(box)box.textContent=money(needsSettlement);
+  const grouped=new Map();
+  for(const l of lessonMap.values())if(l.studentUid){const v=grouped.get(l.studentUid)||{lessons:[],payments:[]};v.lessons.push(l);grouped.set(l.studentUid,v);}
+  for(const p of current)if(p.studentUid){const v=grouped.get(p.studentUid)||{lessons:[],payments:[]};v.payments.push(p);grouped.set(p.studentUid,v);}
+  const credit=[...grouped.values()].reduce((sum,v)=>sum+advanceSnapshot(v.lessons,v.payments).availableAdvancePiastres,0);
+  if($('zadVodafoneAdvanceTotal'))$('zadVodafoneAdvanceTotal').textContent=money(credit);
 }
 async function load(){
   try{
@@ -92,9 +101,9 @@ async function approve(p){
   if(!window.confirm('هل تأكدت بنفسك من وصول '+money(p.amountPiastres)+' إلى المحفظة 01042239704 وأن رقم العملية لم يُعتمد من قبل؟'))return;
   const found=await getDocs(query(collection(db,'lessonAttendance'),where('studentUid','==',p.studentUid)));
   const candidates=found.docs.map(d=>({id:d.id,ref:d.ref,...d.data()})).filter(isCharge)
-    .filter(x=>p.targetType==='lessons'?(Array.isArray(p.lessonIds)&&p.lessonIds.includes(x.id)):true)
+    .filter(x=>p.targetType==='advance'?false:p.targetType==='lessons'?(Array.isArray(p.lessonIds)&&p.lessonIds.includes(x.id)):true)
     .filter(x=>amountRemaining(x)>0).sort((a,b)=>String(a.date||'').localeCompare(String(b.date||'')));
-  if(!candidates.length)throw new Error('لا توجد حصص نشطة غير مسددة للطلب؛ قد تكون الحصص أُلغيت. ارفض الطلب بعد مراجعته.');
+  if(p.targetType==='lessons'&&!candidates.length)throw new Error('الحصص المختارة ليس عليها مستحقات حالياً؛ راجع الطلب مع الطالب.');
   if(candidates.length>150)throw new Error('أكثر من 150 حصة مستحقة؛ قسّم التسوية على عدة عمليات.');
   const referenceId=p.reference?.trim()
     ? Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(p.senderPhone+'|'+p.reference.trim().toLowerCase())))).map(b=>b.toString(16).padStart(2,'0')).join('')
@@ -121,14 +130,16 @@ async function approve(p){
       if(use>0)allocations.push({id:item.id,ref:item.ref,record:r,piastres:use});
       rest-=use;
     }
-    if(rest!==0)throw new Error('قيمة التحويل أكبر من المستحقات المتاحة الآن؛ راجع الحصص قبل الاعتماد.');
+    if(payment.targetType==='lessons'&&rest!==0)throw new Error('قيمة التحويل أكبر من مستحقات الحصص المختارة.');
+    // ما زاد عن المستحق، أو تحويل بلا مستحقات، يظل مقدمًا للطالب بعد مراجعة الإدارة.
     for(const a of allocations){
       const newPaid=amountPaid(a.record)+a.piastres;
       tx.update(a.ref,{cashPaidPiastres:newPaid,paid:newPaid>=amountDue(a.record),paidAt:newPaid>=amountDue(a.record)?serverTimestamp():null,updatedAt:serverTimestamp()});
     }
     if(claimRef)tx.set(claimRef,{paymentId:p.id,studentUid:p.studentUid,reviewedBy:auth.currentUser.uid,createdAt:serverTimestamp()});
     tx.update(ref,{status:'approved',reviewedAt:serverTimestamp(),reviewedBy:auth.currentUser.uid,
-      allocations:allocations.map(a=>({attendanceId:a.id,amountPiastres:a.piastres})),approvedPiastres:payment.amountPiastres});
+      allocations:allocations.map(a=>({attendanceId:a.id,amountPiastres:a.piastres})),
+      creditPiastres:rest,approvedPiastres:payment.amountPiastres});
   });
 }
 async function reject(p){

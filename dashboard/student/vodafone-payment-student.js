@@ -4,6 +4,7 @@ import {onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/12.18.0/fir
 import {collection,addDoc,getDocs,query,where,serverTimestamp} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 import {toPiastres,amountDue,amountPaid,amountRemaining,money,html,isCharge} from '../payment-utils.js';
 import {isCurrentPayment} from '../payment-ledger-period.js';
+import {advanceSnapshot} from '../advance-credit.js';
 const $=id=>document.getElementById(id);
 let uid='',lessons=[],requests=[],profile={},busy=false;
 const statusText={pending:'⏳ قيد مراجعة الإدارة',approved:'✅ معتمد',rejected:'❌ مرفوض'};
@@ -13,7 +14,11 @@ function draw(){
  const dueLessons=lessons.filter(isCharge).filter(x=>amountRemaining(x)>0);
  const total=lessons.filter(isCharge).reduce((s,x)=>s+amountDue(x),0);
  const paid=lessons.filter(isCharge).reduce((s,x)=>s+amountPaid(x),0);
- $('zadVodafoneDue').textContent=money(total);$('zadVodafonePaid').textContent=money(paid);$('zadVodafoneRemaining').textContent=money(total-paid);
+ const advance=advanceSnapshot(lessons,requests);
+ $('zadVodafoneDue').textContent=money(total);$('zadVodafonePaid').textContent=money(paid);
+ $('zadVodafoneRemaining').textContent=money(advance.unpaidAfterPiastres);
+ $('zadVodafoneAdvance').textContent=money(advance.availableAdvancePiastres);
+ $('zadVodafoneUsedAdvance').textContent=money(advance.usedAdvancePiastres);
  const chosen=new Set([...document.querySelectorAll('[name="zadVodafoneLesson"]:checked')].map(c=>c.value));
  $('zadVodafoneLessons').innerHTML=dueLessons.length?dueLessons.map(x=>`<label class="zad-pay-lesson"><input type="checkbox" name="zadVodafoneLesson" value="${html(x.id)}" ${chosen.has(x.id)?'checked':''}><span><b>${html(x.subject||'حصة')}</b> — ${html(x.date||'بلا تاريخ')}<small>المتبقي ${money(amountRemaining(x))} من ${money(amountDue(x))}</small></span></label>`).join(''):'<p>لا توجد حصص مستحقة حاليًا.</p>';
  $('zadVodafoneHistory').innerHTML=requests.length?requests.map(x=>{
@@ -28,11 +33,13 @@ function draw(){
      return item?(item.subject||'حصة')+(item.deleted===true?' (ملغاة)':''):'حصة غير متاحة';
    }).join('، ');
    const date=x.createdAt?.toDate?x.createdAt.toDate().toLocaleString('ar-EG'):'تاريخ غير مسجل';
-   const purpose=subjectList||'سداد مستحقات عامة';
+   const credit=Number(x.creditPiastres||0);
+   const purpose=x.targetType==='advance'?'دفعة مقدمة للحصص القادمة':(subjectList||'سداد مستحقات عامة')+(credit>0?' + رصيد مقدم '+money(credit):'');
    return `<tr><td>${money(x.amountPiastres)}</td><td>${html(purpose)}<small style="display:block">${html(date)}</small></td><td>${html(x.reference||'—')}</td><td>${statusText[x.status]||'—'}</td><td>${html(warning+(x.adminNote||''))||'—'}</td></tr>`;
  }).join(''):'<tr><td colspan="5">لا توجد طلبات تحويل بعد.</td></tr>';
- const canPay=dueLessons.length>0;$('zadVodafoneSend').disabled=!canPay||busy;
- $('zadVodafoneNoDue').hidden=canPay;
+ const hasDues=dueLessons.length>0;$('zadVodafoneSend').disabled=busy;
+ $('zadVodafoneNoDue').hidden=hasDues;
+ $('zadVodafoneNoDue').textContent='لا توجد حصص مستحقة الآن. يمكنك الدفع مقدمًا وسيُحسب رصيدًا لك بعد اعتماد الإدارة.';
 }
 async function load(){
  if(!uid)return;
@@ -59,11 +66,11 @@ form?.addEventListener('submit',async e=>{
  const sender=$('zadVodafoneSender').value.trim();
  const candidates=lessons.filter(isCharge).filter(r=>amountRemaining(r)>0 && (mode==='balance'||selected.includes(r.id)));
  const cap=candidates.reduce((s,x)=>s+amountRemaining(x),0);
- if(!['lessons','balance'].includes(mode)){feedback('اختر طريقة السداد.',true);return;}
+ if(!['lessons','balance','advance'].includes(mode)){feedback('اختر طريقة السداد.',true);return;}
  if(mode==='lessons'&&!selected.length){feedback('اختر حصة واحدة على الأقل.',true);return;}
  if(!/^01\d{9}$/.test(sender)){feedback('أدخل رقم هاتف مصري صحيح مكوّن من 11 رقمًا.',true);return;}
  if(!Number.isSafeInteger(amt)||amt<100||amt>100000000){feedback('المبلغ يجب أن يكون من جنيه واحد إلى مليون جنيه.',true);return;}
- if(amt>cap){feedback('المبلغ أكبر من المستحق في '+(mode==='lessons'?'الحصص المختارة.':'حسابك.')+' المتبقي '+money(cap),true);return;}
+ if(mode==='lessons'&&amt>cap){feedback('المبلغ أكبر من المتبقي في الحصص المختارة: '+money(cap),true);return;}
  if(!window.confirm('هل حوّلت '+money(amt)+' بالفعل إلى 01042239704؟ تقديم الطلب لا يؤكد وصول المبلغ.'))return;
  busy=true;draw();feedback('جارٍ إرسال طلب المراجعة...');
  try{
@@ -75,7 +82,7 @@ form?.addEventListener('submit',async e=>{
    method:'vodafone-cash',status:'pending',createdAt:serverTimestamp()
   });
   form.reset();$('zadVodafoneChooseLessons').hidden=true;
-  await load();feedback('✅ أُرسل طلب التحويل للإدارة. لن يُحسب مدفوعًا إلا بعد اعتماد الإدارة.');
+  await load();feedback('✅ تم إرسال طلب التحويل. لو المبلغ مقدم أو زائد عن المستحقات، سيظهر كرصد مقدم بعد اعتماد الإدارة.');
  }catch(err){console.error(err);feedback('تعذر إرسال الطلب: '+(err.code||err.message),true);}
  finally{busy=false;draw();}
 });

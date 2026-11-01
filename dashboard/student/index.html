@@ -276,24 +276,24 @@
         <div class="profile-mini"><b id="studentExcusedCount">0</b><span>اعتذر</span></div>
         <div class="profile-mini"><b id="studentAttendanceRate">0%</b><span>نسبة الحضور</span></div>
       </div>
-      <div class="student-payment-total">💰 إجمالي المبلغ المدفوع: <strong id="studentPaidTotal">0 ج.م</strong></div><div class="table-wrap"><table class="table"><thead><tr><th>التاريخ</th><th>المادة</th><th>المعلم</th><th>الحالة</th><th>السعر</th><th>الدفع</th><th>الملاحظة</th></tr></thead><tbody id="studentAttendanceRows"><tr><td colspan="7">جارٍ التحميل...</td></tr></tbody></table></div>
+      <div class="student-payment-total">💰 إجمالي المبلغ المدفوع للحصص: <strong id="studentPaidTotal">0 ج.م</strong></div><p id="studentAdvanceSummary" class="zad-pay-ok">جارٍ حساب الرصيد المقدم...</p><div class="table-wrap"><table class="table"><thead><tr><th>التاريخ</th><th>المادة</th><th>المعلم</th><th>الحالة</th><th>السعر</th><th>الدفع</th><th>الملاحظة</th></tr></thead><tbody id="studentAttendanceRows"><tr><td colspan="7">جارٍ التحميل...</td></tr></tbody></table></div>
     </section>
 
 
     <section class="card student-panel zad-pay-card" data-student-panel="payments" id="zadVodafoneStudentPanel">
       <h2>💳 مدفوعاتي — فودافون كاش</h2>
-      <p>تقدر تسدد حصصًا معينة أو جزءًا من إجمالي مستحقاتك. بعد التحويل الحقيقي قدّم بياناته، والإدارة تراجعه قبل اعتماده.</p>
-      <div class="zad-pay-grid"><div class="zad-pay-metric"><small>إجمالي الحصص</small><strong id="zadVodafoneDue">—</strong></div><div class="zad-pay-metric"><small>المدفوع المعتمد</small><strong id="zadVodafonePaid">—</strong></div><div class="zad-pay-metric"><small>المتبقي</small><strong id="zadVodafoneRemaining">—</strong></div></div>
+      <p>تقدر تسدد مستحقاتك أو تدفع مبلغًا مقدمًا حتى لو مفيش عليك حصص. المبلغ المقدم يظهر في رصيدك بعد اعتماد الإدارة ويُخصم من المستحقات الجديدة تلقائيًا في كشف الحساب.</p>
+      <div class="zad-pay-grid"><div class="zad-pay-metric"><small>إجمالي الحصص</small><strong id="zadVodafoneDue">—</strong></div><div class="zad-pay-metric"><small>المدفوع المسجل للحصص</small><strong id="zadVodafonePaid">—</strong></div><div class="zad-pay-metric"><small>المتبقي بعد خصم المقدم</small><strong id="zadVodafoneRemaining">—</strong></div><div class="zad-pay-metric"><small>رصيد مقدم متاح</small><strong id="zadVodafoneAdvance">—</strong></div><div class="zad-pay-metric"><small>مقدم محسوب على حصص جديدة</small><strong id="zadVodafoneUsedAdvance">—</strong></div></div>
       <div class="zad-pay-number"><span>حوّل باستخدام تطبيق محفظتك إلى <strong>01042239704</strong></span><button class="btn gold" id="zadVodafoneCopy" type="button">📋 نسخ الرقم</button></div>
       <p class="zad-pay-small">لا يتم الخصم تلقائيًا من الموقع. لا تشارك رقمك السري أو رمز التأكيد مع أي شخص. تحقّق من اسم المستلم في تطبيق المحفظة قبل التحويل.</p>
       <form class="zad-pay-form" id="zadVodafonePaymentForm">
-        <label>نوع السداد<select id="zadVodafoneMode" required><option value="balance">سداد أي مبلغ من إجمالي المستحقات</option><option value="lessons">سداد حصص معينة</option></select></label>
+        <label>نوع السداد<select id="zadVodafoneMode" required><option value="balance">سداد من المستحقات والباقي يُحفظ مقدمًا</option><option value="advance">💰 دفع مقدم / شحن رصيد للحصص القادمة</option><option value="lessons">سداد حصص معينة</option></select></label>
         <div id="zadVodafoneChooseLessons" hidden><label>اختر الحصص المطلوب سدادها (ممكن أكثر من حصة)</label><div id="zadVodafoneLessons" class="zad-pay-choices"></div></div>
         <label>المبلغ الذي حوّلته (جنيه مصري)<input id="zadVodafoneAmount" type="number" min="1" max="1000000" step="0.01" required placeholder="مثال: 50.00"/></label>
         <label>رقم الهاتف الذي حوّلت منه<input id="zadVodafoneSender" type="tel" inputmode="numeric" pattern="01[0-9]{9}" maxlength="11" required placeholder="01xxxxxxxxx"/></label>
         <label>الرقم المرجعي للعملية (لو موجود)<input id="zadVodafoneReference" maxlength="100" placeholder="رقم العملية في رسالة التحويل"/></label>
         <label>ملاحظات (اختياري)<textarea id="zadVodafoneNote" maxlength="350"></textarea></label>
-        <p class="zad-pay-error" id="zadVodafoneNoDue" hidden>مفيش مستحقات غير مسددة حاليًا.</p>
+        <p class="zad-pay-ok" id="zadVodafoneNoDue" hidden>مفيش مستحقات حالياً؛ تقدر تدفع مقدم عادي.</p>
         <button id="zadVodafoneSend" class="btn gold" type="submit">📤 تقديم طلب مراجعة التحويل</button>
       </form>
       <p id="zadVodafoneMessage" role="status" aria-live="polite">جارٍ تحميل البيانات...</p>

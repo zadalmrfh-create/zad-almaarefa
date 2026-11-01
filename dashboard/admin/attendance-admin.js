@@ -1,4 +1,5 @@
 import {amountDue,amountPaid,amountRemaining,money as cashMoney} from '../payment-utils.js';
+import {advanceSnapshot} from '../advance-credit.js';
 import {archiveAttendance,restoreAttendance} from './attendance-archive.js';
 import { db, auth } from '../../firebase-config.js';
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
@@ -7,6 +8,8 @@ import { SUBJECTS, teacherForSubject } from '../attendance-subjects.js';
 const $ = id => document.getElementById(id);
 const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 let students = [], records = [], cancelledRecords = [];
+let creditsByStudent = new Map();
+const creditFor = row => creditsByStudent.get(row.studentUid)?.byLesson.get(row.id)||null;
 const summary = $('attendanceStudentSummary');
 const form = $('manualAttendanceForm'), studentSelect = $('attendanceStudent'), search = $('attendanceStudentSearch'), rows = $('attendanceRows'), message = $('attendanceMessage');
 const subjectSelect = $('attendanceSubject');
@@ -70,7 +73,7 @@ function render() {
   rows.innerHTML = records.length ? records.map(x => `<tr>
     <td>${esc(x.studentName || '-')}</td><td>${esc(x.date || '-')}</td><td>${esc(x.subject || '-')}</td>
     <td>${esc(x.status || '-')}</td><td>${money(x.price)}</td>
-    <td><button type="button" class="btn ${x.paid === true ? 'gold' : ''}" data-paid="${esc(x.id)}" aria-label="تغيير حالة الدفع">${amountRemaining(x)===0?'✅ مدفوعة':amountPaid(x)>0?'🟡 مدفوع جزئيًا '+cashMoney(amountPaid(x)):'⏳ غير مدفوعة'}</button></td>
+    <td><button type="button" class="btn ${x.paid === true ? 'gold' : ''}" data-paid="${esc(x.id)}" aria-label="تغيير حالة الدفع">${creditFor(x)?.afterPiastres===0?'✅ مغطاة / مدفوعة':creditFor(x)?.advanceAppliedPiastres>0?'🟡 جزء مغطى بالمقدم، المتبقي '+cashMoney(creditFor(x).afterPiastres):amountRemaining(x)===0?'✅ مدفوعة':amountPaid(x)>0?'🟡 مدفوع جزئيًا '+cashMoney(amountPaid(x)):'⏳ غير مدفوعة'}</button></td>
     <td>${esc(x.teacherName || 'الإدارة')}</td><td><button type="button" class="btn" data-edit="${esc(x.id)}">✏️ تعديل الحصة</button> <button type="button" class="btn danger" data-del="${esc(x.id)}">حذف</button></td></tr>`).join('') : '<tr><td colspan="8">لا توجد سجلات حضور بعد.</td></tr>';
 
   const summarySearch = String($('attendanceSummarySearch')?.value || '').trim().toLocaleLowerCase('ar');
@@ -94,22 +97,27 @@ function render() {
     const st = stats.get(id);
     if (x.status === 'حاضر') st.present++;
     if (x.status === 'غائب') st.absent++;
-    st.paid += amountPaid(x) / 100;
-    st.unpaid += amountRemaining(x) / 100;
+    st.paid += (amountPaid(x)+(creditFor(x)?.advanceAppliedPiastres||0)) / 100;
+    st.unpaid += (creditFor(x)?.afterPiastres??amountRemaining(x)) / 100;
   }
   const cards = [...stats.values()].filter(st => st.name.toLocaleLowerCase('ar').includes(summarySearch));
   cards.sort((a, b) => sortOrder === 'most-present' ? (b.present - a.present || a.name.localeCompare(b.name, 'ar')) : sortOrder === 'most-paid' ? (b.paid - a.paid || a.name.localeCompare(b.name, 'ar')) : a.name.localeCompare(b.name, 'ar'));
   const count = $('attendanceSummaryCount'); if (count) count.textContent = `${cards.length.toLocaleString('ar-EG')} طالب`;
   const list = $('attendanceSummaryCards');
-  if (list) list.innerHTML = cards.length ? cards.map(st => `<article class="attendance-summary-card"><strong>${esc(st.name)}</strong><span>✅ حضر ${st.present} حصة</span><span>❌ غاب ${st.absent} حصة</span><b>💰 المدفوع: ${money(st.paid)}</b><span>⏳ غير المدفوع: ${money(st.unpaid)}</span></article>`).join('') : '<div class="user-mobile-empty">لا توجد سجلات حضور أو غياب مطابقة للبحث أو المادة المختارة.</div>';
+  if (list) list.innerHTML = cards.length ? cards.map(st => `<article class="attendance-summary-card"><strong>${esc(st.name)}</strong><span>✅ حضر ${st.present} حصة</span><span>❌ غاب ${st.absent} حصة</span><b>💰 مدفوع أو مغطى بالمقدم: ${money(st.paid)}</b><span>⏳ المتبقي بعد المقدم: ${money(st.unpaid)}</span></article>`).join('') : '<div class="user-mobile-empty">لا توجد سجلات حضور أو غياب مطابقة للبحث أو المادة المختارة.</div>';
 }
 
 async function load() {
   try {
     message.textContent = 'جارٍ التحميل...';
-    const [us, att] = await Promise.all([getDocs(collection(db, 'users')), getDocs(collection(db, 'lessonAttendance'))]);
+    const [us, att, pay] = await Promise.all([getDocs(collection(db, 'users')), getDocs(collection(db, 'lessonAttendance')), getDocs(collection(db, 'vodafonePayments'))]);
     students = us.docs.map(d => ({ id: d.id, ...d.data() })).filter(x => x.role === 'student');
-    const allRecords=att.docs.map(d=>({id:d.id,...d.data()}))
+    const allStudentsLessons=att.docs.map(d=>({id:d.id,...d.data()}));
+    const groups=new Map();
+    for(const a of allStudentsLessons){if(!a.studentUid)continue;const g=groups.get(a.studentUid)||{lessons:[],payments:[]};g.lessons.push(a);groups.set(a.studentUid,g);}
+    for(const d of pay.docs){const a=d.data();if(!a.studentUid)continue;const g=groups.get(a.studentUid)||{lessons:[],payments:[]};g.payments.push(a);groups.set(a.studentUid,g);}
+    creditsByStudent=new Map([...groups].map(([uid,g])=>[uid,advanceSnapshot(g.lessons,g.payments)]));
+    const allRecords=allStudentsLessons
       .filter(x=>x.source==='manual-attendance'||x.source==='teacher-dashboard');
     records=allRecords.filter(x=>x.deleted!==true).sort((a,b)=>String(b.date).localeCompare(String(a.date)));
     cancelledRecords=allRecords.filter(x=>x.deleted===true).sort((a,b)=>String(b.deletedAt?.seconds||'').localeCompare(String(a.deletedAt?.seconds||'')));
@@ -247,7 +255,7 @@ rows?.addEventListener('click', async e => {
   if (!x) return;
   try {
     if (paid) {
-      if(Number(x.cashPaidPiastres||0)>0){ alert('هذه الحصة مرتبطة بتحويل معتمد؛ لا يمكن تغيير حالة الدفع مباشرة.'); return; }
+      if(Number(x.cashPaidPiastres||0)>0 || (creditFor(x)?.advanceAppliedPiastres||0)>0){ alert('هذه الحصة مدفوعة أو مغطاة بمبلغ مقدم؛ لا تغيّرها يدويًا حتى لا تُحسب الدفعة مرتين.'); return; }
       const newPaid = x.paid !== true;
       if (!confirm(`هل تريد تغيير حالة الحصة إلى ${newPaid ? 'مدفوعة' : 'غير مدفوعة'}؟`)) return;
       await updateDoc(doc(db, 'lessonAttendance', x.id), { paid: newPaid, paidAt: newPaid ? serverTimestamp() : null, updatedAt: serverTimestamp() });
@@ -271,6 +279,7 @@ rows?.addEventListener('click', async e => {
 });
 
 $('refreshAttendance')?.addEventListener('click', load);
+window.addEventListener('zad:payment-approved', load);
 $('attendanceSummarySearch')?.addEventListener('input', render);
 $('attendanceSummarySubject')?.addEventListener('change', render);
 $('attendanceSummarySort')?.addEventListener('change', render);

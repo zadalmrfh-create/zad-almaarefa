@@ -324,11 +324,11 @@ service cloud.firestore {
         && request.resource.data.amountPiastres is int
         && request.resource.data.amountPiastres >= 100
         && request.resource.data.amountPiastres <= 100000000
-        && request.resource.data.targetType in ['balance','lessons']
+        && request.resource.data.targetType in ['balance','lessons','advance']
         && request.resource.data.lessonIds is list
         && request.resource.data.lessonIds.size() <= 30
         && (
-          (request.resource.data.targetType == 'balance' && request.resource.data.lessonIds.size() == 0)
+          (request.resource.data.targetType in ['balance','advance'] && request.resource.data.lessonIds.size() == 0)
           ||
           (request.resource.data.targetType == 'lessons' && request.resource.data.lessonIds.size() > 0)
         )
@@ -347,7 +347,7 @@ service cloud.firestore {
         && resource.data.status == 'pending'
         && request.resource.data.status in ['approved','rejected']
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
-          'status','reviewedAt','reviewedBy','allocations','approvedPiastres','adminNote'
+          'status','reviewedAt','reviewedBy','allocations','approvedPiastres','creditPiastres','adminNote'
         ])
         && request.resource.data.reviewedBy == request.auth.uid;
       allow delete: if false;

@@ -1,5 +1,6 @@
 import {amountPaid,amountRemaining,money as paymentMoney} from '../payment-utils.js';
 import {isCurrentPayment} from '../payment-ledger-period.js';
+import {advanceSnapshot} from '../advance-credit.js';
 /* زاد المعرفة — تقرير الطالب الشامل (للإدارة فقط)
    قراءة فقط: لا تعديل لبيانات الطالب ولا سجلاته. */
 import { auth, db } from '../../firebase-config.js';
@@ -125,10 +126,11 @@ function buildMetrics(data) {
   const excused = a.filter(r=>r.status==='اعتذر').length;
   const paid = a.reduce((total,r)=>total+amountPaid(r)/100,0);
   const unpaid = a.reduce((total,r)=>total+amountRemaining(r)/100,0);
+  const advance=advanceSnapshot(a,data.vodafonePayments||[]);
   const due = paid + unpaid;
   const rate = present+absent ? `${num(Math.round(present/(present+absent)*100))}٪` : '—';
   const completed = data.bookings.filter(b=>['تم الحجز','مكتمل','مؤكد'].includes(b.status)).length;
-  return {a,present,absent,excused,paid,unpaid,due,rate,completed};
+  return {a,present,absent,excused,paid,unpaid,due,rate,completed,advance};
 }
 function metric(label,value,unavailable=false) {
   return `<div class="zad-rpt-metric"><span>${e(label)}</span><strong>${unavailable?'تعذر التحميل':e(value)}</strong></div>`;
@@ -154,7 +156,8 @@ function reportSummary(data) {
     ${metric('نسبة الحضور',m.rate,!ok('attendance'))}
     ${metric('إجمالي المسجل',money(m.due),!ok('attendance'))}
     ${metric('المدفوع',money(m.paid),!ok('attendance'))}
-    ${metric('غير المدفوع',money(m.unpaid),!ok('attendance'))}
+    ${metric('المتبقي بعد خصم المقدم',money(m.advance.unpaidAfterPiastres/100),!ok('attendance')||!ok('vodafonePayments'))}
+    ${metric('رصيد مقدم متاح',money(m.advance.availableAdvancePiastres/100),!ok('vodafonePayments'))}
     ${metric('عدد الامتحانات',num(data.codeExams.length+data.quizzes.length),!ok('codeExams')||!ok('quizzes'))}
   </div>`;
   const results=section('quick-results','أحدث نتائج الامتحانات', ['الامتحان','الدرجة','النسبة / التقدير'],
@@ -170,7 +173,7 @@ function detailedSections(data) {
     items.push(section(key,label,heads,renderRows(records,cols,err?'تعذر تحميل هذا القسم':'لا توجد بيانات مسجلة'),!err?num(records.length):'غير متاح'));
   };
   add('attendance','تفاصيل الحضور والغياب',['التاريخ','المواد (الحصة الواحدة تحسب مرة)','المعلم','الحالة','السعر','الدفع'],[
-    x=>x.date||date(x.createdAt),x=>(Array.isArray(x.subjects)&&x.subjects.length?x.subjects.join('، '):x.subject)||'—',x=>x.teacherName||'—',x=>x.status||'—',x=>money(x.price),x=>amountRemaining(x)===0?'مدفوعة':amountPaid(x)>0?'مدفوع جزئيًا '+paymentMoney(amountPaid(x)):'غير مدفوعة'],'date',x=>x.deleted!==true);
+    x=>x.date||date(x.createdAt),x=>(Array.isArray(x.subjects)&&x.subjects.length?x.subjects.join('، '):x.subject)||'—',x=>x.teacherName||'—',x=>x.status||'—',x=>money(x.price),x=>m.advance.byLesson.get(x.id)?.afterPiastres===0?'مدفوعة / بالمقدم':m.advance.byLesson.get(x.id)?.advanceAppliedPiastres>0?'مغطاة جزئياً بالمقدم، المتبقي '+paymentMoney(m.advance.byLesson.get(x.id).afterPiastres):amountRemaining(x)===0?'مدفوعة':amountPaid(x)>0?'مدفوع جزئيًا '+paymentMoney(amountPaid(x)):'غير مدفوعة'],'date',x=>x.deleted!==true);
   add('attendance','الحصص الملغاة (للمراجعة المالية)',['التاريخ','المادة','المعلم','السعر','المبلغ المدفوع المحفوظ','تاريخ الإلغاء'],[
     x=>x.date||'—',x=>x.subject||'—',x=>x.teacherName||'—',x=>money(x.price),x=>paymentMoney(amountPaid(x)),x=>date(x.deletedAt)],'deletedAt',x=>x.deleted===true);
   add('vodafonePayments','تحويلات فودافون كاش (السجل الجديد)',['التاريخ','المبلغ','حالة التحويل','رقم المرجع','ملاحظات'],[
