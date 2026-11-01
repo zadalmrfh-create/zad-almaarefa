@@ -40,7 +40,7 @@
     <nav class="teacher-tabs" id="teacherTabs" aria-label="أقسام لوحة المعلم">
       <button class="teacher-tab active" data-tab="overview">🏠 الرئيسية</button>
       <button class="teacher-tab" data-tab="students">👥 طلابي</button>
-      <button class="teacher-tab" data-tab="attendance">✅ الحضور والغياب</button>
+      <button class="teacher-tab" data-tab="attendance">📊 متابعة الحضور</button>
       <button class="teacher-tab" data-tab="notes">🗒️ ملاحظاتي</button>
       <button class="teacher-tab" data-tab="reports">📈 التقارير</button>
       <button class="teacher-tab" data-tab="notifications">🔔 التنبيهات <span class="teacher-badge" id="teacherNotificationBadge">0</span></button>
@@ -62,7 +62,7 @@
             <div class="teacher-section-head"><div><h3>⚡ إجراءات سريعة</h3><p>اختصارات لأكثر المهام استخدامًا.</p></div></div>
             <div class="teacher-quick-actions">
               <button class="teacher-action-card" data-go="students"><span>👥</span><strong>عرض طلابي</strong><small>بيانات الطلاب والتواصل</small></button>
-              <button class="teacher-action-card" data-go="attendance"><span>✅</span><strong>تسجيل حضور</strong><small>حضور أو غياب الطالب</small></button>
+              <button class="teacher-action-card" data-go="attendance"><span>📊</span><strong>عرض الحضور</strong><small>سجلات الإدارة للقراءة فقط</small></button>
               <button class="teacher-action-card" data-go="notes"><span>🗒️</span><strong>إضافة ملاحظة</strong><small>ملاحظات خاصة على الطلاب</small></button>
             </div>
           </section>
@@ -86,7 +86,7 @@
       <section class="teacher-panel" data-panel="students">
         <section class="card">
           <div class="teacher-section-head">
-            <div><h3>👥 طلابي</h3><p>يظهر هنا الطلاب المرتبطون بك فقط.</p></div>
+            <div><h3>👥 طلابي</h3><p>عرض ومتابعة الطلاب المرتبطين بك فقط. إنشاء حسابات الطلاب وإضافتهم من صلاحيات الإدارة فقط.</p></div>
             <input id="studentSearch" class="teacher-input teacher-search" type="search" placeholder="ابحث بالاسم أو الهاتف أو الصف...">
           </div>
           <div class="table-wrap teacher-table-wrap">
@@ -101,15 +101,7 @@
       <section class="teacher-panel" data-panel="attendance">
         <div class="teacher-two-col">
           <section class="card">
-            <div class="teacher-section-head"><div><h3>✅ تسجيل حضور أو غياب</h3><p>سجل حالة الطالب في الحصة.</p></div></div>
-            <form id="attendanceForm" class="teacher-form">
-              <label>الطالب<select id="attendanceStudent" class="teacher-input" required></select></label>
-              <label>التاريخ<input id="attendanceDate" class="teacher-input" type="date" required></label>
-              <label>الحالة<select id="attendanceStatus" class="teacher-input" required><option value="حاضر">حاضر</option><option value="غائب">غائب</option><option value="اعتذر">اعتذر</option></select></label>
-              <label>المادة<select id="attendanceSubject" class="teacher-input" required><option value="">اختر المادة</option><option>اللغة العربية</option><option>المواد الشرعية</option><option>الفلسفة والمنطق الحديث</option><option>المنطق القديم</option><option>اللغة الإنجليزية</option><option>العلوم</option><option>البرمجة وتكنولوجيا المعلومات</option></select></label><label>سعر الحصة (جنيه مصري)<input id="attendancePrice" class="teacher-input" type="number" min="0" max="100000" step="0.01" value="0" required></label>
-              <label class="full">ملاحظة<textarea id="attendanceNote" class="teacher-input" rows="3" placeholder="ملاحظة اختيارية..."></textarea></label>
-              <div class="full teacher-form-actions"><button class="btn gold" type="submit">حفظ الحضور</button><span id="attendanceFormStatus" class="teacher-form-status"></span></div>
-            </form>
+            <div class="teacher-section-head"><div><h3>🔒 الحضور والغياب بصلاحية الإدارة</h3><p>تسجيل الحضور والغياب وتعديل السجلات وحذفها متاح للإدارة فقط. يمكنك هنا الاطلاع على السجلات والتقارير المرتبطة بطلابك دون تغييرها.</p></div></div>
           </section>
           <section class="card">
             <div class="teacher-section-head"><div><h3>📊 ملخص الحضور</h3><p>إحصائيات سجلاتك الحالية.</p></div></div>
@@ -123,7 +115,7 @@
         </div>
         <section class="card">
           <div class="teacher-section-head"><div><h3>📋 سجل الحضور</h3><p>آخر سجلات الحضور والغياب.</p></div><select id="attendanceFilterStudent" class="teacher-input teacher-filter"><option value="">كل الطلاب</option></select></div>
-          <div class="table-wrap teacher-table-wrap"><table class="table teacher-table"><thead><tr><th>الطالب</th><th>التاريخ</th><th>المادة</th><th>الحالة</th><th>سعر الحصة</th><th>الملاحظة</th><th>إجراء</th></tr></thead><tbody id="attendanceRows"><tr><td colspan="6">لا توجد سجلات.</td></tr></tbody></table></div>
+          <div class="table-wrap teacher-table-wrap"><table class="table teacher-table"><thead><tr><th>الطالب</th><th>التاريخ</th><th>المادة</th><th>الحالة</th><th>سعر الحصة</th><th>الملاحظة</th></tr></thead><tbody id="attendanceRows"><tr><td colspan="6">لا توجد سجلات.</td></tr></tbody></table></div>
         </section>
       </section>
 

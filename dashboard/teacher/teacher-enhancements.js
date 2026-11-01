@@ -183,8 +183,8 @@ function openStudentDetails(uid){
     </div>
     <div class="teacher-section-head" style="margin-top:14px"><div><h3>آخر الملاحظات</h3><p>أحدث ملاحظاتك على الطالب.</p></div></div>
     <div class="teacher-notes-list">${notes.slice(0,5).map(n=>`<article class="teacher-note-card"><div><span class="teacher-note-category">${esc(n.category||'عام')}</span><strong>${n.visibleToStudent===true?'👁️ تظهر للطالب':'🔒 خاصة'}</strong><p>${esc(n.text||'')}</p><small>${formatDate(n.createdAt,true)}</small></div></article>`).join('')||'<div class="teacher-empty">لا توجد ملاحظات.</div>'}</div>
-    <div class="teacher-row-actions" style="margin-top:14px">${phoneDigits(phone)?`<a class="btn gold" target="_blank" rel="noopener" href="https://wa.me/${phoneDigits(phone)}">💬 واتساب الطالب</a>`:''}<button class="btn" data-open-attendance>✅ تسجيل حضور</button><button class="btn" data-open-note>🗒️ إضافة ملاحظة</button></div>`;
-  $('studentDetailsBody')?.querySelector('[data-open-attendance]')?.addEventListener('click',()=>{closeStudentModal();openTab('attendance');if($('attendanceStudent'))$('attendanceStudent').value=uid;});
+    <div class="teacher-row-actions" style="margin-top:14px">${phoneDigits(phone)?`<a class="btn gold" target="_blank" rel="noopener" href="https://wa.me/${phoneDigits(phone)}">💬 واتساب الطالب</a>`:''}<button class="btn" data-open-attendance>📊 عرض سجل الحضور</button><button class="btn" data-open-note>🗒️ إضافة ملاحظة</button></div>`;
+  $('studentDetailsBody')?.querySelector('[data-open-attendance]')?.addEventListener('click',()=>{closeStudentModal();openTab('attendance');if($('attendanceFilterStudent'))$('attendanceFilterStudent').value=uid;renderAttendance();});
   $('studentDetailsBody')?.querySelector('[data-open-note]')?.addEventListener('click',()=>{closeStudentModal();openTab('notes');if($('noteStudent'))$('noteStudent').value=uid;});
   $('studentDetailsModal')?.classList.add('show');
   $('studentDetailsModal')?.setAttribute('aria-hidden','false');
@@ -202,21 +202,7 @@ function renderAttendance(){
   if($('attendanceExcused'))$('attendanceExcused').textContent=excused;
   if($('attendanceRate'))$('attendanceRate').textContent=percent(present,present+absent)+'%';
   if(!$('attendanceRows'))return;
-  $('attendanceRows').innerHTML=rows.length?rows.map(x=>`<tr><td>${esc(studentName(x.studentUid,x.studentName))}</td><td>${esc(x.date||formatDate(x.createdAt))}</td><td>${esc(x.subject||'-')}</td><td><span class="teacher-status ${x.status==='حاضر'?'present':x.status==='غائب'?'absent':'excused'}">${esc(x.status||'-')}</span></td><td>${Number(x.price||0).toLocaleString('ar-EG')} ج.م</td><td>${esc(x.note||'-')}</td><td><button class="btn danger compact-btn" data-attendance-delete="${esc(x.id)}">حذف</button></td></tr>`).join(''):'<tr><td colspan="6">لا توجد سجلات.</td></tr>';
-  $('attendanceRows').querySelectorAll('[data-attendance-delete]').forEach(btn=>btn.addEventListener('click',()=>deleteAttendance(btn.dataset.attendanceDelete)));
-}
-async function deleteAttendance(id){
-  const item=state.attendance.find(x=>x.id===id);
-  if(!item)return;
-  if(item.paid===true||Number(item.cashPaidPiastres||0)>0){
-    alert('هذه الحصة عليها مبلغ مدفوع. يرجى طلب الإلغاء من الأدمن حتى يبقى سجل التحويل محفوظًا.');
-    return;
-  }
-  if(!confirm('حذف سجل الحضور غير المدفوع؟'))return;
-  try{
-    await deleteDoc(doc(db,'lessonAttendance',id));
-    state.attendance=state.attendance.filter(x=>x.id!==id);renderAll();
-  }catch(err){console.error(err);alert('تعذر حذف الحصة: '+(err.code||err.message));}
+  $('attendanceRows').innerHTML=rows.length?rows.map(x=>`<tr><td>${esc(studentName(x.studentUid,x.studentName))}</td><td>${esc(x.date||formatDate(x.createdAt))}</td><td>${esc(x.subject||'-')}</td><td><span class="teacher-status ${x.status==='حاضر'?'present':x.status==='غائب'?'absent':'excused'}">${esc(x.status||'-')}</span></td><td>${Number(x.price||0).toLocaleString('ar-EG')} ج.م</td><td>${esc(x.note||'-')}</td></tr>`).join(''):'<tr><td colspan="6">لا توجد سجلات.</td></tr>';
 }
 
 function renderNotes(){
@@ -297,18 +283,6 @@ function bindForms(){
   $('studentDetailsModal')?.addEventListener('click',e=>{if(e.target.id==='studentDetailsModal')closeStudentModal();});
   $('logout')?.addEventListener('click',()=>signOut(auth).then(()=>location.replace('../../login/index.html')));
   $('markAllTeacherNotifications')?.addEventListener('click',markAllNotifications);
-
-  $('attendanceForm')?.addEventListener('submit',async e=>{
-    e.preventDefault();
-    const studentUid=$('attendanceStudent').value,student=state.studentMap.get(studentUid);
-    if(!student){setStatus('attendanceFormStatus','اختر طالبًا أولًا.',false);return;}
-    try{
-      const data={teacherUid:state.user.uid,teacherName:state.profile.fullName||state.profile.name||state.user.email,studentUid,studentName:student.fullName||student.name||student.email,date:$('attendanceDate').value,status:$('attendanceStatus').value,subject:text($('attendanceSubject').value),price:Number($('attendancePrice').value),paid:false,currency:'EGP',note:text($('attendanceNote').value),createdAt:serverTimestamp(),updatedAt:serverTimestamp(),source:'teacher-dashboard'};
-      const ref=await addDoc(collection(db,'lessonAttendance'),data);
-      state.attendance.unshift({id:ref.id,...data,createdAt:new Date()});
-      $('attendanceNote').value='';setStatus('attendanceFormStatus','تم حفظ الحضور بنجاح.');renderAll();
-    }catch(err){console.error(err);setStatus('attendanceFormStatus','تعذر حفظ الحضور: '+(err.code||err.message),false);}
-  });
 
   $('noteForm')?.addEventListener('submit',async e=>{
     e.preventDefault();
