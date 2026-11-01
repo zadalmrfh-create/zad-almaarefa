@@ -41,8 +41,8 @@ const DIYAA_SUBJECTS = new Set([
 function teacherForSingleSubject(subject) {
   const name = String(subject || '').trim();
   if (!name) return '';
-  // لم يُحدَّد معلم اللغة العربية للتعليم العام بعد؛ لا تنسب الحصة تلقائيًا لمعلم آخر.
-  if (name === 'اللغة العربية (عام)') return '';
+  // اللغة العربية للتعليم العام تُسند تلقائيًا إلى أ/ ضياء الدين نبيل.
+  if (name === 'اللغة العربية (عام)') return 'ضياء الدين نبيل';
   if (name === 'الكيمياء' || name === 'مادة الكيمياء') return 'محمد خالد محمود';
   if (name === 'العلوم' || name === 'مادة العلوم') return 'محمد خالد محمود';
   if (name === 'اللغة الإنجليزية' || name === 'الانجليزي' || name === 'الإنجليزي') return 'علي عبد الحميد';
