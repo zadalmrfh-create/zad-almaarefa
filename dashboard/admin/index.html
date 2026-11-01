@@ -732,7 +732,7 @@ onAuthStateChanged(auth, async (user) => {
       <div class="table-wrap"><table class="table"><thead><tr><th>الطالب</th><th>التاريخ</th><th>المادة</th><th>الحالة</th><th>سعر الحصة</th><th>الدفع</th><th>سجله</th><th>إجراء</th></tr></thead><tbody id="attendanceRows"><tr><td colspan="8">جارٍ تحميل السجلات...</td></tr></tbody></table></div><details class="zad-pay-archive-history" dir="rtl"><summary>🗃️ الحصص الملغاة — سجل محفوظ للمراجعة والاسترجاع</summary><div id="zadArchivedAttendanceList">جارٍ التحميل...</div></details>
       <div id="attendanceStudentSummary" class="attendance-summary" aria-live="polite">
 <h3>📊 ملخص حضور الطلاب والمبالغ المدفوعة</h3>
-<p>يظهر الطلاب الذين سُجل لهم حضور أو غياب فقط. الأرقام تُحدَّث حسب المادة المختارة.</p>
+<p>تُحسب الحصص والحضور حسب المادة المختارة، أما الرصيد المالي (له / عليه) فيُحسب بشكل مستقل لكل طالب عبر جميع المواد. ويظهر الطالب الذي دفع مقدمًا حتى قبل أول حصة.</p>
 <div class="attendance-summary-controls">
 <label>بحث باسم الطالب<input id="attendanceSummarySearch" type="search" placeholder="اكتب اسم الطالب"></label>
 <label>المادة<select id="attendanceSummarySubject"><option value="all">كل المواد</option></select></label>
@@ -1116,7 +1116,17 @@ onAuthStateChanged(auth, async (user) => {
     <section class="card zad-pay-card" id="zadVodafoneAdminPanel" dir="rtl">
       <h2>💳 إدارة تحويلات فودافون كاش</h2>
       <p>محفظة استقبال التحويلات: <b dir="ltr">01042239704</b>. راجع المبلغ والمرجع في محفظتك الفعلية قبل اعتماد الطلب. الموقع لا يتحقق تلقائيًا من التحويل.</p>
-      <div class="zad-pay-grid"><div class="zad-pay-metric"><small>طلبات جديدة بانتظار المراجعة</small><strong id="zadVodafonePendingCount">—</strong></div><div class="zad-pay-metric"><small>إجمالي التحويلات المعتمدة (السجل الجديد)</small><strong id="zadVodafoneApprovedAmount">—</strong></div><div class="zad-pay-metric"><small>تسويات تخص السجل الجديد</small><strong id="zadVodafoneNeedSettlement">—</strong></div><div class="zad-pay-metric"><small>أرصدة مقدمة متاحة للطلاب بعد خصم المستحقات</small><strong id="zadVodafoneAdvanceTotal">—</strong></div></div>
+      <div class="zad-pay-grid zad-pay-admin-status"><div class="zad-pay-metric"><small>طلبات تحويل بانتظار المراجعة</small><strong id="zadVodafonePendingCount">—</strong></div><div class="zad-pay-metric"><small>⚠️ تحويلات تحتاج تسوية لحصص ملغاة (إجمالي السجل الجديد)</small><strong id="zadVodafoneNeedSettlement">—</strong></div></div>
+      <section class="zad-student-accounts" aria-label="كشوف حسابات الطلاب منفصلة">
+        <h3>👥 كشف حساب مستقل لكل طالب</h3>
+        <p>لكل طالب رصيده الخاص: المقدم، ما استُخدم منه، المستحقات غير المسددة، والرصيد المتاح له. لا يتم خلط أرصدة الطلاب مع بعضها، ولا تُضاف التحويلات إلى المبالغ المدفوعة مرتين.</p>
+        <div class="zad-student-account-controls">
+          <label>🔎 بحث عن طالب <input id="zadStudentBalanceSearch" type="search" placeholder="اسم الطالب أو بريده الإلكتروني" autocomplete="off"></label>
+          <label>حالة الحساب <select id="zadStudentBalanceFilter"><option value="all">كل الطلاب</option><option value="credit">له رصيد مقدم</option><option value="debt">عليه مستحقات</option><option value="clear">حسابه صفر</option></select></label>
+        </div>
+        <p id="zadStudentBalanceCount" class="zad-pay-small" aria-live="polite">جارٍ تحميل حسابات الطلاب...</p>
+        <div id="zadStudentBalanceCards" class="zad-student-account-list" aria-live="polite">جارٍ تحميل الحسابات...</div>
+      </section>
       <div class="actions"><label for="zadVodafoneFilter">حالة الطلب</label><select id="zadVodafoneFilter" style="width:auto"><option value="all">كل التحويلات</option><option value="pending">بانتظار المراجعة</option><option value="approved">المعتمدة</option><option value="rejected">المرفوضة</option><option value="archived">📁 السجل السابق (أرشيف للقراءة فقط)</option></select><button class="btn gold" id="zadVodafoneRefreshAdmin" type="button">🔄 تحديث الطلبات</button></div>
       <p id="zadVodafoneAdminMessage" role="status" aria-live="polite"></p>
       <p class="zad-pay-archived-notice">بدأ سجل جديد للمدفوعات؛ العمليات السابقة مؤرشفة للمراجعة، ولم تُحذف من Firebase ولم تتغير أرصدة الحصص القديمة.</p>

@@ -88,7 +88,10 @@ function renderDashboard(){
   if($('studentExcusedCount'))$('studentExcusedCount').textContent=excused;
   if($('studentAttendanceRate'))$('studentAttendanceRate').textContent=percent(present,relevant)+'%';
   if($('studentPaidTotal'))$('studentPaidTotal').textContent=money(rows.reduce((sum,x)=>sum+amountPaid(x),0));
-  if($('studentAdvanceSummary'))$('studentAdvanceSummary').textContent=paymentsLoaded?'💰 رصيد مقدم متاح: '+money(credits.availableAdvancePiastres)+' · مقدم محسوب على الحصص: '+money(credits.usedAdvancePiastres):'تعذر تحميل الرصيد المقدم؛ حدّث الصفحة.';
+  if($('studentAdvanceSummary'))$('studentAdvanceSummary').textContent=paymentsLoaded?
+    (credits.availableAdvancePiastres>0?'✅ لك رصيد مقدم: '+money(credits.availableAdvancePiastres):credits.unpaidAfterPiastres>0?'❌ عليك مستحقات: '+money(credits.unpaidAfterPiastres):'✔️ حسابك متوازن')+
+    ' · من المقدم تم احتساب '+money(credits.usedAdvancePiastres)+' على الحصص':
+    'تعذر تحميل الرصيد المقدم؛ حدّث الصفحة.';
   if($('studentAttendanceRows'))$('studentAttendanceRows').innerHTML=rows.length?rows.map(x=>`<tr><td>${esc(x.date||fmt(x.createdAt||x.openedAt))}</td><td>${esc(x.subject||x.lessonTitle||'-')}</td><td>${esc(x.teacherName||'-')}</td><td>${esc(x.status||'-')}</td><td>${Number(x.price||0).toLocaleString('ar-EG')} ج.م</td><td>${credits.byLesson.get(x.id)?.afterPiastres===0?'✅ مدفوعة / مغطاة بالمقدم':credits.byLesson.get(x.id)?.advanceAppliedPiastres>0?'🟡 جزء مغطى بالمقدم · المتبقي '+money(credits.byLesson.get(x.id).afterPiastres):amountRemaining(x)===0?'✅ مدفوعة':amountPaid(x)>0?'🟡 مدفوع جزئيًا '+money(amountPaid(x)):'⏳ غير مدفوعة'}</td><td>${esc(x.note||'-')}</td></tr>`).join(''):'<tr><td colspan="7">لا توجد سجلات حضور حتى الآن.</td></tr>';
 
   if($('studentNotesList'))$('studentNotesList').innerHTML=notes.length?notes.map(n=>`<article class="student-note"><strong>${esc(n.teacherName||'المعلم')} — ${esc(n.category||'متابعة')}</strong><p>${esc(n.text||'')}</p><small>${fmt(n.createdAt,true)}</small></article>`).join(''):'<div class="notice">لا توجد ملاحظات ظاهرة لك حتى الآن.</div>';

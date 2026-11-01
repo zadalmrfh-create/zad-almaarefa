@@ -33,3 +33,29 @@
 .zad-pay-archived-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;padding:10px;border-bottom:1px solid #37475f}
 .zad-pay-archived-row small{display:block;margin-top:4px;color:#cad4e4}
 @media(max-width:750px){.zad-pay-detail-grid{grid-template-columns:1fr}.zad-pay-request{padding:11px}}
+
+/* كشف حساب مستقل: لوحات الطلاب لا تجمع مستحقات طالب مع رصيد طالب آخر */
+.zad-pay-admin-status{grid-template-columns:repeat(2,minmax(0,1fr))}
+.zad-student-accounts{margin:20px 0 24px;padding:18px;border-radius:14px;border:1px solid #45536a;background:#0e1a2c}
+.zad-student-accounts h3{margin:0 0 8px;color:#f5d477}
+.zad-student-accounts>p{margin:8px 0;color:#cbd5e1;font-size:13px}
+.zad-student-account-controls{display:grid;grid-template-columns:2fr 1fr;gap:12px;margin:14px 0}
+.zad-student-account-controls label{display:grid;gap:7px;font-weight:700;font-size:13px;color:#f5d477}
+.zad-student-account-controls input,.zad-student-account-controls select{width:100%;min-width:0;min-height:44px;padding:10px;background:#101d31;color:#fff;border:1px solid #596980;border-radius:10px;font:inherit}
+.zad-student-account-list{display:grid;gap:14px;margin:14px 0}
+.zad-student-account-card{padding:15px;border-radius:13px;border:1px solid #465771;background:#14253b}
+.zad-student-account-header{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.zad-student-account-header>div{display:grid;gap:3px;min-width:0}
+.zad-student-account-header strong{font-size:17px;color:#fff;overflow-wrap:anywhere}
+.zad-student-account-header small{font-size:12px;color:#bccce0;overflow-wrap:anywhere}
+.zad-balance-badge{padding:8px 12px;border-radius:9px;background:#1d3048;font-size:14px}
+.zad-balance-badge.is-credit,.zad-account-cell.is-credit strong,.zad-student-balance-indicator.is-credit{color:#aaf0c8}
+.zad-balance-badge.is-debt,.zad-account-cell.is-debt strong,.zad-student-balance-indicator.is-debt{color:#ffb4a7}
+.zad-balance-badge.is-zero,.zad-student-balance-indicator.is-zero{color:#f7dd8b}
+.zad-student-account-metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(205px,1fr));gap:9px}
+.zad-account-cell{background:#0e1b2e;border:1px solid #344760;border-radius:10px;padding:11px;display:grid;gap:6px}
+.zad-account-cell small{font-size:12px;line-height:1.5;color:#b9c9d9}
+.zad-account-cell strong{font-size:17px;color:#f7d477}
+.zad-student-balance-indicator{border:1px solid #465b71;background:#14253b;padding:12px 16px;border-radius:10px;font-weight:800}
+.zad-summary-finance-note{font-size:11px!important;color:#a1adc1!important}
+@media(max-width:700px){.zad-pay-admin-status,.zad-student-account-controls{grid-template-columns:1fr}.zad-student-accounts{padding:11px}.zad-student-account-metrics{grid-template-columns:1fr}}

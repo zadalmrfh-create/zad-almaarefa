@@ -156,8 +156,8 @@ function reportSummary(data) {
     ${metric('نسبة الحضور',m.rate,!ok('attendance'))}
     ${metric('إجمالي المسجل',money(m.due),!ok('attendance'))}
     ${metric('المدفوع',money(m.paid),!ok('attendance'))}
-    ${metric('المتبقي بعد خصم المقدم',money(m.advance.unpaidAfterPiastres/100),!ok('attendance')||!ok('vodafonePayments'))}
-    ${metric('رصيد مقدم متاح',money(m.advance.availableAdvancePiastres/100),!ok('vodafonePayments'))}
+    ${metric('مستحقات على الطالب بعد المقدم',money(m.advance.unpaidAfterPiastres/100),!ok('attendance')||!ok('vodafonePayments'))}
+    ${metric('رصيد مقدم متاح للطالب (له)',money(m.advance.availableAdvancePiastres/100),!ok('vodafonePayments'))}
     ${metric('عدد الامتحانات',num(data.codeExams.length+data.quizzes.length),!ok('codeExams')||!ok('quizzes'))}
   </div>`;
   const results=section('quick-results','أحدث نتائج الامتحانات', ['الامتحان','الدرجة','النسبة / التقدير'],

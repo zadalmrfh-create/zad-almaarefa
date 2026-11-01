@@ -9,6 +9,7 @@ const $ = id => document.getElementById(id);
 const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 let students = [], records = [], cancelledRecords = [];
 let creditsByStudent = new Map();
+let activeFinancialStudentIds = new Set();
 const creditFor = row => creditsByStudent.get(row.studentUid)?.byLesson.get(row.id)||null;
 const summary = $('attendanceStudentSummary');
 const form = $('manualAttendanceForm'), studentSelect = $('attendanceStudent'), search = $('attendanceStudentSearch'), rows = $('attendanceRows'), message = $('attendanceMessage');
@@ -90,21 +91,32 @@ function render() {
   }
   const selectedSubject = summarySubjectSelect?.value || subjectFilter;
   const stats = new Map();
+  // المقدم قد يوجد لطالب لم يحضر أول حصة بعد.
+  // يظهر في الملخص العام فقط، ولا يُدرج في فلاتر مادة أخرى بدون حصص منها.
+  if (selectedSubject === 'all') for (const uid of activeFinancialStudentIds) {
+    const student=students.find(s=>s.id===uid);
+    stats.set(uid,{uid,name:student?.fullName||student?.name||student?.email||'طالب',present:0,absent:0,paid:0});
+  }
   for (const x of relevant) {
     if (selectedSubject !== 'all' && x.subject !== selectedSubject) continue;
     const id = x.studentUid;
-    if (!stats.has(id)) stats.set(id, { name: x.studentName || 'طالب', present: 0, absent: 0, paid: 0, unpaid: 0 });
+    if (!stats.has(id)) stats.set(id, {uid:id,name: x.studentName || 'طالب', present: 0, absent: 0, paid: 0});
     const st = stats.get(id);
     if (x.status === 'حاضر') st.present++;
     if (x.status === 'غائب') st.absent++;
     st.paid += (amountPaid(x)+(creditFor(x)?.advanceAppliedPiastres||0)) / 100;
-    st.unpaid += (creditFor(x)?.afterPiastres??amountRemaining(x)) / 100;
   }
   const cards = [...stats.values()].filter(st => st.name.toLocaleLowerCase('ar').includes(summarySearch));
   cards.sort((a, b) => sortOrder === 'most-present' ? (b.present - a.present || a.name.localeCompare(b.name, 'ar')) : sortOrder === 'most-paid' ? (b.paid - a.paid || a.name.localeCompare(b.name, 'ar')) : a.name.localeCompare(b.name, 'ar'));
   const count = $('attendanceSummaryCount'); if (count) count.textContent = `${cards.length.toLocaleString('ar-EG')} طالب`;
   const list = $('attendanceSummaryCards');
-  if (list) list.innerHTML = cards.length ? cards.map(st => `<article class="attendance-summary-card"><strong>${esc(st.name)}</strong><span>✅ حضر ${st.present} حصة</span><span>❌ غاب ${st.absent} حصة</span><b>💰 مدفوع أو مغطى بالمقدم: ${money(st.paid)}</b><span>⏳ المتبقي بعد المقدم: ${money(st.unpaid)}</span></article>`).join('') : '<div class="user-mobile-empty">لا توجد سجلات حضور أو غياب مطابقة للبحث أو المادة المختارة.</div>';
+  if (list) list.innerHTML = cards.length ? cards.map(st => {
+    const account=creditsByStudent.get(st.uid);
+    const advance=account?.availableAdvancePiastres||0;
+    const owed=account?.unpaidAfterPiastres||0;
+    const state=advance>0?`✅ له رصيد مقدم: ${cashMoney(advance)}`:owed>0?`❌ عليه غير مسدد: ${cashMoney(owed)}`:'✔️ حسابه متوازن: 0 ج.م';
+    return `<article class="attendance-summary-card"><strong>${esc(st.name)}</strong><span>✅ حضر ${st.present} حصة</span><span>❌ غاب ${st.absent} حصة</span><span>💰 مدفوع أو مغطى بالمقدم لهذه المادة: ${money(st.paid)}</span><b>${state}</b><span>مقدم استُخدم على حصصه: ${cashMoney(account?.usedAdvancePiastres||0)}</span><span class="zad-summary-finance-note">الرصيد المالي لجميع المواد، وليس المادة المحددة فقط</span></article>`;
+  }).join('') : '<div class="user-mobile-empty">لا توجد سجلات حضور أو غياب مطابقة للبحث أو المادة المختارة.</div>';
 }
 
 async function load() {
@@ -117,6 +129,7 @@ async function load() {
     for(const a of allStudentsLessons){if(!a.studentUid)continue;const g=groups.get(a.studentUid)||{lessons:[],payments:[]};g.lessons.push(a);groups.set(a.studentUid,g);}
     for(const d of pay.docs){const a=d.data();if(!a.studentUid)continue;const g=groups.get(a.studentUid)||{lessons:[],payments:[]};g.payments.push(a);groups.set(a.studentUid,g);}
     creditsByStudent=new Map([...groups].map(([uid,g])=>[uid,advanceSnapshot(g.lessons,g.payments)]));
+    activeFinancialStudentIds=new Set([...groups].filter(([uid,g])=>g.lessons.some(x=>x.deleted!==true)||g.payments.some(x=>x.status==='approved')).map(([uid])=>uid));
     const allRecords=allStudentsLessons
       .filter(x=>x.source==='manual-attendance'||x.source==='teacher-dashboard');
     records=allRecords.filter(x=>x.deleted!==true).sort((a,b)=>String(b.date).localeCompare(String(a.date)));
@@ -175,6 +188,7 @@ form?.addEventListener('submit', async e => {
 
     message.textContent = `✅ تم حفظ حصة واحدة (${selectedSubjects.join('، ')}) بنجاح`;
     await load();
+    window.dispatchEvent(new Event('zad:attendance-changed'));
   } catch (err) {
     console.error(err);
     message.textContent = 'تعذر الحفظ: ' + (err.code || err.message);
@@ -244,6 +258,7 @@ attendanceEditForm.addEventListener('submit',async event=>{
       note:attendanceEditForm.elements.note.value.trim(),updatedAt:serverTimestamp()
     });
     attendanceEditDialog.close();await load();
+    window.dispatchEvent(new Event('zad:attendance-changed'));
     message.textContent='✅ تم تعديل الحصة بنجاح؛ المواد المتعددة تظل حصة واحدة.';
   }catch(e){console.error(e);error.textContent='تعذر حفظ التعديل: '+(e.code||e.message);}
   finally{submit.disabled=false;}
@@ -273,6 +288,7 @@ rows?.addEventListener('click', async e => {
 
     }
     await load();
+    window.dispatchEvent(new Event('zad:attendance-changed'));
   } catch (err) {
     alert('تعذر تنفيذ العملية: ' + (err.code || err.message));
   }

@@ -19,6 +19,11 @@ function draw(){
  $('zadVodafoneRemaining').textContent=money(advance.unpaidAfterPiastres);
  $('zadVodafoneAdvance').textContent=money(advance.availableAdvancePiastres);
  $('zadVodafoneUsedAdvance').textContent=money(advance.usedAdvancePiastres);
+ const status=$('zadVodafoneAccountStatus');
+ if(status){
+   status.className='zad-student-balance-indicator '+(advance.availableAdvancePiastres>0?'is-credit':advance.unpaidAfterPiastres>0?'is-debt':'is-zero');
+   status.textContent=advance.availableAdvancePiastres>0?'✅ لك عند المنصة رصيد مقدم '+money(advance.availableAdvancePiastres):advance.unpaidAfterPiastres>0?'❌ عليك مستحقات غير مسددة '+money(advance.unpaidAfterPiastres):'✔️ حسابك متوازن، لا يوجد رصيد مقدم أو مستحقات الآن.';
+ }
  const chosen=new Set([...document.querySelectorAll('[name="zadVodafoneLesson"]:checked')].map(c=>c.value));
  $('zadVodafoneLessons').innerHTML=dueLessons.length?dueLessons.map(x=>`<label class="zad-pay-lesson"><input type="checkbox" name="zadVodafoneLesson" value="${html(x.id)}" ${chosen.has(x.id)?'checked':''}><span><b>${html(x.subject||'حصة')}</b> — ${html(x.date||'بلا تاريخ')}<small>المتبقي ${money(amountRemaining(x))} من ${money(amountDue(x))}</small></span></label>`).join(''):'<p>لا توجد حصص مستحقة حاليًا.</p>';
  $('zadVodafoneHistory').innerHTML=requests.length?requests.map(x=>{

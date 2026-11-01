@@ -4,9 +4,9 @@ import {onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/12.18.0/fir
 import {collection,doc,getDocs,query,where,runTransaction,serverTimestamp} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 import {amountDue,amountPaid,amountRemaining,money,html,isCharge} from '../payment-utils.js';
 import {isCurrentPayment,ledgerStartedAt} from '../payment-ledger-period.js';
-import {advanceSnapshot} from '../advance-credit.js';
+import {groupStudentAccounts} from '../student-account-balance.js';
 const $=id=>document.getElementById(id);
-let list=[],lessonMap=new Map(),busy=false;
+let list=[],lessonMap=new Map(),students=[],busy=false;
 const formatWhen=value=>{
   if(!value)return 'غير مسجل';
   try{
@@ -40,6 +40,59 @@ function details(p){
   if(p.status==='approved'&&credit>0)return `<div class="zad-pay-allocations"><b>✅ رصيد مقدم مسجل: ${money(credit)}</b><small>المبلغ متاح للحصص القادمة، ويُحسب تلقائيًا عند ظهور مستحقات.</small></div>`;
   return `<div class="zad-pay-allocations"><b>${p.targetType==='advance'?'دفعة مقدمة للحصص القادمة':'سداد مستحقات عامة'}</b><small>${p.status==='pending'?'سيحدد الرصيد المقدم والتوزيع وقت اعتماد التحويل.':p.status==='rejected'?'لم يُعتمد أي مبلغ.':'لا تتوفر بيانات توزيع هذا التحويل القديم.'}</small></div>`;
 }
+function renderStudentBalances() {
+  const container=$('zadStudentBalanceCards');if(!container)return;
+  const accounts=groupStudentAccounts(students,[...lessonMap.values()],list);
+  const term=String($('zadStudentBalanceSearch')?.value||'').trim().toLocaleLowerCase('ar');
+  const filter=$('zadStudentBalanceFilter')?.value||'all';
+  const filtered=accounts.filter(a=>{
+    const v=a.balance;
+    const name=String(a.student?.fullName||a.student?.name||a.payments[0]?.studentName||a.lessons[0]?.studentName||'طالب');
+    const email=String(a.student?.email||'');
+    if(term && !(name+' '+email).toLocaleLowerCase('ar').includes(term))return false;
+    if(filter==='credit')return v.availableToStudentPiastres>0;
+    if(filter==='debt')return v.owedByStudentPiastres>0;
+    if(filter==='clear')return v.availableToStudentPiastres===0&&v.owedByStudentPiastres===0;
+    return true;
+  }).sort((a,b)=>{
+    // أصحاب الأرصدة والمستحقات أولاً، ثم الاسم.
+    const v=a.balance,w=b.balance;
+    const activeA=Number(v.availableToStudentPiastres>0||v.owedByStudentPiastres>0);
+    const activeB=Number(w.availableToStudentPiastres>0||w.owedByStudentPiastres>0);
+    const name=x=>String(x.student?.fullName||x.student?.name||x.payments[0]?.studentName||x.lessons[0]?.studentName||'طالب');
+    return activeB-activeA || name(a).localeCompare(name(b),'ar');
+  });
+  $('zadStudentBalanceCount').textContent=`عرض ${filtered.length.toLocaleString('ar-EG')} من ${accounts.length.toLocaleString('ar-EG')} حساب طالب — كل رصيد منفصل.`;
+  container.innerHTML=filtered.length?filtered.map(a=>{
+    const b=a.balance;
+    const student=a.student||{};
+    const name=student.fullName||student.name||a.payments[0]?.studentName||a.lessons[0]?.studentName||'طالب';
+    const status=b.availableToStudentPiastres>0
+      ? `<b class="zad-balance-badge is-credit">✅ له رصيد: ${money(b.availableToStudentPiastres)}</b>`
+      : b.owedByStudentPiastres>0
+        ? `<b class="zad-balance-badge is-debt">⏳ عليه مستحقات: ${money(b.owedByStudentPiastres)}</b>`
+        : '<b class="zad-balance-badge is-zero">✔️ حسابه متوازن: 0 ج.م</b>';
+    const settlement=a.payments.filter(p=>p.status==='approved'&&isCurrentPayment(p)).reduce((s,p)=>s+(Array.isArray(p.allocations)?p.allocations.reduce((n,x)=>{
+      const lesson=lessonMap.get(String(x.attendanceId||''));
+      return n+(!lesson||lesson.deleted===true?Number(x.amountPiastres||0):0);
+    },0):0),0);
+    const item=(label,amount,extra='')=>`<div class="zad-account-cell ${extra}"><small>${label}</small><strong>${money(amount)}</strong></div>`;
+    return `<article class="zad-student-account-card" data-student-uid="${html(a.uid)}">
+      <header class="zad-student-account-header"><div><strong>${html(name)}</strong><small>${html(student.email||'معرّف الطالب: '+a.uid)}</small></div>${status}</header>
+      <div class="zad-student-account-metrics">
+        ${item('إجمالي ما حوّله واعتمدته الإدارة (السجل الجديد)',b.approvedTransfersPiastres)}
+        ${item('إجمالي قيمة الحصص المسجلة',b.totalPricePiastres)}
+        ${item('مدفوع / مسجل على الحصص (بدون تكرار التحويل)',b.paidOnLessonsPiastres)}
+        ${item('إجمالي المقدم المضاف لحسابه',b.totalAdvancePiastres)}
+        ${item('مقدم استُخدم في حصصه',b.usedAdvancePiastres)}
+        ${item('✅ رصيد مقدم متاح له الآن',b.availableToStudentPiastres,'is-credit')}
+        ${item('❌ مستحقات عليه لم يسددها',b.owedByStudentPiastres,'is-debt')}
+      </div>
+      ${settlement>0?`<p class="zad-pay-alert">⚠️ ${money(settlement)} مرتبط بحصص ملغاة ويحتاج تسوية يدوية. لم يُضَف لرصيده تلقائيًا.</p>`:''}
+    </article>`;
+  }).join(''):'<p class="zad-pay-small">لا توجد حسابات طلاب مطابقة للبحث أو الفلتر.</p>';
+}
+
 function render(){
   const filter=$('zadVodafoneFilter')?.value||'all';
   const current=list.filter(isCurrentPayment);
@@ -72,27 +125,24 @@ function render(){
   });
   $('zadVodafoneRequests').innerHTML=htmlRows.length?htmlRows.join(''):(filter==='archived'?'<p>لا توجد تحويلات سابقة محفوظة.</p>':'<p>سجل المدفوعات الجديد فارغ حاليًا. ستظهر هنا طلبات التحويل الجديدة تلقائيًا.</p>');
   $('zadVodafonePendingCount').textContent=current.filter(x=>x.status==='pending').length;
-  $('zadVodafoneApprovedAmount').textContent=money(current.filter(x=>x.status==='approved').reduce((s,x)=>s+Number(x.amountPiastres||0),0));
   const needsSettlement=current.filter(x=>x.status==='approved').reduce((sum,p)=>sum+(Array.isArray(p.allocations)?p.allocations.reduce((n,a)=>{
     const x=lessonMap.get(String(a.attendanceId||''));
     return n+(!x||x.deleted===true?Number(a.amountPiastres||0):0);
   },0):0),0);
   const box=$('zadVodafoneNeedSettlement');if(box)box.textContent=money(needsSettlement);
-  const grouped=new Map();
-  for(const l of lessonMap.values())if(l.studentUid){const v=grouped.get(l.studentUid)||{lessons:[],payments:[]};v.lessons.push(l);grouped.set(l.studentUid,v);}
-  for(const p of current)if(p.studentUid){const v=grouped.get(p.studentUid)||{lessons:[],payments:[]};v.payments.push(p);grouped.set(p.studentUid,v);}
-  const credit=[...grouped.values()].reduce((sum,v)=>sum+advanceSnapshot(v.lessons,v.payments).availableAdvancePiastres,0);
-  if($('zadVodafoneAdvanceTotal'))$('zadVodafoneAdvanceTotal').textContent=money(credit);
+  renderStudentBalances();
 }
 async function load(){
   try{
     message('جارٍ تحميل طلبات الدفع والحصص المرتبطة بها...');
-    const [snap,lessons]=await Promise.all([
+    const [snap,lessons,userDocs]=await Promise.all([
       getDocs(collection(db,'vodafonePayments')),
-      getDocs(collection(db,'lessonAttendance'))
+      getDocs(collection(db,'lessonAttendance')),
+      getDocs(collection(db,'users')).catch(error=>{console.warn('تعذر تحميل أسماء الطلاب؛ سيتم استخدام أسماء السجلات المالية',error);return null;})
     ]);
     list=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
     lessonMap=new Map(lessons.docs.map(d=>[d.id,{id:d.id,...d.data()}]));
+    students=userDocs?userDocs.docs.map(d=>({id:d.id,...d.data()})).filter(x=>x.role==='student'):[];
     render();message('سجل المدفوعات الجديد يبدأ من '+ledgerStartedAt+'؛ العمليات السابقة محفوظة في الأرشيف للمراجعة ولا تدخل في الإجماليات الجديدة.');
   }catch(e){console.error(e);message('تعذر تحميل تفاصيل المدفوعات: '+(e.code||e.message),true);}
 }
@@ -162,5 +212,8 @@ $('zadVodafoneRequests')?.addEventListener('click',async e=>{
 });
 $('zadVodafoneRefreshAdmin')?.addEventListener('click',load);
 $('zadVodafoneFilter')?.addEventListener('change',render);
+$('zadStudentBalanceSearch')?.addEventListener('input',renderStudentBalances);
+$('zadStudentBalanceFilter')?.addEventListener('change',renderStudentBalances);
 window.addEventListener('zad:attendance-archived',load);
+window.addEventListener('zad:attendance-changed',load);
 onAuthStateChanged(auth,user=>{if(user)load();});
