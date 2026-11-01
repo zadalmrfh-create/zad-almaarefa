@@ -351,7 +351,8 @@ a.hierarchy-card[href*="code-exams"] .h-sub{color:#f1f4f9!important;font-weight:
     <div id="content-type-grid" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
       <button class="hierarchy-card" onclick="selectContentType('books')"><div class="h-icon">📚</div><div class="h-title">الكتب</div><div class="h-sub">الكتب الخارجية والكتب الدراسية الكاملة</div></button>
       <button class="hierarchy-card" onclick="selectContentType('summaries')"><div class="h-icon">📝</div><div class="h-title">الملخصات</div><div class="h-sub">ملخصات ومراجعات مرتبة حسب الصف والمادة</div></button>
-      <button class="hierarchy-card" onclick="selectContentType('questions')"><div class="h-icon">❓</div><div class="h-title">الأسئلة</div><div class="h-sub">سيتم إضافة ملفات الأسئلة هنا لاحقًا</div></button>
+      <button class="hierarchy-card" onclick="selectContentType('assessments')"><div class="h-icon">📋</div><div class="h-title">التقييمات</div><div class="h-sub">التقييمات الأسبوعية والأداء الصفي والواجبات المنزلية</div></button>
+      <button class="hierarchy-card" onclick="selectContentType('questions')"><div class="h-icon">❓</div><div class="h-title">الأسئلة والامتحانات</div><div class="h-sub">نماذج امتحانات ورقية وأسئلة تدريبية</div></button>
       <a class="hierarchy-card" href="tests/code-exams.html" style="text-decoration:none;color:inherit"><div class="h-icon">📝</div><div class="h-title">الامتحانات الإلكترونية</div><div class="h-sub">امتحانات تفاعلية ينشرها المسؤول</div></a>
     </div>
   </section>
@@ -411,6 +412,7 @@ a.hierarchy-card[href*="code-exams"] .h-sub{color:#f1f4f9!important;font-weight:
       >
         🏫 المرحلة الثانوية الأزهرية
       </button>
+      <button onclick="selectStage('extra')" data-stage="extra" class="stage-btn px-5 py-3 rounded-xl text-sm font-bold" style="background-color:#1e293b;color:#94a3b8">📂 مراجع إضافية</button>
 </div>
 
   </section>
@@ -465,7 +467,7 @@ a.hierarchy-card[href*="code-exams"] .h-sub{color:#f1f4f9!important;font-weight:
        SUBJECT SELECTION
   ========================================== -->
   <section id="subject-section" class="max-w-6xl mx-auto px-4 pb-10" style="display:none">
-    <button onclick="backToGrades()" class="hierarchy-back mb-5">→ الرجوع للصفوف</button>
+    <button id="subject-back-button" onclick="backToGrades()" class="hierarchy-back mb-5">→ الرجوع للصفوف</button>
     <div class="mb-6">
       <div id="subject-crumbs" class="crumbs"></div>
       <h2 class="text-xl md:text-2xl font-bold mt-1" style="color:#f0c040">اختر المادة</h2>
@@ -1186,6 +1188,83 @@ var books = [
     popular: 88
   },
    /* =======================================================
+     التقييمات — الصف الأول الثانوي العام — فلسفة ومنطق
+     هذه الملفات متاحة للاستعراض بالاسم، والفتح عبر اشتراك المكتبتين
+  ======================================================= */
+  {
+    title: "فلسفة ومنطق — تقييمات وأداء صفي وواجب — الأسبوع الأول",
+    icon: "📋",
+    cat: "تقييمات أسبوعية",
+    grade: "1general",
+    contentType: "assessments",
+    subject: "الفلسفة والمنطق",
+    desc: "الصف الأول الثانوي العام — الفصل الدراسي الثاني — الأسبوع 1؛ التقييم الأسبوعي والأداء الصفي والواجب المنزلي، ملف PDF من 6 صفحات.",
+    url: "assessments/philosophy-logic-1general-term2-week-1.pdf",
+    date: 20261101,
+    popular: 106
+  },
+  {
+    title: "فلسفة ومنطق — تقييمات وأداء صفي وواجب — الأسبوع الثاني",
+    icon: "📋",
+    cat: "تقييمات أسبوعية",
+    grade: "1general",
+    contentType: "assessments",
+    subject: "الفلسفة والمنطق",
+    desc: "الصف الأول الثانوي العام — الفصل الدراسي الثاني — الأسبوع 2؛ التقييم الأسبوعي والأداء الصفي والواجب المنزلي، ملف PDF من 6 صفحات.",
+    url: "assessments/philosophy-logic-1general-term2-week-2.pdf",
+    date: 20261101,
+    popular: 105
+  },
+  {
+    title: "فلسفة ومنطق — ثلاثة نماذج للتقييم — الأسبوع الثالث",
+    icon: "📋",
+    cat: "تقييمات أسبوعية",
+    grade: "1general",
+    contentType: "assessments",
+    subject: "الفلسفة والمنطق",
+    desc: "الصف الأول الثانوي العام — الفصل الدراسي الثاني — الأسبوع 3؛ ثلاثة نماذج تقييم أسبوعي، ملف PDF من 3 صفحات.",
+    url: "assessments/philosophy-logic-1general-term2-week-3.pdf",
+    date: 20261101,
+    popular: 104
+  },
+  {
+    title: "فلسفة ومنطق — تقييمات وأداء صفي وواجب — الأسبوع الرابع",
+    icon: "📋",
+    cat: "تقييمات أسبوعية",
+    grade: "1general",
+    contentType: "assessments",
+    subject: "الفلسفة والمنطق",
+    desc: "الصف الأول الثانوي العام — الفصل الدراسي الثاني — الأسبوع 4؛ التقييم الأسبوعي والأداء الصفي والواجب المنزلي، ملف PDF من 6 صفحات.",
+    url: "assessments/philosophy-logic-1general-term2-week-4.pdf",
+    date: 20261101,
+    popular: 103
+  },
+  {
+    title: "فلسفة ومنطق — تقييمات وأداء صفي وواجب — الأسبوع الخامس",
+    icon: "📋",
+    cat: "تقييمات أسبوعية",
+    grade: "1general",
+    contentType: "assessments",
+    subject: "الفلسفة والمنطق",
+    desc: "الصف الأول الثانوي العام — الفصل الدراسي الثاني — الأسبوع 5؛ التقييم الأسبوعي والأداء الصفي والواجب المنزلي، ملف PDF من 6 صفحات.",
+    url: "assessments/philosophy-logic-1general-term2-week-5.pdf",
+    date: 20261101,
+    popular: 102
+  },
+  {
+    title: "فلسفة ومنطق — تقييمات وأداء صفي وواجب — الأسبوع السادس",
+    icon: "📋",
+    cat: "تقييمات أسبوعية",
+    grade: "1general",
+    contentType: "assessments",
+    subject: "الفلسفة والمنطق",
+    desc: "الصف الأول الثانوي العام — الفصل الدراسي الثاني — الأسبوع 6؛ التقييم الأسبوعي والأداء الصفي والواجب المنزلي، ملف PDF من 5 صفحات.",
+    url: "assessments/philosophy-logic-1general-term2-week-6.pdf",
+    date: 20261101,
+    popular: 101
+  },
+
+  /* =======================================================
      ملخصات الصف الأول الثانوي — بكالوريا — التاريخ
   ======================================================= */
   {
@@ -2271,6 +2350,17 @@ var books = [
     popular: 100
   },
 
+  /* === ملفات إضافية — نوفمبر 2026، مصنفة حسب نوعها وصفها === */
+  {"title": "المصدر في التاريخ – الدرس الأول (أولى بكالوريا 2027)", "icon": "📘", "cat": "مواد اجتماعية", "grade": "1bac", "contentType": "books", "subject": "التاريخ", "desc": "كتاب المصدر – البكالوريا المصرية، الدرس الأول: بناء الدولة المصرية واستمرارها عبر التاريخ، 2027. نسخة الدرس الأول وليست الكتاب كاملًا. (36 صفحة PDF).", "url": "resources/history-1bac-2027-almasdar-lesson1.pdf", "date": 20261101, "popular": 98},
+  {"title": "نماذج امتحانات التاريخ – ثانية ثانوي أزهري – ترم أول", "icon": "📝", "cat": "مواد اجتماعية", "grade": "2sec", "contentType": "questions", "subject": "التاريخ", "desc": "نماذج امتحانات ورقية لمادة التاريخ للصف الثاني الثانوي الأزهري، الفصل الدراسي الأول. (20 صفحة PDF).", "url": "resources/history-2sec-azhar-term1-past-exams.pdf", "date": 20261101, "popular": 98},
+  {"title": "مذكرة القيصر محمد طلبة – التاريخ: مدخل الحضارة", "icon": "📝", "cat": "مواد اجتماعية", "grade": "1general", "contentType": "summaries", "subject": "التاريخ", "desc": "مذكرة شرح وأسئلة لموضوع مدخل دراسة حضارة مصر وحضارات العالم. مصنفة أولى ثانوي عام بحسب موضوعها، مع عدم ظهور الصف صراحة على غلاف الملف. (37 صفحة PDF).", "url": "resources/history-1general-alqaysar-mohamed-talaba.pdf", "date": 20261101, "popular": 98},
+  {"title": "البيان في العروض والقافية – ثانية ثانوي أزهري أدبي 2027", "icon": "📙", "cat": "لغة عربية", "grade": "2sec", "contentType": "books", "subject": "العروض والقافية", "desc": "العروض والقافية للصف الثاني الثانوي الأزهري – القسم الأدبي، الفصل الدراسي الأول 2027. (54 صفحة PDF).", "url": "resources/prosody-rhyme-2sec-azhar-literary-2027.pdf", "date": 20261101, "popular": 98},
+  {"title": "مذكرة علم النفس – ثانية ثانوي أزهري – علملوجيا", "icon": "🧠", "cat": "مواد متنوعة", "grade": "2sec", "contentType": "summaries", "subject": "علم النفس", "desc": "مذكرة علم النفس للصف الثاني الثانوي الأزهري، الفصل الدراسي الأول، سلسلة علملوجيا. (31 صفحة PDF).", "url": "resources/psychology-2sec-azhar-term1-elmologia.pdf", "date": 20261101, "popular": 98},
+  {"title": "الأوائل – امتحانات الفقه الحنفي – ثانية ثانوي أزهري", "icon": "⚖️", "cat": "مواد شرعية", "grade": "2sec", "contentType": "questions", "subject": "الفقه الحنفي", "desc": "نماذج امتحانات الفقه الحنفي للصف الثاني الثانوي الأزهري، الفصل الدراسي الأول؛ تشمل القسمين حسب ما ورد في الملف. (17 صفحة PDF).", "url": "resources/fiqh-hanafi-2sec-azhar-term1-exams.pdf", "date": 20261101, "popular": 98},
+  {"title": "البيان في النحو – ثانية ثانوي أزهري أدبي 2027", "icon": "📗", "cat": "لغة عربية", "grade": "2sec", "contentType": "books", "subject": "النحو", "desc": "شرح وتدريبات النحو للصف الثاني الثانوي الأزهري – القسم الأدبي، الفصل الدراسي الأول 2027. (120 صفحة PDF).", "url": "resources/nahw-2sec-azhar-literary-2027.pdf", "date": 20261101, "popular": 98},
+  {"title": "البيان في النحو – ثانية ثانوي أزهري علمي 2027", "icon": "📗", "cat": "لغة عربية", "grade": "2sec", "contentType": "books", "subject": "النحو", "desc": "شرح وتدريبات النحو للصف الثاني الثانوي الأزهري – القسم العلمي، الفصل الدراسي الأول 2027. (65 صفحة PDF).", "url": "resources/nahw-2sec-azhar-science-2027.pdf", "date": 20261101, "popular": 98},
+  {"title": "اللورد في الجغرافيا – مذكرة ثانية ثانوي – ترم أول", "icon": "🌍", "cat": "مواد اجتماعية", "grade": "2general", "contentType": "summaries", "subject": "الجغرافيا", "desc": "مذكرة اللورد في الجغرافيا، إعداد أ/ إسلام هليل، للصف الثاني الثانوي. لا يذكر الغلاف أنها للأزهر. (70 صفحة PDF).", "url": "resources/geography-2general-term1-al-lord-notes.pdf", "date": 20261101, "popular": 98},
+  {"title": "سلسلة الحكمة في التاريخ – مذكرة ثانية ثانوي – ترم أول", "icon": "🏛️", "cat": "مواد اجتماعية", "grade": "2general", "contentType": "summaries", "subject": "التاريخ", "desc": "مذكرة سلسلة الحكمة في التاريخ للصف الثاني الثانوي، الفصل الدراسي الأول؛ تبدأ بحضارات شبه الجزيرة العربية، ولا يذكر الغلاف أنها للأزهر. (119 صفحة PDF).", "url": "resources/history-2general-term1-hekma-notes.pdf", "date": 20261101, "popular": 98},
 ];
 
 
@@ -2292,6 +2382,12 @@ let isDarkMode = true;
 ========================================================= */
 
 const grades = {
+
+  extra: [
+    {id:"1bac", name:"أولى ثانوي — بكالوريا", icon:"📘"},
+    {id:"1general", name:"أولى ثانوي — عام", icon:"📗"},
+    {id:"2general", name:"ثانية ثانوي — عام", icon:"📙"}
+  ],
 
   prep: [
 
@@ -2414,7 +2510,7 @@ function renderGrades() {
   label.textContent =
     currentStage === "prep"
       ? "المرحلة الإعدادية"
-      : "المرحلة الثانوية الأزهرية";
+      : currentStage === "extra" ? "المراجع الإضافية" : "المرحلة الثانوية الأزهرية";
 
 
   grades[currentStage].forEach(
@@ -2880,7 +2976,7 @@ function renderBooks(filtered) {
         </div>
 
         <div class="text-lg font-bold mb-2">
-          لا توجد كتب حاليًا
+          ${currentContentType === "assessments" ? "لا توجد تقييمات حاليًا" : "لا توجد كتب حاليًا"}
         </div>
 
         <div class="text-sm">
@@ -2909,7 +3005,9 @@ function renderBooks(filtered) {
 
       const materialType = getMaterialType(book);
       const isQuestion = materialType === "questions";
+      const isPaperExam = isQuestion && /\.pdf(?:[?#]|$)/i.test(book.url || "");
       const isSummary = materialType === "summaries";
+      const isAssessment = materialType === "assessments";
       const card =
         document.createElement("div");
 
@@ -2972,7 +3070,7 @@ function renderBooks(filtered) {
 
 
         <div class="book-tools" style="margin-bottom:10px">
-          ${isQuestion ? `<a class="book-tool" style="text-align:center;text-decoration:none" href="${bookGateLink(book)}">📝 فتح الاختبار مباشرة</a>` : `<a class="book-tool" style="text-align:center;text-decoration:none" href="book.html?title=${encodeURIComponent(book.title)}&url=${encodeURIComponent(book.url)}&cat=${encodeURIComponent(book.cat||'')}&grade=${encodeURIComponent(book.grade||'')}&desc=${encodeURIComponent(book.desc||'')}&icon=${encodeURIComponent(book.icon||'📘')}">ℹ️ التفاصيل والمعاينة</a>`}
+          ${isQuestion && !isPaperExam ? `<a class="book-tool" style="text-align:center;text-decoration:none" href="${bookGateLink(book)}">📝 فتح الاختبار مباشرة</a>` : `<a class="book-tool" style="text-align:center;text-decoration:none" href="book.html?title=${encodeURIComponent(book.title)}&url=${encodeURIComponent(book.url)}&cat=${encodeURIComponent(book.cat||'')}&grade=${encodeURIComponent(book.grade||'')}&desc=${encodeURIComponent(book.desc||'')}&icon=${encodeURIComponent(book.icon||'📘')}">ℹ️ التفاصيل والمعاينة</a>`}
         </div>
         <!-- DOWNLOAD -->
 
@@ -2986,8 +3084,8 @@ function renderBooks(filtered) {
             text-decoration:none;
           "
         >
-          <i data-lucide="${isQuestion ? 'circle-play' : (isSummary ? 'file-text' : 'download')}" style="width:18px;height:18px;"></i>
-          ${isQuestion ? 'ابدأ الاختبار' : (isSummary ? 'فتح / تحميل الملخص' : 'تحميل / فتح الكتاب')}
+          <i data-lucide="${isQuestion && !isPaperExam ? 'circle-play' : (isAssessment ? 'clipboard-list' : (isSummary ? 'file-text' : 'download'))}" style="width:18px;height:18px;"></i>
+          ${isQuestion ? (isPaperExam ? 'فتح / تحميل الامتحان' : 'ابدأ الاختبار') : (isAssessment ? 'فتح / تحميل التقييم' : (isSummary ? 'فتح / تحميل الملخص' : 'تحميل / فتح الكتاب'))}
         </a>
         <div class="book-tools">
           <button type="button" class="book-tool favorite-btn" data-book-key="${encodeURIComponent(book.title + "|" + book.url)}">☆ المفضلة</button>
@@ -3476,7 +3574,8 @@ let currentSubject = null;
 const contentTypeMeta = {
   books: {name:"الكتب", icon:"📚"},
   summaries: {name:"الملخصات", icon:"📝"},
-  questions: {name:"الأسئلة", icon:"❓"}
+  assessments: {name:"التقييمات", icon:"📋"},
+  questions: {name:"الأسئلة والامتحانات", icon:"❓"}
 };
 
 function getMaterialType(book){
@@ -3484,6 +3583,7 @@ function getMaterialType(book){
   // كل المحتوى الموجود حاليًا — بما فيه ملفات الأسئلة/التدريبات/الامتحانات القديمة — يبقى داخل قسم الكتب.
   const explicitType=(book.contentType||book.materialType||"").toLowerCase();
   if(explicitType==="summaries") return "summaries";
+  if(explicitType==="assessments") return "assessments";
   if(explicitType==="questions") return "questions";
   if(explicitType==="books") return "books";
   return "books";
@@ -3527,7 +3627,7 @@ function subjectIcon(subject){
     "القرآن الكريم":"📖","التفسير":"📖","التوحيد":"☝️","الحديث":"🕌","الفقه":"⚖️","السيرة":"🌙",
     "النحو":"✍️","الصرف":"🔤","البلاغة":"🗣️","الأدب":"📜","اللغة العربية":"📘",
     "العلوم المتكاملة":"🔬","العلوم":"🧪","الرياضيات":"📐","اللغة الإنجليزية":"🇬🇧","اللغة الفرنسية":"🇫🇷",
-    "الفلسفة والمنطق":"💭","التاريخ":"🏛️","الدراسات الاجتماعية":"🌍","البرمجة وتكنولوجيا المعلومات":"💻",
+    "الفلسفة والمنطق":"💭","العروض والقافية":"🎵","الفقه الحنفي":"⚖️","التاريخ":"🏛️","الدراسات الاجتماعية":"🌍","البرمجة وتكنولوجيا المعلومات":"💻",
     "الكيمياء":"🧪","الفيزياء":"⚛️","الجغرافيا":"🌍","علم النفس":"🧠","الأعمال Business":"💼",
     "العلوم الشرعية":"🕌","مواد علمية":"🔬","اللغات":"🌐","مواد متنوعة":"📚"
   };
@@ -3536,14 +3636,29 @@ function subjectIcon(subject){
 
 function stageName(){
   return currentStage==="prep" ? "المرحلة الإعدادية"
-       : "المرحلة الثانوية الأزهرية";
+       : currentStage==="extra" ? "المراجع الإضافية" : "المرحلة الثانوية الأزهرية";
 }
 function gradeName(id){
-  return ({"1prep":"الصف الأول الإعدادي","2prep":"الصف الثاني الإعدادي","3prep":"الصف الثالث الإعدادي","1sec":"الصف الأول الثانوي","2sec":"الصف الثاني الثانوي","3sec":"الصف الثالث الثانوي","1bac":"الصف الأول الثانوي — بكالوريا","1general":"الصف الأول الثانوي العام"})[id]||id;
+  return ({"1prep":"الصف الأول الإعدادي","2prep":"الصف الثاني الإعدادي","3prep":"الصف الثالث الإعدادي","1sec":"الصف الأول الثانوي","2sec":"الصف الثاني الثانوي","3sec":"الصف الثالث الثانوي","1bac":"الصف الأول الثانوي — بكالوريا","1general":"الصف الأول الثانوي العام","2general":"الصف الثاني الثانوي العام"})[id]||id;
 }
 
 function selectContentType(type){
   currentContentType=type; currentSubject=null; currentGrade=null;
+  // التقييمات للقسم العام فقط، دون إعادة زري الثانوية العامة والبكالوريا المحذوفين.
+  if(type === "assessments"){
+    currentGrade="1general";
+    currentFilter="all";
+    currentSort="popular";
+    document.getElementById("content-type-section").style.display="none";
+    document.getElementById("stage-section").style.display="none";
+    document.getElementById("grade-section").style.display="none";
+    document.getElementById("library-section").style.display="none";
+    document.getElementById("library-smart").style.display="none";
+    renderSubjects();
+    document.getElementById("subject-section").style.display="block";
+    document.getElementById("subject-section").scrollIntoView({behavior:"smooth",block:"start"});
+    return;
+  }
   document.getElementById("content-type-section").style.display="none";
   document.getElementById("stage-section").style.display="block";
   document.getElementById("grade-section").style.display="none";
@@ -3579,7 +3694,11 @@ function renderSubjects(){
   const grid=document.getElementById("subject-grid");
   const crumb=document.getElementById("subject-crumbs");
   const typeName=contentTypeMeta[currentContentType]?.name||"المحتوى";
-  crumb.textContent=typeName+" ← "+stageName()+" ← "+gradeName(currentGrade);
+  const backButton=document.getElementById("subject-back-button");
+  if(backButton) backButton.textContent=currentContentType==="assessments" ? "→ الرجوع للأقسام" : "→ الرجوع للصفوف";
+  crumb.textContent=currentContentType==="assessments"
+    ? "التقييمات ← الصف الأول الثانوي العام"
+    : typeName+" ← "+stageName()+" ← "+gradeName(currentGrade);
   const relevant=books.filter(b=>b.grade===currentGrade && getMaterialType(b)===currentContentType);
   const counts={}; relevant.forEach(b=>{const s=getBookSubject(b);counts[s]=(counts[s]||0)+1;});
   const subjects=Object.keys(counts).sort((a,b)=>a.localeCompare(b,"ar"));
@@ -3635,6 +3754,10 @@ function backToStages(){
 }
 
 function backToGrades(){
+  if(currentContentType==="assessments"){
+    backToContentTypes();
+    return;
+  }
   document.getElementById("subject-section").style.display="none";
   document.getElementById("library-section").style.display="none";
   document.getElementById("library-smart").style.display="none";
