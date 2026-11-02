@@ -85,6 +85,18 @@ onAuthStateChanged(auth, async (user) => {
 .zad-subject-options input{width:18px;height:18px;accent-color:#d6ab32;margin:0;flex:none}
 </style><link rel="stylesheet" href="student-comprehensive-report.css">
 <link rel="stylesheet" href="../vodafone-payment.css">
+<style id="zad-attendance-log-filter-styles">
+.zad-attendance-log-filters{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:14px 0 10px;padding:16px;border:1px solid #364862;border-radius:15px;background:#111f34}
+.zad-attendance-log-filters label{display:flex;flex-direction:column;gap:7px;color:#e9edf5;font-weight:700;font-size:13px;min-width:0}
+.zad-attendance-log-filters input,.zad-attendance-log-filters select{width:100%;min-width:0;min-height:43px;padding:9px 11px;border:1px solid #475a74;border-radius:9px;color:#fff;background:#101a2d;color-scheme:dark;font:inherit;outline:none}
+.zad-attendance-log-filters input:focus-visible,.zad-attendance-log-filters select:focus-visible{border-color:#edc34b;box-shadow:0 0 0 2px #edc34b33}
+.zad-attendance-log-filters .zad-attendance-filter-search{grid-column:span 2}
+.zad-attendance-log-filters #attendanceLogClear{align-self:end;min-height:43px;white-space:nowrap}
+.zad-attendance-log-count{color:#eac866;font-weight:700;margin:4px 0 12px;font-size:14px}
+@media(max-width:900px){.zad-attendance-log-filters{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.zad-attendance-log-filters{grid-template-columns:minmax(0,1fr)}.zad-attendance-log-filters .zad-attendance-filter-search{grid-column:span 1}.zad-attendance-log-filters #attendanceLogClear{width:100%}}
+</style>
+
 </head>
 
 
@@ -729,6 +741,31 @@ onAuthStateChanged(auth, async (user) => {
         <div class="attendance-full attendance-actions"><button class="btn gold" type="submit">💾 حفظ سجل الحضور</button><button id="refreshAttendance" class="btn" type="button">🔄 تحديث السجلات</button><span id="attendanceMessage" aria-live="polite"></span></div>
       </form>
       <h3>📚 سجل الحضور والغياب</h3>
+      <div class="zad-attendance-log-filters" id="attendanceLogFilters" dir="rtl" role="search" aria-label="البحث وتصفية سجلات الحضور والغياب">
+        <label class="zad-attendance-filter-search">🔎 بحث عن طالب
+          <input id="attendanceLogSearch" type="search" placeholder="اسم الطالب أو البريد الإلكتروني" autocomplete="off">
+        </label>
+        <label>📚 المادة
+          <select id="attendanceLogSubject"><option value="all">جميع المواد</option></select>
+        </label>
+        <label>👨‍🏫 المعلم
+          <select id="attendanceLogTeacher"><option value="all">جميع المعلمين</option></select>
+        </label>
+        <label>✅ الحضور
+          <select id="attendanceLogStatus"><option value="all">حضور وغياب</option><option value="حاضر">حاضر فقط</option><option value="غائب">غائب فقط</option><option value="اعتذر">اعتذر</option></select>
+        </label>
+        <label>💳 حالة الدفع
+          <select id="attendanceLogPayment"><option value="all">كل حالات الدفع</option><option value="paid">مدفوعة بالكامل</option><option value="partial">مدفوعة جزئيًا</option><option value="unpaid">غير مدفوعة</option><option value="owed">عليها مبلغ متبقٍ</option><option value="free">مجانية</option></select>
+        </label>
+        <label>📅 من تاريخ
+          <input id="attendanceLogFrom" type="date">
+        </label>
+        <label>📅 إلى تاريخ
+          <input id="attendanceLogTo" type="date">
+        </label>
+        <button id="attendanceLogClear" class="btn" type="button">↺ مسح التصفية</button>
+      </div>
+      <p id="attendanceLogCount" class="zad-attendance-log-count" role="status" aria-live="polite">جارٍ تحميل السجلات...</p>
       <div class="table-wrap"><table class="table"><thead><tr><th>الطالب</th><th>التاريخ</th><th>المادة</th><th>الحالة</th><th>سعر الحصة</th><th>الدفع</th><th>سجله</th><th>إجراء</th></tr></thead><tbody id="attendanceRows"><tr><td colspan="8">جارٍ تحميل السجلات...</td></tr></tbody></table></div><details class="zad-pay-archive-history" dir="rtl"><summary>🗃️ الحصص الملغاة — سجل محفوظ للمراجعة والاسترجاع</summary><div id="zadArchivedAttendanceList">جارٍ التحميل...</div></details>
       <div id="attendanceStudentSummary" class="attendance-summary" aria-live="polite">
 <h3>📊 ملخص حضور الطلاب والمبالغ المدفوعة</h3>

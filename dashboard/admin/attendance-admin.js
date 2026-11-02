@@ -76,16 +76,90 @@ function money(v) {
   return Number(v || 0).toLocaleString('ar-EG', { maximumFractionDigits: 2 }) + ' ج.م';
 }
 
+// واجهة البحث والتصفية لسجل الحضور: عرض فقط، ولا تغير أو تحذف أي بيانات.
+const logFilterIds = ['attendanceLogSearch','attendanceLogSubject','attendanceLogTeacher','attendanceLogStatus','attendanceLogPayment','attendanceLogFrom','attendanceLogTo'];
+const logFilterValue = (id, fallback = '') => $(id)?.value || fallback;
+const asSearchText = v => String(v ?? '').trim().toLocaleLowerCase('ar');
+function subjectsOfAttendance(record) {
+  const parts = Array.isArray(record.subjects) && record.subjects.length
+    ? record.subjects
+    : String(record.subject ?? '').split(/[،,]/);
+  return parts.map(v => String(v).trim()).filter(Boolean);
+}
+function syncAttendanceLogOptions(id, names, defaultLabel) {
+  const select = $(id);
+  if (!select) return;
+  const current = select.value;
+  const options = [{value:'all', label:defaultLabel}, ...names.map(name=>({value:name,label:name}))];
+  // لا تستبدل الخيارات إذا لم تتغير حتى يظل التركيز والقائمة المنسدلة مستقرين.
+  if (select.options.length !== options.length || options.some((opt,i)=>select.options[i]?.value!==opt.value)) {
+    select.replaceChildren(...options.map(opt=>new Option(opt.label,opt.value)));
+  }
+  select.value = options.some(opt=>opt.value===current) ? current : 'all';
+}
+function attendanceLogRemaining(record) {
+  const applied = creditFor(record);
+  return applied ? applied.afterPiastres : amountRemaining(record);
+}
+function matchesAttendancePayment(record, mode) {
+  if (mode === 'all') return true;
+  const due = amountDue(record);
+  const remaining = attendanceLogRemaining(record);
+  if (mode === 'free') return due === 0;
+  if (mode === 'paid') return due > 0 && remaining === 0;
+  if (mode === 'partial') return due > 0 && remaining > 0 && remaining < due;
+  if (mode === 'unpaid') return due > 0 && remaining === due;
+  if (mode === 'owed') return due > 0 && remaining > 0;
+  return true;
+}
+function filteredAttendanceRecords() {
+  const search = asSearchText(logFilterValue('attendanceLogSearch'));
+  const subject = logFilterValue('attendanceLogSubject','all');
+  const teacher = logFilterValue('attendanceLogTeacher','all');
+  const status = logFilterValue('attendanceLogStatus','all');
+  const payment = logFilterValue('attendanceLogPayment','all');
+  const dateFrom = logFilterValue('attendanceLogFrom');
+  const dateTo = logFilterValue('attendanceLogTo');
+  const studentsById = new Map(students.map(student=>[student.id,student]));
+  return records.filter(record=>{
+    if (search) {
+      const student = studentsById.get(record.studentUid);
+      const haystack = [record.studentName,student?.fullName,student?.name,student?.email]
+        .map(asSearchText).join(' ');
+      if (!haystack.includes(search)) return false;
+    }
+    if (subject !== 'all' && !subjectsOfAttendance(record).includes(subject)) return false;
+    if (teacher !== 'all' && (record.teacherName || 'الإدارة') !== teacher) return false;
+    if (status !== 'all' && record.status !== status) return false;
+    if (!matchesAttendancePayment(record,payment)) return false;
+    const date = String(record.date || '').slice(0,10);
+    if (dateFrom && (!date || date < dateFrom)) return false;
+    if (dateTo && (!date || date > dateTo)) return false;
+    return true;
+  });
+}
+function renderAttendanceLog(){
+  if (!rows) return;
+  const subjects=[...new Set(records.flatMap(subjectsOfAttendance))].sort((a,b)=>a.localeCompare(b,'ar'));
+  const teachers=[...new Set(records.map(record=>record.teacherName || 'الإدارة'))].sort((a,b)=>a.localeCompare(b,'ar'));
+  syncAttendanceLogOptions('attendanceLogSubject',subjects,'جميع المواد');
+  syncAttendanceLogOptions('attendanceLogTeacher',teachers,'جميع المعلمين');
+  const matches=filteredAttendanceRecords();
+  const counter=$('attendanceLogCount');
+  if(counter) counter.textContent = `عرض ${matches.length.toLocaleString('ar-EG')} من إجمالي ${records.length.toLocaleString('ar-EG')} سجل حضور وغياب`;
+  rows.innerHTML = matches.length ? matches.map(x=>`<tr>
+    <td>${esc(x.studentName || '-')}</td><td>${esc(x.date || '-')}</td><td>${esc(x.subject || '-')}</td>
+    <td>${esc(x.status || '-')}</td><td>${money(x.price)}</td>
+    <td><button type="button" class="btn ${x.paid === true ? 'gold' : ''}" data-paid="${esc(x.id)}" aria-label="تغيير حالة الدفع">${creditFor(x)?.afterPiastres===0?'✅ مغطاة / مدفوعة':creditFor(x)?.advanceAppliedPiastres>0?'🟡 جزء مغطى بالمقدم، المتبقي '+cashMoney(creditFor(x).afterPiastres):amountRemaining(x)===0?'✅ مدفوعة':amountPaid(x)>0?'🟡 مدفوع جزئيًا '+cashMoney(amountPaid(x)):'⏳ غير مدفوعة'}</button></td>
+    <td>${esc(x.teacherName || 'الإدارة')}</td><td><button type="button" class="btn" data-edit="${esc(x.id)}">✏️ تعديل الحصة</button> <button type="button" class="btn danger" data-del="${esc(x.id)}">حذف</button></td></tr>`).join('') : `<tr><td colspan="8">${records.length?'لا توجد حصص مطابقة للبحث والتصفية. جرّب مسح الفلاتر.':'لا توجد سجلات حضور بعد.'}</td></tr>`;
+}
+
 function render() {
   const history=$('zadArchivedAttendanceList');
   if(history){
     history.innerHTML=cancelledRecords.length?cancelledRecords.map(x=>`<article class="zad-pay-archived-row"><span><b>${esc(x.studentName||'طالب')}</b> · ${esc(x.date||'—')} · ${esc(x.subject||'حصة')}<small>السعر: ${money(x.price)} · المدفوع المسجل: ${cashMoney(amountPaid(x))}${Number(x.cashPaidPiastres||0)>0?' · ⚠️ يحتاج مراجعة مالية':''}</small></span><button type="button" class="btn" data-restore-attendance="${esc(x.id)}">↩ استرجاع الحصة</button></article>`).join(''):'<p>لا توجد حصص ملغاة.</p>';
   }
-  rows.innerHTML = records.length ? records.map(x => `<tr>
-    <td>${esc(x.studentName || '-')}</td><td>${esc(x.date || '-')}</td><td>${esc(x.subject || '-')}</td>
-    <td>${esc(x.status || '-')}</td><td>${money(x.price)}</td>
-    <td><button type="button" class="btn ${x.paid === true ? 'gold' : ''}" data-paid="${esc(x.id)}" aria-label="تغيير حالة الدفع">${creditFor(x)?.afterPiastres===0?'✅ مغطاة / مدفوعة':creditFor(x)?.advanceAppliedPiastres>0?'🟡 جزء مغطى بالمقدم، المتبقي '+cashMoney(creditFor(x).afterPiastres):amountRemaining(x)===0?'✅ مدفوعة':amountPaid(x)>0?'🟡 مدفوع جزئيًا '+cashMoney(amountPaid(x)):'⏳ غير مدفوعة'}</button></td>
-    <td>${esc(x.teacherName || 'الإدارة')}</td><td><button type="button" class="btn" data-edit="${esc(x.id)}">✏️ تعديل الحصة</button> <button type="button" class="btn danger" data-del="${esc(x.id)}">حذف</button></td></tr>`).join('') : '<tr><td colspan="8">لا توجد سجلات حضور بعد.</td></tr>';
+  renderAttendanceLog();
 
   const summarySearch = String($('attendanceSummarySearch')?.value || '').trim().toLocaleLowerCase('ar');
   const subjectFilter = $('attendanceSummarySubject')?.value || 'all';
@@ -313,6 +387,17 @@ rows?.addEventListener('click', async e => {
   }
 });
 
+for (const id of logFilterIds) {
+  const control = $(id);
+  control?.addEventListener(['attendanceLogSearch'].includes(id) ? 'input' : 'change',renderAttendanceLog);
+}
+$('attendanceLogClear')?.addEventListener('click',()=>{
+  for (const id of logFilterIds) {
+    const control=$(id);
+    if (control) control.value = control.tagName === 'SELECT' ? 'all' : '';
+  }
+  renderAttendanceLog();
+});
 $('refreshAttendance')?.addEventListener('click', load);
 window.addEventListener('zad:payment-approved', load);
 $('attendanceSummarySearch')?.addEventListener('input', render);
