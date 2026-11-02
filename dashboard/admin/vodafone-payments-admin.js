@@ -1,11 +1,12 @@
 /* إدارة تحويلات فودافون كاش: إظهار مصدر التحويل، توقيته والحصص المرتبطة به؛ دون حذف سجلات مالية معتمدة. */
 import {auth,db} from '../../firebase-config.js';
 import {onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
-import {collection,doc,getDocs,query,where,runTransaction,serverTimestamp} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
+import {collection,doc,getDoc,getDocs,query,where,runTransaction,serverTimestamp} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 import {amountDue,amountPaid,amountRemaining,money,html,isCharge} from '../payment-utils.js';
 import {isCurrentPayment,ledgerStartedAt} from '../payment-ledger-period.js';
 import {groupStudentAccounts,hasStudentFinancialActivity} from '../student-account-balance.js';
 import {studentPaymentBreakdown} from '../student-payment-breakdown.js';
+import {paymentReceiptHtml,paymentReceiptSummary} from '../payment-receipt.js';
 const $=id=>document.getElementById(id);
 let list=[],lessonMap=new Map(),students=[],busy=false;
 const formatWhen=value=>{
@@ -60,7 +61,7 @@ function studentFinancialDetails(account){
     </tr>`).join('')}</tbody>
   </table></div>`:'<p class="zad-pay-small">لم تُسجَّل حصص مالية لهذا الطالب بعد.</p>';
   const transfersMarkup=transfers.length?`<div class="zad-student-detail-table-wrap"><table class="zad-student-detail-table">
-    <thead><tr><th>التاريخ</th><th>نوع الدفعة</th><th>قيمة التحويل</th><th>الموزع على الحصص</th><th>المقدم المحفوظ</th><th>حالة التحويل</th><th>المرجع</th></tr></thead>
+    <thead><tr><th>التاريخ</th><th>نوع الدفعة</th><th>قيمة التحويل</th><th>الموزع على الحصص</th><th>المقدم المحفوظ</th><th>حالة التحويل</th><th>المرجع</th><th>الإيصال</th></tr></thead>
     <tbody>${transfers.map(p=>{
       const allocated=p.allocations.reduce((sum,a)=>sum+Math.max(0,Number(a.amountPiastres)||0),0);
       const approved=p.status==='approved';
@@ -70,7 +71,7 @@ function studentFinancialDetails(account){
       const state=p.archived?'📁 أرشيف (خارج الإجماليات)':p.status==='approved'?'✅ معتمد':p.status==='pending'?'⏳ بانتظار الاعتماد':p.status==='rejected'?'❌ مرفوض':'غير محدد';
       return `<tr><td>${html(formatWhen(p.createdAt))}</td><td>${html(studentPaymentType(p))}</td>
         <td>${money(p.amountPiastres)}</td><td>${paidParts}</td><td>${credit}</td>
-        <td>${html(state)}</td><td>${html(p.reference||'—')}</td></tr>`;
+        <td>${html(state)}</td><td>${html(p.reference||'—')}</td><td>${approved&&current?`<button type="button" class="btn zad-receipt-btn" data-action="receipt" data-payment-id="${html(p.id)}">🧾 طباعة الإيصال</button>`:'—'}</td></tr>`;
     }).join('')}</tbody></table></div>`:'<p class="zad-pay-small">لا يوجد سجل تحويلات لهذا الطالب حتى الآن.</p>';
   return `<details class="zad-student-detail-disclosure" data-student-detail="${html(account.uid)}">
     <summary>📋 عرض تفاصيل ما دفعه الطالب، والمقدم، والمؤخر، والحصص المدفوعة وغير المدفوعة</summary>
@@ -172,6 +173,7 @@ function render(){
         ${p.adminNote?`<small>رد الإدارة: ${html(p.adminNote)}</small>`:''}
       </div>
       ${p.status==='pending' && filter!=='archived'?`<div class="zad-pay-request-actions"><button class="btn gold" type="button" data-action="approve" ${busy?'disabled':''}>✅ اعتماد التحويل</button><button class="btn" type="button" data-action="reject" ${busy?'disabled':''}>❌ رفض</button></div>`:''}
+      ${p.status==='approved'&&isCurrentPayment(p)?`<div class="zad-pay-request-actions zad-pay-receipt-actions"><button class="btn gold" type="button" data-action="receipt">🧾 معاينة وطباعة الإيصال / حفظ PDF</button><button class="btn" type="button" data-action="receipt-copy">📋 نسخ تفاصيل الإيصال</button></div>`:''}
     </article>`;
   });
   $('zadVodafoneRequests').innerHTML=htmlRows.length?htmlRows.join(''):(filter==='archived'?'<p>لا توجد تحويلات سابقة محفوظة.</p>':'<p>سجل المدفوعات الجديد فارغ حاليًا. ستظهر هنا طلبات التحويل الجديدة تلقائيًا.</p>');
@@ -199,7 +201,7 @@ async function load(){
 }
 async function approve(p){
   if(p.reference && list.some(x=>x.id!==p.id && x.status==='approved' && x.reference?.trim()===p.reference.trim() && x.senderPhone===p.senderPhone))throw new Error('المرجع مستخدم في تحويل معتمد من نفس الهاتف.');
-  if(!window.confirm('هل تأكدت بنفسك من وصول '+money(p.amountPiastres)+' إلى المحفظة 01042239704 وأن رقم العملية لم يُعتمد من قبل؟'))return;
+  if(!window.confirm('هل تأكدت بنفسك من وصول '+money(p.amountPiastres)+' إلى المحفظة 01042239704 وأن رقم العملية لم يُعتمد من قبل؟'))return false;
   const found=await getDocs(query(collection(db,'lessonAttendance'),where('studentUid','==',p.studentUid)));
   const candidates=found.docs.map(d=>({id:d.id,ref:d.ref,...d.data()})).filter(isCharge)
     .filter(x=>p.targetType==='advance'?false:p.targetType==='lessons'?(Array.isArray(p.lessonIds)&&p.lessonIds.includes(x.id)):true)
@@ -242,6 +244,7 @@ async function approve(p){
       allocations:allocations.map(a=>({attendanceId:a.id,amountPiastres:a.piastres})),
       creditPiastres:rest,approvedPiastres:payment.amountPiastres});
   });
+  return true;
 }
 async function reject(p){
   const note=window.prompt('سبب الرفض (يظهر للطالب):','تعذر تأكيد وصول التحويل إلى المحفظة.');
@@ -252,15 +255,60 @@ async function reject(p){
     tx.update(ref,{status:'rejected',adminNote:note.trim().slice(0,300),reviewedAt:serverTimestamp(),reviewedBy:auth.currentUser.uid});
   });
 }
-$('zadVodafoneRequests')?.addEventListener('click',async e=>{
-  const btn=e.target.closest('[data-action]');if(!btn||busy)return;
-  const id=btn.closest('[data-id]')?.dataset.id,p=list.find(x=>x.id===id);
+// تُفتح نافذة المعاينة من ضغطة المستخدم مباشرة، ثم نتأكد من حالة التحويل في Firestore.
+// لا يُصدر إيصال لطلب قيد المراجعة أو مرفوض، ولا يغيّر زر الطباعة أي رصيد مالي.
+async function showReceipt(id){
+  const popup=window.open('','_blank','width=760,height=850');
+  if(!popup){message('المتصفح منع نافذة الإيصال. اسمح بالنوافذ المنبثقة لهذا الموقع ثم جرّب مجدداً.',true);return;}
+  popup.document.write('<!doctype html><html lang="ar" dir="rtl"><meta charset="utf-8"><title>التحقق من الإيصال</title><body style="font-family:Tahoma;padding:35px">جارٍ التأكد من اعتماد الدفعة...</body></html>');
+  popup.document.close();
+  try {
+    const snap=await getDoc(doc(db,'vodafonePayments',id));
+    if(!snap.exists())throw new Error('لم يعد سجل التحويل موجوداً.');
+    const p={id:snap.id,...snap.data()};
+    if(p.status!=='approved'||!isCurrentPayment(p))throw new Error('الإيصال متاح فقط للتحويلات المعتمدة في السجل الحالي.');
+    const student=students.find(x=>x.id===p.studentUid)||{};
+    const logo=new URL('../../images/logo.png',import.meta.url).href;
+    const receipt=paymentReceiptHtml(p,lessonMap,student,logo);
+    if(popup.closed)return;
+    popup.document.open();popup.document.write(receipt);popup.document.close();popup.focus();
+    message('تم فتح معاينة الإيصال. اضغط «طباعة / حفظ PDF» داخل النافذة، ثم أرسل الملف للطالب.');
+  } catch(error) {
+    if(!popup.closed){popup.document.open();popup.document.write('<!doctype html><html lang="ar" dir="rtl"><meta charset="utf-8"><body style="font-family:Tahoma;padding:30px"><h2>تعذر إصدار الإيصال</h2><p>العملية غير متاحة أو لم يتأكد اعتمادها. ارجع إلى لوحة الإدارة وحدّث المدفوعات.</p></body></html>');popup.document.close();}
+    message('تعذر إصدار الإيصال: '+(error.code||error.message),true);
+  }
+}
+async function copyReceipt(id){
+  const snap=await getDoc(doc(db,'vodafonePayments',id));
+  if(!snap.exists())throw new Error('سجل الدفعة غير متاح.');
+  const p={id:snap.id,...snap.data()};
+  if(p.status!=='approved'||!isCurrentPayment(p))throw new Error('التحويل غير معتمد.');
+  await navigator.clipboard.writeText(paymentReceiptSummary(p));
+  message('تم نسخ ملخص الإيصال. يمكنك لصقه في رسالة للطالب، أو إرسال ملف PDF بعد حفظه من زر الطباعة.');
+}
+async function paymentAction(event){
+  const btn=event.target.closest('button[data-action]');if(!btn||busy)return;
+  const action=btn.dataset.action;
+  const id=btn.dataset.paymentId||btn.closest('[data-id]')?.dataset.id;
+  if(!id)return;
+  if(action==='receipt'){await showReceipt(id);return;}
+  if(action==='receipt-copy'){
+    try{await copyReceipt(id);}catch(error){message('تعذر نسخ الإيصال: '+(error.code||error.message),true);}return;
+  }
+  const p=list.find(x=>x.id===id);
   if(!p||p.status!=='pending')return;
   busy=true;render();message('جارٍ تنفيذ الإجراء...');
-  try{if(btn.dataset.action==='approve'){await approve(p);window.dispatchEvent(new Event('zad:payment-approved'));}else await reject(p);await load();}
-  catch(err){console.error(err);message('تعذر الإجراء: '+(err.code||err.message),true);}
+  try {
+    if(action==='approve'){
+      const done=await approve(p);
+      if(done){window.dispatchEvent(new Event('zad:payment-approved'));if($('zadVodafoneFilter'))$('zadVodafoneFilter').value='approved';await load();message('✅ تم اعتماد تحويل '+money(p.amountPiastres)+' للطالب '+(p.studentName||'')+'. اضغط «طباعة الإيصال» بجوار الدفعة المعتمدة لإرساله للطالب.');}
+      else message('لم يتم اعتماد التحويل.');
+    } else if(action==='reject'){await reject(p);await load();}
+  } catch(error){console.error(error);message('تعذر الإجراء: '+(error.code||error.message),true);}
   finally{busy=false;render();}
-});
+}
+$('zadVodafoneRequests')?.addEventListener('click',paymentAction);
+$('zadStudentBalanceCards')?.addEventListener('click',paymentAction);
 $('zadVodafoneRefreshAdmin')?.addEventListener('click',load);
 $('zadVodafoneFilter')?.addEventListener('change',render);
 $('zadStudentBalanceSearch')?.addEventListener('input',renderStudentBalances);

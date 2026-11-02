@@ -88,3 +88,7 @@
 .zad-student-session-state.unpaid{color:#ffc0b1}
 .zad-student-detail-warning{font-size:12px!important;color:#c6d6e6!important;border-top:1px solid #344b63;margin:5px 0!important;padding-top:12px}
 @media(max-width:700px){.zad-student-detail-content{padding:8px}.zad-student-detail-disclosure>summary{padding:11px}.zad-student-detail-counts{display:grid;grid-template-columns:1fr}}
+
+/* إيصال استلام عملية تحويل معتمدة */
+.zad-pay-receipt-actions{display:flex;flex-wrap:wrap;gap:10px;border-top:1px dashed #4c6381;padding-top:12px;margin-top:8px}
+.zad-receipt-btn{font-size:12px!important;padding:7px 10px!important;white-space:nowrap}
