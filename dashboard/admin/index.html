@@ -722,7 +722,7 @@ onAuthStateChanged(auth, async (user) => {
         <label>حساب الطالب<select id="attendanceStudent" required><option value="">جارٍ تحميل الطلاب...</option></select></label>
         <label>تاريخ الحصة<input id="attendanceDate" type="date" required></label>
         <label>المواد <small style="color:#94a3b8;font-weight:400">(يمكن اختيار أكثر من مادة)</small><details id="attendanceSubjectPicker" class="zad-subject-picker"><summary id="attendanceSubjectSummary">اختر مادة أو أكثر ▾</summary><div id="attendanceSubjectOptions" class="zad-subject-options"></div></details><select id="attendanceSubject" multiple hidden aria-hidden="true" tabindex="-1"></select></label>
-        <label>المعلم<input id="attendanceTeacherName" type="text" readonly value="" aria-label="المعلم المحدد تلقائيًا" style="background:#121e30;color:#f5d76e;font-weight:bold;cursor:not-allowed"></label>
+        <label>المعلم <small style="color:#94a3b8;font-weight:400">(اختر المعلم عند تحديد اللغة الإنجليزية)</small><select id="attendanceTeacherName" aria-label="معلم الحصة" style="background:#121e30;color:#f5d76e;font-weight:bold;min-height:44px"><option value="">اختر المادة أولًا</option></select></label>
         <label>الحالة<select id="attendanceStatus" required><option value="حاضر">✅ حاضر</option><option value="غائب">❌ غائب</option></select></label>
         <label>سعر الحصة (بالجنيه المصري)<input id="attendancePrice" type="number" min="0" max="100000" step="0.01" value="0" required></label>
         <label class="attendance-full">ملاحظات (اختياري)<textarea id="attendanceNote" rows="2" maxlength="500"></textarea></label>
