@@ -146,7 +146,7 @@ function renderOverview(){
 
 function renderStudents(){
   const q=text($('studentSearch')?.value).toLowerCase();
-  const filtered=state.students.filter(s=>[s.fullName,s.name,s.email,s.phone,s.phoneNumber,s.grade,s.studyGrade].some(v=>text(v).toLowerCase().includes(q)));
+  const filtered=state.students.filter(s=>[s.fullName,s.name,s.email,s.phone,s.phoneNumber,s.grade,s.studyGrade].some(v=>window.ZadNameSearch.matches(v,q)));
   const body=$('teacherStudentsRows'); if(!body)return;
   if(!filtered.length){body.innerHTML='<tr><td colspan="6">لا يوجد طلاب مطابقون.</td></tr>';return;}
   body.innerHTML=filtered.map(s=>{

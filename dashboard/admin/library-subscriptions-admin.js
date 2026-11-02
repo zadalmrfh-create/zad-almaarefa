@@ -19,7 +19,7 @@ function render(){
     </article>`;
   }).join(''):'لا توجد طلبات اشتراك حتى الآن.';
   const term=$('libraryMembershipSearch').value.trim().toLowerCase();
-  const matching=users.filter(u=>[name(u),u.email,u.phone,u.id].some(x=>String(x||'').toLowerCase().includes(term))).slice(0,100);
+  const matching=users.filter(u=>[name(u),u.email,u.phone,u.id].some(x=>window.ZadNameSearch.matches(x,term))).slice(0,100);
   $('libraryMembershipUsers').innerHTML=matching.length?matching.map(u=>{
     const grant=grants.get(u.id),active=grant?.status==='active';
     return `<div data-lib-user="${esc(u.id)}" style="display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;align-items:center;padding:12px;margin:7px 0;background:#0f1e33;border:1px solid #4c5d73;border-radius:10px"><div><b>${esc(name(u))}</b><small style="display:block">${esc(u.email||u.phone||u.id)}</small><small>${active?'✅ مشترك':'🔒 غير مشترك'}</small></div><button type="button" class="btn ${active?'':'gold'}" data-lib-user-action="${active?'disable':'enable'}">${active?'إلغاء الاشتراك':'تفعيل بعد الدفع'}</button></div>`;

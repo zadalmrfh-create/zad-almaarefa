@@ -30,7 +30,7 @@ function filteredUserList(){
   const country=($('enhCountryFilter')?.value||'all');
   return users.filter(u=>{
     const hay=[u.fullName,u.name,u.displayName,u.email,u.phone,u.country,u.city,u.grade,u.studyGrade,u.subject].join(' ').toLowerCase();
-    return (!q||hay.includes(q)) && (role==='all'||u.role===role) && (status==='all'||(u.status||'active')===status) && (country==='all'||(u.country||'')===country);
+    return (!q||window.ZadNameSearch.matches(hay,q)) && (role==='all'||u.role===role) && (status==='all'||(u.status||'active')===status) && (country==='all'||(u.country||'')===country);
   }).sort((a,b)=>(dateValue(b.createdAt)?.getTime()||0)-(dateValue(a.createdAt)?.getTime()||0));
 }
 

@@ -65,7 +65,7 @@ if ($('attendanceDate')) $('attendanceDate').value = new Date(Date.now() - new D
 function filterStudents() {
   const q = (search.value || '').trim().toLowerCase();
   const prev = studentSelect.value;
-  const list = students.filter(x => [x.fullName, x.name, x.email].join(' ').toLowerCase().includes(q));
+  const list = students.filter(x => window.ZadNameSearch.matches([x.fullName, x.name, x.email],q));
   studentSelect.innerHTML = '<option value="">اختر الطالب</option>' + list.map(x => `<option value="${esc(x.id)}">${esc(x.fullName || x.name || x.email || 'طالب')} — ${esc(x.email || '')}</option>`).join('');
   if (list.some(x => x.id === prev)) studentSelect.value = prev;
   else if (q && list.length === 1) studentSelect.value = list[0].id;
@@ -126,7 +126,7 @@ function filteredAttendanceRecords() {
       const student = studentsById.get(record.studentUid);
       const haystack = [record.studentName,student?.fullName,student?.name,student?.email]
         .map(asSearchText).join(' ');
-      if (!haystack.includes(search)) return false;
+      if (!window.ZadNameSearch.matches(haystack,search)) return false;
     }
     if (subject !== 'all' && !subjectsOfAttendance(record).includes(subject)) return false;
     if (teacher !== 'all' && (record.teacherName || 'الإدارة') !== teacher) return false;
@@ -190,7 +190,7 @@ function render() {
     if (x.status === 'غائب') st.absent++;
     st.paid += (amountPaid(x)+(creditFor(x)?.advanceAppliedPiastres||0)) / 100;
   }
-  const cards = [...stats.values()].filter(st => st.name.toLocaleLowerCase('ar').includes(summarySearch));
+  const cards = [...stats.values()].filter(st => window.ZadNameSearch.matches(st.name,summarySearch));
   cards.sort((a, b) => sortOrder === 'most-present' ? (b.present - a.present || a.name.localeCompare(b.name, 'ar')) : sortOrder === 'most-paid' ? (b.paid - a.paid || a.name.localeCompare(b.name, 'ar')) : a.name.localeCompare(b.name, 'ar'));
   const count = $('attendanceSummaryCount'); if (count) count.textContent = `${cards.length.toLocaleString('ar-EG')} طالب`;
   const list = $('attendanceSummaryCards');
@@ -232,7 +232,7 @@ form?.addEventListener('submit', async e => {
   e.preventDefault();
   let student = students.find(x => x.id === studentSelect.value);
   if (!student) {
-    const matches = students.filter(x => [x.fullName, x.name, x.email].join(' ').toLowerCase().includes((search.value || '').trim().toLowerCase()));
+    const matches = students.filter(x => window.ZadNameSearch.matches([x.fullName, x.name, x.email],(search.value || '').trim()));
     if (matches.length === 1) { studentSelect.value = matches[0].id; student = matches[0]; }
     else { message.textContent = matches.length > 1 ? 'ظهر أكثر من طالب، اختر الطالب الصحيح من القائمة.' : 'اختر الطالب أولًا أو ابحث بالاسم الصحيح.'; return; }
   }

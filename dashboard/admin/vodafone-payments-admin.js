@@ -99,7 +99,7 @@ function renderStudentBalances() {
     const v=a.balance;
     const name=String(a.student?.fullName||a.student?.name||a.payments[0]?.studentName||a.lessons[0]?.studentName||'طالب');
     const email=String(a.student?.email||'');
-    if(term && !(name+' '+email).toLocaleLowerCase('ar').includes(term))return false;
+    if(term && (!window.ZadNameSearch.matches([name,email],term)))return false;
     if(filter==='credit')return v.availableToStudentPiastres>0;
     if(filter==='debt')return v.owedByStudentPiastres>0;
     if(filter==='paid')return v.approvedTransfersPiastres>0||v.paidOnLessonsPiastres>0;

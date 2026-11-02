@@ -2,6 +2,7 @@
 <html lang="ar" dir="rtl">
 
 <head>
+<script src="../name-search.js?v=20261103-1"></script>
 
   <meta charset="UTF-8">
 
@@ -683,7 +684,7 @@ onAuthStateChanged(auth, async (user) => {
               </select>
             </label>
             <div id="lessonStudentsWrap" style="display:none">
-              <input id="lessonStudentSearch" type="search" placeholder="ابحث باسم الطالب أو البريد الإلكتروني" style="margin-bottom:10px">
+              <input id="lessonStudentSearch" type="search" placeholder="ابحث بالعربي أو الإنجليزي باسم الطالب أو البريد" style="margin-bottom:10px">
               <div id="lessonStudentsList" style="max-height:260px;overflow:auto;display:grid;gap:8px"></div>
               <small id="lessonStudentsStatus" style="color:var(--muted)">جارٍ تحميل الحسابات المسجلة…</small>
             </div>
@@ -730,7 +731,7 @@ onAuthStateChanged(auth, async (user) => {
       <h2>📋 تسجيل الحضور والغياب يدويًا</h2>
       <p class="admin-muted">اختر حساب الطالب من المنصة، ثم حدد التاريخ والمواد وسعر الحصة. يمكنك اختيار مادة واحدة أو أكثر، ولا يشترط إنشاء محاضرة مباشرة.</p>
       <form id="manualAttendanceForm" class="manual-attendance-form">
-        <label>بحث عن الطالب<input id="attendanceStudentSearch" type="search" placeholder="ابحث باسم الطالب أو البريد الإلكتروني" autocomplete="off"></label>
+        <label>بحث عن الطالب<input id="attendanceStudentSearch" type="search" placeholder="ابحث بالعربي أو الإنجليزي باسم الطالب أو البريد" autocomplete="off"></label>
         <label>حساب الطالب<select id="attendanceStudent" required><option value="">جارٍ تحميل الطلاب...</option></select></label>
         <label>تاريخ الحصة<input id="attendanceDate" type="date" required></label>
         <label>المواد <small style="color:#94a3b8;font-weight:400">(يمكن اختيار أكثر من مادة)</small><details id="attendanceSubjectPicker" class="zad-subject-picker"><summary id="attendanceSubjectSummary">اختر مادة أو أكثر ▾</summary><div id="attendanceSubjectOptions" class="zad-subject-options"></div></details><select id="attendanceSubject" multiple hidden aria-hidden="true" tabindex="-1"></select></label>
@@ -771,7 +772,7 @@ onAuthStateChanged(auth, async (user) => {
 <h3>📊 ملخص حضور الطلاب والمبالغ المدفوعة</h3>
 <p>تُحسب الحصص والحضور حسب المادة المختارة، أما الرصيد المالي (له / عليه) فيُحسب بشكل مستقل لكل طالب عبر جميع المواد. ويظهر الطالب الذي دفع مقدمًا حتى قبل أول حصة.</p>
 <div class="attendance-summary-controls">
-<label>بحث باسم الطالب<input id="attendanceSummarySearch" type="search" placeholder="اكتب اسم الطالب"></label>
+<label>بحث باسم الطالب<input id="attendanceSummarySearch" type="search" placeholder="اسم الطالب بالعربي أو الإنجليزي"></label>
 <label>المادة<select id="attendanceSummarySubject"><option value="all">كل المواد</option></select></label>
 <label>الترتيب<select id="attendanceSummarySort"><option value="name">حسب الاسم</option><option value="most-present">الأكثر حضورًا</option><option value="most-paid">الأعلى مدفوعًا</option></select></label>
 </div>
@@ -1655,7 +1656,7 @@ window.applyAdminUserFilters = function applyAdminUserFilters() {
 
   const applyMatch = entry => {
     const matches =
-      (!queryText || String(entry.dataset.search || '').includes(queryText)) &&
+      (!queryText || window.ZadNameSearch.matches(entry.dataset.search || '', queryText)) &&
       (role === 'all' || entry.dataset.role === role) &&
       (status === 'all' || entry.dataset.status === status) &&
       (country === 'all' || entry.dataset.country === country);
@@ -2267,7 +2268,7 @@ function renderLessonStudents() {
   const filtered = lessonStudents.filter(u => {
     const name = String(u.fullName || u.name || '').toLowerCase();
     const email = String(u.email || '').toLowerCase();
-    return !term || name.includes(term) || email.includes(term);
+    return !term || window.ZadNameSearch.matches([name, email], term);
   });
 
   lessonStudentsList.innerHTML = filtered.length ? filtered.map(u => `
