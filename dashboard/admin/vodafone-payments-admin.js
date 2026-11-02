@@ -4,7 +4,8 @@ import {onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/12.18.0/fir
 import {collection,doc,getDocs,query,where,runTransaction,serverTimestamp} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 import {amountDue,amountPaid,amountRemaining,money,html,isCharge} from '../payment-utils.js';
 import {isCurrentPayment,ledgerStartedAt} from '../payment-ledger-period.js';
-import {groupStudentAccounts} from '../student-account-balance.js';
+import {groupStudentAccounts,hasStudentFinancialActivity} from '../student-account-balance.js';
+import {studentPaymentBreakdown} from '../student-payment-breakdown.js';
 const $=id=>document.getElementById(id);
 let list=[],lessonMap=new Map(),students=[],busy=false;
 const formatWhen=value=>{
@@ -40,11 +41,59 @@ function details(p){
   if(p.status==='approved'&&credit>0)return `<div class="zad-pay-allocations"><b>✅ رصيد مقدم مسجل: ${money(credit)}</b><small>المبلغ متاح للحصص القادمة، ويُحسب تلقائيًا عند ظهور مستحقات.</small></div>`;
   return `<div class="zad-pay-allocations"><b>${p.targetType==='advance'?'دفعة مقدمة للحصص القادمة':'سداد مستحقات عامة'}</b><small>${p.status==='pending'?'سيحدد الرصيد المقدم والتوزيع وقت اعتماد التحويل.':p.status==='rejected'?'لم يُعتمد أي مبلغ.':'لا تتوفر بيانات توزيع هذا التحويل القديم.'}</small></div>`;
 }
+
+// كشف تفصيلي للمعلم/المادة/المقدم/المؤخر لكل حصة + كل تحويل مستقل للطالب.
+const studentPaymentType=p=>p.targetType==='advance'?'💰 دفع مقدم':p.targetType==='lessons'?'سداد حصص محددة':'سداد عام / مؤخر';
+const sessionPaymentLabel={paid:'✅ مدفوعة بالكامل',partial:'🟡 مدفوعة جزئياً',unpaid:'🔴 غير مدفوعة'};
+const sessionAttendanceLabel={حاضر:'حاضر',غائب:'غائب',اعتذر:'اعتذر'};
+function studentFinancialDetails(account){
+  const b=account.balance;
+  const {sessions,transfers,sessionCounts}=studentPaymentBreakdown(account.lessons,account.payments,b);
+  const sessionsMarkup=sessions.length?`<div class="zad-student-detail-table-wrap"><table class="zad-student-detail-table">
+    <thead><tr><th>تاريخ الحصة</th><th>المادة / المعلم</th><th>السعر</th><th>مدفوع مسجل</th><th>مغطى من المقدم</th><th>المؤخر (عليه)</th><th>الحالة</th></tr></thead>
+    <tbody>${sessions.map(s=>`<tr>
+      <td>${html(s.date||'غير محدد')}<small>${html(sessionAttendanceLabel[s.attendanceStatus]||s.attendanceStatus)}</small></td>
+      <td><b>${html(s.subject)}</b><small>أ/ ${html(s.teacherName)}</small>${s.allocations.length?`<small class="zad-student-paid-source">مربوط بـ ${s.allocations.length} تحويل معتمد (ضمن المدفوع المسجل)</small>`:''}</td>
+      <td>${money(s.pricePiastres)}</td><td>${money(s.paidInLessonPiastres)}</td>
+      <td>${money(s.advanceUsedPiastres)}</td><td class="${s.outstandingPiastres?'zad-student-amount-debt':'zad-student-amount-paid'}">${money(s.outstandingPiastres)}</td>
+      <td><span class="zad-student-session-state ${s.paymentStatus}">${sessionPaymentLabel[s.paymentStatus]}</span></td>
+    </tr>`).join('')}</tbody>
+  </table></div>`:'<p class="zad-pay-small">لم تُسجَّل حصص مالية لهذا الطالب بعد.</p>';
+  const transfersMarkup=transfers.length?`<div class="zad-student-detail-table-wrap"><table class="zad-student-detail-table">
+    <thead><tr><th>التاريخ</th><th>نوع الدفعة</th><th>قيمة التحويل</th><th>الموزع على الحصص</th><th>المقدم المحفوظ</th><th>حالة التحويل</th><th>المرجع</th></tr></thead>
+    <tbody>${transfers.map(p=>{
+      const allocated=p.allocations.reduce((sum,a)=>sum+Math.max(0,Number(a.amountPiastres)||0),0);
+      const approved=p.status==='approved';
+      const current=!p.archived;
+      const paidParts=approved&&current?`${money(allocated)}${p.allocations.length?`<small>${p.allocations.length} حصة</small>`:''}`:'—';
+      const credit=approved&&current?money(p.creditPiastres||0):'—';
+      const state=p.archived?'📁 أرشيف (خارج الإجماليات)':p.status==='approved'?'✅ معتمد':p.status==='pending'?'⏳ بانتظار الاعتماد':p.status==='rejected'?'❌ مرفوض':'غير محدد';
+      return `<tr><td>${html(formatWhen(p.createdAt))}</td><td>${html(studentPaymentType(p))}</td>
+        <td>${money(p.amountPiastres)}</td><td>${paidParts}</td><td>${credit}</td>
+        <td>${html(state)}</td><td>${html(p.reference||'—')}</td></tr>`;
+    }).join('')}</tbody></table></div>`:'<p class="zad-pay-small">لا يوجد سجل تحويلات لهذا الطالب حتى الآن.</p>';
+  return `<details class="zad-student-detail-disclosure" data-student-detail="${html(account.uid)}">
+    <summary>📋 عرض تفاصيل ما دفعه الطالب، والمقدم، والمؤخر، والحصص المدفوعة وغير المدفوعة</summary>
+    <div class="zad-student-detail-content">
+      <div class="zad-student-detail-counts">
+        <span>✅ مدفوعة بالكامل: <strong>${sessionCounts.paid.toLocaleString('ar-EG')} حصة</strong></span>
+        <span>🟡 مدفوعة جزئياً: <strong>${sessionCounts.partial.toLocaleString('ar-EG')} حصة</strong></span>
+        <span>🔴 غير مدفوعة: <strong>${sessionCounts.unpaid.toLocaleString('ar-EG')} حصة</strong></span>
+      </div>
+      <h4>📚 الحصص: المدفوع من الحصة، والمغطى من المقدم، والباقي مؤخر</h4>
+      ${sessionsMarkup}
+      <h4>💳 التحويلات: كل دفعة مقدمة أو سداد حصص وما تم اعتماده</h4>
+      ${transfersMarkup}
+      <p class="zad-student-detail-warning">يُحتسب المقدم المعتمد تلقائياً لتغطية الحصص الأقدم أولاً. المبالغ المسجلة على الحصة لا تُضاف إلى التحويل مرة ثانية. التحويلات المعلقة والمرفوضة والأرشيف لا تدخل في إجماليات السجل الجديد. الحصص الملغاة لا تُحسب ضمن المستحقات.</p>
+    </div>
+  </details>`;
+}
+
 function renderStudentBalances() {
   const container=$('zadStudentBalanceCards');if(!container)return;
-  const accounts=groupStudentAccounts(students,[...lessonMap.values()],list);
+  const accounts=groupStudentAccounts(students,[...lessonMap.values()],list).filter(hasStudentFinancialActivity);
   const term=String($('zadStudentBalanceSearch')?.value||'').trim().toLocaleLowerCase('ar');
-  const filter=$('zadStudentBalanceFilter')?.value||'all';
+  const filter=$('zadStudentBalanceFilter')?.value||'financial';
   const filtered=accounts.filter(a=>{
     const v=a.balance;
     const name=String(a.student?.fullName||a.student?.name||a.payments[0]?.studentName||a.lessons[0]?.studentName||'طالب');
@@ -52,17 +101,17 @@ function renderStudentBalances() {
     if(term && !(name+' '+email).toLocaleLowerCase('ar').includes(term))return false;
     if(filter==='credit')return v.availableToStudentPiastres>0;
     if(filter==='debt')return v.owedByStudentPiastres>0;
-    if(filter==='clear')return v.availableToStudentPiastres===0&&v.owedByStudentPiastres===0;
+    if(filter==='paid')return v.approvedTransfersPiastres>0||v.paidOnLessonsPiastres>0;
     return true;
   }).sort((a,b)=>{
-    // أصحاب الأرصدة والمستحقات أولاً، ثم الاسم.
+    // المستحقات أولاً، بعدها الرصيد المقدم، ثم الحسابات التي سددت بالكامل.
     const v=a.balance,w=b.balance;
-    const activeA=Number(v.availableToStudentPiastres>0||v.owedByStudentPiastres>0);
-    const activeB=Number(w.availableToStudentPiastres>0||w.owedByStudentPiastres>0);
+    const activeA=v.owedByStudentPiastres>0?2:v.availableToStudentPiastres>0?1:0;
+    const activeB=w.owedByStudentPiastres>0?2:w.availableToStudentPiastres>0?1:0;
     const name=x=>String(x.student?.fullName||x.student?.name||x.payments[0]?.studentName||x.lessons[0]?.studentName||'طالب');
     return activeB-activeA || name(a).localeCompare(name(b),'ar');
   });
-  $('zadStudentBalanceCount').textContent=`عرض ${filtered.length.toLocaleString('ar-EG')} من ${accounts.length.toLocaleString('ar-EG')} حساب طالب — كل رصيد منفصل.`;
+  $('zadStudentBalanceCount').textContent=`عرض ${filtered.length.toLocaleString('ar-EG')} من ${accounts.length.toLocaleString('ar-EG')} حساب له حركة مالية — بدون حسابات الطلاب الفارغة.`;
   container.innerHTML=filtered.length?filtered.map(a=>{
     const b=a.balance;
     const student=a.student||{};
@@ -71,7 +120,7 @@ function renderStudentBalances() {
       ? `<b class="zad-balance-badge is-credit">✅ له رصيد: ${money(b.availableToStudentPiastres)}</b>`
       : b.owedByStudentPiastres>0
         ? `<b class="zad-balance-badge is-debt">⏳ عليه مستحقات: ${money(b.owedByStudentPiastres)}</b>`
-        : '<b class="zad-balance-badge is-zero">✔️ حسابه متوازن: 0 ج.م</b>';
+        : `<b class="zad-balance-badge is-credit">✅ ${b.totalPricePiastres>0?'حصصه مسددة بالكامل':'سجل دفع معتمد'}</b>`;
     const settlement=a.payments.filter(p=>p.status==='approved'&&isCurrentPayment(p)).reduce((s,p)=>s+(Array.isArray(p.allocations)?p.allocations.reduce((n,x)=>{
       const lesson=lessonMap.get(String(x.attendanceId||''));
       return n+(!lesson||lesson.deleted===true?Number(x.amountPiastres||0):0);
@@ -82,15 +131,17 @@ function renderStudentBalances() {
       <div class="zad-student-account-metrics">
         ${item('إجمالي ما حوّله واعتمدته الإدارة (السجل الجديد)',b.approvedTransfersPiastres)}
         ${item('إجمالي قيمة الحصص المسجلة',b.totalPricePiastres)}
-        ${item('مدفوع / مسجل على الحصص (بدون تكرار التحويل)',b.paidOnLessonsPiastres)}
+        ${item('المدفوع المسجل على الحصص (منها تحويلات معتمدة)',b.paidOnLessonsPiastres)}
+        ${item('إجمالي الحصص المغطاة بالسداد والمقدم',b.coveredLessonsPiastres)}
         ${item('إجمالي المقدم المضاف لحسابه',b.totalAdvancePiastres)}
         ${item('مقدم استُخدم في حصصه',b.usedAdvancePiastres)}
         ${item('✅ رصيد مقدم متاح له الآن',b.availableToStudentPiastres,'is-credit')}
         ${item('❌ مستحقات عليه لم يسددها',b.owedByStudentPiastres,'is-debt')}
       </div>
       ${settlement>0?`<p class="zad-pay-alert">⚠️ ${money(settlement)} مرتبط بحصص ملغاة ويحتاج تسوية يدوية. لم يُضَف لرصيده تلقائيًا.</p>`:''}
+      ${studentFinancialDetails(a)}
     </article>`;
-  }).join(''):'<p class="zad-pay-small">لا توجد حسابات طلاب مطابقة للبحث أو الفلتر.</p>';
+  }).join(''):'<p class="zad-pay-small">لا يوجد طالب له دفعات مسجلة أو رصيد مقدم أو مستحقات مطابقة لهذا البحث.</p>';
 }
 
 function render(){

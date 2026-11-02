@@ -1119,10 +1119,10 @@ onAuthStateChanged(auth, async (user) => {
       <div class="zad-pay-grid zad-pay-admin-status"><div class="zad-pay-metric"><small>طلبات تحويل بانتظار المراجعة</small><strong id="zadVodafonePendingCount">—</strong></div><div class="zad-pay-metric"><small>⚠️ تحويلات تحتاج تسوية لحصص ملغاة (إجمالي السجل الجديد)</small><strong id="zadVodafoneNeedSettlement">—</strong></div></div>
       <section class="zad-student-accounts" aria-label="كشوف حسابات الطلاب منفصلة">
         <h3>👥 كشف حساب مستقل لكل طالب</h3>
-        <p>لكل طالب رصيده الخاص: المقدم، ما استُخدم منه، المستحقات غير المسددة، والرصيد المتاح له. لا يتم خلط أرصدة الطلاب مع بعضها، ولا تُضاف التحويلات إلى المبالغ المدفوعة مرتين.</p>
+        <p>هنا يظهر فقط الطالب الذي دفع بالفعل، أو له رصيد مقدم، أو عليه مستحقات. لا تظهر الحسابات الفارغة ذات الصفر. الطالب الذي سدد حصصه بالكامل يظل ظاهرًا لأن له سجل دفع فعلي. اضغط «عرض التفاصيل» لمعرفة الدفعات والحصص.</p>
         <div class="zad-student-account-controls">
           <label>🔎 بحث عن طالب <input id="zadStudentBalanceSearch" type="search" placeholder="اسم الطالب أو بريده الإلكتروني" autocomplete="off"></label>
-          <label>حالة الحساب <select id="zadStudentBalanceFilter"><option value="all">كل الطلاب</option><option value="credit">له رصيد مقدم</option><option value="debt">عليه مستحقات</option><option value="clear">حسابه صفر</option></select></label>
+          <label>حالة الحساب <select id="zadStudentBalanceFilter"><option value="financial">الطلاب الذين دفعوا أو عليهم مستحقات</option><option value="paid">الطلاب الذين دفعوا</option><option value="credit">له رصيد مقدم</option><option value="debt">عليه مستحقات</option></select></label>
         </div>
         <p id="zadStudentBalanceCount" class="zad-pay-small" aria-live="polite">جارٍ تحميل حسابات الطلاب...</p>
         <div id="zadStudentBalanceCards" class="zad-student-account-list" aria-live="polite">جارٍ تحميل الحسابات...</div>

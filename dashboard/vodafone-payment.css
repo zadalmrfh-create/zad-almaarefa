@@ -59,3 +59,32 @@
 .zad-student-balance-indicator{border:1px solid #465b71;background:#14253b;padding:12px 16px;border-radius:10px;font-weight:800}
 .zad-summary-finance-note{font-size:11px!important;color:#a1adc1!important}
 @media(max-width:700px){.zad-pay-admin-status,.zad-student-account-controls{grid-template-columns:1fr}.zad-student-accounts{padding:11px}.zad-student-account-metrics{grid-template-columns:1fr}}
+
+/* تفاصيل الحساب بجوار كل طالب: حصص مدفوعة/غير مدفوعة، مقدم، مؤخر، وتحويلات */
+.zad-student-detail-disclosure{margin-top:15px;border:1px solid #566a84;border-radius:12px;background:#0c1a2e;overflow:hidden}
+.zad-student-detail-disclosure>summary{cursor:pointer;list-style:none;padding:14px 16px;background:#182d48;color:#f6d57d;font-weight:800;line-height:1.8}
+.zad-student-detail-disclosure>summary::-webkit-details-marker{display:none}
+.zad-student-detail-disclosure>summary::before{content:'＋';display:inline-block;margin-left:9px;font-size:18px}
+.zad-student-detail-disclosure[open]>summary::before{content:'−'}
+.zad-student-detail-disclosure>summary:hover,.zad-student-detail-disclosure>summary:focus-visible{background:#24405d;outline:2px solid #c4a34b;outline-offset:-2px}
+.zad-student-detail-content{padding:14px;display:grid;gap:10px}
+.zad-student-detail-content h4{color:#f3d681;font-size:15px;margin:10px 0 0}
+.zad-student-detail-counts{display:flex;flex-wrap:wrap;gap:9px}
+.zad-student-detail-counts>span{background:#172e48;border:1px solid #415773;border-radius:9px;padding:9px 12px;font-size:13px}
+.zad-student-detail-counts strong{color:#fff}
+.zad-student-detail-table-wrap{max-width:100%;overflow-x:auto;border:1px solid #3c536e;border-radius:11px}
+.zad-student-detail-table{width:100%;border-collapse:collapse;min-width:900px;font-size:13px}
+.zad-student-detail-table th{background:#19314d;color:#f5d985;padding:12px 10px;text-align:right;white-space:nowrap}
+.zad-student-detail-table td{padding:11px 10px;border-top:1px solid #364c67;vertical-align:top;color:#eaf2fc;white-space:nowrap}
+.zad-student-detail-table td:nth-child(2){white-space:normal;min-width:150px;max-width:240px;overflow-wrap:anywhere}
+.zad-student-detail-table tbody tr:nth-child(even){background:#12243c}
+.zad-student-detail-table small{color:#a9bed5;display:block;margin-top:5px;font-size:11px;white-space:normal}
+.zad-student-paid-source{color:#a6e6c4!important}
+.zad-student-amount-debt{color:#ffb4a7!important;font-weight:800}
+.zad-student-amount-paid{color:#a7eec6!important}
+.zad-student-session-state{border-radius:7px;padding:5px 8px;display:inline-block;font-weight:800;background:#263852}
+.zad-student-session-state.paid{color:#a7eec6}
+.zad-student-session-state.partial{color:#f9d994}
+.zad-student-session-state.unpaid{color:#ffc0b1}
+.zad-student-detail-warning{font-size:12px!important;color:#c6d6e6!important;border-top:1px solid #344b63;margin:5px 0!important;padding-top:12px}
+@media(max-width:700px){.zad-student-detail-content{padding:8px}.zad-student-detail-disclosure>summary{padding:11px}.zad-student-detail-counts{display:grid;grid-template-columns:1fr}}

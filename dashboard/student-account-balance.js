@@ -26,6 +26,15 @@ export function studentAccountBalance(lessons = [], payments = []) {
     netStudentPiastres: advance.availableAdvancePiastres - advance.unpaidAfterPiastres
   };
 }
+// للعرض في كشف حساب الإدارة فقط: لا نظهر طالباً لم تحدث له أي حركة مالية.
+// الحساب المسدد بالكامل يظل ظاهراً لأنه دفع بالفعل، حتى لو كان صافي رصيده صفراً.
+// التحويلات المعلقة/المرفوضة أو المؤرشفة وحدها لا تجعل حساب الطالب مالياً نشطاً.
+export function hasStudentFinancialActivity(account) {
+  const b = account?.balance || {};
+  return b.availableToStudentPiastres > 0 || b.owedByStudentPiastres > 0 ||
+    b.approvedTransfersPiastres > 0 || b.paidOnLessonsPiastres > 0;
+}
+
 export function groupStudentAccounts(students = [], lessons = [], payments = []) {
   const map = new Map();
   const ensure = uid => {
