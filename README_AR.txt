@@ -1,0 +1,1 @@
+استبدل dashboard/admin/index.html وdashboard/admin/account-link-repair.js بنفس المسارات، ثم اعمل Ctrl+F5. القائمة تنتظر استعادة تسجيل الدخول إلى Firebase، ثم تعرض الطلاب أو رسالة خطأ مفهومة. لا تُعدّل السجلات القديمة تلقائيا.

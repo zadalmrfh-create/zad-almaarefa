@@ -1,6 +1,7 @@
 // ZAD | Admin-only reconciliation of historical student UIDs.
 // Never infer ownership by similar names. Require matching student-profile emails and an explicit admin decision.
 import {auth, db} from '../../firebase-config.js';
+import {onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
 import {
   collection, doc, getDoc, getDocs, query, where,
   writeBatch, serverTimestamp
@@ -16,9 +17,47 @@ const report = $('zadRepairReport');
 let people = [];
 let lastPreview = null;
 let busy = false;
+const AUTH_TIMEOUT_MS = 18000;
+const QUERY_TIMEOUT_MS = 20000;
+let peopleLoadAttempt = 0;
 const normalized = v => String(v || '').trim().toLowerCase();
 const label = u => String(u?.fullName || u?.name || u?.email || 'طالب');
 const status = message => {if (report) report.textContent = message;};
+// Wait until Firebase restores the login session. Reading auth.currentUser too
+// early used to make the student menu fail on first page load.
+function authSession() {
+  if (auth.currentUser) return Promise.resolve(auth.currentUser);
+  return new Promise((resolve, reject) => {
+    let unsubscribe = null;
+    let done = false;
+    const finish = (error, user) => {
+      if (done) return;
+      done = true;
+      clearTimeout(timer);
+      unsubscribe?.();
+      if (error) reject(error);
+      else resolve(user);
+    };
+    const timer = setTimeout(() => finish(new Error('انتهت مهلة انتظار تسجيل الدخول. حدث الصفحة أو سجل الدخول مرة أخرى.')), AUTH_TIMEOUT_MS);
+    unsubscribe = onAuthStateChanged(auth, user => finish(null, user), error => finish(error));
+    if (done) unsubscribe?.();
+  });
+}
+function withDeadline(promise, milliseconds, context) {
+  let timer;
+  return Promise.race([
+    Promise.resolve(promise),
+    new Promise((_, reject) => {
+      timer = setTimeout(() => reject(new Error('انتهت مهلة ' + context + '. اضغط «تحديث قائمة الحسابات» وجرب مرة ثانية.')), milliseconds);
+    })
+  ]).finally(() => clearTimeout(timer));
+}
+function describeError(error) {
+  if (error?.code === 'permission-denied' || error?.code === 'firestore/permission-denied') {
+    return 'Firebase رفض قراءة قائمة الطلاب (permission-denied). راجع أن الحساب الحالي أدمن فعلياً وقواعد Firestore منشورة، ثم حدّث القائمة.';
+  }
+  return String(error?.message || error?.code || 'خطأ غير معروف');
+}
 function setBusy(value) {
   busy = value;
   for (const button of [previewButton,migrateButton,refreshButton]) if(button) button.disabled = value;
@@ -27,37 +66,69 @@ function setBusy(value) {
 }
 
 async function checkAdmin() {
-  const admin=auth.currentUser;
-  if (!admin) throw new Error('يجب تسجيل الدخول بحساب الأدمن.');
-  const [flag,profile] = await Promise.all([
-    getDoc(doc(db,'admins',admin.uid)),getDoc(doc(db,'users',admin.uid))
-  ]);
-  if (!(flag.exists() || profile.data()?.role === 'admin' || (admin.email === 'maleksameh121@gmail.com' && admin.emailVerified))) {
-    throw new Error('لا تملك صلاحية إصلاح سجلات الطلاب.');
+  const admin = await authSession();
+  if (!admin) throw new Error('لا توجد جلسة دخول. افتح لوحة الأدمن بالحساب الإداري ثم أعد المحاولة.');
+  // Keep the same eligibility as the admin dashboard; Firestore rules still
+  // enforce write permissions on each document, independent from this UI.
+  if (admin.email?.toLowerCase() === 'maleksameh121@gmail.com' && admin.emailVerified) return admin;
+  const [flag, profile] = await withDeadline(Promise.all([
+    getDoc(doc(db, 'admins', admin.uid)),
+    getDoc(doc(db, 'users', admin.uid))
+  ]), QUERY_TIMEOUT_MS, 'فحص صلاحية الأدمن');
+  if (!flag.exists() && profile.data()?.role !== 'admin') {
+    throw new Error('الحساب الحالي لا يملك صلاحية إدارة وربط سجلات الطلاب.');
   }
   return admin;
 }
 
 async function reloadPeople() {
   if (busy) return;
+  const attempt = ++peopleLoadAttempt;
   setBusy(true);
-  lastPreview=null;
+  lastPreview = null;
+  if (migrateButton) migrateButton.hidden = true;
+  if (source) source.replaceChildren(new Option('جارٍ تحميل حسابات الطلاب...', ''));
+  status('⏳ جارٍ التأكد من تسجيل دخول الأدمن وتحميل الحسابات من Firebase...');
   try {
     await checkAdmin();
-    const snap = await getDocs(collection(db,'users'));
-    people = snap.docs.map(d=>({id:d.id,...d.data()}))
-      .filter(x=>x.role==='student')
-      .sort((a,b)=>label(a).localeCompare(label(b),'ar'));
-    const previous=source.value;
-    source.replaceChildren(new Option('اختر الحساب الذي سُجّلت عليه الحصص بالخطأ',''),...people.map(p=>{
-      const duplicates=people.filter(x=>normalized(x.email)===normalized(p.email)).length;
-      const marker=duplicates>1?' ⚠️ بريد مكرر':'';
-      return new Option(label(p)+' — '+(p.email||'بدون بريد')+' — UID: '+p.id+marker,p.id);
-    }));
-    if(people.some(p=>p.id===previous))source.value=previous;
-    status('اختر الحساب القديم، ثم الصق UID الحساب الحقيقي من صفحة الطالب، واضغط «فحص السجلات».\nلا تعتمد على تشابه الاسم فقط.');
-  } catch(e) {status('تعذر تحميل الحسابات: '+(e.code||e.message));}
-  finally {setBusy(false);}
+    // Filter server-side, so the administrative screen does not need to
+    // download teachers, admins and other user types to populate this list.
+    const snap = await withDeadline(
+      getDocs(query(collection(db, 'users'), where('role', '==', 'student'))),
+      QUERY_TIMEOUT_MS, 'تحميل حسابات الطلاب'
+    );
+    if (attempt !== peopleLoadAttempt) return;
+    const previous = source?.dataset.previousUid || '';
+    people = snap.docs.map(d => ({...d.data(), id:d.id}))
+      .sort((a,b) => label(a).localeCompare(label(b),'ar'));
+    const emailCounts = new Map();
+    for (const p of people) {
+      const email = normalized(p.email);
+      if (email) emailCounts.set(email, (emailCounts.get(email) || 0) + 1);
+    }
+    const options = people.map(p => {
+      const duplicate = emailCounts.get(normalized(p.email)) > 1;
+      const marker = duplicate ? ' ⚠️ بريد مكرر' : '';
+      return new Option(label(p) + ' — ' + (p.email || 'بدون بريد') +
+        ' — UID: ' + p.id + marker, p.id);
+    });
+    source?.replaceChildren(
+      new Option('اختر الحساب القديم الذي عليه الحصص', ''), ...options
+    );
+    if (people.some(p=>p.id===previous)) source.value = previous;
+    if (!people.length) {
+      status('⚠️ تم الاتصال بـFirebase ولكن لم يتم العثور على حسابات طلاب بدور student في users. راجع نوع الحسابات.');
+    } else {
+      status('✅ تم تحميل ' + people.length + ' حساب طالب. اختر الحساب القديم، ثم UID الحقيقي واضغط «فحص السجلات».');
+    }
+  } catch (error) {
+    if (attempt !== peopleLoadAttempt) return;
+    console.error('[Zad UID repair] Loading students failed:', error);
+    if (source) source.replaceChildren(new Option('تعذر التحميل — اضغط تحديث قائمة الحسابات', ''));
+    status('❌ لم تُحمَّل حسابات الطلاب: ' + describeError(error));
+  } finally {
+    if (attempt === peopleLoadAttempt) setBusy(false);
+  }
 }
 
 // Gather every legacy account that has exactly the same registered email as
@@ -143,7 +214,7 @@ async function preview() {
   if(busy)return;
   setBusy(true);
   lastPreview=null;
-  migrateButton.hidden=true;
+  if(migrateButton)migrateButton.hidden=true;
   try {
     const data=await getReconciliation(source.value,target.value.trim());
     lastPreview=data;
@@ -172,7 +243,7 @@ async function migrate() {
     const total=data.attendance.length+data.payments.length;
     if(!total){
       status('✅ كل الحصص والتحويلات المعروفة موجودة بالفعل على UID الحقيقي، ولا توجد سجلات قديمة لنقلها.');
-      migrateButton.hidden=true;return;
+      if(migrateButton)migrateButton.hidden=true;return;
     }
     const choice=window.prompt(
       'تأكيد نقل ربط '+data.attendance.length+' حصة و'+data.payments.length+
@@ -236,7 +307,7 @@ async function migrate() {
       ' تحويل رُبطت بحساب الطالب الصحيح. الحسابات القديمة تم تعطيل اختيارها في تسجيل الحضور الجديد.\n'+
       'افتح لوحة الطالب وراجع السجلات، ولا تنشئ نسخًا إضافية منها.');
     lastPreview=null;
-    migrateButton.hidden=true;
+    if(migrateButton)migrateButton.hidden=true;
     window.dispatchEvent(new Event('zad:attendance-changed'));
     window.dispatchEvent(new Event('zad:payment-approved'));
   } catch(e) {
@@ -249,6 +320,8 @@ async function migrate() {
 previewButton?.addEventListener('click',preview);
 migrateButton?.addEventListener('click',migrate);
 refreshButton?.addEventListener('click',reloadPeople);
-source?.addEventListener('change',()=>{lastPreview=null;migrateButton.hidden=true;});
+source?.addEventListener('change',()=>{if (source) source.dataset.previousUid = source.value;lastPreview=null;if(migrateButton)migrateButton.hidden=true;});
 target?.addEventListener('input',()=>{lastPreview=null;migrateButton.hidden=true;});
+// Always attempt to load after the authentication session is restored;
+// the deadline guarantees that the selector will never hang indefinitely.
 reloadPeople();
