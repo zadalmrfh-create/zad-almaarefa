@@ -276,7 +276,7 @@
         <div class="profile-mini"><b id="studentExcusedCount">0</b><span>اعتذر</span></div>
         <div class="profile-mini"><b id="studentAttendanceRate">0%</b><span>نسبة الحضور</span></div>
       </div>
-      <div class="actions" style="justify-content:space-between;align-items:center;flex-wrap:wrap;margin:12px 0"><div style="flex:1"><p id="studentFinanceLoadStatus" role="status" aria-live="polite" style="margin:0;color:var(--muted)">جارٍ تحميل سجلاتك من Firebase...</p><small id="studentLinkedAccount" style="color:var(--muted)"></small></div><button class="btn gold" type="button" id="studentFinanceRefresh">🔄 تحديث حضوري ومدفوعاتي</button></div>
+      <div class="actions" style="justify-content:space-between;align-items:center;flex-wrap:wrap;margin:12px 0"><div style="flex:1"><p id="studentFinanceLoadStatus" role="status" aria-live="polite" style="margin:0;color:var(--muted)">جارٍ تحميل سجلاتك من Firebase...</p><small id="studentLinkedAccount" style="color:var(--muted)"></small></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn gold" type="button" id="studentFinanceRefresh">🔄 تحديث حضوري ومدفوعاتي</button><button class="btn" type="button" id="zadCheckStudentRecords">🔍 فحص ربط حسابي بالسجلات</button></div></div><div id="zadStudentRecordReport" hidden aria-live="polite" style="margin:12px 0;padding:14px;border-radius:12px;border:1px solid #7b9ab8;background:#101e34;color:#f5f1e4;line-height:1.9;white-space:pre-wrap"></div>
       <div class="student-payment-total">💰 إجمالي المبلغ المسدد للحصص (بما فيه المستخدم من المقدم): <strong id="studentPaidTotal">0 ج.م</strong></div><p id="studentAdvanceSummary" class="zad-pay-ok">جارٍ حساب الرصيد المقدم...</p><div class="table-wrap"><table class="table"><thead><tr><th>التاريخ</th><th>المادة</th><th>المعلم</th><th>الحالة</th><th>السعر</th><th>الدفع</th><th>الملاحظة</th></tr></thead><tbody id="studentAttendanceRows"><tr><td colspan="7">جارٍ التحميل...</td></tr></tbody></table></div>
     </section>
 
@@ -1316,6 +1316,7 @@ document
 ></script>
 
 <script type="module" src="../student/student-enhancements.js"></script>
+<script type="module" src="access-diagnostics.js"></script>
 <script>document.addEventListener('DOMContentLoaded',()=>{try{const recent=JSON.parse(localStorage.getItem('zadRecentBooks')||'[]');const fav=JSON.parse(localStorage.getItem('zadFavorites')||'[]');const reads=JSON.parse(localStorage.getItem('zadReadBooks')||'[]');const score=Math.min(100,(recent.length*8)+(fav.length*5)+(reads.length*12));const bar=document.getElementById('smartProgressBar'),txt=document.getElementById('smartProgressText');if(bar)bar.style.width=score+'%';if(txt)txt.textContent=score+'%';}catch(e){}});</script>
 <section dir="rtl" style="max-width:1000px;margin:25px auto;padding:20px;border-radius:16px;background:#17233b;color:#f4e8cd;border:1px solid #b5964a"><h2>📨 أسئلتي المرسلة للإدارة</h2><div id="zad-my-questions">جاري التحميل...</div></section>
 <script type="module">

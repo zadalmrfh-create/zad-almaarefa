@@ -82,7 +82,7 @@ function addPreviewBanner(preview){
   const banner=el('aside',{id:'zad-preview-banner',dir:'rtl'});
   banner.style.cssText='background:#f5e6ab;color:#1f2937;padding:12px 16px;margin:10px auto;border:2px solid #b98e1b;border-radius:12px;max-width:1140px;font:700 14px/1.8 Tahoma,Arial,sans-serif;text-align:right';
   const name=preview.profile?.fullName||preview.profile?.name||'المستخدم';
-  banner.append(el('span',{},'👁️ معاينة إدارية للقراءة فقط — '+name+' — بدون تغيير حساب الأدمن أو بيانات المستخدم. '));
+  banner.append(el('span',{},'👁️ معاينة إدارية للقراءة فقط — '+name+' — تستخدم صلاحيات الأدمن، ولا تؤكد قدرة الطالب على قراءة سجلاته. UID الطالب المستهدف: '+preview.uid+' — بدون تغيير حساب الأدمن أو بيانات المستخدم. '));
   const back=el('a',{href:urls.admin},'↩ العودة للإدارة');back.style.cssText='color:#08294b;text-decoration:underline;white-space:nowrap';banner.append(back);
   const notice=el('p',{id:'zad-switch-notice'});notice.style.margin='4px 0 0';notice.style.color='#883c14';banner.append(notice);
   const wrap=document.querySelector('.wrap')||document.body;
