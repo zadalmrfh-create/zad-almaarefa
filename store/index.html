@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>متجر زاد المعرفة | الملخصات والامتحانات والكتب</title>
+  <link rel="icon" href="../images/logo.png">
+  <link rel="stylesheet" href="app.css?v=20261103-secure4">
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <a class="brand" href="./">
+        <img src="../images/logo.png" alt="شعار زاد المعرفة">
+        <div>
+          متجر <span class="gold">زاد المعرفة</span>
+          <small>الكتب والملخصات والامتحانات الرقمية</small>
+        </div>
+      </a>
+      <nav class="nav">
+        <button data-view="home" class="active">الرئيسية</button>
+        <button data-view="catalog">المنتجات</button>
+        <button data-view="cart">السلة <span id="cartCount">0</span></button>
+        <button data-view="mine">مشترياتي وطلباتي</button>
+        <a href="admin.html" id="adminLink" class="hidden">إدارة المتجر</a>
+        <a href="../index.html">الأكاديمية</a>
+      </nav>
+      <span id="accountState" class="muted small">جارِ فحص الحساب...</span>
+    </header>
+
+    <main>
+      <section id="view-home">
+        <div class="hero">
+          <div>
+            <span class="gold">بنفس هوية زاد المعرفة</span>
+            <h1>كل كتب ومذكرات وامتحانات المكتبة في متجر واحد</h1>
+            <p>تم تنظيم محتوى المكتبة داخل المتجر تلقائيًا، مع تسعير موحّد وواضح: كل ملخص 15 جنيه، كل امتحان 15 جنيه، كل تقييم 10 جنيه، وكل كتاب 50 جنيه. الدفع يدوي ويُفعّل المنتج بعد مراجعة الإدارة.</p>
+            <div class="hero-actions">
+              <button class="primary" data-go="catalog">تصفح المنتجات ←</button>
+              <button class="secondary" data-go="mine">طلباتي ومشترياتي</button>
+            </div>
+          </div>
+          <div class="hero-icon">🛍️</div>
+        </div>
+
+        <div class="stats-strip">
+          <div class="stat"><span class="muted">سعر الملخص</span><strong>15 ج.م</strong></div>
+          <div class="stat"><span class="muted">سعر الامتحان</span><strong>15 ج.م</strong></div>
+          <div class="stat"><span class="muted">سعر الكتاب</span><strong>50 ج.م</strong></div>
+          <div class="stat"><span class="muted">سعر التقييم</span><strong>10 ج.م</strong></div>
+        </div>
+
+        <div class="section-head">
+          <h2>التصنيفات السريعة</h2>
+          <div class="inline-stats" id="quickCounts"></div>
+        </div>
+        <div class="tiles" id="typeTiles"></div>
+
+        <section class="evaluation-showcase" aria-label="التقييمات">
+          <div class="section-head">
+            <div>
+              <h2>📋 التقييمات</h2>
+              <p class="hint">التقييمات الأسبوعية والأداء الصفي والواجبات — التقييم الواحد 10 جنيه.</p>
+            </div>
+            <button class="secondary" data-type="evaluation">عرض كل التقييمات</button>
+          </div>
+          <div class="grid" id="homeEvaluations"></div>
+        </section>
+
+        <h2>أحدث المنتجات المتاحة</h2>
+        <div class="grid" id="homeProducts"></div>
+      </section>
+
+      <section class="hidden" id="view-catalog">
+        <div class="section-head">
+          <h2>جميع المنتجات</h2>
+          <p id="catalogCount" class="hint"></p>
+        </div>
+        <div class="toolbar">
+          <input id="search" placeholder="ابحث بالاسم أو المادة أو الصف..." aria-label="بحث">
+          <select id="typeFilter" aria-label="نوع المنتج">
+            <option value="">كل الأنواع</option>
+            <option value="summary">الملخصات</option>
+            <option value="exam">الامتحانات</option>
+            <option value="evaluation">التقييمات</option>
+            <option value="book">الكتب</option>
+            <option value="lesson">الحصص</option>
+            <option value="course">الكورسات</option>
+          </select>
+          <select id="stageFilter" aria-label="النظام">
+            <option value="">كل الأنظمة</option>
+            <option>عام</option>
+            <option>أزهري</option>
+            <option>بكالوريا</option>
+            <option>إعدادي</option>
+          </select>
+          <select id="sortFilter" aria-label="ترتيب">
+            <option value="popular">الأشهر</option>
+            <option value="new">الأحدث</option>
+            <option value="cheap">الأقل سعرًا</option>
+            <option value="expensive">الأعلى سعرًا</option>
+            <option value="name">الاسم</option>
+          </select>
+        </div>
+        <div class="grid" id="catalogGrid"></div>
+      </section>
+
+      <section class="hidden" id="view-product"></section>
+
+      <section class="hidden" id="view-cart">
+        <h2>سلة المشتريات</h2>
+        <div class="split">
+          <div id="cartItems" class="list"></div>
+          <div class="panel sidebox" id="cartSummary"></div>
+        </div>
+      </section>
+
+      <section class="hidden" id="view-checkout">
+        <h2>إتمام الطلب</h2>
+        <div id="checkoutGate" class="notice"></div>
+        <div class="split">
+          <form id="checkoutForm" class="panel list">
+            <div class="field"><label>اسم الطالب</label><input id="buyerName" required maxlength="120"></div>
+            <div class="field"><label>طريقة الدفع</label><select id="paymentMethod"><option value="vodafone-cash">فودافون كاش</option><option value="instapay">إنستاباي</option></select></div>
+            <div class="field">
+              <label>كود خصم (اختياري)</label>
+              <div class="row"><input id="couponCode" placeholder="رمز الخصم" style="flex:1"><button class="secondary" type="button" id="applyCoupon">تطبيق</button></div>
+              <span id="couponInfo" class="hint"></span>
+            </div>
+            <div class="field"><label>رقم الهاتف المحوَّل منه</label><input id="senderPhone" inputmode="tel" pattern="01[0-9]{9}" placeholder="01xxxxxxxxx" required></div>
+            <div class="field"><label>الرقم المرجعي للتحويل</label><input id="paymentReference" maxlength="100" placeholder="اكتب المرجع أو رقم العملية" required></div>
+            <div class="field"><label>صورة إيصال التحويل (اختياري)</label><input id="paymentProof" type="file" accept="image/jpeg,image/png,image/webp"><small class="hint">حد أقصى 8 ميجابايت، وتظهر للإدارة فقط.</small></div>
+            <div class="field"><label>ملاحظات (اختياري)</label><textarea id="orderNote" maxlength="300"></textarea></div>
+            <div class="notice">الدفع يدوي: <span id="paymentInstructions">فودافون كاش: 01042239704</span> — بعد التحويل أرسل المرجع. <strong>لن يتم فتح المنتجات إلا بعد مراجعة الإدارة وتأكيد وصول المبلغ.</strong></div>
+            <button class="primary" id="placeOrder" type="submit">إرسال طلب المراجعة</button>
+          </form>
+          <div class="panel sidebox" id="checkoutSummary"></div>
+        </div>
+      </section>
+
+      <section class="hidden" id="view-mine">
+        <h2>طلباتي ومشترياتي</h2>
+        <p class="hint">بعد اعتماد الإدارة للدفع ستظهر المنتجات هنا ويمكنك فتحها مباشرة.</p>
+        <div class="list" id="myOrders"></div>
+        <h2>المنتجات المملوكة</h2>
+        <div class="grid" id="myProducts"></div>
+      </section>
+    </main>
+  </div>
+
+  <div id="toast" role="status"></div>
+  <script type="module" src="shop.js?v=20261103-3"></script>
+</body>
+</html>

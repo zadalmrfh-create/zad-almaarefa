@@ -1,0 +1,30 @@
+// Integrate these matches INSIDE the existing Firebase Storage
+// service firebase.storage { match /b/{bucket}/o { ... } } block.
+// Do NOT replace unrelated academy Storage rules.
+match /storeProtected/{productId}/{fileName} {
+  allow get: if request.auth != null && (
+    (request.auth.token.email == 'maleksameh121@gmail.com'
+     && request.auth.token.email_verified == true)
+    ||
+    (firestore.exists(/databases/(default)/documents/storeEntitlements/$(request.auth.uid + '_' + productId))
+      && firestore.get(/databases/(default)/documents/storeEntitlements/$(request.auth.uid + '_' + productId)).data.active == true)
+  );
+  allow list: if false;
+  allow create: if request.auth != null
+    && request.auth.token.email == 'maleksameh121@gmail.com'
+    && request.auth.token.email_verified == true
+    && request.resource.size < 70 * 1024 * 1024
+    && request.resource.contentType == 'application/pdf';
+  allow update, delete: if false;
+}
+match /storeProofs/{uid}/{orderId} {
+  allow get: if request.auth != null
+    && request.auth.token.email == 'maleksameh121@gmail.com'
+    && request.auth.token.email_verified == true;
+  allow list: if false;
+  allow create: if request.auth != null
+    && request.auth.uid == uid
+    && request.resource.size < 8 * 1024 * 1024
+    && request.resource.contentType.matches('image/(jpeg|png|webp)');
+  allow update, delete: if false;
+}

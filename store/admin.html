@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>إدارة متجر زاد المعرفة</title>
+  <link rel="icon" href="../images/logo.png">
+  <link rel="stylesheet" href="app.css?v=20261103-secure4">
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <a href="./" class="brand">
+        <img src="../images/logo.png" alt="شعار الأكاديمية">
+        <div>إدارة <span class="gold">متجر زاد المعرفة</span><small>قسم منفصل خاص بإدارة المتجر</small></div>
+      </a>
+      <nav class="nav no-print">
+        <button data-tab="overview" class="active">نظرة عامة</button>
+        <button data-tab="products">المنتجات</button>
+        <button data-tab="orders">الطلبات والمدفوعات</button>
+        <button data-tab="courses">دروس الكورسات</button>
+        <button data-tab="drafts">مراجعة المعلمين</button>
+        <button data-tab="reports">التقارير</button>
+        <button data-tab="settings">إعدادات الدفع</button>
+        <button data-tab="coupons">الكوبونات</button>
+        <a href="./">المتجر</a>
+        <a href="../dashboard/admin/index.html">إدارة الأكاديمية</a>
+      </nav>
+    </header>
+
+    <div id="gate" class="notice">جارِ فحص صلاحيات إدارة المتجر...</div>
+
+    <main id="adminMain" class="hidden">
+      <section id="tab-overview">
+        <div class="hero" style="margin-top:16px">
+          <div>
+            <span class="gold">لوحة مستقلة لإدارة المتجر</span>
+            <h1>تحكم في منتجات المكتبة وطلبات المتجر</h1>
+            <p>تم سحب محتوى المكتبة تلقائيًا داخل المتجر. من هنا تستطيع تعديل المنتجات الموجودة أو إخفاءها أو حذفها، ومراجعة الطلبات والمدفوعات، وإدارة دروس الكورسات فقط.</p>
+            <div class="hero-actions">
+              <button class="primary" data-tab="products">إدارة المنتجات</button>
+              <button class="secondary" data-tab="orders">مراجعة الطلبات</button>
+              <button class="secondary" data-tab="settings">إعدادات الدفع</button>
+            </div>
+          </div>
+          <div class="hero-icon">🧾</div>
+        </div>
+        <div class="stats" id="stats" style="margin-top:18px"></div>
+        <div class="notice" style="margin-top:18px">أسعار المتجر الافتراضية: <strong>كل ملخص 15 جنيه</strong> • <strong>كل امتحان 15 جنيه</strong> • <strong>كل تقييم 10 جنيه</strong> • <strong>كل كتاب 50 جنيه</strong>. يمكنك تعديل أي منتج موجود من تبويب المنتجات.</div>
+      </section>
+
+      <section class="hidden" id="tab-products">
+        <div class="section-head">
+          <h2>إدارة المنتجات الموجودة</h2>
+          <div class="inline-stats"><span class="chip">المصدر: المكتبة</span><span class="chip">بدون إضافة يدوية</span></div>
+        </div>
+        <div class="split">
+          <div class="panel">
+            <div class="field"><label>بحث المنتجات</label><input id="productSearch" placeholder="ابحث بالاسم أو المادة أو الصف"></div>
+            <div id="productList" class="list scroll-list" style="margin-top:16px"></div>
+          </div>
+          <div class="panel">
+            <div class="product-form-head">
+              <div>
+                <h3 id="productFormTitle" style="margin-bottom:6px">اختر منتجًا لتعديله</h3>
+                <div class="hint">لن يتم إنشاء منتجات جديدة من هنا، فقط تعديل أو حذف أو إخفاء المنتجات الموجودة.</div>
+              </div>
+              <button class="secondary" type="button" id="resetProductBtn">إلغاء التحديد</button>
+            </div>
+            <form id="productForm" class="formgrid">
+              <input id="productId" type="hidden">
+              <div class="field full"><label>اسم المنتج</label><input id="pTitle" required maxlength="150"></div>
+              <div class="field"><label>النوع</label><select id="pType"><option value="summary">ملخص</option><option value="exam">امتحان</option><option value="evaluation">تقييم</option><option value="book">كتاب</option><option value="lesson">حصة مباشرة</option><option value="course">كورس</option></select></div>
+              <div class="field"><label>السعر (جنيه)</label><input id="pPrice" type="number" min="0" max="100000" step="0.01" required></div>
+              <div class="field"><label>النظام</label><select id="pStage"><option>أزهري</option><option>عام</option><option>بكالوريا</option><option>إعدادي</option></select></div>
+              <div class="field"><label>الصف</label><input id="pGrade" maxlength="80"></div>
+              <div class="field"><label>المادة</label><input id="pSubject" maxlength="120"></div>
+              <div class="field"><label>المعلم / المُعِد</label><input id="pTeacher" maxlength="120"></div>
+              <div class="field"><label>UID حساب المعلم (اختياري)</label><input id="pTeacherUid" maxlength="140"></div>
+              <div class="field"><label>موعد الحصة / الكورس (اختياري)</label><input id="pSchedule" maxlength="160"></div>
+              <div class="field"><label>المدة (اختياري)</label><input id="pDuration" maxlength="50"></div>
+              <div class="field full"><label>وصف المنتج</label><textarea id="pDescription" maxlength="2500"></textarea></div>
+              <div class="field full"><label>المحتويات</label><textarea id="pContents" maxlength="4000"></textarea></div>
+              <div class="field full"><label>رابط الغلاف (HTTPS فقط - اختياري)</label><input id="pCover" type="url" placeholder="https://..."></div>
+              <div class="field full secure-upload"><label>ملف PDF محمي للمنتج الحالي فقط</label><input id="pFile" type="file" accept="application/pdf"><small class="hint">ارفع النسخة المسموح ببيعها إلى Firebase Storage المحمي. لا تستخدم روابط MEGA أو Google Drive أو GitHub Pages للملفات المدفوعة. حد أقصى 70 ميجابايت.</small><p id="pProtectionStatus" class="secure-status">اختر منتجًا لمعرفة حالته الأمنية.</p></div>
+              <div class="field"><label><input id="pPublished" type="checkbox" style="width:auto" checked> منتج ظاهر في المتجر</label></div>
+              <div class="actions full">
+                <button class="primary" type="submit" id="saveProduct">حفظ التعديلات</button>
+                <button class="secondary" type="button" id="hideProductBtn">إخفاء / إظهار</button>
+                <button class="secondary" type="button" id="deleteProductBtn">حذف المنتج</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <section class="hidden" id="tab-orders">
+        <h2>الطلبات والمدفوعات</h2>
+        <div class="notice">اعتمد الطلب فقط بعد التأكد من وصول التحويل فعليًا. النظام يمنع تكرار رقم التحويل الواحد على أكثر من طلب.</div>
+        <div class="toolbar">
+          <input id="orderSearch" placeholder="بحث بالطالب أو رقم العملية">
+          <select id="orderStatus"><option value="">كل الحالات</option><option value="pending">بانتظار المراجعة</option><option value="approved">معتمد</option><option value="rejected">مرفوض</option></select>
+          <div></div><div></div>
+        </div>
+        <div class="list" id="ordersList"></div>
+      </section>
+
+      <section class="hidden" id="tab-courses">
+        <div class="section-head">
+          <h2>إدارة دروس الكورسات الموجودة</h2>
+          <span class="hint">بدون إضافة يدوية من هذه اللوحة — يتم تعديل أو حذف الدروس الحالية فقط.</span>
+        </div>
+        <div class="split">
+          <div class="panel">
+            <div class="field"><label>اختر الكورس</label><select id="lessonProduct" required></select></div>
+            <h3>الدروس الحالية</h3>
+            <div id="lessonsList" class="list"></div>
+          </div>
+          <div class="panel">
+            <h3 id="lessonEditorTitle">اختر درسًا لتعديله</h3>
+            <form id="lessonForm" class="list">
+              <input id="lessonId" type="hidden">
+              <div class="field"><label>عنوان الدرس</label><input id="lessonTitle" required maxlength="160"></div>
+              <div class="field"><label>ترتيب الدرس</label><input id="lessonPosition" type="number" min="1" max="999" value="1" required></div>
+              <div class="field"><label>الوصف</label><textarea id="lessonDesc" maxlength="1000"></textarea></div>
+              <div class="field"><label>رابط الفيديو (HTTPS)</label><input id="lessonVideo" type="url" placeholder="https://..."></div>
+              <div class="actions">
+                <button class="primary" type="submit">حفظ التعديل</button>
+                <button class="secondary" type="button" id="clearLesson">إلغاء التحديد</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <section class="hidden" id="tab-drafts">
+        <h2>مراجعة مقترحات المعلمين للكورسات</h2>
+        <p class="hint">المعلم يرسل الدرس كمسودة، والأدمن يقرر إضافته للكورس أو رفضه.</p>
+        <div id="draftsList" class="list"></div>
+      </section>
+
+      <section class="hidden" id="tab-reports">
+        <h2>تقارير المتجر</h2>
+        <div id="reportSummary" class="stats"></div>
+        <div class="notice" style="margin-top:16px">الأرقام المعروضة تشمل الطلبات المعتمدة فقط، ولا تؤثر على مدفوعات وحضور الأكاديمية الأساسية.</div>
+      </section>
+
+      <section id="tab-coupons" class="hidden">
+        <h2>كوبونات الخصم</h2>
+        <div class="split">
+          <form id="couponForm" class="panel list">
+            <div class="field"><label>رمز الكوبون</label><input id="cCode" required pattern="[A-Za-z0-9_-]{4,32}" placeholder="ZAD20"></div>
+            <div class="field"><label>الخصم بالنسبة المئوية (1–90)</label><input id="cPercent" type="number" min="1" max="90" required></div>
+            <div class="field"><label>الحد الأقصى للاستخدام</label><input id="cLimit" type="number" min="1" max="10000" value="100" required></div>
+            <div class="field"><label>تاريخ الانتهاء (اختياري)</label><input id="cExpires" type="date"></div>
+            <button class="primary">حفظ الكوبون</button>
+          </form>
+          <div class="panel"><h3>الكوبونات</h3><div id="couponList" class="list"></div></div>
+        </div>
+      </section>
+
+      <section id="tab-settings" class="hidden">
+        <h2>إعدادات المتجر ووسائل الدفع</h2>
+        <form id="settingsForm" class="panel list" style="max-width:720px">
+          <div class="field"><label>رقم فودافون كاش لاستلام الطلبات</label><input id="sVodafone" inputmode="tel" placeholder="01xxxxxxxxx"></div>
+          <div class="field"><label>عنوان إنستاباي</label><input id="sInstapay" maxlength="120"></div>
+          <div class="field"><label>رقم واتساب الدعم</label><input id="sWhatsapp" inputmode="tel"></div>
+          <div class="notice">تم ضبط أرقام الدعم الحالية داخل المتجر: فودافون كاش وواتساب الدعم على <strong>01042239704</strong>.</div>
+          <button class="primary" type="submit">حفظ الإعدادات</button>
+        </form>
+      </section>
+    </main>
+  </div>
+
+  <div id="toast" role="status"></div>
+  <script type="module" src="admin.js?v=20261103-3"></script>
+</body>
+</html>

@@ -1,0 +1,33 @@
+مهم: لا تستبدل قواعد Firebase Storage القديمة بهذا المقتطف وحده. أضف قسمَي match داخل service firebase.storage الحالي، وراجع أي قواعد أوسع قد تتعارض معه.
+
+match /storeProtected/{productId}/{fileName} {
+  allow write: if request.auth != null
+    && request.auth.token.email == 'maleksameh121@gmail.com'
+    && request.auth.token.email_verified == true
+    && request.resource.size < 30 * 1024 * 1024
+    && request.resource.contentType == 'application/pdf';
+  allow read: if request.auth != null
+    && (
+      (request.auth.token.email == 'maleksameh121@gmail.com' && request.auth.token.email_verified == true)
+      ||
+      (firestore.exists(/databases/(default)/documents/storeEntitlements/$(productId + '_' + request.auth.uid))
+       && firestore.get(/databases/(default)/documents/storeEntitlements/$(productId + '_' + request.auth.uid)).data.active == true)
+    );
+}
+
+match /storeProofs/{uid}/{orderId} {
+  allow create: if request.auth != null
+    && request.auth.uid == uid
+    && request.resource.size < 8 * 1024 * 1024
+    && request.resource.contentType.matches('image/(jpeg|png|webp)');
+  allow read: if request.auth != null
+    && request.auth.token.email == 'maleksameh121@gmail.com'
+    && request.auth.token.email_verified == true;
+  allow update, delete: if false;
+}
+
+ملاحظات:
+- إذا الأدمن عندك لا يستخدم البريد المعتمد أعلاه، عدل شرط الأدمن قبل النشر.
+- للاسترجاع عبر getBlob في المتصفح، اضبط CORS لبكت Storage إذا احتجت.
+- هذه القواعد تمنع طلب الوصول المعتاد من دون شراء، لكن رابط PDF الذي يخرج من المتصفح يمكن مشاركته بعد التحميل. لا توجد حماية رقمية مطلقة.
+- لم تُختبر القواعد على مشروع Firebase الحقيقي في هذه البيئة.
