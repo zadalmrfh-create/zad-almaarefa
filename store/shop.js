@@ -1,7 +1,7 @@
 import {db,$,esc,fmt,types,emoji,toast,session,adminCheck,navActive,printReceipt,dateText} from './common.js';
 import {collection,doc,getDoc,getDocs,onSnapshot,query,where,setDoc,serverTimestamp} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 import {getStorage,ref,getBlob,uploadBytes} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-storage.js';
-import {baseProducts} from './catalog-data.js?v=20261103-secure4';
+import {baseProducts} from './catalog-data.js?v=20261103-private-links-v1';
 
 const storage=getStorage();
 const defaultSettings={vodafonePhone:'01042239704',instapayAddress:'',whatsapp:'01042239704'};
@@ -260,21 +260,48 @@ async function openProduct(id){
   if(!entitlement)return toast('🔒 يجب اعتماد الدفع أولًا');
   if(p.type==='course')return productDetail(id);
   if(p.type==='lesson')return toast('تواصل مع الإدارة لتأكيد موعد الحصة');
-  if(!secureMedia(p))return toast('لا يوجد ملف رقمي لهذا النوع');
+  if(!secureMedia(p))return toast('هذا المنتج ليس ملفًا رقميًا');
+
+  // User interaction opens a placeholder tab immediately; Firestore enforces the
+  // authorization separately, even if a user manipulates browser JavaScript.
+  const path=String(entitlement.storagePath||'');
+  if(path.startsWith(`storeProtected/${id}/`)){
+    try{
+      toast('جاري تجهيز ملفك المحمي...');
+      const blob=await getBlob(ref(storage,path));
+      const url=URL.createObjectURL(blob);
+      const link=document.createElement('a');
+      link.href=url;
+      link.download=(p.title||'zad-product').replace(/[\\/:*?"<>|]/g,'_')+'.pdf';
+      document.body.append(link);link.click();link.remove();
+      setTimeout(()=>URL.revokeObjectURL(url),60000);
+    }catch(err){toast('تعذر فتح الملف، تحقق من اعتماد الطلب وقواعد Storage: '+(err.code||err.message))}
+    return;
+  }
+
+  const popup=window.open('about:blank','_blank');
+  if(popup){try{popup.opener=null;popup.document.title='زاد المعرفة - جاري التحقق';popup.document.body.textContent='جارِ التحقق من اعتماد عملية الشراء...'}catch{}}
   try{
-    // After admin approval, the entitlement grants only this student a Storage path.
-    // Never read private product documents or public Drive / MEGA URLs from the browser.
-    const path=String(entitlement.storagePath||'');
-    if(!path.startsWith(`storeProtected/${id}/`))return toast('هذا المنتج لم يكتمل تسليمه الآمن بعد، تواصل مع الإدارة');
-    toast('جاري تجهيز ملفك المحمي...');
-    const blob=await getBlob(ref(storage,path));
-    const url=URL.createObjectURL(blob);
-    const link=document.createElement('a');
-    link.href=url;
-    link.download=(p.title||'zad-product').replace(/[\\/:*?"<>|]/g,'_')+'.pdf';
-    document.body.append(link);link.click();link.remove();
-    setTimeout(()=>URL.revokeObjectURL(url),60000);
-  }catch(err){toast('تعذر فتح الملف، تحقق من اعتماد الطلب وقواعد Storage: '+(err.code||err.message))}
+    // storeProductLinks/{id} is not listable by students. Firestore rules permit
+    // a direct get only when active storeEntitlements/{uid}_{id} exists.
+    const snap=await getDoc(doc(db,'storeProductLinks',id));
+    const url=String(snap.data()?.url||'');
+    const parsed=new URL(url);
+    if(!snap.exists()||parsed.protocol!=='https:')throw Error('لا يوجد رابط تسليم صالح');
+    if(popup&&!popup.closed){popup.location.replace(parsed.href)}
+    else{
+      // Only rendered after a successful authenticated Firestore get.
+      const el=$('#view-product');
+      const a=document.createElement('a');
+      a.href=parsed.href; a.target='_blank';a.rel='noopener noreferrer';a.className='primary';
+      a.textContent='اضغط هنا لفتح المنتج الذي تم اعتماده';
+      el.prepend(a);
+      toast('تم التحقق من الشراء؛ اضغط على الرابط الجديد');
+    }
+  }catch(err){
+    if(popup&&!popup.closed)popup.close();
+    toast('لم يتم تسليم رابط المنتج. تأكد من نشر قواعد Firestore واعتماد الطلب: '+(err.code||err.message));
+  }
 }
 
 function syncUser(){

@@ -23,6 +23,27 @@
       }
     }
 
+
+    // External source URLs must never be published as public catalog fields.
+    // An approved purchase is the only way a student can read their URL here.
+    match /storeProductLinks/{productId} {
+      function hasApprovedOrder() {
+        return signedIn()
+          && exists(/databases/$(database)/documents/storeEntitlements/$(request.auth.uid + '_' + productId))
+          && get(/databases/$(database)/documents/storeEntitlements/$(request.auth.uid + '_' + productId)).data.studentUid == request.auth.uid
+          && get(/databases/$(database)/documents/storeEntitlements/$(request.auth.uid + '_' + productId)).data.active == true;
+      }
+      allow get: if isAdmin() || hasApprovedOrder();
+      allow list: if isAdmin();
+      allow create, update: if isAdmin()
+        && request.resource.data.keys().hasOnly(['url','source','updatedAt','updatedBy'])
+        && request.resource.data.url is string
+        && request.resource.data.url.size() >= 8
+        && request.resource.data.url.size() <= 2048
+        && request.resource.data.url.matches('^https://[^ ]+$');
+      allow delete: if isAdmin();
+    }
+
     match /storeOrders/{orderId} {
       allow create: if signedIn()
         && request.resource.data.keys().hasOnly([

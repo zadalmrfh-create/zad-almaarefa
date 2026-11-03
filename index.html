@@ -1143,7 +1143,7 @@ export function watchStudentCount(elementOrId) {
 
   if (!element) return () => {};
 
-  element.textContent = '0';
+  element.textContent = '—';
 
   if (!FIREBASE_READY || !db) {
     return () => {};
@@ -1154,16 +1154,16 @@ export function watchStudentCount(elementOrId) {
   return onSnapshot(
     counterRef,
     (snapshot) => {
-      const rawTotal = snapshot.exists() ? snapshot.data()?.total : 0;
+      const rawTotal = snapshot.exists() ? snapshot.data()?.total : undefined;
       const total = Number(rawTotal);
-      element.textContent = Number.isFinite(total) && total >= 0
+      element.textContent = rawTotal !== undefined && rawTotal !== null && Number.isFinite(total) && total >= 0
         ? Math.floor(total).toLocaleString('ar-EG')
-        : '0';
+        : '—';
     },
     (error) => {
       console.warn('تعذر تحميل عداد الطلاب:', error);
       if (!element.textContent || element.textContent === '—') {
-        element.textContent = '0';
+        element.textContent = '—';
       }
     }
   );
@@ -1194,47 +1194,25 @@ async function loadHomeExtras(){
   let st={};
   sg.innerHTML=Array.from({length:4},()=>'<div class="home-stat-skeleton"></div>').join('');
   const cards=[['students','👨‍🎓','الطلاب'],['books','📚','كتب المكتبة'],['teachers','👨‍🏫','المعلمون'],['categories','📚','الأقسام']];
-  const draw=()=>{sg.innerHTML=cards.map(x=>`<div class="card text-center p-6"><div class="text-3xl">${x[1]}</div><div class="text-3xl font-black mt-2">${(x[0]==='books'&&st.books===undefined?'—':Number(x[0]==='teachers'?(st.teachers||4):(st[x[0]]||0)).toLocaleString('ar-EG'))}</div><div>${x[2]}</div></div>`).join('');};
+  const draw=()=>{sg.innerHTML=cards.map(x=>`<div class="card text-center p-6"><div class="text-3xl">${x[1]}</div><div class="text-3xl font-black mt-2">${(st[x[0]]===undefined?'—':Number(st[x[0]]).toLocaleString('ar-EG'))}</div><div>${x[2]}</div></div>`).join('');};
   draw();
-  // قراءة نفس مصفوفة الكتب التي تستخدمها المكتبة، لا قيمة ثابتة ولا فهرس قديم.
-  // كل عنصر في مصفوفة الكتب له رابط URL، والعداد يمثل عدد العناصر المعروضة.
-  const normalizeUrl=u=>String(u||'').trim();
-  let staticBookURLs=[];
+  // محتويات المكتبة القديمة انتقلت إلى كتالوج المتجر؛ لا تعتمد على صفحة المكتبة المحذوفة.
   try {
-    const response=await fetch('./sections/library.html',{cache:'no-store'});
-    if(!response.ok)throw new Error('تعذر تحميل مصدر المكتبة');
-    const source=await response.text();
-    const beginning=source.indexOf('var books = [');
-    if(beginning<0)throw new Error('مصفوفة كتب المكتبة غير موجودة');
-    const ending=source.indexOf('\n];',beginning);
-    if(ending<0)throw new Error('نهاية مصفوفة الكتب غير موجودة');
-    const catalog=source.slice(beginning,ending);
-    staticBookURLs=Array.from(catalog.matchAll(/["']?url["']?\s*:\s*["']([^"']+)["']/g),m=>normalizeUrl(m[1])).filter(Boolean);
-    st.books=staticBookURLs.length;
+    const {baseProducts}=await import('./store/catalog-data.js?v=20261103-home-stats');
+    const baseBooks=baseProducts.filter(p=>p.type==='book'&&p.deleted!==true&&p.published!==false).length;
+    st.books=baseBooks;
     draw();
-  }catch(error){
-    console.warn('لم يمكن قراءة عدد كتب المكتبة؛ لن نعرض عددًا تخمينيًا',error);
-    draw();
-    return;
-  }
-  // التحديث اللحظي عند إضافة/حذف كتاب من لوحة الإدارة في Firebase.
-  // العنصر المسجل في القائمة الأساسية لا يُحسب ثانية عند نسخه إلى الإدارة.
-  const baseUrls=new Set(staticBookURLs);
-  const updateAdminBooks=snapshot=>{
-    const keys=new Set();
-    snapshot.forEach(d=>{
-      const book=d.data()||{};
-      if(book.visible===false||!book.title||!book.url)return;
-      const url=normalizeUrl(book.url);
-      if(!url||baseUrls.has(url))return;
-      keys.add(url);
-    });
-    st.books=staticBookURLs.length+keys.size;
-    draw();
-  };
-  onSnapshot(collection(db,'libraryBooks'),updateAdminBooks,error=>{
-    console.info('عداد المكتبة يعرض الكتب المحلية فقط؛ لا توجد صلاحية لقراءة الإضافات',error);
-  });
+    onSnapshot(collection(db,'storeProducts'),snapshot=>{
+      const overrides=new Map(snapshot.docs.map(d=>[d.id,d.data()]));
+      const ids=new Set(baseProducts.map(p=>p.id));
+      const existing=baseProducts.filter(p=>{
+        const x={...p,...(overrides.get(p.id)||{})};
+        return x.type==='book'&&!x.deleted&&x.published!==false;
+      }).length;
+      const extra=snapshot.docs.filter(d=>!ids.has(d.id)&&d.data().type==='book'&&!d.data().deleted&&d.data().published!==false).length;
+      st.books=existing+extra;draw();
+    },error=>console.info('تعذر تحديث عدد كتب المتجر لحظيًا',error));
+  }catch(error){console.warn('تعذر قراءة كتالوج المتجر',error);}
   // بقية الإحصائيات تُقرأ بصورة مستقلة، ولا تستطيع استبدال عداد الكتب.
   try{
     const q=await getDocs(query(collection(db,'publicStats'),limit(20)));
@@ -1345,6 +1323,35 @@ bubble('bot','السلام عليكم! 👋 أنا مساعد خدمات زاد 
 
 <!-- متجر زاد المعرفة: إضافة مستقلة لا تمس وظائف الأكاديمية -->
 <a href="store/" class="zad-store-access" aria-label="متجر زاد المعرفة">🛍️ متجر زاد المعرفة</a>
-<style>.zad-store-access{position:fixed;bottom:86px;right:18px;z-index:8000;background:#e9bd40;color:#0c203b!important;border:2px solid #f7d878;border-radius:999px;padding:12px 18px;font-family:Cairo,Tajawal,sans-serif;font-weight:900;box-shadow:0 6px 25px #0008;text-decoration:none}.zad-store-access:hover{filter:brightness(1.07)}@media(max-width:900px){.zad-store-access{bottom:78px;right:14px}}@media(max-width:600px){.zad-store-access{bottom:72px;right:10px;padding:9px 12px;font-size:12px}}</style>
+<style>
+/* زر متجر زاد المعرفة: أعلى زر المشاركة في الناحية اليسرى */
+.zad-store-access{
+  position:fixed!important;
+  left:20px!important;
+  right:auto!important;
+  bottom:94px!important;
+  z-index:8000;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  background:#e9bd40;
+  color:#0c203b!important;
+  border:2px solid #f7d878;
+  border-radius:999px;
+  padding:11px 16px;
+  font-family:Cairo,Tajawal,sans-serif;
+  font-weight:900;
+  box-shadow:0 6px 25px #0008;
+  text-decoration:none;
+  max-width:calc(100vw - 24px);
+}
+.zad-store-access:hover{filter:brightness(1.07)}
+@media(max-width:900px){
+  .zad-store-access{left:15px!important;right:auto!important;bottom:90px!important}
+}
+@media(max-width:600px){
+  .zad-store-access{left:12px!important;right:auto!important;bottom:84px!important;padding:9px 12px;font-size:12px}
+}
+</style>
 </body>
 </html>

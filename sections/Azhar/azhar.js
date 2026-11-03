@@ -893,7 +893,7 @@ function renderGrades(stageKey) {
       '<div class="grade-name">' +
       grade.name +
       "</div>" +
-      '<div class="grade-hint">المكتبة والامتحانات</div>';
+      '<div class="grade-hint">الامتحانات والفيديوهات</div>';
     grid.appendChild(btn);
   });
 
@@ -914,7 +914,7 @@ function renderGrades(stageKey) {
 document.querySelectorAll(".resource-card").forEach(function (card) {
   card.addEventListener("click", function () {
     // المكتبة متاحة مباشرة، بينما الامتحانات والفيديوهات تتطلب تسجيل الدخول.
-    if (card.dataset.resource !== "library" && !requireLogin("يجب تسجيل الدخول أولاً للوصول إلى هذا المحتوى.")) return;
+    if (!requireLogin("يجب تسجيل الدخول أولاً للوصول إلى هذا المحتوى.")) return;
     state.resource = card.dataset.resource;
     openSearchStep();
   });

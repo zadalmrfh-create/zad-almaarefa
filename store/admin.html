@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>إدارة متجر زاد المعرفة</title>
   <link rel="icon" href="../images/logo.png">
-  <link rel="stylesheet" href="app.css?v=20261103-secure4">
+  <link rel="stylesheet" href="app.css?v=20261103-compact5">
 </head>
 <body>
   <div class="shell">
@@ -54,6 +54,21 @@
           <h2>إدارة المنتجات الموجودة</h2>
           <div class="inline-stats"><span class="chip">المصدر: المكتبة</span><span class="chip">بدون إضافة يدوية</span></div>
         </div>
+
+        <details class="panel" style="margin:0 0 20px;">
+          <summary style="font-weight:900;cursor:pointer;font-size:1.05rem">🔐 ربط كل روابط المكتبة بالمنتجات دفعة واحدة (للأدمن فقط)</summary>
+          <p class="hint">اختار ملف <code>ZAD_PRIVATE_LINKS_IMPORT.json</code> من جهازك، ثم اضغط استيراد الروابط. روابط MEGA وDrive تُحفظ داخل Firestore خاص ولا تظهر في كود المتجر. لا ترفع ملف المصادر إلى GitHub.</p>
+          <div class="formgrid">
+            <div class="field"><label>ملف المصادر الخاص JSON</label><input id="bulkLinkManifest" type="file" accept=".json,application/json"></div>
+            <div class="field"><label>مجلد ملفات PDF المحلية القديم (اختياري)</label><input id="bulkLocalFiles" type="file" multiple webkitdirectory directory accept=".pdf,application/pdf"><span class="hint">اختر مجلد <code>sections</code> الذي يحتوي ملفات <code>summaries</code> و<code>assessments</code> و<code>resources</code>.</span></div>
+          </div>
+          <div class="actions" style="margin-top:16px">
+            <button type="button" class="primary" id="bulkImportLinks">استيراد الروابط الخارجية وتفعيل البيع</button>
+            <button type="button" class="secondary" id="bulkUploadLocal">رفع ملفات PDF المحلية المحمية دفعة واحدة</button>
+          </div>
+          <div id="bulkLinkStatus" class="notice" style="margin-top:12px" role="status">لم يتم اختيار ملف المصادر.</div>
+          <p class="help">⚠️ يشترط امتلاك إذن توزيع الملفات. الروابط العامة قد تظل قابلة للوصول خارج المتجر عند من يعرف رابطها الأصلي.</p>
+        </details>
         <div class="split">
           <div class="panel">
             <div class="field"><label>بحث المنتجات</label><input id="productSearch" placeholder="ابحث بالاسم أو المادة أو الصف"></div>
@@ -173,6 +188,6 @@
   </div>
 
   <div id="toast" role="status"></div>
-  <script type="module" src="admin.js?v=20261103-3"></script>
+  <script type="module" src="admin.js?v=20261103-private-links-v1"></script>
 </body>
 </html>

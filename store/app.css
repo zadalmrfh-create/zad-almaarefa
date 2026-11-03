@@ -259,3 +259,82 @@ input,select,textarea{padding:14px 18px;line-height:1.8}
   .actions{gap:8px}
   main>section{padding-top:8px}
 }
+
+
+/* Compact, single-row store header — desktop and mobile */
+html { scroll-padding-top: 82px; }
+.shell { padding-top: 12px; }
+.topbar {
+  position: relative;
+  top: auto;
+  z-index: 20;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 68px;
+  padding: 9px 15px;
+  border-radius: 18px;
+}
+.topbar .brand {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 1.1rem;
+  line-height: 1.25;
+}
+.topbar .brand img { width: 42px; height: 42px; object-fit: contain; }
+.topbar .brand small { font-size: .65rem; margin-top: 2px; }
+.topbar .nav {
+  grid-column: auto;
+  flex: 1 1 auto;
+  width: auto;
+  min-width: 0;
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 7px;
+  overflow-x: auto;
+  padding: 3px 0;
+  margin: 0;
+}
+.topbar .nav a, .topbar .nav button {
+  min-height: 38px;
+  padding: 7px 12px;
+  border-radius: 10px;
+  font-size: .88rem;
+  line-height: 1.3;
+}
+#accountState {
+  flex: 0 1 150px;
+  min-width: 0;
+  max-width: 150px;
+  text-align: left;
+  font-size: .72rem;
+}
+main { padding-top: 20px; }
+main>section { padding-top: 0; }
+@media (max-width: 900px) {
+  .topbar { gap: 8px; padding: 8px 10px; }
+  .topbar .brand { font-size: .96rem; }
+  .topbar .brand img { width: 35px; height: 35px; }
+  .topbar .brand small { display: none; }
+  #accountState { display: none; }
+}
+@media (max-width: 620px) {
+  .shell { padding-top: 8px; }
+  .topbar { min-height: 54px; padding: 7px 9px; border-radius: 13px; }
+  .topbar .brand { font-size: .85rem; }
+  .topbar .brand img { width: 30px; height: 30px; }
+  .topbar .nav a, .topbar .nav button {
+    width: auto;
+    min-width: max-content;
+    min-height: 34px;
+    padding: 6px 9px;
+    font-size: .76rem;
+  }
+  main { padding-top: 16px; }
+}

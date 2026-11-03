@@ -1335,6 +1335,35 @@ const box=document.getElementById('zad-my-questions');onAuthStateChanged(auth,as
 
 <!-- متجر زاد المعرفة: إضافة مستقلة لا تمس وظائف الأكاديمية -->
 <a href="../../store/index.html" class="zad-store-access" aria-label="متجر زاد المعرفة">🛍️ متجر زاد المعرفة</a>
-<style>.zad-store-access{position:fixed;bottom:86px;right:18px;z-index:8000;background:#e9bd40;color:#0c203b!important;border:2px solid #f7d878;border-radius:999px;padding:12px 18px;font-family:Cairo,Tajawal,sans-serif;font-weight:900;box-shadow:0 6px 25px #0008;text-decoration:none}.zad-store-access:hover{filter:brightness(1.07)}@media(max-width:900px){.zad-store-access{bottom:78px;right:14px}}@media(max-width:600px){.zad-store-access{bottom:72px;right:10px;padding:9px 12px;font-size:12px}}</style>
+<style>
+/* زر متجر زاد المعرفة: أعلى زر المشاركة في الناحية اليسرى */
+.zad-store-access{
+  position:fixed!important;
+  left:20px!important;
+  right:auto!important;
+  bottom:94px!important;
+  z-index:8000;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  background:#e9bd40;
+  color:#0c203b!important;
+  border:2px solid #f7d878;
+  border-radius:999px;
+  padding:11px 16px;
+  font-family:Cairo,Tajawal,sans-serif;
+  font-weight:900;
+  box-shadow:0 6px 25px #0008;
+  text-decoration:none;
+  max-width:calc(100vw - 24px);
+}
+.zad-store-access:hover{filter:brightness(1.07)}
+@media(max-width:900px){
+  .zad-store-access{left:15px!important;right:auto!important;bottom:90px!important}
+}
+@media(max-width:600px){
+  .zad-store-access{left:12px!important;right:auto!important;bottom:84px!important;padding:9px 12px;font-size:12px}
+}
+</style>
 </body>
 </html>

@@ -1,7 +1,7 @@
 import {db,$,esc,fmt,types,toast,session,adminCheck,printReceipt,dateText} from './common.js';
-import {collection,doc,getDoc,getDocs,onSnapshot,serverTimestamp,deleteField,setDoc,updateDoc,deleteDoc,runTransaction} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
+import {collection,doc,getDoc,getDocs,onSnapshot,serverTimestamp,deleteField,setDoc,updateDoc,deleteDoc,runTransaction,writeBatch} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 import {getStorage,ref,getBlob,uploadBytes} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-storage.js';
-import {baseProducts} from './catalog-data.js?v=20261103-secure4';
+import {baseProducts} from './catalog-data.js?v=20261103-private-links-v1';
 
 const storage=getStorage();
 const defaultSettings={vodafonePhone:'01042239704',instapayAddress:'',whatsapp:'01042239704'};
@@ -13,6 +13,8 @@ let coupons=[];
 let currentUser=null;
 let currentProductId='';
 let unsubscribe=[];
+let privateManifest=null;
+let productsLoaded=false;
 
 const isValidUrl=s=>!s||/^https:\/\/[^\s]+$/i.test(s);
 const byBase=(a,b)=>String(a.title||'').localeCompare(String(b.title||''),'ar')||Number(a.baseOrder||0)-Number(b.baseOrder||0);
@@ -82,7 +84,7 @@ function editProduct(id){
   $('#pPublished').checked=p.published!==false;
   $('#productId').value=id;
   $('#productFormTitle').textContent='تعديل المنتج: '+p.title;
-  $('#pProtectionStatus').textContent=(p.deliveryReady&&String(p.storagePath||'').startsWith('storeProtected/'+id+'/'))?'✅ ملف محمي جاهز':'🔒 المنتج غير جاهز للبيع: ارفع PDF محميًا من هنا';
+  $('#pProtectionStatus').textContent=p.deliveryReady ? (p.deliveryMode==='external'?'✅ رابط خارجي خاص جاهز بعد اعتماد الدفع':'✅ ملف PDF محمي جاهز') : '🔒 المنتج غير جاهز للبيع: ارفع PDF محميًا أو استورد رابطه الخارجي من أداة الاستيراد';
   $('#tab-products').scrollIntoView({behavior:'smooth'});
 }
 
@@ -116,16 +118,18 @@ async function saveProduct(e){
       const path=`storeProtected/${id}/${Date.now()}-${Math.random().toString(36).slice(2)}.pdf`;
       await uploadBytes(ref(storage,path),picked,{contentType:'application/pdf'});
       p.storagePath=path;
+      p.deliveryMode='storage';
       p.deliveryReady=true;
     }else if(isDigital(p)){
       const originalPath=String(old.storagePath||'');
-      p.deliveryReady=Boolean(old.deliveryReady&&originalPath.startsWith(`storeProtected/${id}/`));
+      p.deliveryMode=old.deliveryMode||'';
+      p.deliveryReady=Boolean(old.deliveryReady&&(originalPath.startsWith(`storeProtected/${id}/`)||old.deliveryMode==='external'));
     }else{
       p.deliveryReady=true;
     }
     // بيانات المنتج الخاصة لا تُرسل إلى المجموعة العامة.
     await setDoc(doc(db,'storeProducts',id),{...p,directUrl:deleteField(),previewUrl:deleteField(),downloadUrl:deleteField()},{merge:true});
-    await setDoc(doc(db,'storePublicProducts',id),publicProduct(p),{merge:true});
+    await setDoc(doc(db,'storePublicProducts',id),publicProduct(p));
     // في حالة المنتج المدفوع، لا تتضمن المجموعة العامة أي روابط أو storagePath.
     toast(p.deliveryReady?'تم حفظ المنتج المحمي':'تم حفظ التعديل؛ المنتج مقفل حتى رفع الملف');
     $('#pFile').value='';
@@ -137,7 +141,7 @@ function renderProducts(){
   if(!$('#productList')) return;
   const s=$('#productSearch').value.trim().toLowerCase();
   const out=products.filter(p=>[p.title,p.subject,p.teacherName,p.grade,p.stage].join(' ').toLowerCase().includes(s));
-  $('#productList').innerHTML=out.length?out.map(p=>`<div class="item"><div class="row"><b>${esc(p.title)}</b><span class="badge">${p.published!==false?'ظاهر':'مخفي'}</span></div><div class="muted small">${esc(types[p.type]||p.type)} • ${fmt(p.price)} • ${esc(p.grade||'')} • ${esc(p.stage||'')}</div><p class="small secure-product-label">${p.deliveryReady?'✅ محمي وجاهز للتسليم':'🔒 مقفل حتى رفع الملف المحمي'}</p><div class="actions"><button class="secondary" data-edit-product="${esc(p.id)}">تعديل</button><button class="secondary" data-toggle-product="${esc(p.id)}">${p.published!==false?'إخفاء':'نشر'}</button><button class="secondary" data-delete-product="${esc(p.id)}">حذف</button></div></div>`).join(''):'<div class="empty">لا توجد منتجات مطابقة</div>';
+  $('#productList').innerHTML=out.length?out.map(p=>`<div class="item"><div class="row"><b>${esc(p.title)}</b><span class="badge">${p.published!==false?'ظاهر':'مخفي'}</span></div><div class="muted small">${esc(types[p.type]||p.type)} • ${fmt(p.price)} • ${esc(p.grade||'')} • ${esc(p.stage||'')}</div><p class="small secure-product-label">${p.deliveryReady?(p.deliveryMode==='external'?'✅ جاهز للتسليم برابط خاص بعد الدفع':'✅ PDF محمي وجاهز للتسليم'):'🔒 لم يُربط بمصدر تسليم بعد'}</p><div class="actions"><button class="secondary" data-edit-product="${esc(p.id)}">تعديل</button><button class="secondary" data-toggle-product="${esc(p.id)}">${p.published!==false?'إخفاء':'نشر'}</button><button class="secondary" data-delete-product="${esc(p.id)}">حذف</button></div></div>`).join(''):'<div class="empty">لا توجد منتجات مطابقة</div>';
 }
 
 function paymentSnapshot(o){
@@ -178,13 +182,21 @@ async function approveOrder(id){
     await runTransaction(db,async tx=>{
       const orderRef=doc(db,'storeOrders',id), claimRef=doc(db,'storePaymentRefs',claimId), couponRef=o.couponCode?doc(db,'storeCoupons',o.couponCode):null;
       const productRefs=(o.productIds||[]).map(pid=>doc(db,'storeProducts',pid));
-      const reads=await Promise.all([tx.get(orderRef),tx.get(claimRef),...productRefs.map(r=>tx.get(r)),...(couponRef?[tx.get(couponRef)]:[])]);
+      const linkRefs=(o.productIds||[]).map(pid=>doc(db,'storeProductLinks',pid));
+      const reads=await Promise.all([tx.get(orderRef),tx.get(claimRef),...productRefs.map(r=>tx.get(r)),...linkRefs.map(r=>tx.get(r)),...(couponRef?[tx.get(couponRef)]:[])]);
       const current=reads[0];
       if(!current.exists()||current.data().status!=='pending') throw Error('تمت مراجعة الطلب بالفعل');
       if(reads[1].exists()) throw Error('رقم التحويل مستخدم في طلب آخر');
       const verified=reads.slice(2,2+productRefs.length);
+      const linkDocs=reads.slice(2+productRefs.length,2+productRefs.length+linkRefs.length);
       if(verified.length!==q.items.length||verified.some(x=>!x.exists()))throw Error('ملفات المنتجات غير جاهزة للبيع');
-      if(verified.some((x,i)=>{const v=x.data();return v.published===false||v.deleted||v.deliveryReady!==true||(['summary','exam','evaluation','book'].includes(v.type)&&!String(v.storagePath||'').startsWith(`storeProtected/${o.productIds[i]}/`))}))throw Error('يوجد منتج لم يُرفع ملفه المحمي أو غير منشور');
+      if(verified.some((x,i)=>{
+        const v=x.data();
+        const hasPdf=String(v.storagePath||'').startsWith(`storeProtected/${o.productIds[i]}/`);
+        const hasLink=linkDocs[i]?.exists()&&/^https:\/\//.test(String(linkDocs[i].data().url||''));
+        const requiresFile=['summary','exam','evaluation','book'].includes(v.type);
+        return v.published===false||v.deleted||v.deliveryReady!==true||(requiresFile&&!hasPdf&&!hasLink);
+      }))throw Error('يوجد منتج غير منشور أو بدون ملف PDF محمي أو رابط تسليم خاص');
       const accurateTotal=verified.reduce((n,x)=>n+Number(x.data().price||0),0);
       let net=accurateTotal;
       if(couponRef){
@@ -318,14 +330,124 @@ async function editLesson(id,course){
 async function toggleProductVisibility(id){
   const p=products.find(x=>x.id===id);
   if(!p) return;
-  try{await setDoc(doc(db,'storeProducts',id),{published:p.published===false?true:false,deleted:false,updatedAt:serverTimestamp(),updatedBy:currentUser.uid},{merge:true});await setDoc(doc(db,'storePublicProducts',id),{published:p.published===false?true:false,deleted:false,updatedAt:serverTimestamp()},{merge:true})}catch(e){toast(e.message)}
+  try{await setDoc(doc(db,'storeProducts',id),{published:p.published===false?true:false,deleted:false,updatedAt:serverTimestamp(),updatedBy:currentUser.uid},{merge:true});await setDoc(doc(db,'storePublicProducts',id),publicProduct({...p,published:p.published===false?true:false,deleted:false,updatedAt:serverTimestamp()}))}catch(e){toast(e.message)}
 }
 
 async function deleteProductSoft(id){
   const p=products.find(x=>x.id===id);
   if(!p) return;
   if(!confirm('سيتم حذف المنتج من عرض المتجر. هل تريد المتابعة؟')) return;
-  try{await setDoc(doc(db,'storeProducts',id),{deleted:true,published:false,updatedAt:serverTimestamp(),updatedBy:currentUser.uid},{merge:true});await setDoc(doc(db,'storePublicProducts',id),{deleted:true,published:false,updatedAt:serverTimestamp()},{merge:true}); if(currentProductId===id) resetProduct(); toast('تم حذف المنتج من المتجر')}catch(e){toast(e.message)}
+  try{await setDoc(doc(db,'storeProducts',id),{deleted:true,published:false,updatedAt:serverTimestamp(),updatedBy:currentUser.uid},{merge:true});await setDoc(doc(db,'storePublicProducts',id),publicProduct({...p,deleted:true,published:false,updatedAt:serverTimestamp()})); if(currentProductId===id) resetProduct(); toast('تم حذف المنتج من المتجر')}catch(e){toast(e.message)}
+}
+
+
+function updateImportProgress(message,failed=false){
+  const el=$('#bulkLinkStatus');
+  if(el){el.textContent=message;el.classList.toggle('error',failed)}
+}
+
+function validExternal(url){
+  try{return new URL(url).protocol==='https:'&&url.length<=2048}catch{return false}
+}
+
+async function readPrivateManifest(){
+  const file=$('#bulkLinkManifest').files[0];
+  if(!file){privateManifest=null;return updateImportProgress('اختار ملف الروابط الخاص الذي تم تسليمه لك أولًا.',true)}
+  try{
+    const data=JSON.parse(await file.text());
+    if(data.format!=='zad-store-private-source-links'||data.version!==1||!Array.isArray(data.items))throw Error('صيغة ملف غير معروفة');
+    const unique=new Set(),known=new Set(baseProducts.map(x=>x.id));
+    for(const x of data.items){
+      if(!known.has(x.productId)||unique.has(x.productId)||!['external','local'].includes(x.type))throw Error('معرّف مكرر أو غير موجود');
+      if(x.type==='external'&&!validExternal(x.url))throw Error('رابط غير صالح: '+x.productId);
+      unique.add(x.productId);
+    }
+    privateManifest=data;
+    updateImportProgress(`مستعد: ${data.items.filter(x=>x.type==='external').length} رابط خارجي + ${data.items.filter(x=>x.type==='local').length} ملف محلي. الاستيراد لا يبدأ إلا بالضغط على زر التأكيد.`);
+  }catch(e){privateManifest=null;updateImportProgress('تعذر قراءة الملف: '+e.message,true)}
+}
+
+function metaForBulk(p){
+  return Object.fromEntries(['title','type','price','stage','grade','subject','teacherName','teacherUid','schedule','duration','description','contents','coverUrl','published','deleted'].filter(k=>p[k]!==undefined).map(k=>[k,p[k]]));
+}
+
+async function importExternalLinks(){
+  if(!privateManifest)return updateImportProgress('اختر ملف المصادر الخاص أولًا.',true);
+  if(!productsLoaded)return updateImportProgress('لم تكتمل قراءة المنتجات من Firebase؛ راجع اتصال الإنترنت والصلاحيات ثم أعد المحاولة.',true);
+  const list=privateManifest.items.filter(x=>x.type==='external');
+  if(!list.length)return updateImportProgress('الملف لا يحتوي على روابط خارجية.',true);
+  if(!confirm(`سيتم حفظ ${list.length} رابطًا في Firestore بمستندات خاصة، وتفعيل منتجاتها للشراء. تأكد من امتلاك حقوق توزيع المحتوى. هل تريد المتابعة؟`))return;
+  const btn=$('#bulkImportLinks');btn.disabled=true;
+  let complete=0,skipped=0;
+  const importedIds=new Set();
+  try{
+    for(let i=0;i<list.length;i+=75){
+      const batch=writeBatch(db);
+      let staged=0;
+      for(const row of list.slice(i,i+75)){
+        const p=products.find(x=>x.id===row.productId);
+        if(!p||!['book','summary','exam','evaluation'].includes(p.type)){skipped++;continue}
+        // Keep already uploaded PDFs as the preferred delivery method.
+        if(p.deliveryReady&&String(p.storagePath||'').startsWith(`storeProtected/${p.id}/`)){skipped++;continue}
+        const common={...metaForBulk(p),published:p.published!==false,deleted:false,deliveryReady:true,updatedAt:serverTimestamp()};
+        batch.set(doc(db,'storeProductLinks',row.productId),{url:row.url,source:row.origin||'library',updatedAt:serverTimestamp(),updatedBy:currentUser.uid});
+        batch.set(doc(db,'storeProducts',row.productId),{...common,deliveryMode:'external',updatedBy:currentUser.uid},{merge:true});
+        batch.set(doc(db,'storePublicProducts',row.productId),publicProduct(common));
+        importedIds.add(row.productId);
+        staged++;
+      }
+      if(staged){await batch.commit();complete+=staged}
+      updateImportProgress(`تم تأمين ${complete} رابطًا، تخطيت ${skipped}، من أصل ${list.length}.`);
+    }
+    // Rewrite remaining public documents with ONLY whitelisted fields. This
+    // removes any legacy previewUrl / directUrl that older deployments may have leaked.
+    const remaining=products.filter(p=>!importedIds.has(p.id));
+    for(let i=0;i<remaining.length;i+=150){
+      const cleanBatch=writeBatch(db);
+      for(const p of remaining.slice(i,i+150)){
+        cleanBatch.set(doc(db,'storePublicProducts',p.id),publicProduct({...p,updatedAt:serverTimestamp()}));
+      }
+      await cleanBatch.commit();
+    }
+    updateImportProgress(`✅ تم استيراد ${complete} رابطًا، وتنظيف بيانات العرض العامة. المنتجات المرتبطة جاهزة للطلب بعد اعتماد الدفع. تم تخطي ${skipped}.`);
+  }catch(err){updateImportProgress(`تعذر استكمال الاستيراد بعد ${complete}: ${(err.code||err.message)}. أعد المحاولة لإكمال الباقي.`,true)}
+  finally{btn.disabled=false}
+}
+
+async function uploadLocalPdfs(){
+  if(!privateManifest)return updateImportProgress('اختر ملف المصادر الخاص أولًا.',true);
+  const fileList=[...$('#bulkLocalFiles').files];
+  if(!fileList.length)return updateImportProgress('اختر مجلد ملفات PDF الموجودة عندك.',true);
+  const rows=privateManifest.items.filter(x=>x.type==='local');
+  if(!rows.length)return updateImportProgress('لا توجد ملفات محلية في هذه القائمة.',true);
+  if(!confirm(`سيتم رفع الملفات المحلية المطابقة (${rows.length} عنصرًا كحد أقصى) إلى Firebase Storage المحمي. تأكد من حقوق نشر كل ملف. متابعة؟`))return;
+  const btn=$('#bulkUploadLocal');btn.disabled=true;
+  let uploaded=0,missing=0,failed=0;
+  for(const row of rows){
+    const p=products.find(x=>x.id===row.productId);
+    if(!p){missing++;continue}
+    const expected=String(row.path||'').replace(/\\/g,'/');
+    const f=fileList.find(file=>{
+      const provided=(file.webkitRelativePath||file.name).replace(/\\/g,'/');
+      return provided.endsWith(expected)||provided.endsWith(expected.replace(/^sections\//,''));
+    });
+    if(!f){missing++;continue}
+    if(f.size>70*1024*1024||!(f.type==='application/pdf'||/\.pdf$/i.test(f.name))){failed++;continue}
+    if(p.deliveryReady&&String(p.storagePath||'').startsWith(`storeProtected/${p.id}/`)){uploaded++;continue}
+    try{
+      const path=`storeProtected/${p.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.pdf`;
+      await uploadBytes(ref(storage,path),f,{contentType:'application/pdf'});
+      const info={...metaForBulk(p),published:p.published!==false,deleted:false,deliveryReady:true,updatedAt:serverTimestamp()};
+      const batch=writeBatch(db);
+      batch.set(doc(db,'storeProducts',p.id),{...info,deliveryMode:'storage',storagePath:path,updatedBy:currentUser.uid},{merge:true});
+      batch.set(doc(db,'storePublicProducts',p.id),publicProduct(info));
+      await batch.commit();
+      uploaded++;
+    }catch(err){failed++;updateImportProgress(`خطأ ملف ${p.title}: ${err.code||err.message}`,true)}
+    updateImportProgress(`تم رفع ${uploaded}، مفقود ${missing}، فشل ${failed}، من أصل ${rows.length}.`);
+  }
+  updateImportProgress(`نتيجة ملفات PDF المحلية: جاهز ${uploaded} | غير موجود بالمجلد ${missing} | فشل ${failed}.`);
+  btn.disabled=false;
 }
 
 async function handler(e){
@@ -351,6 +473,9 @@ async function handler(e){
 
 document.addEventListener('click',handler);
 $('#productForm').addEventListener('submit',saveProduct);
+$('#bulkLinkManifest').addEventListener('change',readPrivateManifest);
+$('#bulkImportLinks').addEventListener('click',importExternalLinks);
+$('#bulkUploadLocal').addEventListener('click',uploadLocalPdfs);
 $('#productSearch').addEventListener('input',renderProducts);
 $('#orderSearch').addEventListener('input',renderOrders);
 $('#orderStatus').addEventListener('change',renderOrders);
@@ -370,7 +495,7 @@ async function boot(){
   $('#gate').classList.add('hidden');
   $('#adminMain').classList.remove('hidden');
   unsubscribe.push(onSnapshot(doc(db,'storeSettings','main'),s=>{const d={...defaultSettings,...(s.data()||{})}; $('#sVodafone').value=d.vodafonePhone||''; $('#sInstapay').value=d.instapayAddress||''; $('#sWhatsapp').value=d.whatsapp||''},e=>toast('تعذر تحميل إعدادات الدفع: '+e.code)));
-  unsubscribe.push(onSnapshot(collection(db,'storeProducts'),s=>{rawStoreDocs=s.docs.map(d=>({id:d.id,...d.data()})); updateProducts()},e=>toast('خطأ تحميل المنتجات: '+e.code)));
+  unsubscribe.push(onSnapshot(collection(db,'storeProducts'),s=>{rawStoreDocs=s.docs.map(d=>({id:d.id,...d.data()})); productsLoaded=true; updateProducts()},e=>toast('خطأ تحميل المنتجات: '+e.code)));
   unsubscribe.push(onSnapshot(collection(db,'storeCoupons'),s=>{coupons=s.docs.map(d=>({id:d.id,...d.data()})); renderCoupons()},e=>toast('تعذر جلب الكوبونات: '+e.code)));
   unsubscribe.push(onSnapshot(collection(db,'storeTeacherDrafts'),s=>{drafts=s.docs.map(d=>({id:d.id,...d.data()})); renderDrafts()},e=>toast('خطأ تحميل مسودات المعلمين: '+e.code)));
   unsubscribe.push(onSnapshot(collection(db,'storeOrders'),s=>{orders=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0)); renderOrders(); renderStats(); renderReports()},e=>toast('خطأ تحميل الطلبات: '+e.code)));
