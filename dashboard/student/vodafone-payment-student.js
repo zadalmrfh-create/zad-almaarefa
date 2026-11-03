@@ -1,12 +1,38 @@
 import {getPreviewContext} from '../admin-preview-core.js';
 import {auth,db} from '../../firebase-config.js';
 import {onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
-import {collection,addDoc,getDocs,query,where,serverTimestamp} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
+import {collection,addDoc,getDocs,onSnapshot,query,where,serverTimestamp} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 import {toPiastres,amountDue,amountPaid,amountRemaining,money,html,isCharge} from '../payment-utils.js';
 import {isCurrentPayment,paymentCreatedMs} from '../payment-ledger-period.js';
 import {advanceSnapshot} from '../advance-credit.js';
 const $=id=>document.getElementById(id);
 let uid='',lessons=[],requests=[],profile={},busy=false;
+let unsubLive=[],liveRefreshTimer=null;
+function stopLiveUpdates(){
+  for(const stop of unsubLive){try{stop();}catch(e){console.warn(e);}}
+  unsubLive=[];
+  if(liveRefreshTimer)clearTimeout(liveRefreshTimer);
+  liveRefreshTimer=null;
+}
+function enableLiveUpdates(){
+  stopLiveUpdates();
+  if(!uid)return;
+  const activeUid=uid;
+  for(const name of ['lessonAttendance','vodafonePayments']){
+    let first=true;
+    const unsub=onSnapshot(query(collection(db,name),where('studentUid','==',activeUid)),
+      ()=>{
+        if(first){first=false;return;}
+        if(uid!==activeUid)return;
+        if(liveRefreshTimer)clearTimeout(liveRefreshTimer);
+        liveRefreshTimer=setTimeout(()=>{if(uid===activeUid)load().catch(console.error);},250);
+      },error=>{
+        feedback('⚠️ التحديث المباشر غير متاح لـ '+name+': '+(error.code||error.message),true);
+      });
+    unsubLive.push(unsub);
+  }
+}
+
 const statusText={pending:'⏳ قيد مراجعة الإدارة',approved:'✅ معتمد',rejected:'❌ مرفوض'};
 const form=$('zadVodafonePaymentForm'),msg=$('zadVodafoneMessage');
 function feedback(text,error=false){msg.textContent=text;msg.className=error?'zad-pay-error':'zad-pay-ok';}
@@ -100,4 +126,16 @@ form?.addEventListener('submit',async e=>{
  }catch(err){console.error(err);feedback('تعذر إرسال الطلب: '+(err.code||err.message),true);}
  finally{busy=false;draw();}
 });
-onAuthStateChanged(auth,async user=>{if(!user){feedback('سجّل الدخول بحساب الطالب أولًا.',true);return;}const pv=await getPreviewContext(user,'student');if(pv.denied)return;uid=pv.uid;try{const p=await import('https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js');const s=await p.getDoc(p.doc(db,'users',uid));profile=s.data()||{};}catch(e){console.warn(e);}await load();});
+onAuthStateChanged(auth,async user=>{
+  stopLiveUpdates();
+  if(!user){uid='';feedback('سجّل الدخول بحساب الطالب أولًا.',true);return;}
+  const pv=await getPreviewContext(user,'student');
+  if(pv.denied)return;
+  uid=pv.uid;
+  try {
+    const p=await import('https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js');
+    const snap=await p.getDoc(p.doc(db,'users',uid));profile=snap.data()||{};
+  }catch(e){console.warn(e);}
+  await load();
+  enableLiveUpdates();
+});

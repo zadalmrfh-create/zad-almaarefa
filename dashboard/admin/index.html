@@ -733,6 +733,7 @@ onAuthStateChanged(auth, async (user) => {
       <form id="manualAttendanceForm" class="manual-attendance-form">
         <label>بحث عن الطالب<input id="attendanceStudentSearch" type="search" placeholder="ابحث بالعربي أو الإنجليزي باسم الطالب أو البريد" autocomplete="off"></label>
         <label>حساب الطالب<select id="attendanceStudent" required><option value="">جارٍ تحميل الطلاب...</option></select></label>
+        <p id="attendanceIdentityWarning" class="attendance-full" role="status" style="color:#f5d76e;font-size:13px;margin:0">جارٍ التأكد من الحسابات...</p>
         <label>تاريخ الحصة<input id="attendanceDate" type="date" required></label>
         <label>المواد <small style="color:#94a3b8;font-weight:400">(يمكن اختيار أكثر من مادة)</small><details id="attendanceSubjectPicker" class="zad-subject-picker"><summary id="attendanceSubjectSummary">اختر مادة أو أكثر ▾</summary><div id="attendanceSubjectOptions" class="zad-subject-options"></div></details><select id="attendanceSubject" multiple hidden aria-hidden="true" tabindex="-1"></select></label>
         <label>المعلم <small style="color:#94a3b8;font-weight:400">(اختر المعلم عند تحديد اللغة الإنجليزية)</small><select id="attendanceTeacherName" aria-label="معلم الحصة" style="background:#121e30;color:#f5d76e;font-weight:bold;min-height:44px"><option value="">اختر المادة أولًا</option></select></label>
@@ -743,8 +744,8 @@ onAuthStateChanged(auth, async (user) => {
       </form>
       <style>#zadStudentUidRepairPanel [hidden]{display:none!important}</style>
       <details id="zadStudentUidRepairPanel" style="margin:20px 0;padding:16px;border:1px solid #d5aa3d;border-radius:14px;background:#101d31">
-        <summary style="cursor:pointer;color:#f5d572;font-weight:800;font-size:16px">🛠️ تصحيح ربط حضور ومدفوعات الطالب بحسابه الحقيقي (للأدمن فقط)</summary>
-        <p style="color:#e3e8f1;line-height:1.8">إذا ظهرت حصص في المعاينة الإدارية لكن الطالب الحقيقي يظهر له صفر، قد تكون الحصص مرتبطة بـ UID قديم لحساب يحمل نفس البريد. قارن UID في حساب الطالب الفعلي أولًا. لا تنقل أي بيانات لمجرد تشابه الأسماء.</p>
+        <summary style="cursor:pointer;color:#f5d572;font-weight:800;font-size:16px">🛠️ إظهار كل الحصص القديمة على حساب الطالب الحقيقي (للأدمن فقط)</summary>
+        <p style="color:#e3e8f1;line-height:1.8">إذا كانت الحصص القديمة مسجلة على حساب أو عدة حسابات قديمة تحمل <strong>نفس البريد الإلكتروني حرفيًا</strong>، اختر أحد الحسابات القديمة والصق UID الحقيقي من تسجيل دخول الطالب. ستجمع الأداة كل السجلات القديمة لنفس البريد للمراجعة ثم تصحح ربطها بعد موافقتك، دون نسخ الحصص أو تغيير حالتها المالية. لا تعتمد على تشابه الاسم وحده.</p>
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:13px;margin:12px 0" dir="rtl">
           <label style="display:grid;gap:6px">الحساب القديم الذي تظهر عليه الحصص
             <select id="zadRepairSourceUid" style="padding:12px;width:100%;background:#121f35;color:#fff;border:1px solid #63758c;border-radius:9px"><option value="">جارٍ تحميل الطلاب...</option></select>
@@ -3825,8 +3826,8 @@ guard('admin', async () => {
 <script type="module" src="admin-activity-alerts.js"></script>
 <script type="module" src="admin-enhancements.js"></script>
 <script type="module" src="admin-workspace.js"></script>
-<script type="module" src="attendance-admin.js"></script>
-<script type="module" src="account-link-repair.js?v=20261103"></script>
+<script type="module" src="attendance-admin.js?v=20261103-sync1"></script>
+<script type="module" src="account-link-repair.js?v=20261103-sync1"></script>
 <script type="module" src="manual-students-admin.js"></script>
 <script type="module" src="quiz-center-admin.js"></script>
 <script type="module" src="reports-admin.js"></script>

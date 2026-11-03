@@ -60,41 +60,82 @@ async function reloadPeople() {
   finally {setBusy(false);}
 }
 
+// Gather every legacy account that has exactly the same registered email as
+// the selected source and the target. Never use name similarity for ownership.
 async function getReconciliation(oldUid,newUid) {
   await checkAdmin();
-  if(!oldUid||!newUid||oldUid===newUid)throw new Error('اختر حسابين مختلفين، ولا تترك أحدهما فارغًا.');
-  if(oldUid.includes('/')||newUid.includes('/')||newUid.length>256)throw new Error('معرّف حساب غير صالح.');
-  const [oldDoc,newDoc,attendance,payments,destinationAttendance,destinationPayments] = await Promise.all([
-    getDoc(doc(db,'users',oldUid)), getDoc(doc(db,'users',newUid)),
-    getDocs(query(collection(db,'lessonAttendance'),where('studentUid','==',oldUid))),
-    getDocs(query(collection(db,'vodafonePayments'),where('studentUid','==',oldUid))),
+  if (!oldUid || !newUid || oldUid === newUid) {
+    throw new Error('اختر حسابًا قديمًا وUID حقيقيًا مختلفًا.');
+  }
+  if ([oldUid,newUid].some(id=>id.includes('/') || id.length > 256)) {
+    throw new Error('UID غير صالح.');
+  }
+  const [oldDoc,newDoc] = await Promise.all([
+    getDoc(doc(db,'users',oldUid)),getDoc(doc(db,'users',newUid))
+  ]);
+  if (!oldDoc.exists() || !newDoc.exists()) {
+    throw new Error('حساب من الحسابين غير موجود في users؛ راجع UID.');
+  }
+  const old=oldDoc.data(),actual=newDoc.data();
+  if (old.role !== 'student' || actual.role !== 'student') {
+    throw new Error('يمكن إصلاح حسابات الطلاب فقط.');
+  }
+  // Exact match is deliberate: the published Firestore rules require it too.
+  if (!old.email || !actual.email || old.email !== actual.email) {
+    throw new Error('حماية خصوصية الطلاب: البريد المسجل في الحساب القديم والجديد غير متطابق حرفيًا. لا يتم النقل بالاسم فقط.');
+  }
+  // Refresh profiles before every preview/commit, not only from a cached menu.
+  const fresh=await getDocs(collection(db,'users'));
+  const candidates=fresh.docs.map(d=>({uid:d.id,...d.data()}))
+    .filter(p=>p.uid!==newUid && p.role==='student' && p.email===actual.email);
+  if (!candidates.some(p=>p.uid===oldUid)) {
+    throw new Error('الحساب القديم لم يعد ضمن الحسابات المطابقة. حدّث قائمة الحسابات.');
+  }
+  if (candidates.length > 25) throw new Error('عدد حسابات البريد المكرر كبير وغير متوقع؛ راجع الإدارة أولًا.');
+  for (const p of candidates) {
+    if (p.linkedToUid && p.linkedToUid !== newUid) {
+      throw new Error('الحساب '+p.uid+' مربوط مسبقًا بحساب آخر؛ أُوقفت العملية.');
+    }
+  }
+  const sources=[];
+  const attendance=[];
+  const payments=[];
+  for (const p of candidates) {
+    const [att,pay]=await Promise.all([
+      getDocs(query(collection(db,'lessonAttendance'),where('studentUid','==',p.uid))),
+      getDocs(query(collection(db,'vodafonePayments'),where('studentUid','==',p.uid)))
+    ]);
+    sources.push({uid:p.uid,profile:p,attendanceCount:att.size,paymentCount:pay.size});
+    for (const snap of att.docs) attendance.push({snap,oldUid:p.uid});
+    for (const snap of pay.docs) payments.push({snap,oldUid:p.uid});
+  }
+  const [destinationAttendance,destinationPayments]=await Promise.all([
     getDocs(query(collection(db,'lessonAttendance'),where('studentUid','==',newUid))),
     getDocs(query(collection(db,'vodafonePayments'),where('studentUid','==',newUid)))
   ]);
-  if (!oldDoc.exists()||!newDoc.exists())throw new Error('أحد الحسابين غير موجود داخل مجموعة users. راجع UID المكتوب.');
-  const old=oldDoc.data(),actual=newDoc.data();
-  if(old.role!=='student'||actual.role!=='student')throw new Error('النقل متاح فقط بين حسابين دورهما student.');
-  // Firestore security rules additionally require exact equality (not fuzzy matching).
-  if(!old.email||!actual.email||old.email !== actual.email)throw new Error('تم إيقاف العملية لحماية الخصوصية: البريد الإلكتروني المسجل في الحسابين غير متطابق حرفيًا. لا تنقل السجلات لطالب آخر.');
-  if(old.linkedToUid && old.linkedToUid!==newUid)throw new Error('هذا الحساب القديم سبق ربطه بحساب آخر. يلزم مراجعة الإدارة يدويًا.');
-  return {oldUid,newUid,old,actual,attendance:attendance.docs,payments:payments.docs,
-    destinationAttendance:destinationAttendance.size,destinationPayments:destinationPayments.size};
+  return {oldUid,newUid,old,actual,sources,attendance,payments,
+    destinationAttendance:destinationAttendance.size,
+    destinationPayments:destinationPayments.size};
 }
 
 function describe(result) {
-  const approved=result.payments.filter(d=>d.data().status==='approved').length;
-  const pending=result.payments.filter(d=>d.data().status==='pending').length;
+  const approved=result.payments.filter(d=>d.snap.data().status==='approved').length;
+  const pending=result.payments.filter(d=>d.snap.data().status==='pending').length;
+  const accounts=result.sources.map(s=>
+    '• '+label(s.profile)+' | UID: '+s.uid+' | '+s.attendanceCount+' حصة، '+s.paymentCount+' تحويل'
+  ).join('\n');
   return [
-    'التحقق من تطابق البريد: ناجح ✅',
-    'البريد المتطابق: '+result.old.email,
-    'الحساب القديم: '+label(result.old)+' | UID: '+result.oldUid,
-    'الحساب الحقيقي المستهدف: '+label(result.actual)+' | UID: '+result.newUid,
-    'الحصص المطلوب نقلها: '+result.attendance.length,
-    'التحويلات المطلوب نقلها: '+result.payments.length+' (معتمدة: '+approved+'، معلّقة: '+pending+')',
-    'الحصص الموجودة بالفعل بالحساب الحقيقي: '+result.destinationAttendance,
-    'التحويلات الموجودة بالفعل بالحساب الحقيقي: '+result.destinationPayments,
-    'لن يتم تغيير تاريخ أي حصة أو مبلغ دفع أو حالة سداد أو مرجع تحويل. ولن يتم حذف أي سجل.',
-    '⚠️ لا تضغط تنفيذ إلا بعد مقارنة UID المستهدف بالذي يظهر عند تسجيل دخول الطالب بنفسه.'
+    '✅ تم التحقق من تطابق البريد حرفيًا: '+result.actual.email,
+    'الحساب الحقيقي: '+label(result.actual)+' | UID: '+result.newUid,
+    'الحسابات القديمة المطابقة لنفس البريد ('+result.sources.length+'):',
+    accounts,
+    'إجمالي الحصص القديمة المطلوب ربطها: '+result.attendance.length,
+    'إجمالي التحويلات القديمة: '+result.payments.length+' (معتمدة: '+approved+'، معلّقة: '+pending+')',
+    'الحصص المسجلة بالفعل على UID الحقيقي: '+result.destinationAttendance,
+    'التحويلات المسجلة بالفعل على UID الحقيقي: '+result.destinationPayments,
+    'الحصص التي سبق تصحيحها على الحساب الحقيقي لن تتكرر؛ سيتم تعديل UID السجلات القديمة في أماكنها فقط.',
+    'لا تغيير في تاريخ أو سعر حصة، ولا حالة دفع أو مرجع تحويل.',
+    '⚠️ يجب أن يكون UID الحقيقي مأخوذًا من جلسة دخول الطالب نفسه. راجع التقرير قبل التأكيد.'
   ].join('\n');
 }
 
@@ -117,63 +158,92 @@ async function migrate() {
   setBusy(true);
   try {
     const data=await getReconciliation(source.value,target.value.trim());
-    if(data.oldUid!==lastPreview.oldUid||data.newUid!==lastPreview.newUid)throw new Error('الحساب المختار تغيّر؛ افحص البيانات من جديد.');
-    const oldAttendance=new Set(lastPreview.attendance.map(d=>d.id));
-    const oldPayments=new Set(lastPreview.payments.map(d=>d.id));
-    if(data.attendance.length!==oldAttendance.size||data.payments.length!==oldPayments.size||
-       data.attendance.some(d=>!oldAttendance.has(d.id))||data.payments.some(d=>!oldPayments.has(d.id))) {
-      throw new Error('تغيّرت السجلات منذ المعاينة. اضغط فحص السجلات مجددًا.');
+    if(data.oldUid!==lastPreview.oldUid || data.newUid!==lastPreview.newUid) {
+      throw new Error('الحساب المختار تغير؛ افحص البيانات من جديد.');
+    }
+    const key=x=>x.oldUid+'/'+x.snap.id;
+    for (const kind of ['attendance','payments']) {
+      const before=new Set(lastPreview[kind].map(key));
+      const now=new Set(data[kind].map(key));
+      if(before.size!==now.size || [...before].some(id=>!now.has(id))) {
+        throw new Error('تغيرت السجلات بعد الفحص؛ أعد المعاينة قبل النقل.');
+      }
     }
     const total=data.attendance.length+data.payments.length;
-    if(!total){status('لا توجد سجلات قديمة للنقل.');migrateButton.hidden=true;return;}
-    const choice=window.prompt('تأكيد أخير: ستنقل '+data.attendance.length+' حصة و'+data.payments.length+' تحويل من UID القديم إلى حساب '+label(data.actual)+' ('+data.actual.email+').\nاكتب كلمة «نقل» لتأكيد تطابق الحسابات.','');
-    if(choice?.trim()!=='نقل'){status('تم إلغاء النقل، لم تتغير أي سجلات.');return;}
+    if(!total){
+      status('✅ كل الحصص والتحويلات المعروفة موجودة بالفعل على UID الحقيقي، ولا توجد سجلات قديمة لنقلها.');
+      migrateButton.hidden=true;return;
+    }
+    const choice=window.prompt(
+      'تأكيد نقل ربط '+data.attendance.length+' حصة و'+data.payments.length+
+      ' تحويل من '+data.sources.length+' حساب قديم إلى UID الحقيقي '+data.newUid+
+      '.\nلن يتم إنشاء حصص أو تحويلات جديدة. اكتب «نقل» للتأكيد:', ''
+    );
+    if(choice?.trim()!=='نقل'){
+      status('تم إلغاء العملية دون تغيير أي سجل.');return;
+    }
     const admin=await checkAdmin();
-    const entries=[...data.attendance.map(s=>({kind:'attendance',snap:s})),...data.payments.map(s=>({kind:'payment',snap:s}))];
-    let moved=0, attendanceMoved=0, paymentMoved=0;
-    // Small batches avoid Firestore security-rule document access limits.
-    for(let i=0;i<entries.length;i+=4){
+    const entries=[
+      ...data.attendance.map(x=>({kind:'attendance',...x})),
+      ...data.payments.map(x=>({kind:'payment',...x}))
+    ];
+    let moved=0,attendanceMoved=0,paymentMoved=0;
+    // Small batches keep security-rule reads below Firestore limits.
+    for (let i=0;i<entries.length;i+=4) {
       const chunk=entries.slice(i,i+4);
       const batch=writeBatch(db);
-      for(const item of chunk){
-        const oldUid=item.snap.data().studentUid;
-        if(oldUid!==data.oldUid)throw new Error('تم اكتشاف سجل تغيّر حسابه أثناء النقل.');
+      for (const item of chunk) {
+        if(item.snap.data().studentUid !== item.oldUid) {
+          throw new Error('سجل تغيّر ارتباطه أثناء العملية.');
+        }
         batch.update(item.snap.ref,{
           studentUid:data.newUid,
           studentName:label(data.actual),
-          relinkFromUid:data.oldUid,
+          relinkFromUid:item.oldUid,
           relinkedBy:admin.uid,
           relinkedAt:serverTimestamp()
         });
       }
-      batch.set(doc(collection(db,'auditLogs')),{action:'student-record-uid-repair',
-        sourceUid:data.oldUid,targetUid:data.newUid,studentEmail:data.actual.email,
-        attendanceIds:chunk.filter(x=>x.kind==='attendance').map(x=>x.snap.id),
-        paymentIds:chunk.filter(x=>x.kind==='payment').map(x=>x.snap.id),
-        performedByUid:admin.uid,createdAt:serverTimestamp()});
+      batch.set(doc(collection(db,'auditLogs')),
+        {action:'student-record-uid-repair',sourceUids:[...new Set(chunk.map(x=>x.oldUid))],
+          targetUid:data.newUid,studentEmail:data.actual.email,
+          attendanceIds:chunk.filter(x=>x.kind==='attendance').map(x=>x.snap.id),
+          paymentIds:chunk.filter(x=>x.kind==='payment').map(x=>x.snap.id),
+          performedByUid:admin.uid,createdAt:serverTimestamp()});
       await batch.commit();
       moved+=chunk.length;
       attendanceMoved+=chunk.filter(x=>x.kind==='attendance').length;
       paymentMoved+=chunk.filter(x=>x.kind==='payment').length;
-      status('جاري تصحيح الربط... '+moved+' من '+total+' سجل. لا تغلق الصفحة.');
+      status('✅ تم تصحيح '+moved+' من '+total+' سجل. لا تغلق الصفحة حتى ظهور رسالة الاكتمال.');
     }
-    // Mark the orphan profile only after all records have been safely transferred.
-    const finalBatch=writeBatch(db);
-    finalBatch.update(doc(db,'users',data.oldUid),{linkedToUid:data.newUid,linkedAt:serverTimestamp(),linkedBy:admin.uid});
-    finalBatch.set(doc(collection(db,'auditLogs')),{action:'student-account-uid-repair-complete',
-      sourceUid:data.oldUid,targetUid:data.newUid,studentEmail:data.actual.email,
-      attendanceMoved,paymentMoved,performedByUid:admin.uid,createdAt:serverTimestamp()});
-    await finalBatch.commit();
-    status('✅ تم تصحيح الربط بنجاح. نُقلت '+attendanceMoved+' حصة و'+paymentMoved+' تحويل للحساب الحقيقي.\nاطلب من الطالب تحديث صفحة حضوري ومدفوعاتي.\nالحساب القديم لم يُحذف، وتم وضع علامة عليه لمنع اختياره مرة أخرى عند تسجيل حصة.');
+    // Mark every legacy profile as linked. Future attendance selectors exclude it.
+    for(let i=0;i<data.sources.length;i+=4){
+      const chunk=data.sources.slice(i,i+4);
+      const batch=writeBatch(db);
+      for(const account of chunk){
+        batch.update(doc(db,'users',account.uid),{
+          linkedToUid:data.newUid,linkedAt:serverTimestamp(),linkedBy:admin.uid
+        });
+      }
+      batch.set(doc(collection(db,'auditLogs')),
+        {action:'student-account-uid-repair-complete',
+          sourceUids:chunk.map(x=>x.uid),targetUid:data.newUid,
+          studentEmail:data.actual.email,attendanceMoved,paymentMoved,
+          performedByUid:admin.uid,createdAt:serverTimestamp()});
+      await batch.commit();
+    }
+    status('✅ اكتمل الإصلاح: '+attendanceMoved+' حصة و'+paymentMoved+
+      ' تحويل رُبطت بحساب الطالب الصحيح. الحسابات القديمة تم تعطيل اختيارها في تسجيل الحضور الجديد.\n'+
+      'افتح لوحة الطالب وراجع السجلات، ولا تنشئ نسخًا إضافية منها.');
     lastPreview=null;
     migrateButton.hidden=true;
     window.dispatchEvent(new Event('zad:attendance-changed'));
     window.dispatchEvent(new Event('zad:payment-approved'));
-  }catch(e){
-    // A failed later batch may leave earlier batches committed; rerunning preview checks what remains.
-    status('❌ تعذّر إكمال تصحيح الربط: '+(e.code||e.message)+'\nلو تم نقل بعض السجلات، اضغط فحص السجلات مرة أخرى قبل إعادة المحاولة. لا تُنشئ تحويلات أو حصصًا جديدة كبديل.');
+  } catch(e) {
+    status('❌ تعذر استكمال النقل: '+(e.code||e.message)+
+      '\nقد تكون بعض الدُفعات نُقلت بالفعل. اضغط فحص السجلات مرة أخرى قبل إعادة المحاولة. لا تعيد إنشاء حصص أو مدفوعات بدلًا منها.');
     lastPreview=null;migrateButton.hidden=true;
-  }finally{setBusy(false);}
+  } finally {setBusy(false);}
 }
 
 previewButton?.addEventListener('click',preview);

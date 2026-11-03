@@ -2,12 +2,13 @@ import {amountDue,amountPaid,amountRemaining,money as cashMoney} from '../paymen
 import {advanceSnapshot} from '../advance-credit.js';
 import {archiveAttendance,restoreAttendance} from './attendance-archive.js';
 import { db, auth } from '../../firebase-config.js';
-import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
+import { collection, query, where, getDocs, getDoc, addDoc, updateDoc, deleteDoc, doc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 import { SUBJECTS, teacherForSubject, ENGLISH_TEACHERS, isEnglishSubject } from '../attendance-subjects.js';
 
 const $ = id => document.getElementById(id);
 const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 let students = [], records = [], cancelledRecords = [];
+let ambiguousEmailAccounts = new Map();
 let creditsByStudent = new Map();
 let activeFinancialStudentIds = new Set();
 const creditFor = row => creditsByStudent.get(row.studentUid)?.byLesson.get(row.id)||null;
@@ -207,7 +208,28 @@ async function load() {
   try {
     message.textContent = 'جارٍ التحميل...';
     const [us, att, pay] = await Promise.all([getDocs(collection(db, 'users')), getDocs(collection(db, 'lessonAttendance')), getDocs(collection(db, 'vodafonePayments'))]);
-    students = us.docs.map(d => ({ id: d.id, ...d.data() })).filter(x => x.role === 'student' && !x.linkedToUid);
+    const allStudentProfiles=us.docs.map(d=>({id:d.id,...d.data()})).filter(x=>x.role==='student');
+    const candidateStudents=allStudentProfiles.filter(x=>!x.linkedToUid);
+    const emailGroups=new Map();
+    for(const st of candidateStudents){
+      const email=String(st.email||'').trim().toLowerCase();
+      if(!email)continue;
+      const list=emailGroups.get(email)||[];
+      list.push(st);emailGroups.set(email,list);
+    }
+    // Never guess the real account when the same email has multiple active
+    // student profiles; require an admin migration to mark the legacy ones.
+    ambiguousEmailAccounts=new Map([...emailGroups].filter(([,group])=>group.length>1));
+    students=candidateStudents.filter(st=>{
+      const email=String(st.email||'').trim().toLowerCase();
+      return !email || !ambiguousEmailAccounts.has(email);
+    });
+    const ambiguityBox=$('attendanceIdentityWarning');
+    if(ambiguityBox){
+      ambiguityBox.textContent=ambiguousEmailAccounts.size
+        ? '⚠️ توجد '+ambiguousEmailAccounts.size+' مجموعة حسابات طلاب مكررة البريد. لن تظهر حساباتها في تسجيل الحضور حتى تراجع ربطها عبر «تصحيح ربط الحصص القديمة» أدناه، حتى لا تتكرر مشكلة ظهور الصفر عند الطالب.'
+        : '✅ قائمة تسجيل الحضور تعرض الحسابات غير المرتبطة بحساب قديم. راجع UID الطالب عند التسجيل.';
+    }
     const allStudentsLessons=att.docs.map(d=>({id:d.id,...d.data()}));
     const groups=new Map();
     for(const a of allStudentsLessons){if(!a.studentUid)continue;const g=groups.get(a.studentUid)||{lessons:[],payments:[]};g.lessons.push(a);groups.set(a.studentUid,g);}
@@ -246,6 +268,22 @@ form?.addEventListener('submit', async e => {
   const button = form.querySelector('[type=submit]');
   button.disabled = true;
   try {
+    // A fresh check prevents writing a new attendance entry to an obsolete UID
+    // if the admin repaired the account while this form was still open.
+    const currentProfile=await getDoc(doc(db,'users',student.id));
+    if(!currentProfile.exists() || currentProfile.data().role!=='student' || currentProfile.data().linkedToUid){
+      message.textContent='تم ربط هذا الحساب بحساب آخر أو لم يعد متاحًا. اضغط تحديث السجلات واختر UID الحقيقي للطالب.';
+      await load();return;
+    }
+    const currentEmail=String(currentProfile.data().email||'').trim();
+    if(currentEmail){
+      const sameEmail=await getDocs(query(collection(db,'users'),where('email','==',currentEmail)));
+      const active=sameEmail.docs.filter(d=>d.data().role==='student' && !d.data().linkedToUid);
+      if(active.length>1){
+        message.textContent='يوجد أكثر من حساب طالب بنفس البريد؛ استخدم أداة تصحيح الربط أولًا لتحديد UID الحقيقي، ثم سجل الحصة.';
+        return;
+      }
+    }
     const commonData = {
       studentUid: student.id,
       studentName: student.fullName || student.name || student.email,
@@ -400,6 +438,7 @@ $('attendanceLogClear')?.addEventListener('click',()=>{
 });
 $('refreshAttendance')?.addEventListener('click', load);
 window.addEventListener('zad:payment-approved', load);
+window.addEventListener('zad:attendance-changed', load);
 $('attendanceSummarySearch')?.addEventListener('input', render);
 $('attendanceSummarySubject')?.addEventListener('change', render);
 $('attendanceSummarySort')?.addEventListener('change', render);
