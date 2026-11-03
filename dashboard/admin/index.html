@@ -741,6 +741,25 @@ onAuthStateChanged(auth, async (user) => {
         <label class="attendance-full">ملاحظات (اختياري)<textarea id="attendanceNote" rows="2" maxlength="500"></textarea></label>
         <div class="attendance-full attendance-actions"><button class="btn gold" type="submit">💾 حفظ سجل الحضور</button><button id="refreshAttendance" class="btn" type="button">🔄 تحديث السجلات</button><span id="attendanceMessage" aria-live="polite"></span></div>
       </form>
+      <style>#zadStudentUidRepairPanel [hidden]{display:none!important}</style>
+      <details id="zadStudentUidRepairPanel" style="margin:20px 0;padding:16px;border:1px solid #d5aa3d;border-radius:14px;background:#101d31">
+        <summary style="cursor:pointer;color:#f5d572;font-weight:800;font-size:16px">🛠️ تصحيح ربط حضور ومدفوعات الطالب بحسابه الحقيقي (للأدمن فقط)</summary>
+        <p style="color:#e3e8f1;line-height:1.8">إذا ظهرت حصص في المعاينة الإدارية لكن الطالب الحقيقي يظهر له صفر، قد تكون الحصص مرتبطة بـ UID قديم لحساب يحمل نفس البريد. قارن UID في حساب الطالب الفعلي أولًا. لا تنقل أي بيانات لمجرد تشابه الأسماء.</p>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:13px;margin:12px 0" dir="rtl">
+          <label style="display:grid;gap:6px">الحساب القديم الذي تظهر عليه الحصص
+            <select id="zadRepairSourceUid" style="padding:12px;width:100%;background:#121f35;color:#fff;border:1px solid #63758c;border-radius:9px"><option value="">جارٍ تحميل الطلاب...</option></select>
+          </label>
+          <label style="display:grid;gap:6px">UID الحساب الحقيقي (انسخه من لوحة الطالب)
+            <input id="zadRepairTargetUid" placeholder="الصق UID الطالب الحقيقي هنا" dir="ltr" autocomplete="off" spellcheck="false" style="padding:12px;width:100%;background:#121f35;color:#fff;border:1px solid #63758c;border-radius:9px" />
+          </label>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin:10px 0">
+          <button type="button" id="zadRepairPreview" class="btn gold">🔍 فحص السجلات والتحقق من تطابق البريد</button>
+          <button type="button" id="zadRepairApply" class="btn" hidden>✅ تنفيذ تصحيح الربط بعد التأكيد</button>
+          <button type="button" id="zadRepairReload" class="btn">🔄 تحديث قائمة الحسابات</button>
+        </div>
+        <pre id="zadRepairReport" aria-live="polite" style="white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.9;max-width:100%;background:#0d1728;padding:15px;border-radius:10px;color:#f6ead0">جارٍ تجهيز أداة المراجعة...</pre>
+      </details>
       <h3>📚 سجل الحضور والغياب</h3>
       <div class="zad-attendance-log-filters" id="attendanceLogFilters" dir="rtl" role="search" aria-label="البحث وتصفية سجلات الحضور والغياب">
         <label class="zad-attendance-filter-search">🔎 بحث عن طالب
@@ -3807,6 +3826,7 @@ guard('admin', async () => {
 <script type="module" src="admin-enhancements.js"></script>
 <script type="module" src="admin-workspace.js"></script>
 <script type="module" src="attendance-admin.js"></script>
+<script type="module" src="account-link-repair.js?v=20261103"></script>
 <script type="module" src="manual-students-admin.js"></script>
 <script type="module" src="quiz-center-admin.js"></script>
 <script type="module" src="reports-admin.js"></script>

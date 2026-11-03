@@ -210,6 +210,18 @@ $('passwordForm')?.addEventListener('submit',async event=>{
 $('markAllStudentNotifications')?.addEventListener('click',()=>markAllRead().catch(console.error));
 initTabs();
 $('studentFinanceRefresh')?.addEventListener('click',()=>{loadDashboardData().catch(console.error);window.dispatchEvent(new Event('zad:refresh-student-payment-section'));});
+$('zadCopyStudentUid')?.addEventListener('click',async()=>{
+  const button=$('zadCopyStudentUid');
+  if(!uid){if($('studentFinanceLoadStatus'))$('studentFinanceLoadStatus').textContent='لا يوجد معرّف UID متاح قبل تسجيل الدخول.';return;}
+  try {
+    await navigator.clipboard.writeText(uid);
+    button.textContent='✅ تم نسخ UID';
+  } catch(e) {
+    // A readable UID is also available in the account-link caption if clipboard is blocked.
+    button.textContent='انسخ UID من النص الظاهر تحت الزر';
+  }
+});
+
 window.addEventListener('zad:payments-updated',()=>{if(uid)loadDashboardData().catch(console.error);});
 onAuthStateChanged(auth,async user=>{
   if(!user)return;const pv=await getPreviewContext(user,'student');if(pv.denied)return;uid=pv.uid;

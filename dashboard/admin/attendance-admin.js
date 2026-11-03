@@ -66,7 +66,7 @@ function filterStudents() {
   const q = (search.value || '').trim().toLowerCase();
   const prev = studentSelect.value;
   const list = students.filter(x => window.ZadNameSearch.matches([x.fullName, x.name, x.email],q));
-  studentSelect.innerHTML = '<option value="">اختر الطالب</option>' + list.map(x => `<option value="${esc(x.id)}">${esc(x.fullName || x.name || x.email || 'طالب')} — ${esc(x.email || '')}</option>`).join('');
+  studentSelect.innerHTML = '<option value="">اختر الطالب</option>' + list.map(x => `<option value="${esc(x.id)}">${esc(x.fullName || x.name || x.email || 'طالب')} — ${esc(x.email || '')} — UID: ${esc(x.id)}</option>`).join('');
   if (list.some(x => x.id === prev)) studentSelect.value = prev;
   else if (q && list.length === 1) studentSelect.value = list[0].id;
   // اختيار الطالب الوحيد المطابق تلقائيًا لتجنب خطأ HTML required
@@ -207,7 +207,7 @@ async function load() {
   try {
     message.textContent = 'جارٍ التحميل...';
     const [us, att, pay] = await Promise.all([getDocs(collection(db, 'users')), getDocs(collection(db, 'lessonAttendance')), getDocs(collection(db, 'vodafonePayments'))]);
-    students = us.docs.map(d => ({ id: d.id, ...d.data() })).filter(x => x.role === 'student');
+    students = us.docs.map(d => ({ id: d.id, ...d.data() })).filter(x => x.role === 'student' && !x.linkedToUid);
     const allStudentsLessons=att.docs.map(d=>({id:d.id,...d.data()}));
     const groups=new Map();
     for(const a of allStudentsLessons){if(!a.studentUid)continue;const g=groups.get(a.studentUid)||{lessons:[],payments:[]};g.lessons.push(a);groups.set(a.studentUid,g);}
