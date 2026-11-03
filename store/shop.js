@@ -1,7 +1,7 @@
 import {db,$,esc,fmt,types,emoji,toast,session,adminCheck,navActive,printReceipt,dateText} from './common.js';
 import {collection,doc,getDoc,getDocs,onSnapshot,query,where,setDoc,serverTimestamp} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 import {getStorage,ref,getBlob,uploadBytes} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-storage.js';
-import {baseProducts} from './catalog-data.js?v=20261103-private-links-v1';
+import {baseProducts} from './catalog-data.js?v=20261103-seven-files-v2';
 
 const storage=getStorage();
 const defaultSettings={vodafonePhone:'01042239704',instapayAddress:'',whatsapp:'01042239704'};
@@ -15,7 +15,7 @@ let productById={};
 let coupon=null;
 
 try{cart=JSON.parse(localStorage.getItem('zad-store-cart-v1')||'[]').filter(x=>typeof x==='string').slice(0,80)}catch{}
-const saveCart=()=>{try{localStorage.setItem('zad-store-cart-v1',JSON.stringify(cart))}catch{} $('#cartCount').textContent=cart.length};
+const saveCart=()=>{try{localStorage.setItem('zad-store-cart-v1',JSON.stringify(cart))}catch{} document.querySelectorAll('#cartCount,.cart-count').forEach(el=>el.textContent=cart.length)};
 
 const typeTiles=[['summary','📝'],['exam','📝'],['evaluation','📋'],['book','📚'],['lesson','👨‍🏫'],['course','🎓']];
 const normalize=v=>String(v||'').toLowerCase().normalize('NFKC').replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/[َ-ْ]/g,'');

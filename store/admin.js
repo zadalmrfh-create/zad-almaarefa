@@ -1,7 +1,7 @@
 import {db,$,esc,fmt,types,toast,session,adminCheck,printReceipt,dateText} from './common.js';
 import {collection,doc,getDoc,getDocs,onSnapshot,serverTimestamp,deleteField,setDoc,updateDoc,deleteDoc,runTransaction,writeBatch} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 import {getStorage,ref,getBlob,uploadBytes} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-storage.js';
-import {baseProducts} from './catalog-data.js?v=20261103-private-links-v1';
+import {baseProducts} from './catalog-data.js?v=20261103-seven-files-v2';
 
 const storage=getStorage();
 const defaultSettings={vodafonePhone:'01042239704',instapayAddress:'',whatsapp:'01042239704'};
@@ -178,7 +178,7 @@ async function approveOrder(id){
   if(!Number.isFinite(paid)||paid<discounted||paid<=0) return toast('المبلغ غير صالح أو أقل من المطلوب');
   if(!confirm('تأكيد نهائي: تم التحقق من وصول المبلغ، وسيتم تفعيل المنتجات للطالب؟')) return;
   try{
-    const claimId=await keyForRef(o.paymentMethod,o.paymentReference);
+    const claimId=(String(o.paymentReference||'').trim()?await keyForRef(o.paymentMethod,o.paymentReference):`manual-no-ref-${id}`);
     await runTransaction(db,async tx=>{
       const orderRef=doc(db,'storeOrders',id), claimRef=doc(db,'storePaymentRefs',claimId), couponRef=o.couponCode?doc(db,'storeCoupons',o.couponCode):null;
       const productRefs=(o.productIds||[]).map(pid=>doc(db,'storeProducts',pid));

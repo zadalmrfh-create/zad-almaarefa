@@ -20,12 +20,18 @@
       <nav class="nav">
         <button data-view="home" class="active">الرئيسية</button>
         <button data-view="catalog">المنتجات</button>
-        <button data-view="cart">السلة <span id="cartCount">0</span></button>
         <button data-view="mine">مشترياتي وطلباتي</button>
         <a href="admin.html" id="adminLink" class="hidden">إدارة المتجر</a>
         <a href="../index.html">الأكاديمية</a>
       </nav>
-      <span id="accountState" class="muted small">جارِ فحص الحساب...</span>
+      <div class="topbar-side">
+        <span id="accountState" class="muted small account-state">جارِ فحص الحساب...</span>
+        <button data-view="cart" class="cart-quick" aria-label="السلة">
+          <span class="cart-quick-icon">🛒</span>
+          <span class="cart-quick-text">السلة</span>
+          <span class="cart-quick-count" id="cartCount">0</span>
+        </button>
+      </div>
     </header>
 
     <main>
@@ -128,10 +134,10 @@
               <span id="couponInfo" class="hint"></span>
             </div>
             <div class="field"><label>رقم الهاتف المحوَّل منه</label><input id="senderPhone" inputmode="tel" pattern="01[0-9]{9}" placeholder="01xxxxxxxxx" required></div>
-            <div class="field"><label>الرقم المرجعي للتحويل</label><input id="paymentReference" maxlength="100" placeholder="اكتب المرجع أو رقم العملية" required></div>
+            <div class="field"><label>الرقم المرجعي للتحويل <span class="hint">(اختياري)</span></label><input id="paymentReference" maxlength="100" placeholder="اكتب المرجع أو رقم العملية إن وجد"></div>
             <div class="field"><label>صورة إيصال التحويل (اختياري)</label><input id="paymentProof" type="file" accept="image/jpeg,image/png,image/webp"><small class="hint">حد أقصى 8 ميجابايت، وتظهر للإدارة فقط.</small></div>
             <div class="field"><label>ملاحظات (اختياري)</label><textarea id="orderNote" maxlength="300"></textarea></div>
-            <div class="notice">الدفع يدوي: <span id="paymentInstructions">فودافون كاش: 01042239704</span> — بعد التحويل أرسل المرجع. <strong>لن يتم فتح المنتجات إلا بعد مراجعة الإدارة وتأكيد وصول المبلغ.</strong></div>
+            <div class="notice">الدفع يدوي: <span id="paymentInstructions">فودافون كاش: 01042239704</span> — لو عندك رقم مرجعي اكتبه لتسريع المراجعة. <strong>لن يتم فتح المنتجات إلا بعد مراجعة الإدارة وتأكيد وصول المبلغ.</strong></div>
             <button class="primary" id="placeOrder" type="submit">إرسال طلب المراجعة</button>
           </form>
           <div class="panel sidebox" id="checkoutSummary"></div>
@@ -149,6 +155,6 @@
   </div>
 
   <div id="toast" role="status"></div>
-  <script type="module" src="shop.js?v=20261103-private-links-v1"></script>
+  <script type="module" src="shop.js?v=20261103-seven-files-v2"></script>
 </body>
 </html>
