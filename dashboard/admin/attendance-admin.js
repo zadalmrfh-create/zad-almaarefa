@@ -8,6 +8,15 @@ import { SUBJECTS, teacherForSubject, ENGLISH_TEACHERS, isEnglishSubject } from 
 const $ = id => document.getElementById(id);
 const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 let students = [], records = [], cancelledRecords = [];
+let teacherProfiles = [];
+const teacherKey = name => String(name||'').normalize('NFKC').replace(/[\u064B-\u065F\u0670]/g,'').replace(/^(الأستاذ|أستاذ|مستر|ميس|أ\/)\s*/i,'').replace(/\s+/g,' ').trim().toLowerCase();
+function teacherUidForName(name) {
+  const key = teacherKey(name);
+  if (!key || key.includes('،')) return null;
+  const matches = teacherProfiles.filter(profile => [profile.fullName,profile.name,profile.displayName].some(n=>teacherKey(n)===key));
+  return matches.length===1 ? matches[0].id : null;
+}
+
 let ambiguousEmailAccounts = new Map();
 let creditsByStudent = new Map();
 let activeFinancialStudentIds = new Set();
@@ -206,8 +215,9 @@ function render() {
 
 async function load() {
   try {
-    message.textContent = 'جارٍ التحميل...';
+    message.textContent = 'جارٍ تحميل بيانات الحضور والطلاب والمدفوعات...';
     const [us, att, pay] = await Promise.all([getDocs(collection(db, 'users')), getDocs(collection(db, 'lessonAttendance')), getDocs(collection(db, 'vodafonePayments'))]);
+    teacherProfiles=us.docs.map(d=>({id:d.id,...d.data()})).filter(x=>x.role==='teacher' && x.status==='active');
     const allStudentProfiles=us.docs.map(d=>({id:d.id,...d.data()})).filter(x=>x.role==='student');
     const candidateStudents=allStudentProfiles.filter(x=>!x.linkedToUid);
     const emailGroups=new Map();
@@ -287,7 +297,7 @@ form?.addEventListener('submit', async e => {
     const commonData = {
       studentUid: student.id,
       studentName: student.fullName || student.name || student.email,
-      teacherUid: null,
+      teacherUid: teacherUidForName($('attendanceTeacherName')?.value),
       recordedByUid: auth.currentUser?.uid || null,
       date: $('attendanceDate').value,
       status: $('attendanceStatus').value,
@@ -384,6 +394,7 @@ attendanceEditForm.addEventListener('submit',async event=>{
       date:attendanceEditForm.elements.date.value,
       subjects:selected,subject:selected.join('، '),
       teacherName:teacherForSubject(selected,attendanceEditForm.elements.englishTeacher.value)||'غير محدد',
+      teacherUid:teacherUidForName(teacherForSubject(selected,attendanceEditForm.elements.englishTeacher.value)),
       status:attendanceEditForm.elements.status.value,
       price,paid,paidAt:paid?(original.paidAt||serverTimestamp()):null,
       note:attendanceEditForm.elements.note.value.trim(),updatedAt:serverTimestamp()

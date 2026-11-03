@@ -75,14 +75,24 @@ function openTab(name){
 }
 
 async function loadTeacherStudents(uid){
-  const bookingsSnap=await getDocs(query(collection(db,'bookings'),where('teacherUid','==',uid)));
-  const ids=[...new Set(bookingsSnap.docs.map(d=>d.data().studentUid).filter(Boolean))];
-  const students=[];
-  for(const id of ids){
-    try{ const snap=await getDoc(doc(db,'users',id)); if(snap.exists()) students.push({id:snap.id,...snap.data()}); }
-    catch(err){ console.warn('تعذر تحميل الطالب',id,err); }
+  // Student profiles are private under Firestore Rules. Teachers are allowed
+  // to read the bookings assigned to them; use only that assigned booking data.
+  const bookingsSnap = await getDocs(query(collection(db,'bookings'),where('teacherUid','==',uid)));
+  const studentsByUid = new Map();
+  for (const b of bookingsSnap.docs){
+    const x = b.data();
+    if (!x.studentUid) continue;
+    const prev = studentsByUid.get(x.studentUid) || {id:x.studentUid};
+    studentsByUid.set(x.studentUid,{
+      ...prev,
+      fullName: x.fullName || x.studentName || prev.fullName || '',
+      name: x.fullName || x.studentName || prev.name || '',
+      email: x.email || x.studentEmail || prev.email || '',
+      phone: x.phone || x.studentPhone || prev.phone || '',
+      grade: x.grade || x.studyGrade || prev.grade || ''
+    });
   }
-  students.sort((a,b)=>text(a.fullName||a.name).localeCompare(text(b.fullName||b.name),'ar'));
+  const students=[...studentsByUid.values()].sort((a,b)=>text(a.fullName||a.name).localeCompare(text(b.fullName||b.name),'ar'));
   state.students=students;
   state.studentMap=new Map(students.map(s=>[s.id,s]));
 }

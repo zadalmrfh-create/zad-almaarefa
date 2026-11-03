@@ -749,7 +749,10 @@ onAuthStateChanged(auth, async (user) => {
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:13px;margin:12px 0" dir="rtl">
           <label style="display:grid;gap:6px">الحساب القديم الذي تظهر عليه الحصص
             <select id="zadRepairSourceUid" style="padding:12px;width:100%;background:#121f35;color:#fff;border:1px solid #63758c;border-radius:9px"><option value="">جارٍ تحميل حسابات الطلاب...</option></select>
-            <small style="font-weight:400;color:#acc4e1">لو فشل التحميل، اضغط «تحديث قائمة الحسابات» وستظهر رسالة توضح السبب.</small>
+            <small style="font-weight:400;color:#acc4e1">القائمة اختيارية. لو التحميل بطيء أو الحساب مش ظاهر، استخدم حقل UID القديم مباشرةً.</small>
+            <label style="display:grid;gap:6px;margin-top:10px">أو الصق UID الحساب القديم من Firebase
+              <input id="zadRepairSourceUidManual" aria-label="UID الحساب القديم يدويًا" placeholder="UID الحساب الذي عليه الحصص القديمة" dir="ltr" autocomplete="off" spellcheck="false" style="padding:12px;width:100%;background:#121f35;color:#fff;border:1px solid #63758c;border-radius:9px" />
+            </label>
           </label>
           <label style="display:grid;gap:6px">UID الحساب الحقيقي (انسخه من لوحة الطالب)
             <input id="zadRepairTargetUid" placeholder="الصق UID الطالب الحقيقي هنا" dir="ltr" autocomplete="off" spellcheck="false" style="padding:12px;width:100%;background:#121f35;color:#fff;border:1px solid #63758c;border-radius:9px" />
@@ -3828,22 +3831,8 @@ guard('admin', async () => {
 <script type="module" src="admin-enhancements.js"></script>
 <script type="module" src="admin-workspace.js"></script>
 <script type="module" src="attendance-admin.js?v=20261103-sync1"></script>
-<script>
-// If the browser cannot load the independent Firebase module at all,
-// do not leave the account selector stuck on its initial loading label.
-document.addEventListener('DOMContentLoaded', () => {
-  setTimeout(() => {
-    const select = document.getElementById('zadRepairSourceUid');
-    const report = document.getElementById('zadRepairReport');
-    if (!select || !select.options.length) return;
-    if (select.options.length === 1 && /جار[ٍي]? تحميل/.test(select.options[0].textContent || '')) {
-      select.replaceChildren(new Option('التحميل لم يكتمل — اضغط تحديث قائمة الحسابات', ''));
-      if (report) report.textContent = '⚠️ لم يكتمل تحميل حسابات الطلاب. اضغط «تحديث قائمة الحسابات»؛ وإذا استمر التعطل، افتح أدوات المطور (F12 → Console) وراجع خطأ تحميل account-link-repair.js أو اتصال Firebase.';
-    }
-  }, 35000);
-});
-</script>
-<script type="module" src="account-link-repair.js?v=20261103-authfix2"></script>
+
+<script type="module" src="account-link-repair.js?v=20261103-stable3"></script>
 <script type="module" src="manual-students-admin.js"></script>
 <script type="module" src="quiz-center-admin.js"></script>
 <script type="module" src="reports-admin.js"></script>

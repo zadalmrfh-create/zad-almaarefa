@@ -9,6 +9,8 @@ import {
 
 const $ = id => document.getElementById(id);
 const source = $('zadRepairSourceUid');
+const manualSource = $('zadRepairSourceUidManual');
+const sourceUid = () => String(manualSource?.value || source?.value || '').trim();
 const target = $('zadRepairTargetUid');
 const previewButton = $('zadRepairPreview');
 const migrateButton = $('zadRepairApply');
@@ -20,6 +22,7 @@ let busy = false;
 const AUTH_TIMEOUT_MS = 18000;
 const QUERY_TIMEOUT_MS = 20000;
 let peopleLoadAttempt = 0;
+let loadingPeople = false;
 const normalized = v => String(v || '').trim().toLowerCase();
 const label = u => String(u?.fullName || u?.name || u?.email || 'طالب');
 const status = message => {if (report) report.textContent = message;};
@@ -62,6 +65,7 @@ function setBusy(value) {
   busy = value;
   for (const button of [previewButton,migrateButton,refreshButton]) if(button) button.disabled = value;
   if (source) source.disabled = value;
+  if (manualSource) manualSource.disabled = value;
   if (target) target.disabled = value;
 }
 
@@ -82,13 +86,14 @@ async function checkAdmin() {
 }
 
 async function reloadPeople() {
-  if (busy) return;
+  if (loadingPeople || busy) return;
+  loadingPeople = true;
   const attempt = ++peopleLoadAttempt;
-  setBusy(true);
-  lastPreview = null;
-  if (migrateButton) migrateButton.hidden = true;
-  if (source) source.replaceChildren(new Option('جارٍ تحميل حسابات الطلاب...', ''));
-  status('⏳ جارٍ التأكد من تسجيل دخول الأدمن وتحميل الحسابات من Firebase...');
+  if (refreshButton) refreshButton.disabled = true;
+  // Do not lock the manual UID field, target UID or preview button while
+  // the account picker is loading. The admin may already know both UIDs.
+  if (source) source.replaceChildren(new Option('جارٍ تحميل الحسابات (يمكن إدخال UID يدويًا)', ''));
+  if (!manualSource?.value.trim()) status('⏳ تحميل قائمة اختيارية... يمكنك لصق UID القديم والجديد والضغط على فحص السجلات الآن.');
   try {
     await checkAdmin();
     // Filter server-side, so the administrative screen does not need to
@@ -116,18 +121,21 @@ async function reloadPeople() {
       new Option('اختر الحساب القديم الذي عليه الحصص', ''), ...options
     );
     if (people.some(p=>p.id===previous)) source.value = previous;
-    if (!people.length) {
-      status('⚠️ تم الاتصال بـFirebase ولكن لم يتم العثور على حسابات طلاب بدور student في users. راجع نوع الحسابات.');
-    } else {
-      status('✅ تم تحميل ' + people.length + ' حساب طالب. اختر الحساب القديم، ثم UID الحقيقي واضغط «فحص السجلات».');
+    if (!lastPreview) {
+      status(!people.length
+        ? '⚠️ لم تظهر حسابات الطلاب في القائمة. يمكنك إدخال UID الحساب القديم يدويًا.'
+        : '✅ تم تحميل ' + people.length + ' حساب طالب. اختر الحساب القديم أو اكتب UID يدويًا ثم اضغط فحص السجلات.');
     }
   } catch (error) {
     if (attempt !== peopleLoadAttempt) return;
     console.error('[Zad UID repair] Loading students failed:', error);
-    if (source) source.replaceChildren(new Option('تعذر التحميل — اضغط تحديث قائمة الحسابات', ''));
-    status('❌ لم تُحمَّل حسابات الطلاب: ' + describeError(error));
+    if (source) source.replaceChildren(new Option('تعذر تحميل القائمة — أدخل UID القديم يدويًا', ''));
+    if (!lastPreview) status('⚠️ تعذر تحميل القائمة الاختيارية: ' + describeError(error) + '\nيمكنك إدخال UID الحساب القديم والجديد مباشرة للفحص؛ لن يتم نقل شيء بدون تأكيد.');
   } finally {
-    if (attempt === peopleLoadAttempt) setBusy(false);
+    if (attempt === peopleLoadAttempt) {
+      loadingPeople = false;
+      if (refreshButton) refreshButton.disabled = false;
+    }
   }
 }
 
@@ -141,9 +149,9 @@ async function getReconciliation(oldUid,newUid) {
   if ([oldUid,newUid].some(id=>id.includes('/') || id.length > 256)) {
     throw new Error('UID غير صالح.');
   }
-  const [oldDoc,newDoc] = await Promise.all([
+  const [oldDoc,newDoc] = await withDeadline(Promise.all([
     getDoc(doc(db,'users',oldUid)),getDoc(doc(db,'users',newUid))
-  ]);
+  ]), QUERY_TIMEOUT_MS, 'فحص ملفّي الحساب القديم والجديد');
   if (!oldDoc.exists() || !newDoc.exists()) {
     throw new Error('حساب من الحسابين غير موجود في users؛ راجع UID.');
   }
@@ -156,7 +164,10 @@ async function getReconciliation(oldUid,newUid) {
     throw new Error('حماية خصوصية الطلاب: البريد المسجل في الحساب القديم والجديد غير متطابق حرفيًا. لا يتم النقل بالاسم فقط.');
   }
   // Refresh profiles before every preview/commit, not only from a cached menu.
-  const fresh=await getDocs(collection(db,'users'));
+  // The precise email query is much smaller than reading every account.
+  // Email identity is verified against both source and target above.
+  const fresh=await withDeadline(getDocs(query(collection(db,'users'),where('email','==',actual.email))),
+    QUERY_TIMEOUT_MS, 'تحميل حسابات البريد المطابق');
   const candidates=fresh.docs.map(d=>({uid:d.id,...d.data()}))
     .filter(p=>p.uid!==newUid && p.role==='student' && p.email===actual.email);
   if (!candidates.some(p=>p.uid===oldUid)) {
@@ -172,18 +183,18 @@ async function getReconciliation(oldUid,newUid) {
   const attendance=[];
   const payments=[];
   for (const p of candidates) {
-    const [att,pay]=await Promise.all([
+    const [att,pay]=await withDeadline(Promise.all([
       getDocs(query(collection(db,'lessonAttendance'),where('studentUid','==',p.uid))),
       getDocs(query(collection(db,'vodafonePayments'),where('studentUid','==',p.uid)))
-    ]);
+    ]), QUERY_TIMEOUT_MS, 'حصص وتحويلات الحساب القديم');
     sources.push({uid:p.uid,profile:p,attendanceCount:att.size,paymentCount:pay.size});
     for (const snap of att.docs) attendance.push({snap,oldUid:p.uid});
     for (const snap of pay.docs) payments.push({snap,oldUid:p.uid});
   }
-  const [destinationAttendance,destinationPayments]=await Promise.all([
+  const [destinationAttendance,destinationPayments]=await withDeadline(Promise.all([
     getDocs(query(collection(db,'lessonAttendance'),where('studentUid','==',newUid))),
     getDocs(query(collection(db,'vodafonePayments'),where('studentUid','==',newUid)))
-  ]);
+  ]), QUERY_TIMEOUT_MS, 'حصص وتحويلات الحساب الحقيقي');
   return {oldUid,newUid,old,actual,sources,attendance,payments,
     destinationAttendance:destinationAttendance.size,
     destinationPayments:destinationPayments.size};
@@ -216,7 +227,7 @@ async function preview() {
   lastPreview=null;
   if(migrateButton)migrateButton.hidden=true;
   try {
-    const data=await getReconciliation(source.value,target.value.trim());
+    const data=await getReconciliation(sourceUid(),target.value.trim());
     lastPreview=data;
     status(describe(data));
     if(data.attendance.length||data.payments.length)migrateButton.hidden=false;
@@ -228,7 +239,7 @@ async function migrate() {
   if(busy || !lastPreview)return;
   setBusy(true);
   try {
-    const data=await getReconciliation(source.value,target.value.trim());
+    const data=await getReconciliation(sourceUid(),target.value.trim());
     if(data.oldUid!==lastPreview.oldUid || data.newUid!==lastPreview.newUid) {
       throw new Error('الحساب المختار تغير؛ افحص البيانات من جديد.');
     }
@@ -320,8 +331,9 @@ async function migrate() {
 previewButton?.addEventListener('click',preview);
 migrateButton?.addEventListener('click',migrate);
 refreshButton?.addEventListener('click',reloadPeople);
-source?.addEventListener('change',()=>{if (source) source.dataset.previousUid = source.value;lastPreview=null;if(migrateButton)migrateButton.hidden=true;});
+source?.addEventListener('change',()=>{if (source) source.dataset.previousUid = source.value; if (manualSource) manualSource.value = '';lastPreview=null;if(migrateButton)migrateButton.hidden=true;});
+manualSource?.addEventListener('input',()=>{lastPreview=null;if(migrateButton)migrateButton.hidden=true;});
 target?.addEventListener('input',()=>{lastPreview=null;migrateButton.hidden=true;});
 // Always attempt to load after the authentication session is restored;
 // the deadline guarantees that the selector will never hang indefinitely.
-reloadPeople();
+queueMicrotask(() => reloadPeople().catch(error => status('⚠️ تعذر تحميل قائمة الحسابات: ' + describeError(error))));
