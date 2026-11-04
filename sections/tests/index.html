@@ -20,19 +20,25 @@
 <body>
 <div class="wrap">
   <div class="top"><a class="back" href="../library.html">← العودة إلى المكتبة</a></div>
-  <div class="hero"><div class="icon">📝</div><h1>قسم الاختبارات</h1><p>اختر المرحلة ثم الصف للوصول إلى اختباراتك بسهولة</p></div>
+  <div class="hero"><div class="icon">📝</div><h1>الامتحانات الإلكترونية المجانية</h1><p>اختر المرحلة ثم الصف للوصول إلى اختباراتك بسهولة، دون شراء أو اعتماد دفع</p></div>
 
   <section class="group" style="border:1px solid #c9a84c;text-align:center;margin-bottom:20px">
   <h2>📝 امتحانات الوحدة الأولى — تانية ثانوي وبكالوريا</h2>
   <p class="desc">9 امتحانات جديدة من الكتب الدراسية، لكل امتحان 30 سؤالًا (اختر، صح وغلط، أكمل، ومقالي).</p>
   <a href="code-exams.html" style="display:inline-block;padding:14px 20px;border-radius:12px;background:#d4b048;color:#101d34;font-weight:800;text-decoration:none">فتح الامتحانات الإلكترونية</a>
 </section>
+<section class="group" style="border-color:#d7b65e">
+  <h2>🎨 البلاغة — علم البديع | تانية بكالوريا</h2>
+  <p class="desc">امتحان مجاني للصف الثاني البكالوريا، 30 سؤالًا مع مقالي يصححه الأدمن. يلزم تسجيل الدخول وكتابة اسم الطالب.</p>
+  <a class="choice" style="display:inline-flex;width:auto;min-height:auto;color:#f6d479" href="unit-one-exam.html?id=badi-2bac-2026">فتح امتحان علم البديع ←</a>
+</section>
 <section class="group" id="stageSection">
     <h2>🎓 اختر المرحلة</h2>
-    <p class="desc">قسم الاختبارات متاح للمرحلة الإعدادية والثانوية الأزهرية.</p>
+    <p class="desc">الامتحانات الإلكترونية مجانية ومتاحة للإعدادية والثانوية الأزهرية والبكالوريا.</p>
     <div class="grid">
       <button class="choice" data-stage="prep"><span class="emoji">📘</span><strong>المرحلة الإعدادية</strong><small>الأول الإعدادي • الثاني الإعدادي • الثالث الإعدادي</small></button>
       <button class="choice" data-stage="secondary"><span class="emoji">🏛️</span><strong>الثانوية الأزهرية</strong><small>الأول الثانوي • الثاني الثانوي • الثالث الثانوي</small></button>
+      <button class="choice" data-stage="bac"><span class="emoji">🎓</span><strong>البكالوريا</strong><small>الصف الثاني البكالوريا • البلاغة (علم البديع)</small></button>
     </div>
   </section>
 
@@ -51,7 +57,7 @@
   </section>
 </div>
 <script>
-const stageNames={prep:'المرحلة الإعدادية',secondary:'الثانوية الأزهرية'};
+const stageNames={prep:'المرحلة الإعدادية',secondary:'الثانوية الأزهرية',bac:'البكالوريا'};
 const grades={
   prep:[
     {id:'prep1',name:'الأول الإعدادي',icon:'1️⃣'},
@@ -62,7 +68,8 @@ const grades={
     {id:'sec1',name:'الأول الثانوي الأزهري',icon:'1️⃣'},
     {id:'sec2',name:'الثاني الثانوي الأزهري',icon:'2️⃣'},
     {id:'sec3',name:'الثالث الثانوي الأزهري',icon:'3️⃣'}
-  ]
+  ],
+  bac:[{id:'bac2',name:'الصف الثاني البكالوريا',icon:'2️⃣'}]
 };
 const subjectSets={
   prep:[
@@ -70,7 +77,8 @@ const subjectSets={
   ],
   secondary:[
     ['📚','النحو'],['✍️','الصرف'],['🎨','البلاغة'],['📖','الأدب والنصوص والمطالعة'],['📜','التفسير'],['🕌','الحديث'],['☝️','التوحيد'],['📗','الفقه'],['💻','البرمجة وتكنولوجيا المعلومات'],['🧠','الفلسفة والمنطق']
-  ]
+  ],
+  bac:[['🎨','البلاغة']]
 };
 const liveTests={
   'النحو':'nahw.html',
@@ -99,8 +107,8 @@ function selectGrade(id){
   document.getElementById('subjectsTitle').textContent='📖 المواد — '+selectedGrade.name;
   const subjects=subjectSets[selectedStage];
   subjectsGrid.innerHTML=subjects.map(([emoji,name])=>{
-    const href=selectedStage==='secondary' ? liveTests[name] : null;
-    if(href){return `<a class="subject active" href="${href}"><span class="emoji">${emoji}</span><strong>${name}</strong><small>فتح الاختبار المتاح حاليًا</small></a>`;}
+    const href=selectedStage==='secondary' ? liveTests[name] : (selectedStage==='bac' && selectedGrade?.id==='bac2' && name==='البلاغة' ? 'unit-one-exam.html?id=badi-2bac-2026' : null);
+    if(href){return `<a class="subject active" href="${href}"><span class="emoji">${emoji}</span><strong>${name}</strong><small>${selectedStage==='bac'?'امتحان علم البديع — مجاني، اسم الطالب وتسجيل الدخول مطلوبان':'فتح الاختبار المتاح حاليًا'}</small></a>`;}
     return `<div class="subject disabled"><span class="soon">قريبًا</span><span class="emoji">${emoji}</span><strong>${name}</strong><small>سيتم إضافة اختبارات هذه المادة قريبًا</small></div>`;
   }).join('');
   if(selectedStage==='secondary') subjectsGrid.insertAdjacentHTML('beforeend','<div class="available-note" style="grid-column:1/-1"><b>ملاحظة:</b> اختبارات النحو والبلاغة والتوحيد الحالية ظاهرة مؤقتًا داخل صفوف الثانوية إلى أن يتم توزيع كل اختبار على صفه المحدد.</div>');

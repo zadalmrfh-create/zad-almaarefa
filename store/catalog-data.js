@@ -1,3 +1,7 @@
+export const featuredServiceProducts = [
+  {id:'zad-service-qureo',title:'خدمة كيرو QUREO',type:'service',price:150,stage:'الثانوي العام',grade:'الأول والثاني الثانوي',subject:'كيرو',description:'خدمة تعليمية مساعدة في كيرو؛ يتم الاتفاق على تفاصيل الخدمة بعد تقديم الطلب دون مشاركة بيانات الدخول.',icon:'💻',published:true,deliveryReady:true,deliveryMode:'service',baseOrder:9999,createdAt:20261104,popular:999},
+  {id:'zad-service-finance',title:'خدمة الثقافة المالية',type:'service',price:100,stage:'الثانوي العام',grade:'الثاني الثانوي',subject:'الثقافة المالية',description:'مساعدة تعليمية في الثقافة المالية، تُطلب مباشرة من متجر زاد المعرفة دون مشاركة كلمات المرور.',icon:'📊',published:true,deliveryReady:true,deliveryMode:'service',baseOrder:9998,createdAt:20261104,popular:998}
+];
 export const baseProducts = [
   {
     "id": "lib-001",
@@ -2095,48 +2099,6 @@ export const baseProducts = [
     "icon": "📑",
     "libraryCategory": "مواد شرعية",
     "baseOrder": 100,
-    "createdAt": 20261007,
-    "popular": 100,
-    "deliveryReady": false
-  },
-  {
-    "id": "lib-101",
-    "title": "اختبار النحو للصف الثاني الثانوي",
-    "type": "exam",
-    "price": 15,
-    "stage": "أزهري",
-    "grade": "الثاني الثانوي الأزهري",
-    "subject": "لغة عربية",
-    "teacherName": "",
-    "description": "اختبار النحو للصف الثاني الثانوي الأزهري",
-    "contents": "الفئة: لغة عربية\nالمصدر: المكتبة التعليمية\nالوصول بعد اعتماد الطلب.",
-    "coverUrl": "",
-    "published": true,
-    "source": "library",
-    "icon": "✍️",
-    "libraryCategory": "لغة عربية",
-    "baseOrder": 101,
-    "createdAt": 20261007,
-    "popular": 100,
-    "deliveryReady": false
-  },
-  {
-    "id": "lib-102",
-    "title": "اختبار التوحيد للصف الثاني الثانوي",
-    "type": "exam",
-    "price": 15,
-    "stage": "أزهري",
-    "grade": "الثاني الثانوي الأزهري",
-    "subject": "مواد شرعية",
-    "teacherName": "",
-    "description": "اختبار التوحيد للصف الثاني الثانوي الأزهري",
-    "contents": "الفئة: مواد شرعية\nالمصدر: المكتبة التعليمية\nالوصول بعد اعتماد الطلب.",
-    "coverUrl": "",
-    "published": true,
-    "source": "library",
-    "icon": "☝️",
-    "libraryCategory": "مواد شرعية",
-    "baseOrder": 102,
     "createdAt": 20261007,
     "popular": 100,
     "deliveryReady": false

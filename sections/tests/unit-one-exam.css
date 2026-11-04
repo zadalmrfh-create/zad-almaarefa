@@ -12,3 +12,11 @@
 #ue-message,#ue-result{padding:17px;border:1px solid #9c8242;border-radius:13px;background:#1a2b40;line-height:1.8}#ue-result[hidden],#ue-form[hidden]{display:none}
 .ue-note{font-size:13px;color:#f1d797;padding:10px 0}.ue-q:focus-within{border-color:#e9be47}
 @media(max-width:600px){.ue-q{padding:14px}.ue-q strong{font-size:15px}#ue-meta{font-size:13px}}
+
+.ue-name-step{background:linear-gradient(130deg,#1e3455,#11243c);border:1px solid #b9954a;border-radius:18px;padding:24px;margin:20px 0;line-height:1.9}
+.ue-name-step h2{color:#f0cd69;margin:0 0 8px}.ue-name-step label{display:block;font-weight:800;color:#fff;margin:14px 0 6px}
+.ue-name-step input{background:#0b1b32;border:1px solid #6c8099;border-radius:12px;padding:14px;width:min(100%,590px);color:white;font:inherit}
+.ue-name-step button,.ue-report-actions button{display:inline-block;background:#edd078;color:#122b45;border:0;padding:12px 18px;border-radius:12px;cursor:pointer;font:inherit;font-weight:800;margin:12px 6px 0 0}
+.ue-report-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}.ue-report-actions button{margin:0}
+#ue-name-error{display:block;color:#ffb4b4;margin:5px 0}
+@media print{.ue-report-actions,.ue-name-step{display:none!important}}

@@ -1,0 +1,177 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function adminPath() { return /databases/$(database)/documents/admins/$(request.auth.uid); }
+    // Two independent checks: exact verified email + manually approved UID.
+    function isAdminIdentity() {
+      return signedIn() &&
+        request.auth.token.get('email', '') == 'maleksameh121@gmail.com' &&
+        request.auth.token.get('email_verified', false) == true;
+    }
+    function isAdmin() {
+      return isAdminIdentity() && exists(adminPath()) && get(adminPath()).data.active == true;
+    }
+    function settingsPath() { return /databases/$(database)/documents/settings/public; }
+    function settings() { return get(settingsPath()).data; }
+    function couponPath(code) { return /databases/$(database)/documents/coupons/$(code); }
+    function validCoupon(d) {
+      return (d.couponCode == '' && d.couponPercent == 0 && d.couponDiscountPiasters == 0) ||
+        (d.couponCode is string && d.couponCode.matches('^[A-Z0-9_-]{3,20}$') &&
+         exists(couponPath(d.couponCode)) &&
+         get(couponPath(d.couponCode)).data.active == true &&
+         get(couponPath(d.couponCode)).data.percent == d.couponPercent &&
+         d.couponPercent is int && d.couponPercent >= 1 && d.couponPercent <= 90);
+    }
+    function validPriceSettings(d) {
+      return d.keys().hasOnly(['chapterPricePiasters','retryPricePiasters','discountPercent','financePricePiasters']) &&
+        d.keys().hasAll(['chapterPricePiasters','retryPricePiasters','discountPercent']) &&
+        d.chapterPricePiasters is int && d.retryPricePiasters is int &&
+        d.chapterPricePiasters >= 100 && d.chapterPricePiasters <= 1000000 &&
+        d.retryPricePiasters >= 100 && d.retryPricePiasters <= 1000000 &&
+        d.chapterPricePiasters % 100 == 0 && d.retryPricePiasters % 100 == 0 &&
+        d.discountPercent is int && d.discountPercent >= 0 && d.discountPercent <= 90 &&
+        (!d.keys().hasAny(['financePricePiasters']) ||
+        (d.financePricePiasters is int && d.financePricePiasters >= 100 &&
+         d.financePricePiasters <= 1000000 && d.financePricePiasters % 100 == 0));
+    }
+    function quoteIsValid(d) {
+      let s = settings();
+      let after = d.beforePiasters - d.discountPiasters;
+      let couponRaw = after * d.couponPercent / 100;
+      return (d.serviceType == 'finance') ?
+        (d.beforePiasters == s.get('financePricePiasters', 10000) &&
+         d.discountPiasters == 0 && d.couponDiscountPiasters == 0 &&
+         d.couponCode == '' && d.couponPercent == 0 &&
+         d.totalPiasters == d.beforePiasters) :
+        (d.beforePiasters == d.chapters * s.chapterPricePiasters + d.retries * s.retryPricePiasters &&
+        d.discountPiasters == d.beforePiasters * s.discountPercent / 100 &&
+        d.couponDiscountPiasters is int &&
+        d.couponDiscountPiasters >= couponRaw - 0.5 &&
+        d.couponDiscountPiasters <= couponRaw + 0.5 &&
+        d.totalPiasters == after - d.couponDiscountPiasters &&
+        d.totalPiasters >= 0 && d.totalPiasters <= 100000000);
+    }
+    function validOrder(d,id) {
+      return exists(settingsPath()) &&
+        id.matches('^QM-[A-HJ-NP-Z2-9]{10}$') &&
+        d.keys().hasOnly(['uid','trackingCode','name','phone','term','serviceType','chapters','retries','notes','couponCode','couponPercent','beforePiasters','discountPiasters','couponDiscountPiasters','totalPiasters','status','createdAt','updatedAt']) &&
+        d.keys().hasAll(['uid','trackingCode','name','phone','term','serviceType','chapters','retries','notes','couponCode','couponPercent','beforePiasters','discountPiasters','couponDiscountPiasters','totalPiasters','status','createdAt','updatedAt']) &&
+        d.uid == request.auth.uid &&
+        d.trackingCode is string && d.trackingCode.matches('^[A-HJ-NP-Z2-9]{22}$') &&
+        d.name is string && d.name.size() >= 3 && d.name.size() <= 70 &&
+        d.phone is string && d.phone.matches('^01[0-9]{9}$') &&
+        d.term in ['الترم الأول','الترم الثاني'] &&
+        d.serviceType in ['chapters','retries','both','finance'] &&
+        d.chapters is int && d.chapters >= 0 && d.chapters <= 39 &&
+        d.retries is int && d.retries >= 0 && d.retries <= 20 &&
+        (d.serviceType == 'finance' ? d.chapters == 0 && d.retries == 0 : d.chapters + d.retries > 0) &&
+        (d.serviceType != 'chapters' || d.retries == 0) &&
+        (d.serviceType != 'retries' || d.chapters == 0) &&
+        // SPRIX financial culture is one fixed-price subject; no coupon/discount.
+        (d.serviceType != 'finance' || (d.couponCode == '' && d.couponPercent == 0 &&
+          d.discountPiasters == 0 && d.couponDiscountPiasters == 0 &&
+          d.totalPiasters == d.beforePiasters)) &&
+        d.notes is string && d.notes.size() <= 500 &&
+        (d.serviceType != 'finance' || d.notes.size() >= 10) &&
+        d.beforePiasters is int && d.discountPiasters is int && d.totalPiasters is int &&
+        d.status == 'received' && d.createdAt == request.time && d.updatedAt == request.time &&
+        validCoupon(d) && quoteIsValid(d) &&
+        getAfter(/databases/$(database)/documents/orderTracking/$(d.trackingCode)).data.orderId == id;
+    }
+    function validStatus(status) {
+      return status in ['received','reviewing','working','completed','cancelled'];
+    }
+    function isRegistered() {
+      return signedIn() && request.auth.token.email is string;
+    }
+    function validCustomer(d, uid) {
+      return d.keys().hasOnly(['uid','name','phone','createdAt','updatedAt']) &&
+        d.keys().hasAll(['uid','name','phone','createdAt','updatedAt']) &&
+        d.uid == uid &&
+        d.name is string && d.name.size() >= 3 && d.name.size() <= 70 &&
+        d.phone is string && (d.phone == '' || d.phone.matches('^01[0-9]{9}$')) &&
+        d.createdAt is timestamp && d.updatedAt is timestamp;
+    }
+    match /customers/{uid} {
+      allow get: if isRegistered() && request.auth.uid == uid || isAdmin();
+      allow list: if false;
+      allow create: if isRegistered() && request.auth.uid == uid &&
+        validCustomer(request.resource.data,uid) &&
+        request.resource.data.createdAt == request.time && request.resource.data.updatedAt == request.time;
+      allow update: if isRegistered() && request.auth.uid == uid &&
+        validCustomer(request.resource.data,uid) &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name','phone','updatedAt']) &&
+        request.resource.data.updatedAt == request.time;
+      allow delete: if false;
+    }
+    match /admins/{uid} {
+      // Add admin document manually in Firebase Console. No client can grant admin permissions.
+      allow get: if isAdminIdentity() && request.auth.uid == uid;
+      allow list, create, update, delete: if false;
+    }
+    match /settings/{id} {
+      allow get: if id == 'public';
+      allow list: if false;
+      allow create, update: if id == 'public' && isAdmin() && validPriceSettings(request.resource.data);
+      allow delete: if false;
+    }
+    match /coupons/{code} {
+      allow get: if (resource.data.active == true) || isAdmin();
+      allow list: if isAdmin();
+      allow create, update: if isAdmin() &&
+        code.matches('^[A-Z0-9_-]{3,20}$') &&
+        request.resource.data.keys().hasOnly(['percent','active']) &&
+        request.resource.data.keys().hasAll(['percent','active']) &&
+        request.resource.data.percent is int && request.resource.data.percent >= 1 && request.resource.data.percent <= 90 &&
+        request.resource.data.active is bool;
+      allow delete: if isAdmin();
+    }
+    match /orders/{id} {
+      allow create: if signedIn() && validOrder(request.resource.data,id);
+      allow get: if signedIn() && (resource.data.uid == request.auth.uid || isAdmin());
+      allow list: if isAdmin() || (isRegistered() && resource.data.uid == request.auth.uid);
+      allow update: if isAdmin() &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','updatedAt']) &&
+        validStatus(request.resource.data.status) &&
+        request.resource.data.updatedAt == request.time &&
+        getAfter(/databases/$(database)/documents/orderTracking/$(resource.data.trackingCode)).data.status == request.resource.data.status;
+      allow delete: if false;
+    }
+    match /orderTracking/{code} {
+      // Only contains order id + status + update timestamp. Never a name, phone or private notes.
+      // A 22-char random token is the bearer credential for status-only retrieval.
+      allow get: if true;
+      allow list: if false;
+      allow create: if signedIn() &&
+        code.matches('^[A-HJ-NP-Z2-9]{22}$') &&
+        request.resource.data.keys().hasOnly(['orderId','status','updatedAt']) &&
+        request.resource.data.keys().hasAll(['orderId','status','updatedAt']) &&
+        request.resource.data.orderId is string && request.resource.data.status == 'received' &&
+        request.resource.data.updatedAt == request.time &&
+        getAfter(/databases/$(database)/documents/orders/$(request.resource.data.orderId)).data.uid == request.auth.uid &&
+        getAfter(/databases/$(database)/documents/orders/$(request.resource.data.orderId)).data.trackingCode == code;
+      allow update: if isAdmin() &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','updatedAt']) &&
+        validStatus(request.resource.data.status) &&
+        request.resource.data.updatedAt == request.time &&
+        getAfter(/databases/$(database)/documents/orders/$(resource.data.orderId)).data.status == request.resource.data.status;
+      allow delete: if false;
+    }
+    match /reviews/{id} {
+      allow get: if (resource.data.approved == true) || isAdmin();
+      allow list: if (resource.data.approved == true) || isAdmin();
+      allow create: if signedIn() &&
+        request.resource.data.keys().hasOnly(['uid','name','stars','text','approved','createdAt']) &&
+        request.resource.data.keys().hasAll(['uid','name','stars','text','approved','createdAt']) &&
+        request.resource.data.uid == request.auth.uid &&
+        request.resource.data.name is string && request.resource.data.name.size() >= 2 && request.resource.data.name.size() <= 40 &&
+        request.resource.data.text is string && request.resource.data.text.size() >= 10 && request.resource.data.text.size() <= 400 &&
+        request.resource.data.stars is int && request.resource.data.stars >= 1 && request.resource.data.stars <= 5 &&
+        request.resource.data.approved == false && request.resource.data.createdAt == request.time;
+      allow update: if isAdmin() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['approved']) && request.resource.data.approved is bool;
+      allow delete: if isAdmin();
+    }
+    match /{document=**} { allow read, write: if false; }
+  }
+}

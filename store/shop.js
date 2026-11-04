@@ -1,10 +1,13 @@
 import {db,$,esc,fmt,types,emoji,toast,session,adminCheck,navActive,printReceipt,dateText} from './common.js';
 import {collection,doc,getDoc,getDocs,onSnapshot,query,where,setDoc,serverTimestamp} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 import {getStorage,ref,getBlob,uploadBytes} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-storage.js';
-import {baseProducts} from './catalog-data.js?v=20261103-seven-files-v2';
+import {baseProducts,featuredServiceProducts} from './catalog-data.js?v=20261104-services';
 
 const storage=getStorage();
 const defaultSettings={vodafonePhone:'01042239704',instapayAddress:'',whatsapp:'01042239704'};
+// HTML interactive quizzes are free in /sections/tests/, not purchasable store products.
+const freeExamIds = new Set(['lib-101','lib-102']);
+const isFreeElectronicExam = p => freeExamIds.has(String(p?.id||'')) || p?.type==='interactive_exam' || p?.type==='electronic_exam';
 let rawStoreDocs=[];
 let products=[];
 let cart=[];
@@ -14,7 +17,7 @@ let rights=[];
 let productById={};
 let coupon=null;
 
-try{cart=JSON.parse(localStorage.getItem('zad-store-cart-v1')||'[]').filter(x=>typeof x==='string').slice(0,80)}catch{}
+try{cart=JSON.parse(localStorage.getItem('zad-store-cart-v1')||'[]').filter(x=>typeof x==='string'&&!freeExamIds.has(x)).slice(0,80)}catch{}
 const saveCart=()=>{try{localStorage.setItem('zad-store-cart-v1',JSON.stringify(cart))}catch{} document.querySelectorAll('#cartCount,.cart-count').forEach(el=>el.textContent=cart.length)};
 
 const typeTiles=[['summary','📝'],['exam','📝'],['evaluation','📋'],['book','📚'],['lesson','👨‍🏫'],['course','🎓']];
@@ -25,7 +28,7 @@ const byNewest=(a,b)=>Number(b.createdAt||0)-Number(a.createdAt||0)||Number(b.ba
 
 function mergeProducts(overrides){
   const map=new Map(overrides.map(x=>[x.id,x]));
-  const merged=baseProducts.map(base=>{
+  const merged=[...featuredServiceProducts,...baseProducts].map(base=>{
     const override=map.get(base.id)||{};
     const item={...base,...override};
     // ترقية التصنيف القديم: تقييمات المكتبة كانت تظهر ككتب أو امتحانات.
@@ -36,12 +39,12 @@ function mergeProducts(overrides){
     }
     return item;
   });
-  const extras=overrides.filter(x=>!baseProducts.some(b=>b.id===x.id)).map(x=>({published:true,...x}));
-  return [...merged,...extras].map(p=>{const {directUrl,previewUrl,downloadUrl,videoUrl,storagePath,...safe}=p; return safe}).filter(x=>!x.deleted&&x.published!==false).sort(byNewest);
+  const extras=overrides.filter(x=>![...featuredServiceProducts,...baseProducts].some(b=>b.id===x.id)).map(x=>({published:true,...x}));
+  return [...merged,...extras].map(p=>{const {directUrl,previewUrl,downloadUrl,videoUrl,storagePath,...safe}=p; return safe}).filter(x=>!x.deleted&&x.published!==false&&!isFreeElectronicExam(x)).sort(byNewest);
 }
 
 const paidDigitalTypes=new Set(['summary','exam','evaluation','book']);
-function readyForCheckout(p){return Boolean(p&&p.published!==false&&p.deliveryReady===true)}
+function readyForCheckout(p){return Boolean(p&&!isFreeElectronicExam(p)&&p.published!==false&&p.deliveryReady===true)}
 function secureMedia(p){return paidDigitalTypes.has(p?.type)}
 function purchaseControl(p){return readyForCheckout(p)?`<button class="primary" data-add="${esc(p.id)}">أضف إلى السلة</button>`:`<div class="notice pending-file">🔒 ${secureMedia(p)?'المحتوى تحت التجهيز والحماية — غير متاح للشراء الآن':'غير متاح للحجز الآن'}</div>`}
 
@@ -181,7 +184,7 @@ function checkout(){
   $('#couponCode').value='';
   $('#couponInfo').textContent='';
   if(!user){
-    $('#checkoutGate').innerHTML='لازم تسجل الدخول بحساب الطالب في الأكاديمية أولًا. <a href="../login.html" class="gold">صفحة تسجيل الدخول</a>';
+    $('#checkoutGate').innerHTML='لازم تسجل الدخول بحساب الطالب في الأكاديمية أولًا. <a href="../login/index.html" class="gold">صفحة تسجيل الدخول</a>';
     $('#checkoutForm').classList.add('hidden');
   }else{
     $('#checkoutGate').textContent=`الحساب الحالي: ${user.email||user.uid} — تأكد أن اسم الطالب مطابق للحساب.`;
@@ -333,6 +336,12 @@ function actions(e){
   if(a.dataset.view) return show(a.dataset.view);
   if(a.dataset.go) return show(a.dataset.go);
   if(a.dataset.type){$('#typeFilter').value=a.dataset.type; return show('catalog')}
+  if(a.dataset.orderService){
+    const id=a.dataset.orderService;
+    if(!readyForCheckout(productById[id])) return toast('الخدمة غير متاحة حاليًا');
+    if(!cart.includes(id))cart.push(id);
+    saveCart(); return checkout();
+  }
   if(a.dataset.add){
     const id=a.dataset.add;
     if(!readyForCheckout(productById[id]))return toast('هذا المنتج غير جاهز للبيع بعد');
@@ -357,7 +366,17 @@ saveCart();
 
 async function start(){
   user=await session();
-  $('#accountState').textContent=user?`أهلًا ${user.displayName||user.email||'بالطالب'}`:'تصفح بحرية — سجّل الدخول للشراء';
+  if(!user){
+    const msg=document.getElementById('storeAuthGateMessage');
+    if(msg) msg.textContent='يجب تسجيل الدخول أولًا حتى لتصفح المنتجات، ولا يلزم الشراء.';
+    sessionStorage.setItem('redirectAfterLogin', location.pathname + location.search + location.hash);
+    const loginUrl=new URL('../login/index.html',location.href);
+    // The sign-in page is the only entry point for unauthenticated visitors.
+    window.location.replace(loginUrl.href);
+    return;
+  }
+  document.body.classList.remove('store-auth-pending');
+  $('#accountState').textContent=`أهلًا ${user.displayName||user.email||'بالطالب'}`;
   if(await adminCheck(user)) $('#adminLink').classList.remove('hidden');
   onSnapshot(doc(db,'storeSettings','main'),s=>{
     const d={...defaultSettings,...(s.data()||{})};

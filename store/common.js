@@ -6,8 +6,8 @@ export const $ = s=>document.querySelector(s);
 export const esc = x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export const fmt = n=>new Intl.NumberFormat('ar-EG',{maximumFractionDigits:2}).format(Number(n)||0)+' ج.م';
 export const dateText = t=>{try{return (t?.toDate?t.toDate():t instanceof Date?t:new Date(t)).toLocaleString('ar-EG')}catch{return '—'}};
-export const types={summary:'ملخص',exam:'امتحان',evaluation:'تقييم',book:'كتاب',lesson:'حصة',course:'كورس'};
-export const emoji={summary:'📚',exam:'📝',evaluation:'📋',book:'📖',lesson:'👨‍🏫',course:'🎓'};
+export const types={summary:'ملخص',exam:'امتحان',evaluation:'تقييم',book:'كتاب',lesson:'حصة',course:'كورس',service:'خدمة تعليمية'};
+export const emoji={summary:'📚',exam:'📝',evaluation:'📋',book:'📖',lesson:'👨‍🏫',course:'🎓',service:'✨'};
 export function toast(message){let t=$('#toast');if(t){t.textContent=message;t.style.display='block';setTimeout(()=>t.style.display='none',4500)}}
 export async function session(){return new Promise(resolve=>{const u=onAuthStateChanged(auth,user=>{u();resolve(user)},()=>resolve(null))})}
 export async function adminCheck(u){if(!u)return false;if(u.email?.toLowerCase()===ADMIN_EMAIL.toLowerCase() && u.emailVerified)return true;try{const [a,b]=await Promise.all([getDoc(doc(db,'admins',u.uid)),getDoc(doc(db,'users',u.uid))]);return a.exists()||b.data()?.role==='admin'}catch{return false}}

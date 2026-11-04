@@ -1,0 +1,11 @@
+import {$,renderShell,showTimeline,statuses,showToast,setAlert,clearAlert} from './shared.js';
+import {configured} from './firebase-config.js';
+renderShell('track');let service=null,stopListening=null,lastStatus=null,notificationOptIn=false;
+const param=new URLSearchParams(location.search).get('code')||'';if(param)$('trackingCode').value=param;
+$('trackingForm').addEventListener('submit',async e=>{e.preventDefault();clearAlert('trackAlert');const code=$('trackingCode').value.trim().toUpperCase().replace(/\s/g,'');if(!/^[A-HJ-NP-Z2-9]{22}$/.test(code)){setAlert('trackAlert','كود التتبع يتكون من 22 حرفًا أو رقمًا بدون مسافات.');return}if(!configured){setAlert('trackAlert','التتبع يعمل بعد ربط Firebase. اتبع ملف README.md.');return}try{service ||=await import('./firebase-service.js');if(stopListening)stopListening();lastStatus=null;stopListening=service.onSnapshot(service.doc(service.db,'orderTracking',code),snap=>{
+ if(!snap.exists()){$('trackingResult').classList.add('hide');setAlert('trackAlert','الكود غير موجود. تأكد من نسخه بشكل صحيح.');return}
+ clearAlert('trackAlert');const data=snap.data();$('trackingResult').classList.remove('hide');$('resultOrderId').textContent=data.orderId;$('resultStatus').textContent=statuses[data.status]||data.status;showTimeline($('trackTimeline'),data.status);$('lastUpdate').textContent=data.updatedAt?.toDate?.().toLocaleString('ar-EG')||'الآن';
+ if(lastStatus&&lastStatus!==data.status){showToast('تحديث طلبك: '+(statuses[data.status]||data.status));if(notificationOptIn&&Notification.permission==='granted')new Notification('تحديث طلب MALEK',{body:statuses[data.status]||data.status})}lastStatus=data.status;
+ },err=>{console.error(err);setAlert('trackAlert','تعذر قراءة حالة الطلب. تحقق من الاتصال وإعدادات القواعد.')});history.replaceState(null,'','?code='+encodeURIComponent(code))}catch(err){console.error(err);setAlert('trackAlert','تعذر الاتصال بقاعدة البيانات.')}});
+$('notifyButton').addEventListener('click',async()=>{if(!('Notification' in window)){showToast('المتصفح لا يدعم التنبيهات');return}const p=await Notification.requestPermission();notificationOptIn=p==='granted';showToast(notificationOptIn?'تم تفعيل التنبيه أثناء فتح الصفحة':'لم يتم السماح بالتنبيه')});
+if(param)$('trackingForm').requestSubmit();

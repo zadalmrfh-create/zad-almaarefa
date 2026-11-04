@@ -1,10 +1,12 @@
 import {db,$,esc,fmt,types,toast,session,adminCheck,printReceipt,dateText} from './common.js';
 import {collection,doc,getDoc,getDocs,onSnapshot,serverTimestamp,deleteField,setDoc,updateDoc,deleteDoc,runTransaction,writeBatch} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 import {getStorage,ref,getBlob,uploadBytes} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-storage.js';
-import {baseProducts} from './catalog-data.js?v=20261103-seven-files-v2';
+import {baseProducts,featuredServiceProducts} from './catalog-data.js?v=20261104-services';
 
 const storage=getStorage();
 const defaultSettings={vodafonePhone:'01042239704',instapayAddress:'',whatsapp:'01042239704'};
+const freeExamIds = new Set(['lib-101','lib-102']);
+const isFreeElectronicExam = p => freeExamIds.has(String(p?.id||'')) || p?.type==='interactive_exam' || p?.type==='electronic_exam';
 let rawStoreDocs=[];
 let products=[];
 let orders=[];
@@ -22,7 +24,7 @@ const productIndex=()=>Object.fromEntries(products.map(p=>[p.id,p]));
 
 function mergeProducts(overrides){
   const map=new Map(overrides.map(x=>[x.id,x]));
-  const merged=baseProducts.map(base=>{
+  const merged=[...featuredServiceProducts,...baseProducts].map(base=>{
     const override=map.get(base.id)||{};
     const item={...base,...override};
     // ترقية التصنيف القديم: تقييمات المكتبة كانت تظهر ككتب أو امتحانات.
@@ -33,8 +35,8 @@ function mergeProducts(overrides){
     }
     return item;
   });
-  const extras=overrides.filter(x=>!baseProducts.some(b=>b.id===x.id)).map(x=>({published:true,...x}));
-  return [...merged,...extras].filter(x=>!x.deleted).sort(byBase);
+  const extras=overrides.filter(x=>![...featuredServiceProducts,...baseProducts].some(b=>b.id===x.id)).map(x=>({published:true,...x}));
+  return [...merged,...extras].filter(x=>!x.deleted&&!isFreeElectronicExam(x)).sort(byBase);
 }
 
 function updateProducts(){
@@ -153,7 +155,7 @@ function paymentSnapshot(o){
 
 function orderCard(o){
   const q=paymentSnapshot(o);
-  return `<div class="item"><div class="row"><h3>طلب ${esc(o.id.slice(0,10))}</h3><span class="badge">${esc(statusLabel(o.status))}</span></div><div class="row"><div><b>${esc(o.buyerName||'')}</b><div class="muted small">${esc(o.buyerEmail||'')} · UID: ${esc(o.studentUid||'')}</div></div><div>تاريخ الطلب: ${esc(dateText(o.createdAt))}</div></div><p>المنتجات: ${q.items.map(p=>esc(p.title)).join(' • ')||'منتجات غير متاحة'} ${q.missing?'<span class="badge">تحذير: يوجد منتج غير موجود</span>':''}</p><div class="row"><b>السعر المحسوب الآن: ${fmt(q.total)}</b>${o.status==='approved'?`<b>المبلغ المعتمد: ${fmt(o.approvedTotal)}</b>`:''}</div><div class="row"><span>طريقة الدفع: ${esc(o.paymentMethod)}</span><span>رقم التحويل: ${esc(o.paymentReference)}</span><span>الهاتف: ${esc(o.senderPhone)}</span></div>${o.note?`<p class="muted">ملاحظات الطالب: ${esc(o.note)}</p>`:''}${o.proofPath?`<button class="secondary" data-proof="${esc(o.id)}">عرض صورة إثبات التحويل</button>`:''}${o.adminNote?`<p class="muted">ملاحظة الإدارة: ${esc(o.adminNote)}</p>`:''}${o.status==='pending'?`<div class="actions"><button class="primary" data-approve="${esc(o.id)}">✓ اعتماد الدفع وتفعيل المنتجات</button><button class="secondary" data-reject="${esc(o.id)}">رفض الطلب</button></div>`:o.status==='approved'?`<button class="secondary" data-receipt="${esc(o.id)}">🧾 طباعة إيصال معتمد</button>`:''}</div>`;
+  return `<div class="item"><div class="row"><h3>طلب ${esc(o.id.slice(0,10))}</h3><span class="badge">${esc(statusLabel(o.status))}</span></div><div class="row"><div><b>${esc(o.buyerName||'')}</b><div class="muted small">${esc(o.buyerEmail||'')} · UID: ${esc(o.studentUid||'')}</div></div><div>تاريخ الطلب: ${esc(dateText(o.createdAt))}</div></div><p>المنتجات: ${q.items.map(p=>esc(p.title)).join(' • ')||'منتجات غير متاحة'} ${q.missing?'<span class="badge">تحذير: يوجد منتج غير موجود</span>':''}</p><div class="row"><b>السعر المحسوب الآن: ${fmt(q.total)}</b>${o.status==='approved'?`<b>المبلغ المعتمد: ${fmt(o.approvedTotal)}</b>`:''}</div><div class="row"><span>طريقة الدفع: ${esc(o.paymentMethod)}</span><span>رقم التحويل: ${esc(o.paymentReference)}</span><span>الهاتف: ${esc(o.senderPhone)}</span></div>${o.note?`<p class="muted">ملاحظات الطالب: ${esc(o.note)}</p>`:''}${o.proofPath?`<button class="secondary" data-proof="${esc(o.id)}">عرض صورة إثبات التحويل</button>`:''}${o.adminNote?`<p class="muted">ملاحظة الإدارة: ${esc(o.adminNote)}</p>`:''}${o.status==='pending'?`<div class="actions"><button class="primary" data-approve="${esc(o.id)}">✓ اعتماد الدفع والطلب</button><button class="secondary" data-reject="${esc(o.id)}">رفض الطلب</button></div>`:o.status==='approved'?`<button class="secondary" data-receipt="${esc(o.id)}">🧾 طباعة إيصال معتمد</button>`:''}</div>`;
 }
 
 function renderOrders(){
@@ -168,6 +170,7 @@ const keyForRef=async(method,reference)=>{const input=new TextEncoder().encode(m
 async function approveOrder(id){
   const o=orders.find(x=>x.id===id);
   if(!o||o.status!=='pending') return toast('هذا الطلب لم يعد معلقًا');
+  if((o.productIds||[]).some(pid=>freeExamIds.has(pid))) return toast('هذه الامتحانات الإلكترونية مجانية، ولا يمكن اعتماد بيعها.');
   const q=paymentSnapshot(o);
   if(q.missing||!q.items.length) return toast('هناك منتجات مفقودة أو محذوفة؛ صحح الطلب أولًا');
   const cp=o.couponCode?coupons.find(c=>c.id===o.couponCode):null;
@@ -474,6 +477,19 @@ async function handler(e){
 document.addEventListener('click',handler);
 $('#productForm').addEventListener('submit',saveProduct);
 $('#bulkLinkManifest').addEventListener('change',readPrivateManifest);
+$('#activateFeaturedServices').addEventListener('click',async()=>{
+  if(!confirm('نشر خدمتي كيرو والثقافة المالية في قاعدة بيانات المتجر؟'))return;
+  const b=$('#activateFeaturedServices');b.disabled=true;
+  try{
+    for(const item of featuredServiceProducts){
+      const r=doc(db,'storeProducts',item.id),old=await getDoc(r);
+      if(!old.exists()) await setDoc(r,{...item,createdAt:serverTimestamp(),updatedAt:serverTimestamp()});
+      const current=(await getDoc(r)).data();
+      await setDoc(doc(db,'storePublicProducts',item.id),publicProduct({...current,id:item.id}),{merge:true});
+    }
+    toast('تم تفعيل الخدمتين في المتجر ونظام اعتماد الطلبات');
+  }catch(e){toast('تعذر التفعيل: '+(e.code||e.message))}finally{b.disabled=false}
+});
 $('#bulkImportLinks').addEventListener('click',importExternalLinks);
 $('#bulkUploadLocal').addEventListener('click',uploadLocalPdfs);
 $('#productSearch').addEventListener('input',renderProducts);

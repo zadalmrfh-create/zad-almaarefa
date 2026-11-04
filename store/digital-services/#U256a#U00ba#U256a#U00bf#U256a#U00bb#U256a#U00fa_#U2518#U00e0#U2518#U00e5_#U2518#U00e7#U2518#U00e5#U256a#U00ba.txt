@@ -1,0 +1,68 @@
+MALEK Digital Services — ربط Firebase جاهز في الكود ✅
+======================================================
+المشروع المرتبط: malek-digital-services
+
+تم وضع إعدادات Firebase التي أرسلتها في js/firebase-config.js.
+لا تحتاج تعديل الملف أو نسخ كود initializeApp من Firebase Console.
+الموقع يستخدم Firebase SDK عبر CDN في js/firebase-service.js.
+
+الخطوات المتبقية (من Firebase Console):
+1) Build > Authentication > Get started > Sign-in method:
+   - فعّل Anonymous (ليستطيع العميل إرسال طلب دون حساب).
+   - فعّل Email/Password (لحساب لوحة الإدارة).
+2) Build > Firestore Database > Create database: اختر Production mode.
+3) Firestore > Rules: انسخ محتويات firestore.rules بالكامل، ثم Publish.
+   تنبيه: لا تسمح بالقراءة/الكتابة للجميع عبر قواعد عامة.
+4) Firestore > Data > Start collection:
+   Collection ID: settings
+   Document ID: public
+   chapterPricePiasters = 800 (Number integer)
+   retryPricePiasters = 800 (Number integer)
+   discountPercent = 50 (Number integer)
+   القيم بالقرش المصري، 800 قرش = 8 جنيه قبل خصم 50%.
+5) Authentication > Users > Add user: أنشئ حساب الإدارة بكلمة مرور قوية.
+6) انسخ UID من حساب الإدارة. Firestore > Data:
+   Collection ID: admins
+   Document ID: <UID المنسوخ بالكامل>
+   active = true (Boolean)
+7) Authentication > Settings > Authorized domains:
+   أضف دومين موقعك بعد النشر، مثل username.github.io.
+8) انشر جميع ملفات ZIP على GitHub Pages أو استضافة HTTPS.
+9) جرّب طلبًا تجريبيًا، وكود التتبع، وتحديث الحالة عبر admin.html.
+
+مهم:
+- معلومات firebaseConfig العامة ليست كلمة سر للإدارة.
+- لا ترسل كلمات مرور أو مفاتيح service account أو أكواد تحقق لأحد.
+- تفعيل Google Analytics غير مطلوب لحفظ الطلبات، وغير مفعّل في هذه النسخة.
+- مجرد وضع الإعدادات لا يعني أن قاعدة البيانات أُنشئت أو أن الطلبات تحفظ بالفعل.
+
+للتفاصيل الكاملة اقرأ README.md.
+
+
+تحديث الحسابات الاختيارية:
+1- استبدل ملفات الموقع على GitHub بالنسخة الجديدة كاملة.
+2- في Firestore > Rules امسح القديم والصق ملف firestore.rules الجديد كاملًا ثم Publish.
+3- تأكد من Email/Password و Anonymous = Enabled.
+4- جرّب account.html لإنشاء حساب عميل (ليس حساب الأدمن).
+5- لو تريد الحساب الإداري: أنشئه بـ Authentication > Users > Add user، ثم admins/{UID} بحقل active من نوع boolean = true.
+6- اختبر تقديم طلب ضيف ثم إنشاء حساب جديد من نفس المتصفح؛ الطلب يجب أن يظهر في صفحة حسابي.
+
+تحذير: تسجيل الدخول بحساب قديم بعد طلب ضيف لا ينقل الطلب القديم. كود التتبع يظل صالحًا.
+
+
+تحديث Google (سريع):
+1) Firebase > Authentication > Sign-in method > Google > Enable، واختر بريد الدعم ثم Save.
+2) Authentication > Settings > Authorized domains: ضف دومين الاستضافة (مثال yourname.github.io).
+3) ارفع محتويات ZIP كلها بدلاً من النسخة القديمة.
+4) جرّب account.html؛ ستجد زر «المتابعة باستخدام Google».
+5) يمكنك أيضًا الدخول بلوحة admin.html باستخدام Google بعد إضافة UID إلى admins/{UID}، وحقل active=true.
+6) ملف firestore.rules لم يتغير؛ لا تحتاج نشر قواعد جديدة لتفعيل Google.
+7) إذا كان حساب Google موجودًا بالفعل بعد طلب ضيف، فلن تنتقل إليه طلبات الضيف تلقائيًا؛ استخدم كود التتبع القديم.
+
+
+تحديث لوحة الإدارة للحساب الوحيد:
+- سجل دخول بجوجل عبر account.html باستخدام maleksameh121@gmail.com
+- خذ UID من Authentication > Users
+- أنشئ Firestore > admins > {UID} > active (boolean) = true
+- استبدل قواعد Firestore كاملة بمحتوى firestore.rules الجديد واضغط Publish
+- ارفع جميع الملفات، وسيظهر زر «لوحة الإدارة» فقط للحساب المسموح.

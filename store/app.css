@@ -347,3 +347,22 @@ main>section { padding-top: 0; }
   }
   main { padding-top: 16px; }
 }
+
+/* Featured digital services: intentionally prominent above catalog */
+.featured-services{margin:24px 0 34px;padding:26px;border:2px solid #f2c85b;border-radius:24px;background:linear-gradient(135deg,#152c52,#0a1932 65%);box-shadow:0 0 0 5px rgba(242,200,91,.09),0 20px 55px rgba(0,0,0,.35)}
+.featured-services-heading{text-align:center;margin-bottom:23px}.featured-services-eyebrow{display:inline-block;background:#f7d879;color:#18243b;font-weight:900;border-radius:30px;padding:7px 19px;font-size:14px}.featured-services-heading h2{font-size:clamp(25px,4vw,39px);line-height:1.5;margin:10px 0 3px;color:#fff;font-weight:900}.featured-services-heading p{color:#e4edfc;font-size:16px;margin:0}
+.featured-services-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}.featured-service-card{position:relative;display:flex;flex-direction:column;align-items:stretch;padding:25px;border-radius:22px;min-width:0;border:2px solid #6b8ed2;background:linear-gradient(160deg,#254c91,#102447);box-shadow:0 14px 35px rgba(0,0,0,.2)}.featured-finance{border-color:#f3cc6c;background:linear-gradient(160deg,#584322,#18233c)}.featured-service-tag{align-self:flex-start;border-radius:50px;background:#fff;color:#18325b;font-weight:900;padding:6px 14px;font-size:13px}.featured-service-icon{font-size:48px;margin:10px 0 0}.featured-service-card h3{font-size:clamp(24px,3vw,32px);line-height:1.4;color:white;margin:5px 0;font-weight:900}.featured-service-grade{font-weight:900;color:#ffe08a!important;font-size:17px!important;margin:3px 0 12px!important}.featured-service-card p{font-size:15px;line-height:1.9;color:#eef3ff;margin:0 0 12px}.featured-service-price{font-size:19px;font-weight:900;color:#fff0b2;margin:0 0 14px}.featured-service-action{display:block;margin-top:auto;padding:15px 12px;border-radius:13px;background:#ffdb65;color:#14233e!important;text-align:center;font-size:19px;font-weight:900;text-decoration:none;box-shadow:0 6px 0 #bd9036;transition:transform .2s,filter .2s}.featured-service-action:hover{transform:translateY(-3px);filter:brightness(1.07)}.featured-service-more{display:block;text-align:center;color:#fff!important;margin-top:17px;font-weight:800;text-underline-offset:5px}.featured-services-note{font-size:12px;color:#d7e1f1;text-align:center;margin:18px 0 0}
+@media(max-width:700px){.featured-services{padding:16px 12px}.featured-services-grid{grid-template-columns:1fr}.featured-service-card{padding:20px}.featured-service-action{font-size:17px}}
+
+/* Three clear store entry categories */
+.store-entry{margin-top:14px;padding:clamp(18px,3vw,34px)}
+.store-entry .featured-services-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.store-entry .featured-service-card{min-height:330px}
+.store-entry .featured-service-card h2{font-size:clamp(23px,2.6vw,31px);font-weight:900;color:#fff;margin:8px 0}
+.store-entry .featured-books{background:linear-gradient(155deg,#12675e,#0b263b);border-color:#5ce3b2}
+.store-entry .featured-service-action{width:100%;border:0;cursor:pointer;font-family:inherit;line-height:1.5}
+.store-entry .featured-services-heading h1{font-size:clamp(29px,4vw,44px);color:white;margin:10px 0}
+@media(max-width:950px){.store-entry .featured-services-grid{grid-template-columns:1fr}.store-entry .featured-service-card{min-height:0}}
+
+/* خدمات زاد المعرفة داخل المتجر */
+.featured-service-card .featured-service-action{width:100%;display:block;text-align:center;cursor:pointer;border:0;margin-top:12px;font-weight:800}.featured-service-card .service-checkout{background:#fff;color:#102849;border:2px solid #d9af47}.featured-service-card .service-checkout:hover{background:#f8e9bd}

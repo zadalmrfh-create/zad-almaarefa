@@ -533,7 +533,8 @@ service cloud.firestore {
         request.auth.uid + '_english',
         request.auth.uid + '_novel',
         request.auth.uid + '_chemistry',
-        request.auth.uid + '_chemistry-calculations-unit1-2026'
+        request.auth.uid + '_chemistry-calculations-unit1-2026',
+        request.auth.uid + '_badi-2bac-2026'
       ];
     }
 
@@ -550,10 +551,11 @@ service cloud.firestore {
         && request.resource.data.studentUid == request.auth.uid
         && request.resource.data.studentName is string
         && request.resource.data.studentName.size() <= 150
+        && (request.resource.data.examId != 'badi-2bac-2026' || request.resource.data.studentName.size() >= 3)
         && request.resource.data.examId in [
           'business','history','arabic','literature','physics',
           'math','english','novel','chemistry',
-          'chemistry-calculations-unit1-2026'
+          'chemistry-calculations-unit1-2026','badi-2bac-2026'
         ]
         && request.resource.data.answers is list
         && request.resource.data.answers.size() == 30
@@ -638,6 +640,8 @@ service cloud.firestore {
         && request.resource.data.productIds is list
         && request.resource.data.productIds.size() >= 1
         && request.resource.data.productIds.size() <= 40
+        // Do not allow billing for free interactive electronic examinations.
+        && !request.resource.data.productIds.hasAny(['lib-101', 'lib-102'])
         && request.resource.data.paymentMethod in ['vodafone-cash','instapay']
         && request.resource.data.senderPhone is string
         && request.resource.data.senderPhone.matches('^01[0-9]{9}$')

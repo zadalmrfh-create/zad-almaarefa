@@ -3,11 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>متجر زاد المعرفة | الملخصات والامتحانات والكتب</title>
+  <title>متجر زاد المعرفة | كيرو والثقافة المالية والكتب والملخصات</title>
   <link rel="icon" href="../images/logo.png">
-  <link rel="stylesheet" href="app.css?v=20261103-compact5">
+  <link rel="stylesheet" href="app.css?v=20261104-three-services">
 </head>
-<body>
+<body class="store-auth-pending">
+  <div id="storeAuthGate" role="status" aria-live="polite" style="min-height:100vh;display:grid;place-items:center;background:#08162a;color:white;text-align:center;padding:24px;font-family:system-ui,sans-serif"><div><h1>🔐 متجر زاد المعرفة</h1><p>جارِ التحقق من تسجيل الدخول...</p><p id="storeAuthGateMessage"></p><a href="../login/index.html" style="color:#f4c66b">تسجيل الدخول</a></div></div>
+  <style>body.store-auth-pending .shell,body.store-auth-pending #toast{display:none!important}body:not(.store-auth-pending) #storeAuthGate{display:none!important}</style>
   <div class="shell">
     <header class="topbar">
       <a class="brand" href="./">
@@ -19,7 +21,6 @@
       </a>
       <nav class="nav">
         <button data-view="home" class="active">الرئيسية</button>
-        <button data-view="catalog">المنتجات</button>
         <button data-view="mine">مشترياتي وطلباتي</button>
         <a href="admin.html" id="adminLink" class="hidden">إدارة المتجر</a>
         <a href="../index.html">الأكاديمية</a>
@@ -36,19 +37,36 @@
 
     <main>
       <section id="view-home">
-        <div class="hero">
-          <div>
-            <span class="gold">بنفس هوية زاد المعرفة</span>
-            <h1>كل كتب ومذكرات وامتحانات المكتبة في متجر واحد</h1>
-            <p>تم تنظيم محتوى المكتبة داخل المتجر تلقائيًا، مع تسعير موحّد وواضح: كل ملخص 15 جنيه، كل امتحان 15 جنيه، كل تقييم 10 جنيه، وكل كتاب 50 جنيه. الدفع يدوي ويُفعّل المنتج بعد مراجعة الإدارة.</p>
-            <div class="hero-actions">
-              <button class="primary" data-go="catalog">تصفح المنتجات ←</button>
-              <button class="secondary" data-go="mine">طلباتي ومشترياتي</button>
-            </div>
+        <section class="featured-services store-entry" aria-labelledby="featured-services-title">
+          <div class="featured-services-heading">
+            <span class="featured-services-eyebrow">✨ متجر زاد المعرفة التعليمي</span>
+            <h1 id="featured-services-title">اختار الخدمة اللي محتاجها</h1>
+            <p>3 أقسام رئيسية — اختار القسم وابدأ بسهولة</p>
           </div>
-          <div class="hero-icon">🛍️</div>
-        </div>
-
+          <div class="featured-services-grid">
+            <article class="featured-service-card featured-kero">
+              <span class="featured-service-tag">💻 أولى وتانية ثانوي</span>
+              <div class="featured-service-icon">💻</div><h2>كيرو QUREO</h2>
+              <p>خدمة تعليمية مساعدة لطلاب أولى وتانية ثانوي. اطلبها من متجر زاد المعرفة مباشرة.</p>
+              <div class="featured-service-price">150 جنيه للخدمة الكاملة</div><button class="featured-service-action" data-add="zad-service-qureo" type="button">🛒 أضف كيرو للسلة</button><button class="featured-service-action service-checkout" data-order-service="zad-service-qureo" type="button">إتمام طلب كيرو ←</button>
+            </article>
+            <article class="featured-service-card featured-finance">
+              <span class="featured-service-tag">📊 تانية ثانوي</span>
+              <div class="featured-service-icon">📊</div><h2>الثقافة المالية</h2>
+              <p>مساعدة تعليمية في الثقافة المالية لطلاب تانية ثانوي، والطلب من نفس السلة.</p>
+              <div class="featured-service-price">100 جنيه للمادة كاملة</div>
+              <button class="featured-service-action" data-add="zad-service-finance" type="button">🛒 أضف الثقافة المالية للسلة</button><button class="featured-service-action service-checkout" data-order-service="zad-service-finance" type="button">إتمام طلب الثقافة المالية ←</button>
+            </article>
+            <article class="featured-service-card featured-books">
+              <span class="featured-service-tag">📚 مكتبة زاد المعرفة</span>
+              <div class="featured-service-icon">📚</div><h2>الكتب والملخصات</h2>
+              <p>تصفح الكتب والملخصات والامتحانات والتقييمات والمنتجات التعليمية.</p>
+              <button class="featured-service-action" data-go="catalog" type="button">تصفح الكتب والملخصات ←</button>
+            </article>
+          </div>
+          <p class="featured-services-note">الخدمات مستقلة عن المنصات التعليمية الرسمية. لا تشارك كلمات المرور أو رموز التحقق.</p>
+        </section>
+        <div class="store-home-extras" hidden>
         <div class="stats-strip">
           <div class="stat"><span class="muted">سعر الملخص</span><strong>15 ج.م</strong></div>
           <div class="stat"><span class="muted">سعر الامتحان</span><strong>15 ج.م</strong></div>
@@ -75,6 +93,7 @@
 
         <h2>أحدث المنتجات المتاحة</h2>
         <div class="grid" id="homeProducts"></div>
+        </div>
       </section>
 
       <section class="hidden" id="view-catalog">
@@ -155,6 +174,6 @@
   </div>
 
   <div id="toast" role="status"></div>
-  <script type="module" src="shop.js?v=20261103-seven-files-v2"></script>
+  <script type="module" src="shop.js?v=20261104-free-exams"></script>
 </body>
 </html>
