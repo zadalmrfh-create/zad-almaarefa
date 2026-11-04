@@ -47,6 +47,11 @@ service cloud.firestore {
         && getUser(request.auth.uid).data.status == 'active';
     }
 
+    match /manualPaymentLedger/{paymentId} {
+      allow read, create, update: if isAdmin();
+      allow delete: if false;
+    }
+
     match /users/{uid} {
       allow create: if isOwner(uid)
         && request.resource.data.uid == request.auth.uid

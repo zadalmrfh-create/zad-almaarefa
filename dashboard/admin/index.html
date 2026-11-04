@@ -221,6 +221,7 @@ onAuthStateChanged(auth, async (user) => {
       <div class="admin-quick-nav">
         <a class="admin-quick-link" href="#platformAnalytics"><span>📊</span><strong>الإحصائيات</strong><small>أرقام المنصة</small></a>
         <a class="admin-quick-link" href="#usersManagement"><span>👥</span><strong>المستخدمون</strong><small>إدارة الحسابات</small></a>
+        <a class="admin-quick-link" href="#manualPaymentLedger"><span>💰</span><strong>المدفوعات اليدوية</strong><small>حصص وخدمات ومقدم</small></a>
         <a class="admin-quick-link" href="#bookingsManagement"><span>📅</span><strong>الحجوزات</strong><small>طلبات وتقارير</small></a>
         <a class="admin-quick-link" href="#codeExamsManagement"><span>🧑‍💻</span><strong>امتحانات بالكود</strong><small>إضافة ونشر</small></a>
         <a class="admin-quick-link" href="#codeExamResultsSection"><span>📘</span><strong>نتائج الامتحانات</strong><small>درجات وتقارير</small></a>
@@ -231,6 +232,26 @@ onAuthStateChanged(auth, async (user) => {
         <a class="admin-quick-link" href="#contentManagement"><span>⚙️</span><strong>المحتوى</strong><small>إدارة محتوى المنصة</small></a>
       </div>
     </section>
+
+
+<section class="card" id="manualPaymentLedger" dir="rtl">
+<h2>💰 سجل المدفوعات اليدوية</h2><p>سجل دفعة حتى لو الطالب لم يرسل طلب دفع. السجل مستقل عن اعتماد تحويلات فودافون ولا يخصم تلقائيًا من المستحقات، لمنع احتساب المبلغ مرتين.</p>
+<form id="manualLedgerForm" class="admin-form">
+<div class="manual-ledger-grid">
+<label>اسم الطالب<input id="mlStudent" required placeholder="اسم الطالب"></label>
+<label>حساب الطالب (اختياري)<select id="mlUser"><option value="">طالب غير مرتبط بحساب</option></select></label>
+<label>البند<select id="mlCategory"><option value="lesson">حصة تعليمية</option><option value="qureo">كيرو</option><option value="finance">الثقافة المالية</option><option value="library">اشتراك المكتبة</option><option value="product">منتج من المتجر</option><option value="advance">رصيد مقدم غير مخصص</option></select></label>
+<label>اختيار الحصة أو المنتج<select id="mlItem"><option value="">اختر البند</option></select></label>
+<label>المبلغ بالجنيه<input id="mlAmount" type="number" min="0.01" step="0.01" required></label>
+<label>تاريخ الدفعة<input id="mlDate" type="date" required></label>
+<label>رقم مرجع التحويل (اختياري)<input id="mlReference"></label>
+<label>ملاحظات<input id="mlNotes"></label>
+</div><button class="btn gold" type="submit">💾 حفظ الدفعة</button><button class="btn" type="button" id="mlRefresh">تحديث القائمة</button>
+<p id="mlMessage" role="status"></p></form>
+<div style="overflow-x:auto"><table style="width:100%;margin-top:16px"><thead><tr><th>الطالب</th><th>البند</th><th>المبلغ</th><th>التاريخ</th><th>المرجع</th><th>إجراءات</th></tr></thead><tbody id="mlRows"><tr><td colspan="6">جارٍ التحميل…</td></tr></tbody></table></div>
+</section>
+<style>.manual-ledger-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin:15px 0}.manual-ledger-grid label{display:grid;gap:7px}.manual-ledger-grid input,.manual-ledger-grid select{width:100%;padding:10px;background:#101d32;color:white;border:1px solid #53647d;border-radius:9px}.ml-actions{display:flex;gap:6px;flex-wrap:wrap}</style>
+<script type="module" src="manual-payment-ledger.js"></script>
 
 <section class="card" id="codeExamsManagement" dir="rtl">
   <h2>🧑‍💻 امتحانات بالكود</h2>
