@@ -120,7 +120,7 @@ if(user){try{
    }
  }
  }
- }
+ 
 }catch(e){
  const hint=e?.code==='permission-denied'
    ? 'لا توجد صلاحية لقراءة محاولة الامتحان. انشر ملف firestore.rules المرفق من Firebase Console ← Firestore Database ← Rules، ثم أعد فتح الامتحان.'
