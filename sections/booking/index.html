@@ -192,26 +192,6 @@ body{margin:0;font-family:Cairo,Arial,sans-serif;background:linear-gradient(135d
       </form>
     </div>
   </main>
-  <script>
-  // Optional incoming section/subject from the academy's existing booking links.
-  window.addEventListener('DOMContentLoaded',()=>{
-    const params=new URLSearchParams(location.search);
-    const section=params.get('section'),subject=params.get('subject'),stage=params.get('stage');
-    const sectionInput=document.getElementById('bookingSection');
-    if(section && sectionInput && Array.from(sectionInput.options).some(o=>o.value===section)) {
-      sectionInput.value=section;
-      sectionInput.dispatchEvent(new Event('change',{bubbles:true}));
-    }
-    const subjectInput=document.querySelector('#bookingForm [name="subject"]');
-    if(subject && subjectInput) {
-      subjectInput.value=subject.slice(0,150);
-      subjectInput.dispatchEvent(new Event('input',{bubbles:true}));
-      subjectInput.dispatchEvent(new Event('change',{bubbles:true}));
-    }
-    const stageInput=document.querySelector('#bookingForm [name="stage"]');
-    if(stage && stageInput) stageInput.value=stage.slice(0,100);
-  });
-  </script>
   <script type="module" src="./booking.js"></script>
 </body>
 </html>

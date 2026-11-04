@@ -1,23 +1,311 @@
-/* أكاديمية المفسر المعاصر — المستوى الأول */
-const COURSES=[
-{id:'quran',icon:'📖',title:'القرآن الكريم',short:'حفظ سبعة أجزاء ونصف بالتجويد مع دراسة تحفة الأطفال.',intro:'حفظ سبعة أجزاء ونصف من القرآن الكريم مع العناية بتطبيق أحكام التجويد.',topics:['حفظ سبعة أجزاء ونصف من القرآن الكريم.','التلاوة الصحيحة والتسميع المنتظم.','دراسة متن تحفة الأطفال وتطبيق أحكام التجويد أثناء التلاوة.'],books:['تحفة الأطفال'],booking:'القرآن الكريم والتجويد'},
-{id:'tafsir',icon:'🔎',title:'التفسير',short:'تفسير سبعة أجزاء ونصف من القرآن الكريم.',intro:'دراسة تفسير سبعة أجزاء ونصف من القرآن الكريم باستخدام المختصر في التفسير.',topics:['دراسة معاني آيات سبعة أجزاء ونصف.','فهم المفردات والمعنى الإجمالي للآيات.','المراجعة والمناقشة والتطبيق.'],books:['المختصر في التفسير'],booking:'التفسير'},
-{id:'quran-sciences',icon:'📚',title:'علوم القرآن',short:'دراسة كتاب الميسر في علوم القرآن.',intro:'مدخل منظم إلى مباحث علوم القرآن عبر الكتاب المقرر.',topics:['قراءة مباحث الكتاب المقرر.','المفاهيم الأساسية في علوم القرآن.','مراجعات قصيرة على موضوعات المادة.'],books:['الميسر في علوم القرآن'],booking:'علوم القرآن'},
-{id:'arabic',icon:'✍️',title:'اللغة العربية',short:'النحو الكافي وحفظ مختارات من الأشعار والنصوص الأدبية.',intro:'دراسة قواعد اللغة العربية عبر النحو الكافي مع عناية بالنصوص والحفظ.',topics:['دراسة كتاب النحو الكافي.','التطبيق على الأمثلة والقواعد النحوية.','حفظ بعض الأشعار والنصوص الأدبية.'],books:['النحو الكافي'],booking:'اللغة العربية'},
-{id:'shafii',icon:'⚖️',title:'الفقه الشافعي',short:'قسم العبادات من كتاب الفقه المنهجي.',intro:'دراسة أحكام العبادات وفق المذهب الشافعي من المرجع المقرر.',topics:['دراسة قسم العبادات من الفقه المنهجي.','فهم المصطلحات والمسائل الفقهية في حدود المقرر.','تدريبات ومراجعات على الأبواب المدروسة.'],books:['الفقه المنهجي'],booking:'الفقه الشافعي'},
-{id:'seerah',icon:'🕌',title:'السيرة النبوية',short:'المرحلة المكية من المختصر في السيرة النبوية.',intro:'دراسة أحداث السيرة النبوية خلال المرحلة المكية.',topics:['مراحل الدعوة في مكة المكرمة.','أبرز أحداث المرحلة المكية.','الدروس المستفادة من السيرة النبوية.'],books:['المختصر في السيرة النبوية'],booking:'السيرة النبوية'},
-{id:'tazkiya',icon:'🌱',title:'التربية والتزكية',short:'بداية الهداية ومختصر التبيان في آداب حملة القرآن.',intro:'التربية الإيمانية والسلوكية وآداب طلب العلم وحمل القرآن.',topics:['دراسة بداية الهداية للإمام الغزالي.','دراسة مختصر التبيان في آداب حملة القرآن.','تطبيقات تربوية مستمدة من المقررات.'],books:['بداية الهداية للإمام الغزالي','مختصر التبيان في آداب حملة القرآن'],booking:'التربية والتزكية'},
-{id:'life',icon:'🧠',title:'التنمية الذاتية والمهارات الحياتية',short:'أربع محاضرات في مهارات الحياة والعمل الجماعي.',intro:'محاضرات لتنمية المهارات الشخصية والاجتماعية والتنظيمية.',topics:['محاضرة عن إدارة الوقت.','محاضرة عن تحديد الأهداف.','محاضرة عن التواصل الفعّال.','محاضرة عن فن القيادة وإدارة فرق العمل.'],books:[],booking:'التنمية الذاتية والمهارات الحياتية'}
-];
-const $=id=>document.getElementById(id);
-const BOOK_URLS=Object.freeze({}); // لا يوجد رابط مؤكد لهذه الكتب في النسخة الحالية؛ لا تضع روابط مفترضة.
-let noticeTimer;
-function note(message){const n=$('notice');n.textContent=message;n.style.display='block';clearTimeout(noticeTimer);noticeTimer=setTimeout(()=>n.style.display='none',5200)}
-function bookingLink(course){const p=new URLSearchParams({section:'العلوم الشرعية',stage:'المستوى الأول',subject:course.booking});return '../booking/index.html?'+p.toString()}
-function downloadButton(book){const url=BOOK_URLS[book];if(url&&/^https:\/\//.test(url)){const a=document.createElement('a');a.className='btn secondary';a.textContent='تحميل الكتاب';a.href=url;a.target='_blank';a.rel='noopener noreferrer';return a}const b=document.createElement('button');b.type='button';b.className='btn secondary disabled';b.textContent='تحميل الكتاب';b.setAttribute('aria-label','تحميل '+book+' — رابط غير متاح');b.addEventListener('click',()=>note('رابط «'+book+'» لم يُضف بعد. سيُفعّل التحميل عند توفير نسخة معتمدة.'));return b}
-function renderLevels(){const grid=$('levelsGrid');grid.textContent='';['الأول','الثاني','الثالث','الرابع'].forEach((name,i)=>{const c=document.createElement('article');c.className='level-card'+(i?' pending':'');const num=document.createElement('span');num.className='level-number';num.textContent='0'+(i+1);const h=document.createElement('h3');h.textContent='المستوى '+name;const p=document.createElement('p');p.textContent=i?'المقررات قيد المراجعة، وسيتم الإعلان عنها بعد اعتمادها.':'8 مواد تشمل القرآن والتفسير والعلوم الشرعية والمهارات الحياتية.';const b=document.createElement('button');b.type='button';b.className='btn '+(i?'secondary':'gold');b.textContent=i?'تحت المراجعة':'عرض مواد المستوى';if(i){b.disabled=true}else b.addEventListener('click',showSubjects);c.append(num,h,p,b);grid.append(c)})}
-function renderSubjects(){const grid=$('subjectsGrid');grid.textContent='';COURSES.forEach(course=>{const c=document.createElement('article');c.className='subject-card';const icon=document.createElement('span');icon.className='subject-icon';icon.textContent=course.icon;const h=document.createElement('h3');h.textContent=course.title;const p=document.createElement('p');p.textContent=course.short;const caption=document.createElement('div');caption.className='book-caption';caption.textContent=course.books.length?'المقرر: '+course.books.join('، '):'المقرر: سلسلة محاضرات';const actions=document.createElement('div');actions.className='subject-actions';const read=document.createElement('button');read.type='button';read.className='btn gold';read.textContent='قراءة المزيد';read.addEventListener('click',()=>showDetail(course.id));actions.append(read);if(course.books.length===1){actions.append(downloadButton(course.books[0]))}else if(course.books.length>1){const b=document.createElement('button');b.className='btn secondary';b.textContent='الكتب المقررة';b.addEventListener('click',()=>showDetail(course.id));actions.append(b)}const book=document.createElement('a');book.href=bookingLink(course);book.className='btn secondary';book.textContent='حجز حصة';book.style.width='100%';c.append(icon,h,p,caption,actions,book);grid.append(c)})}
-function showSubjects(){history.replaceState(null,'','#subjects');$('subjects').classList.remove('is-hidden');$('detail').classList.add('is-hidden');$('subjects').scrollIntoView({behavior:'smooth',block:'start'})}
-function showDetail(id){const c=COURSES.find(x=>x.id===id);if(!c)return;$('subjects').classList.add('is-hidden');$('detail').classList.remove('is-hidden');$('detailIcon').textContent=c.icon;$('detailTitle').textContent=c.title;$('detailIntro').textContent=c.intro;$('detailTopics').replaceChildren();c.topics.forEach(t=>{const li=document.createElement('li');li.textContent=t;$('detailTopics').append(li)});const books=$('detailBooks');books.replaceChildren();if(c.books.length){c.books.forEach(book=>{const item=document.createElement('div');item.className='book-entry';const label=document.createElement('div');const strong=document.createElement('strong');strong.textContent=book;const small=document.createElement('small');small.textContent=BOOK_URLS[book]?'نسخة متاحة للتحميل':'رابط التحميل قيد الإضافة';label.append(strong,small);item.append(label,downloadButton(book));books.append(item)})}else{books.textContent='المادة قائمة على المحاضرات، ولم يُحدَّد كتاب مقرر لها.'}$('detailBooking').href=bookingLink(c);history.replaceState(null,'','#subject-'+id);$('detail').scrollIntoView({behavior:'smooth',block:'start'})}
-$('startBtn').addEventListener('click',()=>$('levels').scrollIntoView({behavior:'smooth'}));$('backLevels').addEventListener('click',()=>{$('subjects').classList.add('is-hidden');$('detail').classList.add('is-hidden');history.replaceState(null,'','#levels');$('levels').scrollIntoView({behavior:'smooth'})});$('backSubjects').addEventListener('click',showSubjects);
-renderLevels();renderSubjects();const initial=decodeURIComponent(location.hash.slice(1));if(initial.startsWith('subject-')) showDetail(initial.slice(8));else if(initial==='subjects')showSubjects();
+/* العلوم الشرعية — محتوى الدروس */
+const QURAN_DATA = {
+  s1: {
+    title:"التفسير",description:`<h3>📖 نبذة عن القسم</h3><p>مقدمة منظمة لفهم معاني الآيات ومفاتيح التفسير، مع أمثلة وتدريبات على استخراج المعاني العامة.</p><p><strong>المسار:</strong> 6 دروس مرتبة، وكل درس يحتوي على شرح وتدريب ومراجعة.</p>`,lessons:[{name:"ما هو علم التفسير؟",fileType:"درس",meta:"شرح + أمثلة + تدريبات",source:"زاد المعرفة",downloadUrl:"../Arabic/lesson.html?section=sharia&lesson=s1-1"},{name:"مصادر التفسير بصورة مبسطة",fileType:"درس",meta:"شرح + أمثلة + تدريبات",source:"زاد المعرفة",downloadUrl:"../Arabic/lesson.html?section=sharia&lesson=s1-2"},{name:"مكي ومدني",fileType:"درس",meta:"شرح + أمثلة + تدريبات",source:"زاد المعرفة",downloadUrl:"../Arabic/lesson.html?section=sharia&lesson=s1-3"},{name:"أسباب النزول",fileType:"درس",meta:"شرح + أمثلة + تدريبات",source:"زاد المعرفة",downloadUrl:"../Arabic/lesson.html?section=sharia&lesson=s1-4"},{name:"المحكم والمتشابه",fileType:"درس",meta:"شرح + أمثلة + تدريبات",source:"زاد المعرفة",downloadUrl:"../Arabic/lesson.html?section=sharia&lesson=s1-5"},{name:"تدبر الآيات واستخراج الفوائد",fileType:"درس",meta:"شرح + أمثلة + تدريبات",source:"زاد المعرفة",downloadUrl:"../Arabic/lesson.html?section=sharia&lesson=s1-6"}]
+  },
+  s2: {
+    title:"الحديث",description:`<h3>📜 نبذة عن القسم</h3><p>دروس تمهيدية في الحديث النبوي: معنى الحديث، أقسامه بصورة مبسطة، وكيف نفهم الحديث ونستفيد منه.</p><p><strong>المسار:</strong> 6 دروس مرتبة، وكل درس يحتوي على شرح وتدريب ومراجعة.</p>`,lessons:[{name:"ما هو الحديث النبوي؟",fileType:"درس",meta:"شرح + أمثلة + تدريبات",source:"زاد المعرفة",downloadUrl:"../Arabic/lesson.html?section=sharia&lesson=s2-1"},{name:"السنة وأقسامها",fileType:"درس",meta:"شرح + أمثلة + تدريبات",source:"زاد المعرفة",downloadUrl:"../Arabic/lesson.html?section=sharia&lesson=s2-2"},{name:"الحديث الصحيح بصورة مبسطة",fileType:"درس",meta:"شرح + أمثلة + تدريبات",source:"زاد المعرفة",downloadUrl:"../Arabic/lesson.html?section=sharia&lesson=s2-3"},{name:"آداب طالب الحديث",fileType:"درس",meta:"شرح + أمثلة + تدريبات",source:"زاد المعرفة",downloadUrl:"../Arabic/lesson.html?section=sharia&lesson=s2-4"},{name:"كيف نفهم الحديث؟",fileType:"درس",meta:"شرح + أمثلة + تدريبات",source:"زاد المعرفة",downloadUrl:"../Arabic/lesson.html?section=sharia&lesson=s2-5"},{name:"تطبيقات وأسئلة مراجعة",fileType:"درس",meta:"شرح + أمثلة + تدريبات",source:"زاد المعرفة",downloadUrl:"../Arabic/lesson.html?section=sharia&lesson=s2-6"}]
+  },
+  s3: {
+    title:"التوحيد",description:`<h3>☝️ نبذة عن القسم</h3><p>دروس تأسيسية في توحيد الله والإيمان وأصول العقيدة، بلغة تعليمية واضحة ومناسبة للطالب.</p><p><strong>المسار:</strong> 6 دروس مرتبة، وكل درس يحتوي على شرح وتدريب ومراجعة.</p>`,lessons:[{name:"معنى التوحيد",fileType:"درس",meta:"شرح + أمثلة + تدريبات",source:"زاد المعرفة",downloadUrl:"../Arabic/lesson.html?section=sharia&lesson=s3-1"},{name:"توحيد الربوبية",fileType:"درس",meta:"شرح + أمثلة + تدريبات",source:"زاد المعرفة",downloadUrl:"../Arabic/lesson.html?section=sharia&lesson=s3-2"},{name:"توحيد الألوهية",fileType:"درس",meta:"شرح + أمثلة + تدريبات",source:"زاد المعرفة",downloadUrl:"../Arabic/lesson.html?section=sharia&lesson=s3-3"},{name:"أسماء الله وصفاته",fileType:"درس",meta:"شرح + أمثلة + تدريبات",source:"زاد المعرفة",downloadUrl:"../Arabic/lesson.html?section=sharia&lesson=s3-4"},{name:"الإيمان وأركانه",fileType:"درس",meta:"شرح + أمثلة + تدريبات",source:"زاد المعرفة",downloadUrl:"../Arabic/lesson.html?section=sharia&lesson=s3-5"},{name:"مراجعة شاملة في العقيدة",fileType:"درس",meta:"شرح + أمثلة + تدريبات",source:"زاد المعرفة",downloadUrl:"../Arabic/lesson.html?section=sharia&lesson=s3-6"}]
+  },
+  s4: {
+    title:"السيرة",description:`<h3>🕌 نبذة عن القسم</h3><p>محطات مرتبة من حياة النبي ﷺ، مع دروس مستفادة وأسئلة مراجعة بعد كل موضوع.</p><p><strong>المسار:</strong> 6 دروس مرتبة، وكل درس يحتوي على شرح وتدريب ومراجعة.</p>`,lessons:[{name:"نسب النبي ﷺ ونشأته",fileType:"درس",meta:"شرح + أمثلة + تدريبات",source:"زاد المعرفة",downloadUrl:"../Arabic/lesson.html?section=sharia&lesson=s4-1"},{name:"بداية الوحي",fileType:"درس",meta:"شرح + أمثلة + تدريبات",source:"زاد المعرفة",downloadUrl:"../Arabic/lesson.html?section=sharia&lesson=s4-2"},{name:"الدعوة في مكة",fileType:"درس",meta:"شرح + أمثلة + تدريبات",source:"زاد المعرفة",downloadUrl:"../Arabic/lesson.html?section=sharia&lesson=s4-3"},{name:"الهجرة إلى المدينة",fileType:"درس",meta:"شرح + أمثلة + تدريبات",source:"زاد المعرفة",downloadUrl:"../Arabic/lesson.html?section=sharia&lesson=s4-4"},{name:"بناء المجتمع في المدينة",fileType:"درس",meta:"شرح + أمثلة + تدريبات",source:"زاد المعرفة",downloadUrl:"../Arabic/lesson.html?section=sharia&lesson=s4-5"},{name:"دروس وعبر من السيرة",fileType:"درس",meta:"شرح + أمثلة + تدريبات",source:"زاد المعرفة",downloadUrl:"../Arabic/lesson.html?section=sharia&lesson=s4-6"}]
+  },
+  s5: {
+    title:"فقه شافعي",description:`<h3>⚖️ نبذة عن القسم</h3><p>دروس تمهيدية في الفقه الشافعي، مع التنبيه إلى أن التفاصيل الفقهية تُدرس وفق الكتاب المقرر للطالب.</p><p><strong>المسار:</strong> 6 دروس مرتبة، وكل درس يحتوي على شرح وتدريب ومراجعة.</p>`,lessons:[{name:"ما هو الفقه؟",fileType:"درس",meta:"شرح + أمثلة + تدريبات",source:"زاد المعرفة",downloadUrl:"../Arabic/lesson.html?section=sharia&lesson=s5-1"},{name:"أهمية الطهارة",fileType:"درس",meta:"شرح + أمثلة + تدريبات",source:"زاد المعرفة",downloadUrl:"../Arabic/lesson.html?section=sharia&lesson=s5-2"},{name:"الوضوء وأحكامه الأساسية",fileType:"درس",meta:"شرح + أمثلة + تدريبات",source:"زاد المعرفة",downloadUrl:"../Arabic/lesson.html?section=sharia&lesson=s5-3"},{name:"الصلاة وأهميتها",fileType:"درس",meta:"شرح + أمثلة + تدريبات",source:"زاد المعرفة",downloadUrl:"../Arabic/lesson.html?section=sharia&lesson=s5-4"},{name:"مقدمة في الصيام",fileType:"درس",meta:"شرح + أمثلة + تدريبات",source:"زاد المعرفة",downloadUrl:"../Arabic/lesson.html?section=sharia&lesson=s5-5"},{name:"مراجعة فقهية تمهيدية",fileType:"درس",meta:"شرح + أمثلة + تدريبات",source:"زاد المعرفة",downloadUrl:"../Arabic/lesson.html?section=sharia&lesson=s5-6"}]
+  },
+  s6: {
+    title:"فقه حنفي",description:`<h3>⚖️ نبذة عن القسم</h3><p>دروس تمهيدية في الفقه الحنفي، مع التنبيه إلى أن التفاصيل الفقهية تُدرس وفق الكتاب المقرر للطالب.</p><p><strong>المسار:</strong> 6 دروس مرتبة، وكل درس يحتوي على شرح وتدريب ومراجعة.</p>`,lessons:[{name:"ما هو الفقه؟",fileType:"درس",meta:"شرح + أمثلة + تدريبات",source:"زاد المعرفة",downloadUrl:"../Arabic/lesson.html?section=sharia&lesson=s6-1"},{name:"أهمية الطهارة",fileType:"درس",meta:"شرح + أمثلة + تدريبات",source:"زاد المعرفة",downloadUrl:"../Arabic/lesson.html?section=sharia&lesson=s6-2"},{name:"الوضوء وأحكامه الأساسية",fileType:"درس",meta:"شرح + أمثلة + تدريبات",source:"زاد المعرفة",downloadUrl:"../Arabic/lesson.html?section=sharia&lesson=s6-3"},{name:"الصلاة وأهميتها",fileType:"درس",meta:"شرح + أمثلة + تدريبات",source:"زاد المعرفة",downloadUrl:"../Arabic/lesson.html?section=sharia&lesson=s6-4"},{name:"مقدمة في الصيام",fileType:"درس",meta:"شرح + أمثلة + تدريبات",source:"زاد المعرفة",downloadUrl:"../Arabic/lesson.html?section=sharia&lesson=s6-5"},{name:"مراجعة فقهية تمهيدية",fileType:"درس",meta:"شرح + أمثلة + تدريبات",source:"زاد المعرفة",downloadUrl:"../Arabic/lesson.html?section=sharia&lesson=s6-6"}]
+  }
+};
+
+/* =========================================================
+   QURAN SECTION PAGE — BEHAVIOR
+   1) Accordion
+   2) CTA Scroll
+   3) Flow: Sections → Lessons
+   4) Search
+   5) Filters
+========================================================= */
+
+/* ---------------------------------------------------------
+   1) ACCORDION
+--------------------------------------------------------- */
+
+// افتح جميع العناصر عند تحميل الصفحة
+document.querySelectorAll(".acc-item").forEach(function (item) {
+  item.classList.add("open");
+});
+
+// فتح وغلق كل عنصر بشكل مستقل
+document.querySelectorAll(".acc-trigger").forEach(function (trigger) {
+  trigger.addEventListener("click", function () {
+    const item = trigger.closest(".acc-item");
+    item.classList.toggle("open");
+  });
+});
+
+/* ---------------------------------------------------------
+   2) CTA SCROLL
+--------------------------------------------------------- */
+
+document.getElementById("ctaStart").addEventListener("click", function () {
+  document.getElementById("flowSection").scrollIntoView({ behavior: "smooth" });
+});
+
+/* ---------------------------------------------------------
+   3) FLOW
+--------------------------------------------------------- */
+
+const stepStage = document.getElementById("stepStage");
+const stepLessons = document.getElementById("stepLessons");
+
+const lessonsGrid = document.getElementById("lessonsGrid");
+const emptyState = document.getElementById("emptyState");
+
+const searchInput = document.getElementById("searchInput");
+const noResults = document.getElementById("noResults");
+
+const lessonsLabel = document.getElementById("lessonsLabel");
+const sectionDescription = document.getElementById("sectionDescription");
+
+const filterBar = document.getElementById("filterBar");
+
+let currentFilter = "all";
+
+/* ---------- Show Step ---------- */
+
+function showStep(step) {
+  [stepStage, stepLessons].forEach(function (el) {
+    el.classList.add("is-hidden");
+  });
+
+  step.classList.remove("is-hidden");
+
+  step.scrollIntoView({
+    behavior: "smooth",
+    block: "start",
+  });
+}
+
+/* ---------- Open Section ---------- */
+
+document.querySelectorAll(".stage-row").forEach(function (row) {
+  row.addEventListener("click", function () {
+    openLessonsStep(row.dataset.stage);
+  });
+});
+
+function openLessonsStep(sectionKey) {
+  const section = QURAN_DATA[sectionKey];
+
+  lessonsLabel.textContent = section.title;
+
+  // وصف القسم
+  sectionDescription.innerHTML = section.description || "";
+
+  lessonsGrid.innerHTML = "";
+
+  emptyState.classList.add("is-hidden");
+  noResults.classList.add("is-hidden");
+
+  if (section.lessons.length === 0) {
+    emptyState.classList.remove("is-hidden");
+    filterBar.innerHTML = "";
+  }
+
+  currentFilter = "all";
+
+  function renderLessons() {
+    const term = searchInput.value.trim().toLowerCase();
+
+    const filtered = section.lessons.filter(function (lesson) {
+      const matchesSearch = lesson.name.toLowerCase().includes(term);
+
+      const matchesFilter =
+        currentFilter === "all" ||
+        normalizeType(lesson.fileType) === currentFilter;
+
+      return matchesSearch && matchesFilter;
+    });
+
+    lessonsGrid.innerHTML = "";
+
+    noResults.classList.toggle("is-hidden", filtered.length > 0);
+
+    filtered.forEach(function (lesson) {
+      lessonsGrid.appendChild(buildLessonCard(lesson));
+    });
+  }
+
+  createFilters(section, renderLessons);
+
+  searchInput.value = "";
+  searchInput.oninput = renderLessons;
+
+  renderLessons();
+
+  showStep(stepLessons);
+}
+
+/* ---------------------------------------------------------
+   FILTERS
+--------------------------------------------------------- */
+
+function normalizeType(type) {
+  const t = String(type).toLowerCase();
+
+  if (t === "pdf") return "pdf";
+
+  if (t === "mp3" || t === "audio") {
+    return "audio";
+  }
+
+  if (t === "mp4" || t === "video") {
+    return "video";
+  }
+
+  if (t === "jpg" || t === "jpeg" || t === "png" || t === "image") {
+    return "image";
+  }
+
+  if (t === "exam") {
+    return "exam";
+  }
+
+  if (t === "book") {
+    return "book";
+  }
+
+  return t;
+}
+
+function getFilterLabel(type) {
+  const labels = {
+    all: "✨ الكل",
+    pdf: "📄 PDF",
+    image: "🖼 صور",
+    video: "🎥 فيديوهات",
+    audio: "🎵 صوت",
+    exam: "📝 اختبار",
+    book: "📚 كتب",
+  };
+
+  return labels[type] || type;
+}
+
+function createFilters(section, renderCallback) {
+  filterBar.innerHTML = "";
+
+  const types = [
+    ...new Set(
+      section.lessons.map(function (lesson) {
+        return normalizeType(lesson.fileType);
+      }),
+    ),
+  ];
+
+  const filters = ["all", ...types];
+
+  filters.forEach(function (type) {
+    const btn = document.createElement("button");
+
+    btn.className = "filter-btn" + (type === "all" ? " active" : "");
+
+    btn.textContent = getFilterLabel(type);
+
+    btn.addEventListener("click", function () {
+      document.querySelectorAll(".filter-btn").forEach(function (b) {
+        b.classList.remove("active");
+      });
+
+      btn.classList.add("active");
+
+      currentFilter = type;
+
+      renderCallback();
+    });
+
+    filterBar.appendChild(btn);
+  });
+}
+
+/* ---------------------------------------------------------
+   Lesson Card
+--------------------------------------------------------- */
+
+function buildLessonCard(lesson) {
+  const wrapper = document.createElement("div");
+
+  wrapper.className = "lesson-card-wrapper";
+
+  let actionLabel = "فتح الملف";
+
+  switch (lesson.fileType.toLowerCase()) {
+    case "pdf":
+      actionLabel = "⬇ تحميل الدرس";
+      break;
+
+    case "mp4":
+    case "video":
+      actionLabel = "▶ مشاهدة الفيديو";
+      break;
+
+    case "jpg":
+    case "png":
+    case "image":
+      actionLabel = "🖼 فتح الصورة";
+      break;
+
+    case "exam":
+    case "اختبار":
+      actionLabel = "📝 فتح الاختبار";
+      break;
+
+    case "mp3":
+    case "audio":
+      actionLabel = "🎧 استماع للصوت";
+      break;
+  }
+
+  wrapper.innerHTML =
+    '<div class="lesson-card">' +
+    '<div class="lesson-info">' +
+    '<div class="lesson-name">' +
+    lesson.name +
+    "</div>" +
+    '<div class="lesson-meta">' +
+    "<span>" +
+    lesson.fileType +
+    "</span>" +
+    "<span>" +
+    lesson.meta +
+    "</span>" +
+    "</div>" +
+    '<div class="lesson-source">' +
+    lesson.source +
+    "</div>" +
+    "</div>" +
+    '<div class="lesson-icon">📖</div>' +
+    "</div>" +
+    '<a href="' +
+    lesson.downloadUrl +
+    '" class="download-btn" target="_blank">' +
+    actionLabel +
+    "</a>";
+
+  return wrapper;
+}
+
+/* ---------------------------------------------------------
+   BACK BUTTON
+--------------------------------------------------------- */
+
+document.querySelectorAll(".step-back").forEach(function (btn) {
+  btn.addEventListener("click", function () {
+    if (btn.dataset.back === "stage") {
+      showStep(stepStage);
+    }
+  });
+});

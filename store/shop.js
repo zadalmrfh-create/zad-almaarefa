@@ -39,8 +39,8 @@ function mergeProducts(overrides){
     }
     return item;
   });
-  const extras=overrides.filter(x=>![...featuredServiceProducts,...baseProducts].some(b=>b.id===x.id)).map(x=>({published:true,...x}));
-  return [...merged,...extras].map(p=>{const {directUrl,previewUrl,downloadUrl,videoUrl,storagePath,...safe}=p; return safe}).filter(x=>!x.deleted&&x.published!==false&&!isFreeElectronicExam(x)).sort(byNewest);
+  const extras=[]; // Old Firebase-only products without a verified local source are not displayed.
+  return [...merged,...extras].map(p=>{const {directUrl,previewUrl,downloadUrl,videoUrl,storagePath,...safe}=p; return safe}).filter(x=>!x.deleted&&x.published!==false&&!isFreeElectronicExam(x)&&(x.type==='service'||x.deliveryReady===true)).sort(byNewest);
 }
 
 const paidDigitalTypes=new Set(['summary','exam','evaluation','book']);
