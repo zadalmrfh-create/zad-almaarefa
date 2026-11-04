@@ -81,7 +81,8 @@ $('ue-start').addEventListener('click',()=>{
   state.ends=Date.now()+state.exam.timeMinutes*60000;state.tick=setInterval(tick,1000);tick();
   say('تم بدء الامتحان باسم '+name+' — أجب ثم سلّم مرة واحدة.');
 });
-const user=await examAuthReady;
+const withTimeout=(p,ms,message)=>Promise.race([p,new Promise((_,reject)=>setTimeout(()=>reject(new Error(message)),ms))]);
+let user=null;try{user=await withTimeout(examAuthReady,15000,'انتهت مهلة تسجيل الدخول؛ أعد فتح الصفحة.')}catch(e){say(e.message)}
 if(user){try{
  state.user=user;
  const bank=await fetch('../../exams/unit1/bank.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('تعذر الوصول لبنك الأسئلة '+r.status);return r.json()});
@@ -91,7 +92,7 @@ if(user){try{
  else{
  state.exam=exam;
  const attemptRef=doc(db,'unitOneExamAttempts',user.uid+'_'+exam.id);
- const old=await getDoc(attemptRef);
+ const old=await withTimeout(getDoc(attemptRef),15000,'انتهت مهلة التحقق من محاولة الامتحان في Firebase');
  $('ue-title').textContent='📝 '+exam.title;
  $('ue-scope').textContent=exam.scope;
  if(old.exists()){
