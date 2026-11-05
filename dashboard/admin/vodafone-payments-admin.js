@@ -92,27 +92,28 @@ function studentFinancialDetails(account){
 
 function renderStudentBalances() {
   const container=$('zadStudentBalanceCards');if(!container)return;
-  const accounts=groupStudentAccounts(students,[...lessonMap.values()],list).filter(hasStudentFinancialActivity);
+  const accounts=groupStudentAccounts(students,[...lessonMap.values()],list);
+  const picker=$('zadStudentBalancePicker');
   const term=String($('zadStudentBalanceSearch')?.value||'').trim().toLocaleLowerCase('ar');
-  const filter=$('zadStudentBalanceFilter')?.value||'financial';
-  const filtered=accounts.filter(a=>{
-    const v=a.balance;
-    const name=String(a.student?.fullName||a.student?.name||a.payments[0]?.studentName||a.lessons[0]?.studentName||'طالب');
-    const email=String(a.student?.email||'');
-    if(term && (!window.ZadNameSearch.matches([name,email],term)))return false;
-    if(filter==='credit')return v.availableToStudentPiastres>0;
-    if(filter==='debt')return v.owedByStudentPiastres>0;
-    if(filter==='paid')return v.approvedTransfersPiastres>0||v.paidOnLessonsPiastres>0;
-    return true;
-  }).sort((a,b)=>{
-    // المستحقات أولاً، بعدها الرصيد المقدم، ثم الحسابات التي سددت بالكامل.
-    const v=a.balance,w=b.balance;
-    const activeA=v.owedByStudentPiastres>0?2:v.availableToStudentPiastres>0?1:0;
-    const activeB=w.owedByStudentPiastres>0?2:w.availableToStudentPiastres>0?1:0;
-    const name=x=>String(x.student?.fullName||x.student?.name||x.payments[0]?.studentName||x.lessons[0]?.studentName||'طالب');
-    return activeB-activeA || name(a).localeCompare(name(b),'ar');
-  });
-  $('zadStudentBalanceCount').textContent=`عرض ${filtered.length.toLocaleString('ar-EG')} من ${accounts.length.toLocaleString('ar-EG')} حساب له حركة مالية — بدون حسابات الطلاب الفارغة.`;
+  const fullName=a=>String(a.student?.fullName||a.student?.name||a.payments[0]?.studentName||a.lessons[0]?.studentName||'طالب');
+  const matches=(a,q)=>!q||(window.ZadNameSearch?.matches
+    ? window.ZadNameSearch.matches([fullName(a),String(a.student?.email||'')],q)
+    : (fullName(a)+' '+String(a.student?.email||'')).toLocaleLowerCase('ar').includes(q));
+  const available=accounts.filter(a=>matches(a,term)).sort((a,b)=>fullName(a).localeCompare(fullName(b),'ar'));
+  const selectedId=picker?.value||'';
+  if(picker){
+    picker.innerHTML='<option value="">— اختر الطالب أولًا —</option>'+available.map(a=>{
+      const status=a.balance.owedByStudentPiastres>0?' — عليه مستحقات':a.balance.availableToStudentPiastres>0?' — له مقدم':'';
+      return `<option value="${html(a.uid)}">${html(fullName(a))}${status}</option>`;
+    }).join('');
+    picker.value=available.some(a=>a.uid===selectedId)?selectedId:'';
+  }
+  const selected=accounts.find(a=>a.uid===(picker?.value||''));
+  const filtered=selected?[selected]:[];
+  const count=$('zadStudentBalanceCount');
+  if(count)count.textContent=selected
+    ? `عرض كشف حساب ${fullName(selected)} فقط — ${hasStudentFinancialActivity(selected)?'له حركة مالية مسجلة':'لا توجد عليه حركة مالية مسجلة بعد'}.`
+    : `اختر طالبًا من ${available.length.toLocaleString('ar-EG')} حساب في القائمة لعرض حسابه منفردًا.`;
   container.innerHTML=filtered.length?filtered.map(a=>{
     const b=a.balance;
     const student=a.student||{};
@@ -142,7 +143,7 @@ function renderStudentBalances() {
       ${settlement>0?`<p class="zad-pay-alert">⚠️ ${money(settlement)} مرتبط بحصص ملغاة ويحتاج تسوية يدوية. لم يُضَف لرصيده تلقائيًا.</p>`:''}
       ${studentFinancialDetails(a)}
     </article>`;
-  }).join(''):'<p class="zad-pay-small">لا يوجد طالب له دفعات مسجلة أو رصيد مقدم أو مستحقات مطابقة لهذا البحث.</p>';
+  }).join(''):'<div class="zad-finance-select-empty"><span aria-hidden="true">👤</span><strong>اختر الطالب أولًا</strong><p>لن تظهر بيانات حساب أي طالب حتى تختاره من القائمة بالأعلى.</p></div>';
 }
 
 function render(){
@@ -312,7 +313,7 @@ $('zadStudentBalanceCards')?.addEventListener('click',paymentAction);
 $('zadVodafoneRefreshAdmin')?.addEventListener('click',load);
 $('zadVodafoneFilter')?.addEventListener('change',render);
 $('zadStudentBalanceSearch')?.addEventListener('input',renderStudentBalances);
-$('zadStudentBalanceFilter')?.addEventListener('change',renderStudentBalances);
+$('zadStudentBalancePicker')?.addEventListener('change',renderStudentBalances);
 window.addEventListener('zad:attendance-archived',load);
 window.addEventListener('zad:attendance-changed',load);
 onAuthStateChanged(auth,user=>{if(user)load();});

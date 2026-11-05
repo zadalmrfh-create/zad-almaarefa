@@ -22,3 +22,50 @@
 }
 
 .manual-attendance-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:18px 0 25px}.manual-attendance-form label{display:grid;gap:7px;font-weight:700}.manual-attendance-form input,.manual-attendance-form select,.manual-attendance-form textarea{width:100%;min-width:0;padding:12px;background:#101a2b;color:#fff;border:1px solid #43516a;border-radius:10px;font-family:inherit}.manual-attendance-form select[multiple]{min-height:220px;line-height:1.9}.manual-attendance-form select[multiple] option{padding:6px 8px}.manual-attendance-form .attendance-full{grid-column:1/-1}.attendance-actions{display:flex;flex-wrap:wrap;align-items:center;gap:10px}@media(max-width:700px){.manual-attendance-form{grid-template-columns:1fr}.manual-attendance-form .attendance-full{grid-column:1}.manual-attendance-form select[multiple]{min-height:180px}}
+
+/* November 2026: focused admin attendance and payments workspaces */
+.zad-finance-view[hidden],.zad-attendance-view[hidden],.zad-finance-start-hint[hidden]{display:none!important}
+.zad-finance-workspace,.zad-attendance-workspace{direction:rtl;min-width:0}
+.zad-finance-workspace>h2,.zad-attendance-workspace>h2{margin:0 0 9px;color:#f7d574;line-height:1.5}
+.zad-admin-muted-intro,.zad-attendance-workspace>p,.zad-attendance-note{color:#c0ccdf;line-height:1.85;margin:0 0 15px}
+.zad-finance-modes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;margin:18px 0}
+.zad-finance-mode{display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:12px;row-gap:4px;align-items:center;text-align:right;background:linear-gradient(135deg,#16273e,#0e1c31);color:#f6f8fd;border:1px solid #3a4e69;border-radius:16px;padding:18px;cursor:pointer;min-height:110px;font:inherit;transition:border-color .15s,background .15s}
+.zad-finance-mode-icon{display:grid;grid-row:span 2;place-items:center;width:48px;height:48px;border-radius:14px;background:#25344d;font-size:23px}
+.zad-finance-mode strong{font-size:18px;font-weight:850}
+.zad-finance-mode small{color:#bac8dd;font-size:13px;line-height:1.65}
+.zad-finance-mode:hover,.zad-finance-mode:focus-visible{border-color:#f0cb69;outline:2px solid transparent}
+.zad-finance-mode.active{border-color:#e9c04e;background:linear-gradient(135deg,#253b58,#172844);box-shadow:inset 0 0 0 1px #d9b24b60}
+.zad-finance-mode.active .zad-finance-mode-icon{background:#e8c04a;color:#15233a}
+.zad-finance-view{border:1px solid #31445f;border-radius:16px;background:#111e31;padding:20px;min-width:0}
+.zad-finance-start-hint{border:1px dashed #556780;border-radius:12px;padding:25px 14px;background:#111e30;text-align:center;color:#f1d081;font-weight:750}
+.zad-finance-subhead h3{color:#f0d16d;margin:0 0 8px}
+.zad-finance-subhead p{color:#bdcade;line-height:1.75;margin:0 0 20px}
+.zad-finance-workspace .zad-student-accounts{border:0;box-shadow:none;margin:0;padding:0;min-width:0}
+.zad-finance-workspace .zad-student-account-controls{display:grid;grid-template-columns:1fr 1fr;gap:13px;padding:16px;background:#17283d;border:1px solid #354b68;border-radius:13px;margin:16px 0}
+.zad-finance-workspace .zad-student-account-controls label{display:grid;gap:7px;min-width:0;font-weight:800;color:#f0d58c}
+.zad-finance-workspace .zad-student-account-controls input,.zad-finance-workspace .zad-student-account-controls select{width:100%;min-width:0;padding:12px 11px;min-height:46px;background:#0e192b;border:1px solid #4c607e;border-radius:10px;color:#fff;font:inherit}
+.zad-finance-workspace .zad-student-account-controls :is(input,select):focus-visible{outline:2px solid #edc452;outline-offset:1px}
+.zad-finance-workspace .zad-student-account-list{display:block;max-width:100%;min-width:0}
+.zad-finance-workspace .zad-student-account-card{max-width:100%;min-width:0}
+.zad-finance-select-empty{display:flex;min-height:180px;align-items:center;justify-content:center;flex-direction:column;gap:7px;border:1px dashed #4b6380;border-radius:16px;background:#0d1a2c;color:#f5d574;text-align:center;padding:20px}
+.zad-finance-select-empty>span{font-size:32px}.zad-finance-select-empty strong{font-size:18px}.zad-finance-select-empty p{color:#c3cfdf;margin:0}
+.zad-finance-manual-tools{margin-top:24px;padding:0;border:1px solid #576b84;background:#13233a;border-radius:14px;overflow:hidden}
+.zad-finance-manual-tools>summary{cursor:pointer;padding:18px;color:#f1d476;font-size:16px;font-weight:850;list-style-position:inside}
+.zad-finance-manual-tools[open]>summary{border-bottom:1px solid #3b516c}
+.zad-finance-manual-tools #manualPaymentLedger{padding:18px;border:0;box-shadow:none;background:transparent;margin:0}
+.zad-finance-workspace .zad-pay-admin-status{margin:16px 0}
+.zad-finance-workspace .zad-pay-request{max-width:100%;min-width:0}
+.zad-attendance-modes{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;border:1px solid #3a4b64;border-radius:14px;background:#0e1b2e;padding:8px;margin:14px 0 22px}
+.zad-attendance-mode{color:#e9edf5;background:#182940;border:1px solid #30435e;border-radius:10px;padding:13px 8px;font:inherit;font-weight:850;cursor:pointer;min-height:46px;white-space:normal}
+.zad-attendance-mode.active{background:#e8c34e;color:#142339;border-color:#e8c34e}
+.zad-attendance-mode:focus-visible{outline:2px solid #efd778;outline-offset:2px}
+.zad-attendance-view{min-width:0;border:1px solid #324661;border-radius:15px;background:#111f33;padding:18px}
+.zad-attendance-view>h3{margin:0 0 10px;color:#f0d36b}
+.zad-attendance-view .manual-attendance-form{padding:0;margin:20px 0 0}
+.zad-attendance-view .zad-attendance-log-filters{margin-top:12px}
+.zad-attendance-view .table-wrap{max-width:100%;min-width:0}
+.zad-attendance-view details{max-width:100%}
+.zad-attendance-view #zadTeacherLinker,.zad-attendance-view #zadStudentUidRepairPanel{background:#17283e!important;border:1px solid #445978!important;margin:14px 0!important}
+.zad-attendance-view #zadTeacherLinker>summary,.zad-attendance-view #zadStudentUidRepairPanel>summary{padding:3px 0;line-height:1.8}
+@media(max-width:850px){.zad-finance-modes{grid-template-columns:1fr}.zad-attendance-modes{grid-template-columns:repeat(2,minmax(0,1fr))}.zad-finance-workspace .zad-student-account-controls{grid-template-columns:1fr}}
+@media(max-width:530px){.zad-finance-view,.zad-attendance-view{padding:12px}.zad-finance-mode{min-height:100px;padding:13px}.zad-finance-mode strong{font-size:16px}.zad-finance-mode small{font-size:12px}.zad-attendance-mode{font-size:13px;padding:10px 6px}}

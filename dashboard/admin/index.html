@@ -73,7 +73,7 @@ onAuthStateChanged(auth, async (user) => {
   }
 });
 </script>
-<link rel="stylesheet" href="admin-workspace.css">
+<link rel="stylesheet" href="admin-workspace.css?v=20261105-finance2">
 <link rel="stylesheet" href="teacher-payroll-admin.css?v=20261105-1">
 <style>
 .zad-subject-picker{position:relative;width:100%;min-width:0;color:#f7e5aa}
@@ -223,7 +223,7 @@ onAuthStateChanged(auth, async (user) => {
       <div class="admin-quick-nav">
         <a class="admin-quick-link" href="#platformAnalytics"><span>📊</span><strong>الإحصائيات</strong><small>أرقام المنصة</small></a>
         <a class="admin-quick-link" href="#usersManagement"><span>👥</span><strong>المستخدمون</strong><small>إدارة الحسابات</small></a>
-        <a class="admin-quick-link" href="#manualPaymentLedger"><span>💰</span><strong>المدفوعات اليدوية</strong><small>حصص وخدمات ومقدم</small></a>
+        <a class="admin-quick-link" href="#zadVodafoneAdminPanel"><span>💳</span><strong>المدفوعات</strong><small>كشف الطالب ومراجعة التحويلات</small></a>
         <a class="admin-quick-link" href="#bookingsManagement"><span>📅</span><strong>الحجوزات</strong><small>طلبات وتقارير</small></a>
         <a class="admin-quick-link" href="#codeExamsManagement"><span>🧑‍💻</span><strong>امتحانات بالكود</strong><small>إضافة ونشر</small></a>
         <a class="admin-quick-link" href="#codeExamResultsSection"><span>📘</span><strong>نتائج الامتحانات</strong><small>درجات وتقارير</small></a>
@@ -1258,20 +1258,20 @@ onAuthStateChanged(auth, async (user) => {
     </section>
 
     <section class="card zad-pay-card" id="zadVodafoneAdminPanel" dir="rtl">
-      <h2>💳 إدارة تحويلات فودافون كاش</h2>
+      <h2>💳 إدارة المدفوعات</h2>
       <p>محفظة استقبال التحويلات: <b dir="ltr">01042239704</b>. راجع المبلغ والمرجع في محفظتك الفعلية قبل اعتماد الطلب. الموقع لا يتحقق تلقائيًا من التحويل. بعد الاعتماد يظهر زر «🧾 طباعة الإيصال / حفظ PDF» بجانب العملية المعتمدة؛ احفظ الإيصال PDF وأرسله للطالب.</p>
       <div class="zad-pay-grid zad-pay-admin-status"><div class="zad-pay-metric"><small>طلبات تحويل بانتظار المراجعة</small><strong id="zadVodafonePendingCount">—</strong></div><div class="zad-pay-metric"><small>⚠️ تحويلات تحتاج تسوية لحصص ملغاة (إجمالي السجل الجديد)</small><strong id="zadVodafoneNeedSettlement">—</strong></div></div>
       <section class="zad-student-accounts" aria-label="كشوف حسابات الطلاب منفصلة">
-        <h3>👥 كشف حساب مستقل لكل طالب</h3>
-        <p>هنا يظهر فقط الطالب الذي دفع بالفعل، أو له رصيد مقدم، أو عليه مستحقات. لا تظهر الحسابات الفارغة ذات الصفر. الطالب الذي سدد حصصه بالكامل يظل ظاهرًا لأن له سجل دفع فعلي. اضغط «عرض التفاصيل» لمعرفة الدفعات والحصص.</p>
+        <h3>👤 كشف حساب الطالب بالتفصيل</h3>
+        <p>اختر طالبًا واحدًا من القائمة وسيظهر كشف حسابه فقط: ما حوّله واعتمدته الإدارة، قيمة حصصه، المقدم والمتبقي، والمدفوع والمؤخر. ويمكنك فتح تفاصيل كل حصة وتحويل من نفس الكشف.</p>
         <div class="zad-student-account-controls">
-          <label>🔎 بحث عن طالب <input id="zadStudentBalanceSearch" type="search" placeholder="اسم الطالب أو بريده الإلكتروني" autocomplete="off"></label>
-          <label>حالة الحساب <select id="zadStudentBalanceFilter"><option value="financial">الطلاب الذين دفعوا أو عليهم مستحقات</option><option value="paid">الطلاب الذين دفعوا</option><option value="credit">له رصيد مقدم</option><option value="debt">عليه مستحقات</option></select></label>
+          <label>🔎 البحث عن الطالب <input id="zadStudentBalanceSearch" type="search" placeholder="اكتب اسم الطالب أو البريد لتصفية القائمة" autocomplete="off"></label>
+          <label>👤 اختر الطالب لعرض كشف حسابه <select id="zadStudentBalancePicker" aria-label="اختر الطالب لعرض كشف حسابه"><option value="">— اختر الطالب أولًا —</option></select></label>
         </div>
         <p id="zadStudentBalanceCount" class="zad-pay-small" aria-live="polite">جارٍ تحميل حسابات الطلاب...</p>
-        <div id="zadStudentBalanceCards" class="zad-student-account-list" aria-live="polite">جارٍ تحميل الحسابات...</div>
+        <div id="zadStudentBalanceCards" class="zad-student-account-list" aria-live="polite">اختر الطالب لعرض الحساب.</div>
       </section>
-      <div class="actions"><label for="zadVodafoneFilter">حالة الطلب</label><select id="zadVodafoneFilter" style="width:auto"><option value="all">كل التحويلات</option><option value="pending">بانتظار المراجعة</option><option value="approved">المعتمدة</option><option value="rejected">المرفوضة</option><option value="archived">📁 السجل السابق (أرشيف للقراءة فقط)</option></select><button class="btn gold" id="zadVodafoneRefreshAdmin" type="button">🔄 تحديث الطلبات</button></div>
+      <div class="actions"><label for="zadVodafoneFilter">حالة الطلب</label><select id="zadVodafoneFilter" style="width:auto"><option value="pending" selected>بانتظار المراجعة</option><option value="all">كل التحويلات</option><option value="approved">المعتمدة</option><option value="rejected">المرفوضة</option><option value="archived">📁 السجل السابق (أرشيف للقراءة فقط)</option></select><button class="btn gold" id="zadVodafoneRefreshAdmin" type="button">🔄 تحديث الطلبات</button></div>
       <p id="zadVodafoneAdminMessage" role="status" aria-live="polite"></p>
       <p class="zad-pay-archived-notice">بدأ سجل جديد للمدفوعات؛ العمليات السابقة مؤرشفة للمراجعة، ولم تُحذف من Firebase ولم تتغير أرصدة الحصص القديمة.</p>
       <div id="zadVodafoneRequests">جارٍ التحميل...</div>
@@ -3911,7 +3911,7 @@ guard('admin', async () => {
 <!-- ملفات مستقلة كانت غير مُحمّلة بسبب انقطاع نهاية الصفحة -->
 <script type="module" src="admin-activity-alerts.js"></script>
 <script type="module" src="admin-enhancements.js"></script>
-<script type="module" src="admin-workspace.js"></script>
+<script type="module" src="admin-workspace.js?v=20261105-finance2"></script>
 <script type="module" src="attendance-admin.js?v=20261105-salary1"></script>
 <script type="module" src="teacher-payroll-admin.js?v=20261105-1"></script>
 <script type="module" src="teacher-linker-admin.js?v=20261105-1"></script>
@@ -3923,7 +3923,7 @@ guard('admin', async () => {
 <script type="module" src="reports-admin.js"></script>
 <script type="module" src="student-comprehensive-report.js"></script>
 <script type="module" src="exam-answer-report.js"></script>
-<script type="module" src="vodafone-payments-admin.js"></script>
+<script type="module" src="vodafone-payments-admin.js?v=20261105-finance2"></script>
 <script type="module" src="library-subscriptions-admin.js"></script>
 <script type="module" src="../admin-switcher.js"></script>
 
