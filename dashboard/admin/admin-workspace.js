@@ -11,10 +11,12 @@
     {id:'exams',label:'الامتحانات',icon:'📝',sections:['codeExamsManagement','adminCertificatesSection','codeExamResultsSection','unitOneExamsAdmin']},
     {id:'library',label:'المكتبة',icon:'📚',sections:['librarySubscriptionsAdminPanel','libraryDownloadTracking']},
     {id:'lessons',label:'الحضور والغياب',icon:'✅',sections:['attendanceManagement']},
-    {id:'payments',label:'المدفوعات',icon:'💳',sections:['zadVodafoneAdminPanel']},
+    {id:'payroll',label:'مرتبات المعلمين',icon:'💼',sections:['teacherPayrollManagement']},
+    {id:'payments',label:'المدفوعات',icon:'💳',sections:['zadVodafoneAdminPanel','manualPaymentLedger']},
     {id:'content',label:'المحتوى',icon:'⚙️',sections:['contentManagement']},
     {id:'logs',label:'سجلات وتقارير',icon:'📊',sections:['loginLogsManagement']},
-    {id:'other',label:'الإشعارات والمزيد',icon:'🔔',sections:[]}
+    {id:'reviews',label:'التقييمات',icon:'⭐',sections:['weeklyReviewsAdmin']},
+    {id:'other',label:'الإشعارات',icon:'🔔',sections:['zadActivityAlerts','adminNotificationsManagement']}
   ];
   const tabs = document.createElement('nav');
   tabs.className='zad-admin-tabs';
@@ -40,8 +42,9 @@
     if(el.id==='liveLessonsManagement' || el.id==='lessonFollowUpManagement'){el.hidden=true;el.style.display='none';}
     let group=mapped.get(el.id);
     if(!group) {
-      if(el.classList.contains('notifications-admin-card') || el.id==='zad-study-inbox') group=groups.find(x=>x.id==='other');
-      else group=groups.find(x=>x.id==='other');
+      // Unclassified administrative cards remain under notifications only as a fallback.
+      // All current visible cards are assigned explicitly above.
+      group=groups.find(x=>x.id==='other');
     }
     group.panel.append(el);
   }

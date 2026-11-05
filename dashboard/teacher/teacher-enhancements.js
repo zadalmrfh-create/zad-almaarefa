@@ -286,22 +286,154 @@ function renderPayments(){
  }
 
 }
+// تقارير الطباعة: تعتمد حصريًا على البيانات المحمّلة للمعلم وصلاحيات القراءة الحالية.
+const printedMoney = value => `<span class="print-number" dir="ltr">${esc(money(value))}</span>`;
+const numericCell = value => `<td class="print-num" dir="ltr">${esc(value)}</td>`;
+function reportHeader(title, subheading=''){
+ const teacher=esc(state.profile.fullName||state.profile.name||state.user?.email||'غير محدد');
+ const issued=new Intl.DateTimeFormat('ar-EG',{dateStyle:'long',timeStyle:'short'}).format(new Date());
+ return `<header class="print-brand">
+  <div class="print-brand-identity"><img class="print-logo" src="../../images/logo.png" alt="شعار أكاديمية زاد المعرفة التعليمية"><div><div class="print-brand-name">أكاديمية زاد المعرفة التعليمية</div><div class="print-brand-tagline">نظام التقارير الأكاديمية والإدارية</div></div></div>
+  <div class="print-brand-badge">نسخة للعرض والطباعة</div>
+ </header>
+ <section class="print-title-block"><h1>${esc(title)}</h1>${subheading?`<p class="print-subtitle">${esc(subheading)}</p>`:''}</section>
+ <div class="print-meta"><div><span>اسم المعلم</span><strong>${teacher}</strong></div><div><span>تاريخ الإصدار</span><strong>${esc(issued)}</strong></div></div>`;
+}
+function reportStats(items){
+ return `<section class="print-stat-grid ${items.length===6?'print-stat-six':''}">${items.map(i=>`<div class="print-stat"><span>${esc(i.label)}</span><strong>${i.value}</strong></div>`).join('')}</section>`;
+}
+function reportFooter(note){
+ return `<footer class="print-footer"><span>زاد المعرفة التعليمية | تقرير صادر من لوحة المعلم</span><span>${esc(note)}</span></footer>`;
+}
 function paymentsDocument(){
- const title=esc(state.profile.fullName||state.profile.name||'المعلم'),rows=filteredPaymentRows(),s=paymentSummary(rows);
- return `<h2>أكاديمية زاد المعرفة التعليمية — كشف الحضور والمدفوعات</h2><p>المعلم: ${title} | تاريخ التقرير: ${new Date().toLocaleDateString('ar-EG')}</p><p>إجمالي الحصص: ${money(s.due)} | المدفوع المباشر: ${money(s.cash)} | المقدم المخصص: ${money(s.credit)} | المتبقي: ${money(s.remaining)}</p><table><thead><tr><th>التاريخ</th><th>الطالب</th><th>المادة</th><th>الحالة</th><th>سعر الحصة</th><th>الدفع المباشر</th><th>المقدم المخصص</th><th>المتبقي</th></tr></thead><tbody>${paymentRowsHtml(rows)}</tbody></table><p>الأرقام المعروضة خاصة بحصص المعلم فقط، ولا تشمل دفعات غير مخصصة لحصة.</p>`;
+ const rows=filteredPaymentRows(),totals=paymentSummary(rows);
+ const byStudent=new Map();
+ for(const row of rows){
+  const key=row.studentUid||row.studentName||row.id;
+  const value=financeValue(row);
+  const old=byStudent.get(key)||{name:studentName(row.studentUid,row.studentName),count:0,due:0,cash:0,credit:0,remaining:0};
+  old.count++;old.due+=value.due;old.cash+=value.cash;old.credit+=value.credit;old.remaining+=value.remaining;
+  byStudent.set(key,old);
+ }
+ const picked=$('teacherPaymentsStudent')?.selectedOptions[0]?.textContent||'كل الطلاب';
+ const from=$('teacherPaymentsFrom')?.value||'بداية السجلات';
+ const to=$('teacherPaymentsTo')?.value||'آخر السجلات';
+ const studentRows=[...byStudent.values()].sort((a,b)=>a.name.localeCompare(b.name,'ar')).map(v=>`<tr><td>${esc(v.name)}</td>${numericCell(v.count)}${numericCell(money(v.due))}${numericCell(money(v.cash))}${numericCell(money(v.credit))}${numericCell(money(v.cash+v.credit))}${numericCell(money(v.remaining))}</tr>`).join('');
+ const details=rows.map(x=>{const f=financeValue(x);return `<tr><td>${esc(x.date||'-')}</td><td>${esc(studentName(x.studentUid,x.studentName))}</td><td>${esc(x.subject||'-')}</td><td>${esc(x.status||'-')}</td>${numericCell(money(f.due))}${numericCell(money(f.cash))}${numericCell(money(f.credit))}${numericCell(money(f.remaining))}</tr>`;}).join('');
+ const warn=rows.some(r=>!Object.hasOwn(r,'teacherAdvanceAppliedPiastres'));
+ const filterLine=`الطالب: ${picked} | الفترة: ${from} إلى ${to}`;
+ return reportHeader('كشف الحضور والمدفوعات',filterLine)
+ +reportStats([{label:'عدد الطلاب',value:`${byStudent.size}`},{label:'عدد الحصص',value:`${rows.length}`},{label:'إجمالي قيمة الحصص',value:printedMoney(totals.due)},{label:'المحصّل (مباشر + مقدم)',value:printedMoney(totals.cash+totals.credit)},{label:'المبلغ غير المسدد',value:printedMoney(totals.remaining)}])
+ +`<section class="print-section"><h2>01 <span>ملخص الحسابات حسب الطالب</span></h2><table class="print-table"><thead><tr><th>الطالب</th><th>الحصص</th><th>قيمة الحصص</th><th>مدفوع مباشر</th><th>مقدم مستخدم</th><th>إجمالي المحصل</th><th>المتبقي</th></tr></thead><tbody>${studentRows}</tbody><tfoot><tr><th>الإجمالي</th><th class="print-num">${rows.length}</th><th class="print-num">${esc(money(totals.due))}</th><th class="print-num">${esc(money(totals.cash))}</th><th class="print-num">${esc(money(totals.credit))}</th><th class="print-num">${esc(money(totals.cash+totals.credit))}</th><th class="print-num">${esc(money(totals.remaining))}</th></tr></tfoot></table></section>`
+ +`<section class="print-section"><h2>02 <span>تفاصيل الحصص والمدفوعات</span></h2><table class="print-table"><thead><tr><th>التاريخ</th><th>الطالب</th><th>المادة</th><th>الحالة</th><th>قيمة الحصة</th><th>مدفوع مباشر</th><th>مقدم مستخدم</th><th>المتبقي</th></tr></thead><tbody>${details}</tbody><tfoot><tr><th colspan="4">الإجمالي النهائي</th><th class="print-num">${esc(money(totals.due))}</th><th class="print-num">${esc(money(totals.cash))}</th><th class="print-num">${esc(money(totals.credit))}</th><th class="print-num">${esc(money(totals.remaining))}</th></tr></tfoot></table></section>`
+ +(warn?`<p class="print-warning">تنبيه: هناك حصص لم تؤكد الإدارة مراجعة الدفعات المقدمة الخاصة بها؛ تُعدّ الأرقام مبدئية إلى أن تتم المزامنة.</p>`:'')
+ +`<p class="print-disclaimer">يعرض التقرير المبالغ المرتبطة بحصص المعلم فقط، ولا يشمل الدفعات غير المخصصة لحصص محددة. هذا الكشف لا يُعد إذنًا بصرف مستحقات المعلم.</p>`
+ +reportFooter('عرض فقط — لا يتيح تعديل السجلات أو المدفوعات');
+}
+// تقرير قابل للمعاينة والطباعة في نفس صفحة لوحة المعلم.
+// بقاء زر «طباعة الآن» يتيح إعادة المحاولة إذا منع المتصفح نافذة الطباعة.
+function closeTeacherPrint(){
+ document.body.classList.remove('teacher-print-active','teacher-print-preview');
+ const sheet=$('teacherPrintDocument'); if(sheet)sheet.replaceChildren();
+}
+function requestTeacherPrint(){
+ try { window.print(); }
+ catch(error){console.error('[teacher-print]',error);alert('تعذر فتح نافذة الطباعة تلقائيًا؛ يمكنك الضغط على «طباعة الآن» داخل المعاينة.');}
+}
+function printTeacherContent(content){
+ const sheet=$('teacherPrintDocument');
+ if(!sheet){alert('تعذر تجهيز التقرير. حدّث الصفحة وحاول مجددًا.');return;}
+ sheet.innerHTML=`<div class="teacher-print-toolbar" role="toolbar" aria-label="أدوات طباعة التقرير"><strong>تقرير زاد المعرفة جاهز</strong><span>لو نافذة الطباعة ما ظهرتش، اضغط طباعة الآن</span><button type="button" data-retry-teacher-print>🖨️ طباعة الآن</button><button type="button" data-close-teacher-print>إغلاق المعاينة</button></div><article class="teacher-print-paper">${content}</article>`;
+ sheet.querySelector('[data-retry-teacher-print]')?.addEventListener('click',requestTeacherPrint);
+ sheet.querySelector('[data-close-teacher-print]')?.addEventListener('click',closeTeacherPrint);
+ document.body.classList.add('teacher-print-preview','teacher-print-active');
+ requestTeacherPrint();
 }
 function printPayments(){
- if(state.failedSources.has('الحضور والمدفوعات')){alert('تعذر تحميل البيانات؛ لا يمكن طباعة تقرير غير مكتمل.');return;}
- document.getElementById('teacherFinancePrintFrame')?.remove();
- const frame=document.createElement('iframe');frame.id='teacherFinancePrintFrame';frame.setAttribute('title','طباعة مدفوعات المعلم');frame.style.cssText='position:fixed;left:-10000px;top:0;width:900px;height:600px;border:0';document.body.append(frame);
- const d=frame.contentDocument;d.open();d.write('<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>كشف المعلم</title><style>body{font:13px Tahoma,Arial;padding:18px;color:#111}table{border-collapse:collapse;width:100%}td,th{border:1px solid #999;padding:6px;text-align:right}h2{text-align:center}@page{size:A4 landscape;margin:12mm}</style></head><body>'+paymentsDocument()+'</body></html>');d.close();
- frame.contentWindow.focus();frame.contentWindow.print();
+ if(state.failedSources.has('الحضور والمدفوعات')){
+  alert('تعذر تحميل بيانات الحضور والمدفوعات. لا يمكن طباعة كشف مالي غير مكتمل.');return;
+ }
+ const rows=filteredPaymentRows();
+ if(!rows.length){alert('لا توجد حصص مطابقة للفلاتر الحالية للطباعة.');return;}
+ printTeacherContent(paymentsDocument());
+}
+function reportsDocument(){
+ const present=state.attendance.filter(x=>x.status==='حاضر').length;
+ const absent=state.attendance.filter(x=>x.status==='غائب').length;
+ const excused=state.attendance.filter(x=>x.status==='اعتذر').length;
+ const attendanceRate=percent(present,present+absent);
+ let notesTotal=0,visibleTotal=0;
+ const rows=state.students.map(student=>{
+  const attendance=getStudentAttendance(student.id);
+  const p=attendance.filter(x=>x.status==='حاضر').length;
+  const a=attendance.filter(x=>x.status==='غائب').length;
+  const e=attendance.filter(x=>x.status==='اعتذر').length;
+  const relevant=p+a;
+  const notes=getStudentNotes(student.id);
+  const visible=notes.filter(x=>x.visibleToStudent===true).length;
+  notesTotal+=notes.length;visibleTotal+=visible;
+  return `<tr><td>${esc(student.fullName||student.name||'-')}</td>${numericCell(p)}${numericCell(a)}${numericCell(e)}${numericCell(percent(p,relevant)+'%')}${numericCell(notes.length)}${numericCell(visible)}</tr>`;
+ }).join('');
+ const summary=reportStats([{label:'إجمالي الطلاب',value:`${state.students.length}`},{label:'إجمالي الحصص',value:`${state.attendance.length}`},{label:'عدد مرات الحضور',value:`${present}`},{label:'عدد الغياب',value:`${absent}`},{label:'نسبة الحضور',value:`${attendanceRate}%`},{label:'إجمالي الملاحظات',value:`${state.notes.length}`}]);
+ return reportHeader('تقرير متابعة الطلاب والحضور','ملخص شامل لجميع طلاب المعلم المرتبطين بحسابه')+summary
+ +`<section class="print-section"><h2>01 <span>تفاصيل متابعة الطلاب</span></h2><table class="print-table"><thead><tr><th>اسم الطالب</th><th>حاضر</th><th>غائب</th><th>اعتذار</th><th>نسبة الحضور</th><th>الملاحظات</th><th>الظاهرة للطالب</th></tr></thead><tbody>${rows}</tbody><tfoot><tr><th>الإجمالي (${state.students.length} طلاب)</th><th class="print-num">${present}</th><th class="print-num">${absent}</th><th class="print-num">${excused}</th><th class="print-num">${attendanceRate}%</th><th class="print-num">${notesTotal}</th><th class="print-num">${visibleTotal}</th></tr></tfoot></table></section>`
+ +`<p class="print-disclaimer">نسبة الحضور محسوبة من سجلات الحضور والغياب، ولا تدخل الاعتذارات ضمن مقام النسبة. الملاحظات غير المنسوبة إلى طالب لا تدخل ضمن إجمالي تفاصيل الطلاب.</p>`
+ +reportFooter('تقرير للمتابعة والقراءة فقط — لا يتيح تعديل الحضور أو الملاحظات');
+}
+function printReport(){
+ if(state.failedSources.has('الحضور والمدفوعات')||state.failedSources.has('الحجوزات')||state.failedSources.has('الملاحظات')){
+  alert('تعذر تحميل بعض بيانات التقرير. لا يمكن طباعة تقرير غير مكتمل.');return;
+ }
+ if(!state.students.length){alert('لا يوجد طلاب مرتبطون بهذا المعلم للطباعة.');return;}
+ printTeacherContent(reportsDocument());
+}
+// لا نمسح التقرير فور إغلاق نافذة الطباعة: تظل المعاينة متاحة لإعادة المحاولة.
+window.addEventListener('keydown',event=>{
+ if(event.key==='Escape' && document.body.classList.contains('teacher-print-preview'))closeTeacherPrint();
+});
+
+// Export robustly: attach the anchor to DOM and keep a manual fallback link.
+// No financial data is written to Firebase, and the CSV contains only currently loaded records.
+const exportUrls = new Map();
+function csvSafe(value){
+ const v=String(value??'');
+ // Escape spreadsheet formula prefixes (including whitespace + =,+,-,@).
+ const sanitized=/^[\s\u0000-\u001f]*[=+\-@]/.test(v)?"'"+v:v;
+ return '"'+sanitized.replace(/"/g,'""')+'"';
+}
+function exportCsv(rows,fileName,statusId){
+ const feedback=$(statusId);
+ if(feedback)feedback.replaceChildren();
+ try{
+  const csv='\uFEFF'+rows.map(r=>r.map(csvSafe).join(',')).join('\r\n')+'\r\n';
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const previous=exportUrls.get(statusId);
+  if(previous)URL.revokeObjectURL(previous);
+  const url=URL.createObjectURL(blob); exportUrls.set(statusId,url);
+  const link=document.createElement('a');link.href=url;link.download=fileName;
+  link.textContent='اضغط هنا لتحميل ملف CSV يدويًا';
+  if(feedback){
+   feedback.append('✅ تم تجهيز الملف ('+(rows.length-1)+' سطرًا). إذا لم يبدأ التحميل تلقائيًا: ');
+   feedback.append(link);
+  }else{document.body.appendChild(link);}
+  link.click();
+  if(!feedback)link.remove();
+  // Keep blob URL live for the manual fallback link until a new export / page close.
+ }catch(error){
+  console.error('[teacher-export]',error);
+  if(feedback)feedback.textContent='❌ تعذر تجهيز CSV: '+(error.message||error);
+  else alert('تعذر تجهيز ملف CSV');
+ }
 }
 function exportPayments(){
- const rows=[['التاريخ','الطالب','المادة','الحالة','قيمة الحصة','المدفوع مباشر','المقدم المخصص','المتبقي']];
- for(const x of filteredPaymentRows()){const f=financeValue(x);rows.push([x.date,studentName(x.studentUid,x.studentName),x.subject,x.status,f.due/100,f.cash/100,f.credit/100,f.remaining/100]);}
- const csv='\ufeff'+rows.map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\n');
- const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'})),a=document.createElement('a');a.href=url;a.download='zad-teacher-payments-'+new Date().toISOString().slice(0,10)+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+ if(state.failedSources.has('الحضور والمدفوعات')){alert('بيانات المدفوعات لم تُحمّل بالكامل، لذلك لا يمكن تصدير تقرير مالي.');return;}
+ const entries=filteredPaymentRows();
+ if(!entries.length){alert('لا توجد حصص مطابقة للفلاتر الحالية للتصدير.');return;}
+ const rows=[['التاريخ','الطالب','المادة','الحالة','قيمة الحصة (جنيه)','مدفوع مباشر (جنيه)','مقدم مستخدم (جنيه)','إجمالي المحصل (جنيه)','المتبقي (جنيه)']];
+ for(const x of entries){const f=financeValue(x);rows.push([x.date,studentName(x.studentUid,x.studentName),x.subject,x.status,f.due/100,f.cash/100,f.credit/100,f.total/100,f.remaining/100]);}
+ const sums=paymentSummary(entries);
+ rows.push(['الإجمالي','', '', '',sums.due/100,sums.cash/100,sums.credit/100,(sums.cash+sums.credit)/100,sums.remaining/100]);
+ exportCsv(rows,'zad-teacher-payments-'+new Date().toISOString().slice(0,10)+'.csv','teacherPaymentsExportStatus');
 }
 
 function renderNotifications(){
@@ -371,19 +503,25 @@ function bindForms(){
       document.querySelector('[data-name]').textContent=updates.fullName||state.user.email;setStatus('profileFormStatus','تم حفظ بياناتك بنجاح.');
     }catch(err){console.error(err);setStatus('profileFormStatus','تعذر حفظ البيانات: '+(err.code||err.message),false);}
   });
-  $('printTeacherReport')?.addEventListener('click',()=>window.print());
+  $('printTeacherReport')?.addEventListener('click',printReport);
   $('exportTeacherReport')?.addEventListener('click',exportReportCsv);
 }
 function exportReportCsv(){
-  const rows=[['الطالب','حاضر','غائب/اعتذر','نسبة الحضور','الملاحظات','الظاهرة للطالب']];
-  state.students.forEach(s=>{
-    const att=getStudentAttendance(s.id),p=att.filter(x=>x.status==='حاضر').length,a=att.filter(x=>x.status==='غائب'||x.status==='اعتذر').length,relevant=att.filter(x=>x.status==='حاضر'||x.status==='غائب').length,notes=getStudentNotes(s.id);
-    rows.push([s.fullName||s.name||'',p,a,percent(p,relevant)+'%',notes.length,notes.filter(x=>x.visibleToStudent===true).length]);
-  });
-  const csv='\ufeff'+rows.map(r=>r.map(v=>`"${String(v??'').replace(/"/g,'""')}"`).join(',')).join('\n');
-  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`teacher-report-${new Date().toISOString().slice(0,10)}.csv`;a.click();URL.revokeObjectURL(url);
+ if(state.failedSources.has('الحضور والمدفوعات')||state.failedSources.has('الملاحظات')||state.failedSources.has('الحجوزات')){
+  alert('تعذر تحميل جميع مصادر التقرير. لا يمكن تصدير ملف ناقص.');return;
+ }
+ if(!state.students.length){alert('لا يوجد طلاب لتصدير تقريرهم.');return;}
+ const rows=[['الطالب','حاضر','غائب/اعتذر','نسبة الحضور','الملاحظات','الظاهرة للطالب']];
+ let pTotal=0,aTotal=0,notesTotal=0,visibleTotal=0;
+ state.students.forEach(s=>{
+  const att=getStudentAttendance(s.id),p=att.filter(x=>x.status==='حاضر').length,a=att.filter(x=>x.status==='غائب'||x.status==='اعتذر').length,relevant=att.filter(x=>x.status==='حاضر'||x.status==='غائب').length,notes=getStudentNotes(s.id),v=notes.filter(x=>x.visibleToStudent===true).length;
+  pTotal+=p;aTotal+=a;notesTotal+=notes.length;visibleTotal+=v;
+  rows.push([s.fullName||s.name||'',p,a,percent(p,relevant)+'%',notes.length,v]);
+ });
+ const relevant=state.attendance.filter(x=>x.status==='حاضر'||x.status==='غائب').length;
+ rows.push(['الإجمالي',pTotal,aTotal,percent(pTotal,relevant)+'%',notesTotal,visibleTotal]);
+ exportCsv(rows,'zad-teacher-attendance-'+new Date().toISOString().slice(0,10)+'.csv','teacherReportExportStatus');
 }
-
 async function boot(user){
   const preview=await getPreviewContext(user,'teacher');
   if(preview.denied){location.replace('../../dashboard/admin/index.html');return;}

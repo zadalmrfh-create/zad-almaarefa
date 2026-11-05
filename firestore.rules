@@ -369,6 +369,12 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // استحقاقات المعلمين والإضافي الإداري: سجلات مالية خاصة بالإدارة.
+    // لا تُضاف إلى مستحقات الطالب ولا تُعرض لحساب المعلم من Firebase.
+    match /teacherPayrollAdjustments/{lessonId} {
+      allow read, create, update, delete: if isAdmin();
+    }
+
     // صلاحيات الحضور: الإدارة فقط تنشئ وتعدل وتحذف السجلات.
     // المعلم المعتمد يمكنه الاطلاع على السجلات المرتبطة بمعرّفه فقط.
     match /lessonAttendance/{attendanceId} {
@@ -725,6 +731,121 @@ service cloud.firestore {
       allow get: if signedIn();
       allow list: if isAdmin();
       allow create, update, delete: if isAdmin();
+    }
+
+    // Weekly review: original student identity is visible ONLY to admin and the author.
+    function validScore(v, allowNA) {
+      return v is int && (v >= 1 && v <= 5 || (allowNA && v == 0));
+    }
+    function validWeeklyScores(scores, kind) {
+      return scores is list && (
+        (kind == 'teacher' && scores.size() == 6
+          && validScore(scores[0], false) && validScore(scores[1], false)
+          && validScore(scores[2], false) && validScore(scores[3], false)
+          && validScore(scores[4], false) && validScore(scores[5], false))
+        || (kind in ['platform','administration'] && scores.size() == 4
+          && validScore(scores[0], true) && validScore(scores[1], true)
+          && validScore(scores[2], true) && validScore(scores[3], true))
+      );
+    }
+    function isStudentAccount() {
+      return signedIn() && userExists(request.auth.uid)
+        && getUser(request.auth.uid).data.role == 'student';
+    }
+    function validTeacherEvidence(data) {
+      return data.teacherUid is string && data.teacherUid.size() > 5
+        && data.sourceAttendanceId is string && data.sourceAttendanceId.size() > 0
+        && data.sourceBookingId is string && data.sourceBookingId.size() > 0
+        && exists(/databases/$(database)/documents/lessonAttendance/$(data.sourceAttendanceId))
+        && exists(/databases/$(database)/documents/bookings/$(data.sourceBookingId))
+        && get(/databases/$(database)/documents/lessonAttendance/$(data.sourceAttendanceId)).data.studentUid == request.auth.uid
+        && get(/databases/$(database)/documents/lessonAttendance/$(data.sourceAttendanceId)).data.teacherUid == data.teacherUid
+        && get(/databases/$(database)/documents/lessonAttendance/$(data.sourceAttendanceId)).data.status == 'حاضر'
+        && get(/databases/$(database)/documents/lessonAttendance/$(data.sourceAttendanceId)).data.date >= data.weekStart
+        && get(/databases/$(database)/documents/lessonAttendance/$(data.sourceAttendanceId)).data.date <= data.weekEnd
+        && get(/databases/$(database)/documents/bookings/$(data.sourceBookingId)).data.studentUid == request.auth.uid
+        && get(/databases/$(database)/documents/bookings/$(data.sourceBookingId)).data.teacherUid == data.teacherUid
+        && !(get(/databases/$(database)/documents/bookings/$(data.sourceBookingId)).data.status in ['مرفوض','ملغى','ملغي','rejected','cancelled']);
+    }
+    match /weeklyReviewPrivate/{reviewId} {
+      allow get: if isAdmin() || (signedIn() && reviewId.matches(request.auth.uid + '__.*'));
+      allow list: if isAdmin();
+      allow create: if isStudentAccount()
+        && request.resource.data.keys().hasOnly([
+          'studentUid','kind','weekStart','weekEnd','teacherUid','sourceAttendanceId',
+          'sourceBookingId','feedbackId','scores','comment','publishConsent','createdAt'
+        ])
+        && request.resource.data.keys().hasAll([
+          'studentUid','kind','weekStart','weekEnd','teacherUid','sourceAttendanceId',
+          'sourceBookingId','feedbackId','scores','comment','publishConsent','createdAt'
+        ])
+        && request.resource.data.studentUid == request.auth.uid
+        && request.resource.data.kind in ['teacher','platform','administration']
+        && request.resource.data.weekStart is string && request.resource.data.weekStart.size() == 10
+        && request.resource.data.weekEnd is string && request.resource.data.weekEnd.size() == 10
+        && request.resource.data.weekStart <= request.resource.data.weekEnd
+        && request.resource.data.comment is string && request.resource.data.comment.size() <= 700
+        && request.resource.data.publishConsent is bool
+        && request.resource.data.createdAt == request.time
+        && validWeeklyScores(request.resource.data.scores,request.resource.data.kind)
+        && (
+          (request.resource.data.kind == 'teacher'
+            && reviewId == request.auth.uid + '__' + request.resource.data.weekStart + '__teacher__' + request.resource.data.teacherUid
+            && request.resource.data.feedbackId is string && request.resource.data.feedbackId.size() >= 10
+            && validTeacherEvidence(request.resource.data))
+          || (request.resource.data.kind in ['platform','administration']
+            && reviewId == request.auth.uid + '__' + request.resource.data.weekStart + '__' + request.resource.data.kind
+            && request.resource.data.teacherUid == ''
+            && request.resource.data.sourceAttendanceId == ''
+            && request.resource.data.sourceBookingId == ''
+            && request.resource.data.feedbackId == ''
+            && (request.resource.data.kind != 'administration' || request.resource.data.publishConsent == false))
+        );
+      allow update, delete: if false;
+    }
+    // Anonymized copies: teacher reads NO student UID, names, email or original doc ID.
+    match /weeklyTeacherFeedback/{feedbackId} {
+      allow get, list: if isAdmin()
+        || (isTeacher() && resource.data.teacherUid == request.auth.uid);
+      allow create: if isStudentAccount()
+        && request.resource.data.keys().hasOnly(['kind','teacherUid','weekStart','scores','comment','createdAt'])
+        && request.resource.data.keys().hasAll(['kind','teacherUid','weekStart','scores','comment','createdAt'])
+        && request.resource.data.kind == 'teacher'
+        && request.resource.data.teacherUid is string
+        && request.resource.data.weekStart is string
+        && validWeeklyScores(request.resource.data.scores,'teacher')
+        && request.resource.data.comment is string && request.resource.data.comment.size() <= 700
+        && request.resource.data.createdAt == request.time
+        && getAfter(/databases/$(database)/documents/weeklyReviewPrivate/$(request.auth.uid + '__' + request.resource.data.weekStart + '__teacher__' + request.resource.data.teacherUid)).data.feedbackId == feedbackId
+        && getAfter(/databases/$(database)/documents/weeklyReviewPrivate/$(request.auth.uid + '__' + request.resource.data.weekStart + '__teacher__' + request.resource.data.teacherUid)).data.scores == request.resource.data.scores
+        && getAfter(/databases/$(database)/documents/weeklyReviewPrivate/$(request.auth.uid + '__' + request.resource.data.weekStart + '__teacher__' + request.resource.data.teacherUid)).data.comment == request.resource.data.comment;
+      allow update, delete: if false;
+    }
+    // Student comments are published atomically with their weekly private review.
+    // Random public document IDs contain no student identifier.
+    match /publicTestimonials/{testimonialId} {
+      allow get, list: if resource.data.status == 'published' || isAdmin();
+      allow create: if isStudentAccount()
+        && request.resource.data.keys().hasOnly(['status','kind','text','rating','teacherUid','teacherName','weekStart','createdAt'])
+        && request.resource.data.keys().hasAll(['status','kind','text','rating','teacherUid','teacherName','weekStart','createdAt'])
+        && request.resource.data.status == 'published'
+        && request.resource.data.kind in ['teacher','platform']
+        && request.resource.data.text is string
+        && request.resource.data.text.size() > 0
+        && request.resource.data.text.size() <= 700
+        && request.resource.data.weekStart is string
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.teacherUid is string
+        && request.resource.data.teacherName is string
+        && request.resource.data.teacherName.size() <= 120
+        && request.resource.data.rating is int
+        && request.resource.data.rating >= 0
+        && request.resource.data.rating <= 5
+        && !exists(/databases/$(database)/documents/weeklyReviewPrivate/$(request.auth.uid + '__' + request.resource.data.weekStart + '__' + request.resource.data.kind + (request.resource.data.kind == 'teacher' ? '__' + request.resource.data.teacherUid : '')))
+        && getAfter(/databases/$(database)/documents/weeklyReviewPrivate/$(request.auth.uid + '__' + request.resource.data.weekStart + '__' + request.resource.data.kind + (request.resource.data.kind == 'teacher' ? '__' + request.resource.data.teacherUid : ''))).data.studentUid == request.auth.uid
+        && getAfter(/databases/$(database)/documents/weeklyReviewPrivate/$(request.auth.uid + '__' + request.resource.data.weekStart + '__' + request.resource.data.kind + (request.resource.data.kind == 'teacher' ? '__' + request.resource.data.teacherUid : ''))).data.comment == request.resource.data.text
+        && getAfter(/databases/$(database)/documents/weeklyReviewPrivate/$(request.auth.uid + '__' + request.resource.data.weekStart + '__' + request.resource.data.kind + (request.resource.data.kind == 'teacher' ? '__' + request.resource.data.teacherUid : ''))).data.publishConsent == true;
+      allow update, delete: if isAdmin();
     }
 
     match /{document=**} {

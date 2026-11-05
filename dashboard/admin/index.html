@@ -74,6 +74,7 @@ onAuthStateChanged(auth, async (user) => {
 });
 </script>
 <link rel="stylesheet" href="admin-workspace.css">
+<link rel="stylesheet" href="teacher-payroll-admin.css?v=20261105-1">
 <style>
 .zad-subject-picker{position:relative;width:100%;min-width:0;color:#f7e5aa}
 .zad-subject-picker summary{list-style:none;cursor:pointer;border:1px solid #586a89;background:#111d32;padding:12px 15px;border-radius:11px;min-height:45px;user-select:none}
@@ -133,6 +134,7 @@ onAuthStateChanged(auth, async (user) => {
 
 
     <div class="actions">
+        <a class="btn" href="../../sections/payment-policy.html" title="عرض سياسة المدفوعات">💳 سياسة المدفوعات</a>
 
       <a
         class="btn"
@@ -227,13 +229,33 @@ onAuthStateChanged(auth, async (user) => {
         <a class="admin-quick-link" href="#codeExamResultsSection"><span>📘</span><strong>نتائج الامتحانات</strong><small>درجات وتقارير</small></a>
         <a class="admin-quick-link" href="#libraryDownloadTracking"><span>📥</span><strong>تنزيلات المكتبة</strong><small>متابعة التنزيل</small></a>
         
+        <a class="admin-quick-link" href="#weeklyReviewsAdmin"><span>⭐</span><strong>التقييمات الأسبوعية</strong><small>المعلمون والمنصة والإدارة</small></a>
         <a class="admin-quick-link" href="#attendanceManagement"><span>✅</span><strong>الحضور</strong><small>متابعة الغياب</small></a>
+        <a class="admin-quick-link" href="#teacherPayrollManagement"><span>💼</span><strong>مرتبات المعلمين</strong><small>الأسبوع والإضافي والتقارير</small></a>
         <a class="admin-quick-link" href="#loginLogsManagement"><span>🔐</span><strong>سجلات الدخول</strong><small>آخر النشاطات</small></a>
         <a class="admin-quick-link" href="#contentManagement"><span>⚙️</span><strong>المحتوى</strong><small>إدارة محتوى المنصة</small></a>
       </div>
     </section>
 
 
+<section class="card" id="weeklyReviewsAdmin" dir="rtl">
+  <h2>⭐ مركز جودة التعليم — التقييمات الأسبوعية</h2>
+  <p>تقييمات المعلمين والمنصة والإدارة، مع أسماء الطلاب للأدمن فقط. آراء المعلمين المنشورة لا تحتوي على هوية الطالب. لا يمكن تعديل درجات التقييم.</p>
+  <div class="zwr-controls">
+    <label>النوع<select id="zwrAdminKind"><option value="">جميع الأنواع</option><option value="teacher">المعلمون</option><option value="platform">المنصة</option><option value="administration">الإدارة</option></select></label>
+    <label>الأسبوع<select id="zwrAdminWeek"><option value="">كل الأسابيع</option></select></label>
+    <label>الطالب<input id="zwrAdminStudent" type="search" placeholder="اسم الطالب" style="padding:10px;background:#14243a;color:#fff;border:1px solid #526987;border-radius:11px"></label>
+    <label>المعلم<select id="zwrAdminTeacher"><option value="">كل المعلمين</option></select></label>
+    <button type="button" class="btn gold" id="zwrAdminRefresh">🔄 تحديث</button>
+    <button type="button" class="btn" id="zwrAdminPrint">🖨️ طباعة</button>
+    <button type="button" class="btn" id="zwrAdminCSV">⬇️ CSV</button>
+  </div>
+  <p id="zwrAdminStats" role="status">جارٍ التحميل...</p>
+  <div id="zwrAdminMetrics" class="zwr-metrics"></div>
+  <div id="zwrAdminResults"></div>
+  <p>نشر الآراء للعامة متاح فقط إذا وافق الطالب على النشر. يقوم الأدمن باعتماد الرأي أو إلغاء نشره دون تغيير نص التقييم الأصلي.</p>
+</section>
+<link rel="stylesheet" href="../../reviews/weekly-admin.css"><script type="module" src="weekly-reviews-admin.js?v=20261105-evals1"></script>
 <section class="card" id="manualPaymentLedger" dir="rtl">
 <h2>💰 سجل المدفوعات اليدوية</h2><p>سجل دفعة حتى لو الطالب لم يرسل طلب دفع. السجل مستقل عن اعتماد تحويلات فودافون ولا يخصم تلقائيًا من المستحقات، لمنع احتساب المبلغ مرتين.</p>
 <form id="manualLedgerForm" class="admin-form">
@@ -748,7 +770,25 @@ onAuthStateChanged(auth, async (user) => {
     </section>
 
 
-    <section class="card" id="attendanceManagement">
+    <section class="card" id="teacherPayrollManagement" dir="rtl">
+  <div class="salary-heading"><div><h2>💼 إدارة مرتبات المعلمين</h2><p>تقارير مستقلة للإدارة، محسوبة على الحصص التي حالتها «حاضر» فقط. أجر الحصة والإضافي من المنصة لا يغيّران مستحقات الطالب.</p></div><button type="button" class="btn gold" id="salaryRefresh">🔄 تحديث</button></div>
+  <div class="salary-filters">
+    <label>👨‍🏫 المعلم<select id="salaryTeacher"><option value="all">جميع المعلمين</option></select></label>
+    <label>📅 من تاريخ<input type="date" id="salaryFrom"></label>
+    <label>📅 إلى تاريخ<input type="date" id="salaryTo"></label>
+    <label>🎓 الطالب<select id="salaryStudent"><option value="all">جميع الطلاب</option></select></label>
+    <label>📚 المادة<select id="salarySubject"><option value="all">جميع المواد</option></select></label>
+  </div>
+  <div class="salary-actions"><button type="button" class="btn gold" id="salaryThisWeek">الأسبوع الحالي</button><button type="button" class="btn" id="salaryLastWeek">الأسبوع السابق</button><button type="button" class="btn" id="salaryAllDates">كل الفترات</button><button type="button" class="btn" id="salaryPrint">🖨️ طباعة التقرير</button><button type="button" class="btn" id="salaryCSV">⬇️ تحميل CSV</button></div>
+  <p id="salaryStatus" role="status" aria-live="polite">جارٍ تحميل المرتبات...</p>
+  <div id="salaryTotals" class="salary-totals"></div>
+  <h3>👨‍🏫 مستحقات كل معلم خلال الفترة</h3>
+  <div id="salaryTeacherCards" class="salary-teacher-cards"></div>
+  <h3>📋 تفاصيل الحصص والمستحقات</h3>
+  <div class="table-wrap salary-table-wrap"><table class="table"><thead><tr><th>التاريخ</th><th>المعلم</th><th>الطالب</th><th>المادة</th><th>أجر الحصة</th><th>إضافي المنصة</th><th>إجمالي الحصة</th><th>ملاحظات</th><th>تعديل</th></tr></thead><tbody id="salaryRows"><tr><td colspan="9">جارٍ التحميل...</td></tr></tbody></table></div>
+  <p class="salary-explain">مهم: عند تسجيل أكثر من مادة في حصة واحدة تُحسب حصة واحدة فقط. وإذا كان السجل يضم أكثر من معلم، يجب تحديد المعلم المستحق من زر «تعديل الأجر». الإضافي تتحمله المنصة، وليس الطالب. هذا تقرير مستحقات وليس إثبات صرف.</p>
+</section>
+<section class="card" id="attendanceManagement">
       <h2>📋 تسجيل الحضور والغياب يدويًا</h2>
       <p class="admin-muted">اختر حساب الطالب من المنصة، ثم حدد التاريخ والمواد وسعر الحصة. يمكنك اختيار مادة واحدة أو أكثر، ولا يشترط إنشاء محاضرة مباشرة.</p>
       <form id="manualAttendanceForm" class="manual-attendance-form">
@@ -826,7 +866,7 @@ onAuthStateChanged(auth, async (user) => {
         <button id="attendanceLogClear" class="btn" type="button">↺ مسح التصفية</button>
       </div>
       <p id="attendanceLogCount" class="zad-attendance-log-count" role="status" aria-live="polite">جارٍ تحميل السجلات...</p>
-      <div class="table-wrap"><table class="table"><thead><tr><th>الطالب</th><th>التاريخ</th><th>المادة</th><th>الحالة</th><th>سعر الحصة</th><th>الدفع</th><th>سجله</th><th>إجراء</th></tr></thead><tbody id="attendanceRows"><tr><td colspan="8">جارٍ تحميل السجلات...</td></tr></tbody></table></div><details class="zad-pay-archive-history" dir="rtl"><summary>🗃️ الحصص الملغاة — سجل محفوظ للمراجعة والاسترجاع</summary><div id="zadArchivedAttendanceList">جارٍ التحميل...</div></details>
+      <div class="table-wrap"><table class="table"><thead><tr><th>الطالب</th><th>التاريخ</th><th>المادة</th><th>الحالة</th><th>سعر الحصة</th><th>الدفع</th><th>سجله</th><th>إضافي المعلم</th><th>إجراء</th></tr></thead><tbody id="attendanceRows"><tr><td colspan="9">جارٍ تحميل السجلات...</td></tr></tbody></table></div><details class="zad-pay-archive-history" dir="rtl"><summary>🗃️ الحصص الملغاة — سجل محفوظ للمراجعة والاسترجاع</summary><div id="zadArchivedAttendanceList">جارٍ التحميل...</div></details>
       <div id="attendanceReportTools" dir="rtl" style="margin:16px 0;padding:15px;border:1px solid #bca26a;border-radius:14px">
         <h3>📊 تقرير الحضور والمدفوعات حسب الفلاتر الموجودة بالأعلى</h3>
         <p>اختر المعلم فقط لعرض كل طلابه، أو ابحث عن طالب مع تحديد المعلم. زر الطباعة يطبع البيانات المطابقة للبحث والتواريخ وحالات الدفع المحددة أعلاه.</p>
@@ -1017,6 +1057,7 @@ onAuthStateChanged(auth, async (user) => {
     ====================================================== -->
 
     <section
+      id="adminNotificationsManagement"
       class="card notifications-admin-card"
     >
 
@@ -3871,7 +3912,8 @@ guard('admin', async () => {
 <script type="module" src="admin-activity-alerts.js"></script>
 <script type="module" src="admin-enhancements.js"></script>
 <script type="module" src="admin-workspace.js"></script>
-<script type="module" src="attendance-admin.js?v=20261103-sync1"></script>
+<script type="module" src="attendance-admin.js?v=20261105-salary1"></script>
+<script type="module" src="teacher-payroll-admin.js?v=20261105-1"></script>
 <script type="module" src="teacher-linker-admin.js?v=20261105-1"></script>
 
 

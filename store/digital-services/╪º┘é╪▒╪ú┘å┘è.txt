@@ -1,0 +1,14 @@
+تمت إضافة إعدادات Firebase العامة إلى ملف js/firebase-config.js لمشروع malek-digital-services.
+لا داعي للصق كود Firebase مرة أخرى؛ اتبع ملف ابدأ_من_هنا.txt لتفعيل Authentication وFirestore وبقية الخطوات.
+
+نسخة MALEK Digital Services Premium
+
+1. افتح index.html لتجربة التصميم والحاسبة.
+2. لتفعيل قاعدة البيانات والطلبات، اقرأ README.md بالكامل ثم أضف بيانات Firebase في js/firebase-config.js.
+3. أنشئ Firestore وانشر قواعد firestore.rules، وفعّل Email/Password وAnonymous.
+4. أنشئ المستند settings/public ثم admins/{UID} حسب README.md.
+5. ارفع الملفات على GitHub Pages في جذر المستودع واختبر عملية حقيقية.
+
+رقم التواصل الحالي: 01042231211.
+لا تطلب كلمات مرور QUREO أو رموز التحقق من العملاء.
+التتبع والإدارة يحتاجان Firebase فعليًا؛ لا يوجد نجاح وهمي قبل التفعيل.

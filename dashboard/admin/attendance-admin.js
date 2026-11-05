@@ -161,7 +161,7 @@ function renderAttendanceLog(){
     <td>${esc(x.studentName || '-')}</td><td>${esc(x.date || '-')}</td><td>${esc(x.subject || '-')}</td>
     <td>${esc(x.status || '-')}</td><td>${money(x.price)}</td>
     <td><button type="button" class="btn ${x.paid === true ? 'gold' : ''}" data-paid="${esc(x.id)}" aria-label="تغيير حالة الدفع">${creditFor(x)?.afterPiastres===0?'✅ مغطاة / مدفوعة':creditFor(x)?.advanceAppliedPiastres>0?'🟡 جزء مغطى بالمقدم، المتبقي '+cashMoney(creditFor(x).afterPiastres):amountRemaining(x)===0?'✅ مدفوعة':amountPaid(x)>0?'🟡 مدفوع جزئيًا '+cashMoney(amountPaid(x)):'⏳ غير مدفوعة'}</button></td>
-    <td>${esc(x.teacherName || 'الإدارة')}</td><td><button type="button" class="btn" data-edit="${esc(x.id)}">✏️ تعديل الحصة</button> <button type="button" class="btn danger" data-del="${esc(x.id)}">حذف</button></td></tr>`).join('') : `<tr><td colspan="8">${records.length?'لا توجد حصص مطابقة للبحث والتصفية. جرّب مسح الفلاتر.':'لا توجد سجلات حضور بعد.'}</td></tr>`;
+    <td>${esc(x.teacherName || 'الإدارة')}</td><td>${x.status==='حاضر'?`<button type="button" class="btn" data-payroll-extra="${esc(x.id)}">➕ إضافي المرتب</button>`:'—'}</td><td><button type="button" class="btn" data-edit="${esc(x.id)}">✏️ تعديل الحصة</button> <button type="button" class="btn danger" data-del="${esc(x.id)}">حذف</button></td></tr>`).join('') : `<tr><td colspan="9">${records.length?'لا توجد حصص مطابقة للبحث والتصفية. جرّب مسح الفلاتر.':'لا توجد سجلات حضور بعد.'}</td></tr>`;
 }
 
 function render() {
@@ -407,6 +407,8 @@ attendanceEditForm.addEventListener('submit',async event=>{
 });
 
 rows?.addEventListener('click', async e => {
+  const bonusButton=e.target.closest('[data-payroll-extra]');
+  if(bonusButton){ document.dispatchEvent(new CustomEvent('zad:payroll-edit',{detail:{lessonId:bonusButton.dataset.payrollExtra}}));return; }
   const edit = e.target.closest('[data-edit]'), del = e.target.closest('[data-del]'), paid = e.target.closest('[data-paid]');
   const x = records.find(r => r.id === (edit?.dataset.edit || del?.dataset.del || paid?.dataset.paid));
   if (!x) return;
@@ -464,55 +466,169 @@ $('zadArchivedAttendanceList')?.addEventListener('click',async e=>{
 });
 
 
-// التقرير يستخدم سجلات الحضور المحملة بالفعل بصلاحيات الأدمن، ولا ينشئ طلب قراءة جديد.
+// الطباعة تعتمد على سجلات الأدمن المحملة بالفعل، دون قراءة إضافية أو تغيير مالي.
 function attendancePrintReport() {
   const matched = filteredAttendanceRecords();
-  const teacher = logFilterValue('attendanceLogTeacher','all');
-  const subject = logFilterValue('attendanceLogSubject','all');
-  const status = logFilterValue('attendanceLogStatus','all');
-  const payment = logFilterValue('attendanceLogPayment','all');
+  const teacher = logFilterValue('attendanceLogTeacher', 'all');
+  const subject = logFilterValue('attendanceLogSubject', 'all');
+  const status = logFilterValue('attendanceLogStatus', 'all');
+  const payment = logFilterValue('attendanceLogPayment', 'all');
   const search = logFilterValue('attendanceLogSearch');
   const from = logFilterValue('attendanceLogFrom');
   const to = logFilterValue('attendanceLogTo');
-  const due = matched.reduce((sum,r)=>sum+amountDue(r),0);
-  const paidCash = matched.reduce((sum,r)=>sum+amountPaid(r),0);
-  const appliedAdvance = matched.reduce((sum,r)=>sum+(creditFor(r)?.advanceAppliedPiastres||0),0);
-  const remaining = matched.reduce((sum,r)=>sum+attendanceLogRemaining(r),0);
+  const total = matched.reduce((s, r) => {
+    s.due += amountDue(r);
+    s.cash += amountPaid(r);
+    s.advance += creditFor(r)?.advanceAppliedPiastres || 0;
+    s.remaining += attendanceLogRemaining(r);
+    if (r.status === 'حاضر') s.present++;
+    if (r.status === 'غائب') s.absent++;
+    if (r.status === 'اعتذر') s.excused++;
+    return s;
+  }, {due:0, cash:0, advance:0, remaining:0, present:0, absent:0, excused:0});
   const groups = new Map();
   for (const r of matched) {
-    const key = r.studentUid || 'name:'+String(r.studentName||'');
-    const entry = groups.get(key) || {name:r.studentName||'غير محدد',count:0,present:0,absent:0,due:0,paid:0,advance:0,remaining:0};
-    entry.count++;
-    if(r.status==='حاضر')entry.present++;
-    if(r.status==='غائب')entry.absent++;
-    entry.due+=amountDue(r);
-    entry.paid+=amountPaid(r);
-    entry.advance+=(creditFor(r)?.advanceAppliedPiastres||0);
-    entry.remaining+=attendanceLogRemaining(r);
-    groups.set(key,entry);
+    const key = r.studentUid || 'name:' + String(r.studentName || '');
+    const g = groups.get(key) || {name:r.studentName || 'غير محدد', count:0,present:0,absent:0,excused:0,due:0,cash:0,advance:0,remaining:0};
+    g.count++;
+    if (r.status === 'حاضر') g.present++;
+    if (r.status === 'غائب') g.absent++;
+    if (r.status === 'اعتذر') g.excused++;
+    g.due += amountDue(r);
+    g.cash += amountPaid(r);
+    g.advance += creditFor(r)?.advanceAppliedPiastres || 0;
+    g.remaining += attendanceLogRemaining(r);
+    groups.set(key, g);
   }
-  const format=n=>cashMoney(n);
-  const tr=(values)=>'<tr>'+values.map(v=>'<td>'+esc(v)+'</td>').join('')+'</tr>';
-  const summaryRows=[...groups.values()].map(r=>tr([r.name,r.count,r.present,r.absent,format(r.due),format(r.paid),format(r.advance),format(r.remaining)])).join('');
-  const detailRows=matched.map(r=>tr([r.date||'',r.studentName||'',r.teacherName||'الإدارة',r.subject||'',r.status||'',format(amountDue(r)),format(amountPaid(r)),format(creditFor(r)?.advanceAppliedPiastres||0),format(attendanceLogRemaining(r))])).join('');
-  const generated=new Date().toLocaleString('ar-EG');
-  const content=`<h1>أكاديمية زاد المعرفة التعليمية</h1><h2>تقرير الحضور والغياب والمدفوعات</h2>
-  <p>تاريخ الإصدار: ${esc(generated)}</p>
-  <p>المعلم: ${esc(teacher==='all'?'جميع المعلمين':teacher)} | الطالب / البحث: ${esc(search||'جميع الطلاب')} | المادة: ${esc(subject==='all'?'جميع المواد':subject)}</p>
-  <p>الفترة: ${esc(from||'من البداية')} إلى ${esc(to||'آخر سجل')} | حالة الحضور: ${esc(status==='all'?'الكل':status)} | حالة الدفع: ${esc(payment==='all'?'الكل':payment)}</p>
-  <h3>الإجماليات</h3><p>عدد الحصص: ${matched.length} | عدد الطلاب: ${groups.size} | قيمة الحصص: ${format(due)} | المسدد مباشرة: ${format(paidCash)} | المقدم المستخدم لتغطية الحصص: ${format(appliedAdvance)} | المتبقي على الحصص: ${format(remaining)}</p>
-  <h3>ملخص جميع الطلاب المطابقين</h3><table><thead><tr><th>الطالب</th><th>الحصص</th><th>حضور</th><th>غياب</th><th>القيمة</th><th>المسدد مباشرة</th><th>المقدم المستخدم</th><th>المتبقي</th></tr></thead><tbody>${summaryRows||'<tr><td colspan="8">لا توجد سجلات مطابقة</td></tr>'}</tbody></table>
-  <h3>تفاصيل الحضور والغياب والمدفوعات المرتبطة بالحصص</h3><table><thead><tr><th>التاريخ</th><th>الطالب</th><th>المعلم</th><th>المادة</th><th>الحالة</th><th>قيمة الحصة</th><th>المسدد</th><th>المقدم المستخدم</th><th>المتبقي</th></tr></thead><tbody>${detailRows||'<tr><td colspan="9">لا توجد سجلات مطابقة</td></tr>'}</tbody></table>
-  <p class="note">ملاحظة محاسبية: يوضح التقرير المدفوعات المسجلة على الحصص والمقدم المستخدم منها فقط. الدفعات غير المخصصة لحصص هذا المعلم ليست ضمن الإجمالي، ولا يمثل هذا التقرير كشف مستحقات المعلم أو إثبات صرفها. الأرقام وفق البيانات المحفوظة وقت الطباعة.</p>`;
-  // iframe مخفي للطباعة بدون فتح نافذة منبثقة قد يمنعها المتصفح.
+  const format = value => cashMoney(value);
+  const moneyCell = value => `<td class="money" dir="ltr">${esc(format(value))}</td>`;
+  const numberCell = value => `<td class="number">${esc(value)}</td>`;
+  const groupRows = [...groups.values()].sort((a,b)=>a.name.localeCompare(b.name,'ar')).map(g=>`<tr>
+    <td class="name">${esc(g.name)}</td>${numberCell(g.count)}${numberCell(g.present)}${numberCell(g.absent)}
+    ${moneyCell(g.due)}${moneyCell(g.cash)}${moneyCell(g.advance)}${moneyCell(g.cash+g.advance)}${moneyCell(g.remaining)}
+  </tr>`).join('');
+  const detailRows = matched.slice().sort((a,b)=>String(a.date||'').localeCompare(String(b.date||''))).map(r=>`<tr>
+    <td class="date" dir="ltr">${esc(r.date||'—')}</td><td class="name">${esc(r.studentName||'—')}</td>
+    <td>${esc(r.teacherName||'الإدارة')}</td><td>${esc(r.subject||'—')}</td>
+    <td class="status">${esc(r.status||'—')}</td>${moneyCell(amountDue(r))}${moneyCell(amountPaid(r))}
+    ${moneyCell(creditFor(r)?.advanceAppliedPiastres||0)}${moneyCell(attendanceLogRemaining(r))}
+  </tr>`).join('');
+  const issued = new Intl.DateTimeFormat('ar-EG',{dateStyle:'long',timeStyle:'short'}).format(new Date());
+  const summary = (label, value, variant='')=>`<div class="kpi ${variant}"><span>${esc(label)}</span><strong>${esc(value)}</strong></div>`;
+  const info = (label, value)=>`<div class="info"><span>${esc(label)}</span><strong>${esc(value)}</strong></div>`;
+  const classTotal = ' class="total"';
+  const content = `
+    <header class="report-head">
+      <img class="report-logo" src="${esc(new URL('../../images/logo.png', window.location.href).href)}" alt="شعار أكاديمية زاد المعرفة التعليمية">
+      <div class="brand"><div class="academy">أكاديمية زاد المعرفة التعليمية</div><div class="brand-small">نظام إدارة الحضور والحسابات المالية</div></div>
+      <div class="report-mark">تقرير إداري رسمي<span>للاطلاع والمراجعة</span></div>
+    </header>
+    <section class="report-heading"><h1>تقرير الحضور والغياب والمدفوعات</h1><p>كشف مطابق للفلاتر المختارة من لوحة الإدارة</p></section>
+    <div class="metadata">
+      ${info('المعلم',teacher==='all'?'جميع المعلمين':teacher)}
+      ${info('الطالب / البحث',search||'جميع الطلاب')}
+      ${info('المادة',subject==='all'?'جميع المواد':subject)}
+      ${info('الفترة',`${from||'من البداية'} — ${to||'آخر سجل'}`)}
+      ${info('حالة الحضور',status==='all'?'جميع الحالات':status)}
+      ${info('حالة الدفع',payment==='all'?'جميع الحالات':payment)}
+    </div>
+    <div class="report-date">تاريخ الإصدار: <strong>${esc(issued)}</strong></div>
+    <section class="kpis">
+      ${summary('عدد الطلاب',String(groups.size))}
+      ${summary('عدد الحصص',String(matched.length))}
+      ${summary('إجمالي قيمة الحصص',format(total.due))}
+      ${summary('المدفوع مباشرة',format(total.cash))}
+      ${summary('المقدم المستخدم',format(total.advance))}
+      ${summary('إجمالي المحصّل',format(total.cash+total.advance),'received')}
+      ${summary('المتبقي على الحصص',format(total.remaining),'remaining')}
+    </section>
+    <section class="report-section">
+      <h2><b>01</b> ملخص الطلاب والحسابات <small>إجمالي كل طالب</small></h2>
+      <table class="report-table summary-table"><thead><tr>
+        <th>اسم الطالب</th><th>الحصص</th><th>حضور</th><th>غياب</th><th>قيمة الحصص</th>
+        <th>مدفوع مباشر</th><th>مقدم مستخدم</th><th>إجمالي المحصل</th><th>المتبقي</th>
+      </tr></thead><tbody>${groupRows||'<tr><td colspan="9" class="empty">لا توجد سجلات مطابقة للفلاتر</td></tr>'}</tbody>
+      <tfoot><tr${classTotal}><th>الإجمالي (${groups.size} طلاب)</th><th>${matched.length}</th><th>${total.present}</th><th>${total.absent}</th>
+        <th>${esc(format(total.due))}</th><th>${esc(format(total.cash))}</th><th>${esc(format(total.advance))}</th>
+        <th>${esc(format(total.cash+total.advance))}</th><th>${esc(format(total.remaining))}</th></tr></tfoot></table>
+    </section>
+    <section class="report-section details">
+      <h2><b>02</b> تفاصيل الحصص والحضور والمدفوعات <small>سجل كل حصة</small></h2>
+      <table class="report-table detail-table"><thead><tr>
+        <th>التاريخ</th><th>اسم الطالب</th><th>المعلم</th><th>المادة</th><th>الحالة</th>
+        <th>قيمة الحصة</th><th>مدفوع مباشر</th><th>مقدم مستخدم</th><th>المتبقي</th>
+      </tr></thead><tbody>${detailRows||'<tr><td colspan="9" class="empty">لا توجد حصص مطابقة</td></tr>'}</tbody>
+      <tfoot><tr class="total"><th colspan="5">الإجمالي النهائي لجميع الحصص</th>
+        <th>${esc(format(total.due))}</th><th>${esc(format(total.cash))}</th><th>${esc(format(total.advance))}</th><th>${esc(format(total.remaining))}</th></tr></tfoot></table>
+    </section>
+    <p class="accounting-note"><strong>تنبيه محاسبي:</strong> الأرقام تشمل فقط المدفوعات المباشرة والمقدم المستخدم المرتبطين بالحصص الظاهرة. الدفعات غير المخصصة لحصص معينة لا تُحسب هنا؛ وهذا التقرير ليس كشفًا بمستحقات المعلم ولا إثباتًا بصرفها.</p>
+    <footer class="report-footer"><span>أكاديمية زاد المعرفة التعليمية | نظام التقارير</span><span>تقرير للاطلاع فقط — لا يغيّر أي بيانات أو مدفوعات</span></footer>`;
+
+  // نافذة طباعة مستقلة داخل الصفحة. تجهيز HTML وألوان الطباعة داخل الإطار
+  // يضمن عدم تأثر التقرير بخلفية لوحة الإدارة أو أنماطها الداكنة.
+  const css = `
+    @page{size:A4 landscape;margin:11mm 10mm 12mm}
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:#fff!important;color:#13263e;direction:rtl;font-family:Tahoma,Arial,sans-serif;font-size:14px;line-height:1.7;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    body{padding:8px 4px}
+    .report-head{display:flex;align-items:center;gap:15px;border-bottom:3px solid #c9a343;padding:2px 0 12px;margin-bottom:13px;break-inside:avoid}
+    .report-logo{width:90px;height:90px;object-fit:contain;flex-shrink:0}
+    .brand{flex:1}.academy{font-size:23px;font-weight:900;color:#132c4c;line-height:1.4}.brand-small{font-size:13px;color:#52647c;margin-top:3px}
+    .report-mark{font-size:12px;font-weight:800;color:#8c691e;border:1px solid #d4b65f;border-radius:9px;padding:8px 13px;text-align:center;min-width:132px}
+    .report-mark span{display:block;font-size:10px;font-weight:500;color:#55647a}
+    .report-heading{text-align:center;margin-bottom:13px;break-inside:avoid}.report-heading h1{font-size:22px;color:#122943;margin:0;font-weight:900}.report-heading p{margin:3px 0;color:#53647b;font-size:13.3px}
+    .metadata{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0 7px;break-inside:avoid}
+    .info{border:1px solid #d9e0eb;background:#f8fafd;border-radius:7px;padding:6px 10px;min-width:0}.info span{display:block;color:#596a80;font-size:11.8px}.info strong{display:block;color:#182c49;font-size:13.2px;overflow-wrap:anywhere}
+    .report-date{font-size:11.5px;color:#52647b;margin:0 0 10px}
+    .kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:12px 0 18px;break-inside:avoid}
+    .kpi{min-width:0;border:1px solid #dce4ee;border-top:3px solid #c29b39;border-radius:7px;background:#f8fafd;padding:9px 11px}
+    .kpi span{display:block;font-size:11.8px;color:#52647b}.kpi strong{display:block;font-weight:900;font-size:17px;color:#142f4e;overflow-wrap:anywhere;white-space:normal}
+    .kpi.received{border-top-color:#267d6b;background:#eef8f4}.kpi.remaining{border-top-color:#b36b28;background:#fff8ed}
+    .report-section{margin:16px 0 17px}.report-section h2{display:flex;align-items:center;gap:9px;color:#142b48;font-size:15.3px;margin:0 0 8px;border-bottom:2px solid #d6dfeb;padding-bottom:8px;break-after:avoid}
+    .report-section h2 b{font-size:11px;color:#fff;background:#172f4e;border-radius:4px;padding:3px 7px;direction:ltr}.report-section h2 small{font-size:11px;color:#6a7b8d;font-weight:400;margin-right:auto}
+    .report-table{table-layout:fixed;width:100%;border-collapse:collapse;direction:rtl;line-height:1.65;margin-bottom:13px;font-size:13.1px}
+    .report-table th,.report-table td{border:1px solid #b9c5d4;padding:7px 6px;text-align:right;vertical-align:middle;overflow-wrap:anywhere;color:#14283f}
+    .report-table thead th{background:#183657!important;color:#fff!important;font-size:12.4px;font-weight:900;vertical-align:middle}
+    .report-table tbody tr:nth-child(even) td{background:#f1f5fa!important}
+    .report-table .name{font-weight:800}.report-table .number,.report-table .money{text-align:center;direction:ltr;white-space:nowrap;font-size:12.1px;font-variant-numeric:tabular-nums}
+    .report-table .status{text-align:center}.report-table tfoot th{background:#e9eff7!important;border-top:3px solid #bd9434!important;color:#102743!important;font-weight:900;font-size:12.3px}
+    .report-table tfoot .total th{padding-top:10px;padding-bottom:10px}.report-table .empty{text-align:center;color:#637186}
+    .summary-table th:first-child{width:17%}.detail-table th:nth-child(1){width:10%}.detail-table th:nth-child(2){width:15%}.detail-table th:nth-child(3){width:14%}.detail-table th:nth-child(4){width:17%}.detail-table th:nth-child(5){width:7%}
+    .report-table thead{display:table-header-group}.report-table tfoot{display:table-row-group}.report-table tr{break-inside:avoid;page-break-inside:avoid}
+    .accounting-note{border:1px solid #e0c681;border-right:4px solid #b88d28;border-radius:6px;padding:10px 12px;background:#fffaf0!important;color:#4e462c;font-size:11.4px;break-inside:avoid}
+    .report-footer{border-top:1px solid #cbd5e0;display:flex;justify-content:space-between;gap:16px;padding:9px 0 0;color:#627086;font-size:10.4px;break-inside:avoid;margin-top:18px}
+    @media print{html,body{width:auto!important}.report-section h2{break-after:avoid}}
+  `;
   document.getElementById('zadAttendancePrintFrame')?.remove();
-  const frame=document.createElement('iframe');frame.id='zadAttendancePrintFrame';frame.title='تقرير الطباعة';
-  frame.style.cssText='position:fixed;left:-10000px;top:0;width:900px;height:600px;border:0';
+  const frame = document.createElement('iframe');
+  frame.id = 'zadAttendancePrintFrame'; frame.title = 'تقرير الحضور والمدفوعات للطباعة';
+  frame.style.cssText = 'position:fixed;left:-9999px;top:0;width:1120px;height:780px;border:0;opacity:0;pointer-events:none';
   document.body.appendChild(frame);
-  const d=frame.contentDocument;
-  d.open();d.write('<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>تقرير زاد المعرفة</title><style>body{font-family:Tahoma,Arial,sans-serif;color:#111;padding:20px;font-size:13px}h1,h2{text-align:center}table{border-collapse:collapse;width:100%;margin:12px 0;page-break-inside:auto}tr{page-break-inside:avoid}th,td{border:1px solid #555;padding:6px;text-align:right}th{background:#eee}.note{margin-top:25px;font-size:11px}@page{size:A4 landscape;margin:12mm}</style></head><body>'+content+'</body></html>');d.close();
-  const notice=$('attendanceReportNotice');
-  if(notice)notice.textContent=`تم تجهيز تقرير ${matched.length} حصة لـ ${groups.size} طالب؛ جارٍ فتح الطباعة.`;
-  frame.contentWindow.focus();frame.contentWindow.print();
+  const d = frame.contentDocument;
+  d.open();
+  d.write(`<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>تقرير الحضور والمدفوعات — زاد المعرفة</title><style>${css}</style></head><body>${content}</body></html>`);
+  d.close();
+  const notice = $('attendanceReportNotice');
+  if (notice) notice.textContent = `تم تجهيز تقرير ${matched.length} حصة لـ ${groups.size} طالب؛ جارٍ فتح الطباعة.`;
+  // الطباعة لا تبدأ قبل جاهزية اللوجو والخطوط حتى تظهر الترويسة والتنسيقات في المعاينة.
+  let fired = false;
+  const doPrint = () => {
+    if (fired || !frame.isConnected) return;
+    fired = true;
+    try { frame.contentWindow.focus(); frame.contentWindow.print(); }
+    catch (e) {
+      console.error('[attendance-report-print]',e);
+      if (notice) notice.textContent = 'تعذرت الطباعة من المتصفح؛ جرّب السماح بالطباعة ثم اضغط الزر مرة أخرى.';
+    }
+  };
+  const logo = d.querySelector('.report-logo');
+  const printWhenReady = () => {
+    if (!logo || logo.complete) { requestAnimationFrame(()=>requestAnimationFrame(doPrint)); return; }
+    logo.addEventListener('load',()=>requestAnimationFrame(doPrint),{once:true});
+    logo.addEventListener('error',()=>requestAnimationFrame(doPrint),{once:true});
+    setTimeout(doPrint,2500);
+  };
+  if (d.readyState === 'complete') printWhenReady();
+  else frame.addEventListener('load',printWhenReady,{once:true});
 }
 $('attendancePrintReport')?.addEventListener('click',attendancePrintReport);

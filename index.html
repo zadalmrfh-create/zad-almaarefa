@@ -113,20 +113,16 @@
     </a>
 
 
-    <div class="nav-links">
+    <div class="nav-links" aria-label="القائمة الرئيسية">
       <a href="#hero" class="nav-link">الرئيسية</a>
       <a href="#categories" class="nav-link">الأقسام</a>
       <a href="./sections/library.html" class="nav-link">المكتبة</a>
-      <a href="./teachers/index.html" class="nav-link">طاقم التدريس</a>
-      <div class="nav-more">
-        <button class="nav-link nav-more-btn" type="button">المزيد <span>⌄</span></button>
-        <div class="nav-more-menu">
-          <a href="./events/events.html">أحداث المنصة</a>
-          <a href="./sections/services/services.html">الخدمات</a>
-          <a href="./students/students.html">الطلاب المتميزون</a>
-          <a href="./reviews/index.html">آراء الطلاب</a>
-        </div>
-      </div>
+      <a href="./teachers/index.html" class="nav-link">المعلمون</a>
+      <a href="./events/events.html" class="nav-link">الأحداث</a>
+      <a href="./sections/services/services.html" class="nav-link">الخدمات</a>
+      <a href="./students/students.html" class="nav-link">المتميزون</a>
+      <a href="./reviews/index.html" class="nav-link nav-featured-item nav-reviews-link">⭐ آراء الطلاب</a>
+      <a href="./sections/payment-policy.html" class="nav-link nav-featured-item nav-policy-link">💳 سياسة المدفوعات</a>
       <!-- زر الوضع الليلي بعد المزيد -->
       <label class="theme-toggle" aria-label="تغيير الوضع">
   <input type="checkbox" id="themeToggle">
@@ -218,11 +214,12 @@
   <a href="#categories" class="mob-btn" onclick="closeMob()">الأقسام</a>
   <a href="./sections/library.html" class="mob-btn" onclick="closeMob()">المكتبة</a>
   <a href="./teachers/index.html" class="mob-btn" onclick="closeMob()">طاقم التدريس</a>
-  <div class="mob-section-title">المزيد</div>
+  <a href="./reviews/index.html" class="mob-btn mob-featured" onclick="closeMob()">⭐ آراء الطلاب</a>
+  <a href="./sections/payment-policy.html" class="mob-btn mob-featured" onclick="closeMob()">💳 سياسة المدفوعات</a>
+
   <a href="./events/events.html" class="mob-btn" onclick="closeMob()">أحداث المنصة</a>
   <a href="./sections/services/services.html" class="mob-btn" onclick="closeMob()">الخدمات</a>
   <a href="./students/students.html" class="mob-btn" onclick="closeMob()">الطلاب المتميزون</a>
-  <a href="./reviews/index.html" class="mob-btn" onclick="closeMob()">آراء الطلاب</a>
   <a
     href="./login/index.html"
     class="btn-primary login-mobile-btn"
@@ -476,6 +473,13 @@
     <!--footer-->
     <section id="live-stats" class="py-16"><div class="max-w-7xl mx-auto px-4"><div id="homeStatsGrid" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div></div></section>
 
+<section id="paymentPolicySection" dir="rtl" aria-label="سياسة المدفوعات" style="padding:20px 16px 0">
+  <div style="max-width:1060px;margin:0 auto 30px;background:linear-gradient(115deg,#182c48,#101d34);border:1px solid #a78a40;border-radius:22px;padding:25px 28px;display:flex;gap:18px;align-items:center;justify-content:space-between;flex-wrap:wrap;box-shadow:0 10px 30px #07122130">
+    <div style="flex:1 1 290px"><span style="color:#e9c75b;font-weight:800;font-size:13px">حقوق واضحة وتعاملات منظمة</span><h2 style="font-size:clamp(20px,3vw,29px);font-weight:900;color:#fff;margin:5px 0 8px">💳 سياسة المدفوعات</h2><p style="font-size:15px;color:#e0e9f5;line-height:1.9;margin:0">تعرّف على خيارات سداد الحصص للطلاب، وموعد السداد، ونظام المحاسبة الأسبوعية للمعلمين.</p></div>
+    <a href="sections/payment-policy.html" style="display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:49px;padding:10px 21px;border-radius:12px;background:#e9c14e;color:#172339;font-weight:900;text-decoration:none;white-space:nowrap">قراءة سياسة المدفوعات ←</a>
+  </div>
+</section>
+
 <section id="faq" class="py-20"><div class="max-w-4xl mx-auto px-4"><div class="cats-header sr"><div class="section-label">أسئلة شائعة</div><h2 class="section-title">الأسئلة المتكررة</h2></div><div class="space-y-3"><details class="faq-item"><summary>هل التسجيل مجاني؟</summary><p>التسجيل والمكتبة مجانيان، ولا توجد اشتراكات للمنصة؛ يتم دفع سعر الحصة المحجوزة فقط إن كانت مدفوعة.</p></details><details class="faq-item"><summary>كيف أعرف مواعيد المحاضرات؟</summary><p>ستجد المواعيد في قسم الأحداث ولوحة حسابك.</p></details><details class="faq-item"><summary>أين أجد الأسئلة والملخصات؟</summary><p>من المكتبة اختر الأسئلة أو الملخصات، ثم المرحلة والصف والمادة.</p></details><details class="faq-item"><summary>كيف أتواصل مع الإدارة؟</summary><p>استخدم بيانات التواصل الموجودة أسفل الموقع.</p></details></div></div></section>
 
 <footer id="footer">
@@ -526,6 +530,8 @@
           <a href="events/events.html" target="_self"
             >أحداث المنصة</a
           >
+          <a href="sections/payment-policy.html">💳 سياسة المدفوعات</a>
+          <a href="reviews/index.html">⭐ آراء الطلاب</a>
           <a href="students/students.html" target="_self"
             >الطلاب المتميزون</a
           >
@@ -1238,7 +1244,7 @@ import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.18.0/f
 import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 const modal=document.getElementById('globalSearchModal'),input=document.getElementById('globalSearchInput'),results=document.getElementById('globalSearchResults');
 const items=[
-['المكتبة والكتب','sections/library.html','كتب مذكرات تحميل'],['أسئلة المكتبة','sections/library.html','أسئلة نحو توحيد مراجعة'],['حجز حصة','sections/booking/index.html','حجز موعد حصة'],['التعليم الأزهري','sections/Azhar/azhar.html','ازهر أزهري'],['القرآن الكريم','sections/Quran/quran.html','قرآن تجويد حفظ'],['اللغة العربية','sections/Arabic/arabic.html','عربي نحو صرف بلاغة'],['العلوم الشرعية','sections/Sharia/sharia.html','شرعي فقه عقيدة'],['التزكية والتربية','sections/Tazkea/tazkea.html','تزكية تربية'],['طاقم التدريس','teachers/index.html','معلم مدرس'],['أحداث المنصة','events/events.html','أحداث اخبار'],['الخدمات','sections/services/services.html','خدمات'],['الطلاب المتميزون','students/students.html','شهادات تكريم'],['آراء الطلاب','reviews/index.html','آراء تقييمات']];
+['المكتبة والكتب','sections/library.html','كتب مذكرات تحميل'],['أسئلة المكتبة','sections/library.html','أسئلة نحو توحيد مراجعة'],['حجز حصة','sections/booking/index.html','حجز موعد حصة'],['التعليم الأزهري','sections/Azhar/azhar.html','ازهر أزهري'],['القرآن الكريم','sections/Quran/quran.html','قرآن تجويد حفظ'],['اللغة العربية','sections/Arabic/arabic.html','عربي نحو صرف بلاغة'],['العلوم الشرعية','sections/Sharia/sharia.html','شرعي فقه عقيدة'],['التزكية والتربية','sections/Tazkea/tazkea.html','تزكية تربية'],['طاقم التدريس','teachers/index.html','معلم مدرس'],['أحداث المنصة','events/events.html','أحداث اخبار'],['الخدمات','sections/services/services.html','خدمات'],['الطلاب المتميزون','students/students.html','شهادات تكريم'],['آراء الطلاب','reviews/index.html','آراء تقييمات'],['سياسة المدفوعات','sections/payment-policy.html','الدفع الحصص محاسبة الطلاب المعلمين']];
 function norm(x=''){return x.toLowerCase().replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي')}
 function draw(){const q=norm(input?.value||'');const arr=!q?items.slice(0,7):items.filter(x=>norm(x.join(' ')).includes(q));results.innerHTML=arr.map(x=>`<a href="${x[1]}"><strong>${x[0]}</strong><br><small>${x[2]}</small></a>`).join('')||'<p>لا توجد نتائج مطابقة.</p>'}
 document.getElementById('globalSearchBtn')?.addEventListener('click',()=>{modal.hidden=false;draw();setTimeout(()=>input.focus(),30)});document.getElementById('closeGlobalSearch')?.addEventListener('click',()=>modal.hidden=true);modal?.addEventListener('click',e=>{if(e.target===modal)modal.hidden=true});input?.addEventListener('input',draw);
@@ -1353,5 +1359,6 @@ bubble('bot','السلام عليكم! 👋 أنا مساعد خدمات زاد 
   .zad-store-access{left:12px!important;right:auto!important;bottom:84px!important;padding:9px 12px;font-size:12px}
 }
 </style>
+<script type="module" src="reviews/weekly-review-guard.js?v=20261105-evals1"></script>
 </body>
 </html>

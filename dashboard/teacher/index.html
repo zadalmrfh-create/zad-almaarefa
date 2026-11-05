@@ -10,7 +10,7 @@
   <script src="../../assets/translation.js?v=20261016-globe2"></script>
   <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
   <script src="../../content-protection.js" defer></script>
-</head>
+<style>.zwr-item{padding:17px;margin:15px 0;border:1px solid #50627d;border-radius:15px;background:#15273e}.zwr-item strong{color:#ecc56c}.zwr-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin:13px 0}.zwr-grid>div{padding:10px;border:1px solid #53637c;border-radius:11px;background:#0b1d30}.zwr-grid small{display:block;color:#c5d0e0;font-size:12px}.zwr-grid b{font-size:16px;color:#edca7e}.zwr-comment{padding:10px;border-right:3px solid #eac366;background:#172f4e;color:white;white-space:pre-wrap;overflow-wrap:anywhere}</style></head>
 <body class="teacher-dashboard-page">
   <div class="wrap teacher-wrap">
     <header class="top teacher-topbar">
@@ -22,6 +22,7 @@
         </div>
       </div>
       <div class="actions">
+        <a class="btn" href="../../sections/payment-policy.html" title="عرض سياسة المدفوعات">💳 سياسة المدفوعات</a>
         <a class="btn" href="../../index.html">🏠 الرئيسية</a>
         <button id="logout" class="btn danger">تسجيل الخروج</button>
       </div>
@@ -45,6 +46,7 @@
       <button class="teacher-tab" data-tab="notes">🗒️ ملاحظاتي</button>
       <button class="teacher-tab" data-tab="payments">💳 مدفوعات طلابي</button>
       <button class="teacher-tab" data-tab="reports">📈 التقارير</button>
+      <button class="teacher-tab" data-tab="weekly-reviews">⭐ تقييمات طلابي</button>
       <button class="teacher-tab" data-tab="notifications">🔔 التنبيهات <span class="teacher-badge" id="teacherNotificationBadge">0</span></button>
       <button class="teacher-tab" data-tab="profile">⚙️ ملفي</button>
       <button class="teacher-tab" data-tab="contact">💬 التواصل السريع</button>
@@ -134,6 +136,7 @@
       <section class="teacher-panel" data-panel="payments">
         <section class="card">
           <div class="teacher-section-head"><div><h3>💳 مدفوعات الطلاب لدى المعلم</h3><p>بيانات الحصص المرتبطة بحساب المعلم فقط. لا توجد صلاحية تعديل أو تغيير حالة السداد.</p></div><div class="actions"><button class="btn" id="printTeacherPayments" type="button">🖨️ طباعة</button><button class="btn gold" id="exportTeacherPayments" type="button">⬇️ CSV</button></div></div>
+          <div class="teacher-export-feedback" id="teacherPaymentsExportStatus" role="status" aria-live="polite"></div>
           <div class="teacher-payment-filters" style="display:flex;flex-wrap:wrap;gap:12px;margin:14px 0">
             <label>الطالب<select class="teacher-input" id="teacherPaymentsStudent"><option value="">كل الطلاب</option></select></label>
             <label>من تاريخ<input class="teacher-input" id="teacherPaymentsFrom" type="date"></label>
@@ -154,7 +157,8 @@
       </section>
       <section class="teacher-panel" data-panel="reports">
         <section class="card">
-          <div class="teacher-section-head"><div><h3>📈 تقارير المعلم</h3><p>ملخص متابعة الطلاب والحضور والملاحظات.</p></div><div class="actions"><button id="printTeacherReport" class="btn">🖨️ طباعة</button><button id="exportTeacherReport" class="btn gold">⬇️ تصدير CSV</button></div></div>
+          <div class="teacher-section-head"><div><h3>📈 تقارير المعلم</h3><p>ملخص متابعة الطلاب والحضور والملاحظات.</p></div><div class="actions"><button id="printTeacherReport" class="btn">🖨️ طباعة</button><button id="exportTeacherReport" type="button" class="btn gold">⬇️ تصدير CSV</button></div></div>
+          <div class="teacher-export-feedback" id="teacherReportExportStatus" role="status" aria-live="polite"></div>
           <div class="enh-grid teacher-report-stats">
             <div class="enh-stat"><span>👥 الطلاب</span><b id="reportStudents">0</b></div>
             <div class="enh-stat"><span>✅ نسبة الحضور</span><b id="reportAttendanceRate">0%</b></div>
@@ -165,6 +169,20 @@
         </section>
       </section>
 
+      <section class="teacher-panel" data-panel="weekly-reviews">
+        <section class="card" id="teacherWeeklyReviews">
+          <h2>⭐ تقييماتي الأسبوعية — للقراءة فقط</h2>
+          <p>درجات وملاحظات طلابك بدون أسماء أو معرّفات، وتظهر فور إرسالها. الملاحظات قد تكشف هوية الطالب ضمنيًا عند قلة عدد الطلاب.</p>
+          <div class="actions" style="display:flex;flex-wrap:wrap;gap:10px;margin:14px 0">
+            <label>الأسبوع <select class="teacher-input" id="teacherWeeklyWeek"><option value="">كل الأسابيع</option></select></label>
+            <button class="btn" type="button" id="teacherWeeklyPrint">🖨️ طباعة التقييمات</button>
+            <button class="btn" type="button" id="teacherWeeklyCSV">⬇️ CSV</button>
+            <button class="btn" type="button" id="teacherWeeklyRefresh">🔄 تحديث</button>
+          </div>
+          <p id="teacherWeeklyStats" role="status">جارٍ تحميل تقييماتك...</p>
+          <div id="teacherWeeklyBody"></div>
+        </section>
+      </section>
       <section class="teacher-panel" data-panel="notifications">
         <section class="card">
           <div class="teacher-section-head"><div><h3>🔔 تنبيهات المعلم</h3><p>الإشعارات الموجهة إلى حسابك.</p></div><button id="markAllTeacherNotifications" class="btn">✓ تحديد الكل كمقروء</button></div>
@@ -212,7 +230,106 @@
     </div>
   </div>
 
-  <script type="module" src="teacher-enhancements.js?v=20261105-readonly2"></script>
+  <style id="teacherExportPrintFixStyles">
+    .teacher-export-feedback:empty { display:none; }
+    .teacher-export-feedback {margin:9px 0 13px;padding:10px 13px;border:1px solid #a68945;border-radius:9px;background:#252820;color:#ffe39c;font-size:13px;line-height:1.8}
+    .teacher-export-feedback a {color:#ffe39c;text-decoration:underline;font-weight:bold;margin-inline:8px}
+    @media screen {
+      body.teacher-print-preview {overflow:hidden !important;}
+      body.teacher-print-preview > #teacherPrintDocument {display:block !important;position:fixed !important;inset:0 !important;z-index:2147483640 !important;overflow:auto !important;background:#e8edf5 !important;padding:18px max(18px,calc((100vw - 1100px)/2)) 48px !important;color:#13263f !important;direction:rtl !important;font:14px/1.75 Tahoma,Arial,sans-serif !important;}
+      #teacherPrintDocument .teacher-print-toolbar {display:flex;align-items:center;flex-wrap:wrap;gap:12px;position:sticky;top:0;z-index:2;padding:12px 18px;margin:-6px 0 16px;background:#112b48;color:white;border-radius:11px;box-shadow:0 4px 14px #0002;}
+      #teacherPrintDocument .teacher-print-toolbar button {cursor:pointer;border:1px solid #d4ad54;border-radius:9px;background:#e6b939;color:#1c2c41;font-weight:bold;padding:9px 18px;font-size:14px;}
+      #teacherPrintDocument .teacher-print-toolbar button[data-close-teacher-print] {background:transparent;color:white;border-color:#9caac0;}
+      #teacherPrintDocument .teacher-print-paper {background:white;box-shadow:0 4px 20px #0002;border-radius:6px;padding:24px 28px;max-width:1100px;margin:auto;}
+      #teacherPrintDocument .print-brand {display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #d3a02f;padding-bottom:15px;margin-bottom:17px;}
+      #teacherPrintDocument .print-brand-identity {display:flex;gap:14px;align-items:center;}
+      #teacherPrintDocument .print-logo {width:72px;height:72px;object-fit:contain;}
+      #teacherPrintDocument .print-brand-name {font-size:22px;font-weight:900;color:#132b4b;}
+      #teacherPrintDocument .print-brand-tagline {color:#637187;}
+      #teacherPrintDocument .print-brand-badge {border:1px solid #d4ad54;border-radius:40px;padding:5px 12px;color:#70521e;}
+      #teacherPrintDocument .print-title-block {text-align:center;margin:18px 0;}
+      #teacherPrintDocument h1 {color:#112c49;font-size:24px;}
+      #teacherPrintDocument .print-subtitle {color:#627185;}
+      #teacherPrintDocument .print-meta {display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0;}
+      #teacherPrintDocument .print-meta > div {display:flex;justify-content:space-between;border:1px solid #d9e0e8;border-radius:8px;padding:9px 14px;}
+      #teacherPrintDocument .print-stat-grid {display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:18px 0;}
+      #teacherPrintDocument .print-stat-grid.print-stat-six {grid-template-columns:repeat(6,minmax(0,1fr));}
+      #teacherPrintDocument .print-stat {border:1px solid #d5dfed;border-top:3px solid #d3a02f;padding:8px;background:#f7f9fc;}
+      #teacherPrintDocument .print-stat span {display:block;font-size:12px;color:#506079;}
+      #teacherPrintDocument .print-stat strong {color:#112b47;}
+      #teacherPrintDocument .print-section {margin:18px 0;}
+      #teacherPrintDocument .print-section h2 {color:#876011;font-size:16px;}
+      #teacherPrintDocument .print-table {width:100%;border-collapse:collapse;font-size:12px;}
+      #teacherPrintDocument .print-table th,#teacherPrintDocument .print-table td {border:1px solid #c5d1e0;padding:8px 6px;text-align:right;color:#13263f;}
+      #teacherPrintDocument .print-table thead th {background:#142b49;color:white;}
+      #teacherPrintDocument .print-table tfoot th {background:#e5edf6;color:#17334e;border-top:2px solid #d3a02f;}
+      #teacherPrintDocument .print-num {text-align:center !important;direction:ltr;}
+      #teacherPrintDocument .print-warning {padding:10px;border:1px solid #d7a34b;background:#fff8e5;color:#674d16;}
+      #teacherPrintDocument .print-disclaimer {color:#51627a;}
+      #teacherPrintDocument .print-footer {display:flex;justify-content:space-between;border-top:1px solid #c5d1e0;margin-top:22px;padding:12px 0;color:#627185;}
+    }
+    @media print {
+      #teacherPrintDocument .teacher-print-toolbar {display:none !important;}
+      #teacherPrintDocument .teacher-print-paper {margin:0 !important;padding:0 !important;border:0 !important;box-shadow:none !important;}
+      #teacherPrintDocument .print-stat {background:#f7f9fc !important;}
+    }
+  </style>
+  <style id="teacherPrintStyles">
+    /* خصص المستند المطبوع دون المساس بعناصر لوحة المعلم أو صلاحياتها. */
+    @media screen { body:not(.teacher-print-preview) > #teacherPrintDocument { display:none !important; } }
+    @media print {
+      @page { size:A4 landscape; margin:12mm 11mm 14mm; }
+      html, body { background:#fff !important; }
+      body.teacher-dashboard-page.teacher-print-active { margin:0 !important; padding:0 !important; background:#fff !important; color:#18283f !important; }
+      body.teacher-dashboard-page.teacher-print-active > :not(#teacherPrintDocument) { display:none !important; }
+      body.teacher-dashboard-page.teacher-print-active > #teacherPrintDocument {
+        display:block !important; position:static !important; visibility:visible !important;
+        box-sizing:border-box; width:100% !important; margin:0 !important; padding:0 !important;
+        background:#fff !important; color:#18283f !important; direction:rtl;
+        font:12.3px/1.85 Tahoma,Arial,sans-serif !important; overflow:visible !important;
+        -webkit-print-color-adjust:exact; print-color-adjust:exact;
+      }
+      #teacherPrintDocument * { box-sizing:border-box; }
+      #teacherPrintDocument .print-brand { display:flex; justify-content:space-between; align-items:center; gap:18px; border-bottom:3px solid #ca9c32; padding:4px 0 13px; margin-bottom:16px; break-inside:avoid; }
+      #teacherPrintDocument .print-brand-identity { display:flex; align-items:center; gap:14px; }
+      #teacherPrintDocument .print-logo { width:68px; height:68px; object-fit:contain; border-radius:50%; }
+      #teacherPrintDocument .print-brand-name { color:#132c4e; font-size:20px; font-weight:900; line-height:1.45; }
+      #teacherPrintDocument .print-brand-tagline { color:#637187; font-size:11.6px; }
+      #teacherPrintDocument .print-brand-badge { padding:7px 13px; border:1px solid #ddc585; border-radius:999px; font-size:11px; color:#6a4d16; white-space:nowrap; }
+      #teacherPrintDocument .print-title-block { text-align:center; margin:9px 0 15px; break-inside:avoid; }
+      #teacherPrintDocument .print-title-block h1 { color:#132c4e; font-size:22px; margin:0; font-weight:900; }
+      #teacherPrintDocument .print-subtitle { color:#59687c; font-size:12px; margin:3px 0 0; }
+      #teacherPrintDocument .print-meta { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; break-inside:avoid; }
+      #teacherPrintDocument .print-meta > div { padding:7px 12px; border:1px solid #d5dce6; border-radius:7px; display:flex; gap:10px; align-items:center; }
+      #teacherPrintDocument .print-meta span { font-size:11px; color:#59687c; }
+      #teacherPrintDocument .print-meta strong { color:#142c4b; font-size:12.5px; }
+      #teacherPrintDocument .print-stat-grid { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:8px; margin:14px 0 18px; break-inside:avoid; }
+      #teacherPrintDocument .print-stat-grid.print-stat-six { grid-template-columns:repeat(6,minmax(0,1fr)); }
+      #teacherPrintDocument .print-stat { border:1px solid #d7dfeb; border-top:3px solid #c59b38; border-radius:7px; padding:8px 10px; min-width:0; background:#fafbfd; }
+      #teacherPrintDocument .print-stat span { display:block; color:#536781; font-size:10.8px; }
+      #teacherPrintDocument .print-stat strong { display:block; color:#142c4b; font-size:14px; font-weight:900; white-space:normal; }
+      #teacherPrintDocument .print-section { margin-top:16px; }
+      #teacherPrintDocument .print-section h2 { display:flex; align-items:center; gap:9px; border-bottom:1px solid #dce3ec; padding:0 0 7px; color:#bd8b25; font-size:15px; font-weight:900; margin:0 0 9px; break-after:avoid; }
+      #teacherPrintDocument .print-section h2 span { color:#142c4b; }
+      #teacherPrintDocument .print-table { width:100% !important; margin:0 0 17px; border-collapse:collapse !important; border-spacing:0; table-layout:auto; direction:rtl; font-size:11.4px !important; }
+      #teacherPrintDocument .print-table th,#teacherPrintDocument .print-table td { border:1px solid #cbd3df !important; padding:7px 6px !important; color:#17263d !important; text-align:right; vertical-align:middle; white-space:normal; overflow-wrap:anywhere; font-weight:500; }
+      #teacherPrintDocument .print-table thead th { background:#152d4a !important; color:#fff !important; font-weight:900; }
+      #teacherPrintDocument .print-table tbody tr:nth-child(even) td { background:#f4f7fb !important; }
+      #teacherPrintDocument .print-table tfoot th { background:#e6edf6 !important; color:#102944 !important; border-top:2px solid #b78b2c !important; font-weight:900; }
+      #teacherPrintDocument .print-table .print-num { text-align:center !important; white-space:nowrap; direction:ltr; font-variant-numeric:tabular-nums; }
+      #teacherPrintDocument .print-table tr { break-inside:avoid; page-break-inside:avoid; }
+      #teacherPrintDocument .print-table thead { display:table-header-group; }
+      #teacherPrintDocument .print-table tfoot { display:table-row-group; }
+      #teacherPrintDocument .print-number { direction:ltr; unicode-bidi:isolate; display:inline-block; }
+      #teacherPrintDocument .print-warning { border:1px solid #ba8b28; border-right:4px solid #ba8b28; color:#58400d; background:#fffaf0 !important; padding:9px 13px; font-size:11.5px; break-inside:avoid; }
+      #teacherPrintDocument .print-disclaimer { color:#526075; font-size:10.8px; padding:4px 0; margin:9px 0; }
+      #teacherPrintDocument .print-footer { display:flex; justify-content:space-between; gap:15px; border-top:1px solid #cad3df; color:#536781; padding-top:9px; margin-top:21px; font-size:10.5px; break-inside:avoid; }
+      #teacherPrintDocument p { orphans:2; widows:2; }
+    }
+  </style>
+  <section id="teacherPrintDocument" aria-label="مستند الطباعة"></section>
+  <script type="module" src="teacher-enhancements.js?v=20261105-print-export6"></script>
+  <script type="module" src="weekly-teacher-reviews.js?v=20261105-evals1"></script>
 <script type="module" src="../admin-switcher.js"></script>
 
 <!-- متجر زاد المعرفة: إضافة مستقلة لا تمس وظائف الأكاديمية -->

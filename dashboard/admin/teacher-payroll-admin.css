@@ -1,0 +1,36 @@
+/* Zad Al-Maarefa · admin-only teacher payroll */
+#teacherPayrollManagement{color:#f6f8ff}
+.salary-heading{display:flex;align-items:start;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.salary-heading h2{margin:0;color:#f5d47c}
+.salary-heading p{color:#d2dbea;max-width:850px;line-height:1.9}
+.salary-filters{display:grid;grid-template-columns:repeat(5,minmax(150px,1fr));gap:12px;margin:18px 0}
+.salary-filters label,.salary-dialog label{display:flex;flex-direction:column;gap:7px;font-weight:700;font-size:14px}
+.salary-filters input,.salary-filters select,.salary-dialog input,.salary-dialog select{width:100%;min-width:0;padding:11px;border-radius:10px;border:1px solid #51627d;background:#0e1a2e;color:#f8fafc;color-scheme:dark;font:inherit}
+.salary-filters input:focus-visible,.salary-filters select:focus-visible,.salary-dialog input:focus-visible{outline:2px solid #dbb748}
+.salary-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:15px 0 18px}
+.salary-totals{display:grid;grid-template-columns:repeat(4,minmax(160px,1fr));gap:12px;margin:16px 0 26px}
+.salary-metric,.salary-teacher-card{border:1px solid #3d506c;border-radius:16px;background:linear-gradient(140deg,#13213a,#0c1627);padding:18px;display:grid;gap:9px;min-width:0}
+.salary-metric span{font-size:13px;color:#d9e1ef}
+.salary-metric strong{font-size:25px;color:#fff;overflow-wrap:anywhere}
+.salary-grand{border-color:#ddb949;background:linear-gradient(140deg,#2a281f,#111c2d)}
+.salary-grand strong,.salary-card-grand{color:#f3cf75!important}
+.salary-teacher-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(245px,1fr));gap:12px;margin:15px 0 26px}
+.salary-teacher-card>strong{font-size:17px;color:#f7db8f}
+.salary-teacher-card>span{font-size:13px;color:#c4d0df}
+.salary-subtotals{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:13px}
+.salary-subtotals span{display:grid;gap:5px;color:#dbe3f0}
+.salary-subtotals b{font-size:15px;color:white}
+.salary-card-grand{font-size:20px;border-top:1px solid #3f5270;padding-top:12px}
+.salary-table-wrap{margin:14px 0}.salary-table-wrap table{min-width:960px;width:100%}
+.salary-table-wrap td,.salary-table-wrap th{white-space:normal!important;vertical-align:middle}
+.salary-explain,.salary-empty{padding:12px;border:1px solid #455a73;border-radius:10px;color:#d5deed;line-height:1.9}
+.salary-dialog{background:#101e32;border:1px solid #dfb74e;color:#fff;max-width:min(600px,95vw);width:100%;max-height:90vh;overflow:auto;border-radius:18px;padding:24px;box-shadow:0 18px 75px #000b}
+.salary-dialog::backdrop{background:#020710b8}
+.salary-dialog form{display:grid;gap:14px}
+.salary-dialog h3{margin:0;color:#f2d27a}
+.salary-dialog #salaryEditLesson{font-size:13px;color:#cbd7e9;line-height:1.9}
+.salary-dialog-note{color:#dfd09b;font-size:13px;line-height:1.7}
+#salaryEditError{margin:0;color:#ffb3af}
+#salaryStatus{color:#f1d780;font-weight:700;line-height:1.9}
+@media(max-width:1150px){.salary-filters{grid-template-columns:repeat(3,minmax(140px,1fr))}.salary-totals{grid-template-columns:repeat(2,minmax(140px,1fr))}}
+@media(max-width:670px){.salary-filters{grid-template-columns:1fr}.salary-totals{grid-template-columns:1fr 1fr}.salary-metric{padding:12px}.salary-metric strong{font-size:19px}.salary-actions>.btn{flex:1 1 145px}.salary-teacher-cards{grid-template-columns:1fr}.salary-table-wrap table{min-width:0}}
