@@ -1,4 +1,5 @@
 import {isAdminAccount,getPreviewContext} from '../admin-preview-core.js';
+import {amountDue,amountPaid,money} from '../payment-utils.js';
 import { auth, db } from '../../firebase-config.js';
 import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
 import {
@@ -16,6 +17,37 @@ import {
 } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 
 const $ = id => document.getElementById(id);
+const financeValue = r => {
+  const due=amountDue(r),cash=amountPaid(r);
+  const credit=Math.min(Math.max(0,due-cash),Math.max(0,Math.round(Number(r.teacherAdvanceAppliedPiastres)||0)));
+  return {due,cash,credit,total:cash+credit,remaining:Math.max(0,due-cash-credit)};
+};
+const isActiveAttendance = x => x.deleted!==true && x.archived!==true;
+function addIssue(source,error){
+ const msg=source+': '+(error?.code||error?.message||error||'خطأ غير معروف');
+ state.errors.push(msg);state.failedSources.add(source);
+ console.error('[teacher-readonly]',msg,error);
+}
+function showIssues(){
+ const el=$('teacherDataNotice');if(!el)return;
+ if(state.errors.length){el.hidden=false;el.textContent='⚠️ تعذر تحميل بعض البيانات: '+state.errors.join(' | ')+' — راجع صلاحيات Firebase وربط السجلات بالمعلم.';return;}
+ if(!state.attendance.length&&!state.students.length){el.hidden=false;el.textContent='لا توجد سجلات مربوطة بمعرّف المعلم في الحجوزات أو الحضور. راجع «ربط بيانات المعلمين» في لوحة الأدمن لتوصيل السجلات القديمة.';return;}
+ if(state.attendance.some(x=>!Object.hasOwn(x,'teacherAdvanceAppliedPiastres'))){el.hidden=false;el.textContent='ℹ️ قد لا تشمل أرقام المدفوعات المقدمة إلا بعد «مزامنة أرصدة الحصص» من لوحة الأدمن؛ المدفوع المباشر ظاهر من سجلات الحصص.';return;}
+ el.hidden=true;el.textContent='';
+}
+function upsertStudent(entry){
+ const uid=text(entry.studentUid);
+ if(!uid)return;
+ const prev=state.studentMap.get(uid)||{id:uid};
+ const name=text(entry.fullName||entry.studentName||entry.name);
+ state.studentMap.set(uid,{...prev,
+  fullName:prev.fullName||name,name:prev.name||name,
+  email:prev.email||text(entry.email||entry.studentEmail),
+  phone:prev.phone||text(entry.phone||entry.studentPhone),
+  grade:prev.grade||text(entry.grade||entry.studyGrade),
+ });
+}
+
 const state = {
   user: null,
   profile: {},
@@ -23,7 +55,10 @@ const state = {
   studentMap: new Map(),
   attendance: [],
   notes: [],
-  notifications: []
+  notifications: [],
+  errors: [],
+  preview: false,
+  failedSources: new Set()
 };
 
 function esc(value){
@@ -75,38 +110,27 @@ function openTab(name){
 }
 
 async function loadTeacherStudents(uid){
-  // Student profiles are private under Firestore Rules. Teachers are allowed
-  // to read the bookings assigned to them; use only that assigned booking data.
-  const bookingsSnap = await getDocs(query(collection(db,'bookings'),where('teacherUid','==',uid)));
-  const studentsByUid = new Map();
-  for (const b of bookingsSnap.docs){
-    const x = b.data();
-    if (!x.studentUid) continue;
-    const prev = studentsByUid.get(x.studentUid) || {id:x.studentUid};
-    studentsByUid.set(x.studentUid,{
-      ...prev,
-      fullName: x.fullName || x.studentName || prev.fullName || '',
-      name: x.fullName || x.studentName || prev.name || '',
-      email: x.email || x.studentEmail || prev.email || '',
-      phone: x.phone || x.studentPhone || prev.phone || '',
-      grade: x.grade || x.studyGrade || prev.grade || ''
-    });
-  }
-  const students=[...studentsByUid.values()].sort((a,b)=>text(a.fullName||a.name).localeCompare(text(b.fullName||b.name),'ar'));
-  state.students=students;
-  state.studentMap=new Map(students.map(s=>[s.id,s]));
+ try{
+  const snap=await getDocs(query(collection(db,'bookings'),where('teacherUid','==',uid)));
+  for(const d of snap.docs)upsertStudent(d.data());
+ }catch(err){addIssue('الحجوزات',err);}
 }
 async function loadAttendance(uid){
-  try{
-    const snap=await getDocs(query(collection(db,'lessonAttendance'),where('teacherUid','==',uid)));
-    state.attendance=snap.docs.map(d=>({id:d.id,...d.data()})).filter(x=>x.deleted!==true).sort((a,b)=>dateKey(b.createdAt||b.date)-dateKey(a.createdAt||a.date));
-  }catch(err){console.warn('تعذر تحميل الحضور',err);state.attendance=[];}
+ try{
+  const snap=await getDocs(query(collection(db,'lessonAttendance'),where('teacherUid','==',uid)));
+  state.attendance=snap.docs.map(d=>({id:d.id,...d.data()})).filter(isActiveAttendance)
+   .sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')));
+  for(const x of state.attendance)upsertStudent(x);
+ }catch(err){addIssue('الحضور والمدفوعات',err);state.attendance=[];}
+}
+function finalizeStudents(){
+ state.students=[...state.studentMap.values()].sort((a,b)=>text(a.fullName||a.name).localeCompare(text(b.fullName||b.name),'ar'));
 }
 async function loadNotes(uid){
   try{
     const snap=await getDocs(query(collection(db,'teacherStudentNotes'),where('teacherUid','==',uid)));
     state.notes=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>dateKey(b.createdAt)-dateKey(a.createdAt));
-  }catch(err){console.warn('تعذر تحميل الملاحظات',err);state.notes=[];}
+  }catch(err){addIssue('الملاحظات',err);state.notes=[];}
 }
 async function loadTeacherNotifications(uid){
   try{
@@ -117,7 +141,7 @@ async function loadTeacherNotifications(uid){
     const merged=new Map();
     [...personalSnap.docs,...publicSnap.docs].forEach(d=>merged.set(d.id,{id:d.id,...d.data()}));
     state.notifications=[...merged.values()].sort((a,b)=>dateKey(b.createdAt)-dateKey(a.createdAt)).slice(0,50);
-  }catch(err){console.warn('تعذر تحميل التنبيهات',err);state.notifications=[];}
+  }catch(err){addIssue('التنبيهات',err);state.notifications=[];}
 }
 
 function fillStudentSelects(){
@@ -135,8 +159,8 @@ function renderOverview(){
   const activeStudents=new Set(state.attendance.map(x=>x.studentUid).filter(Boolean)).size;
   const visibleNotes=state.notes.filter(x=>x.visibleToStudent===true).length;
   const unread=state.notifications.filter(n=>!(Array.isArray(n.readBy)&&n.readBy.includes(state.user?.uid))).length;
-  if($('teacherStudentsCount'))$('teacherStudentsCount').textContent=state.students.length;
-  if($('teacherAttendanceCount'))$('teacherAttendanceCount').textContent=state.attendance.length;
+  if($('teacherStudentsCount'))$('teacherStudentsCount').textContent=state.failedSources.has('الحجوزات')&&state.failedSources.has('الحضور والمدفوعات')?'—':state.students.length;
+  if($('teacherAttendanceCount'))$('teacherAttendanceCount').textContent=state.failedSources.has('الحضور والمدفوعات')?'—':state.attendance.length;
   if($('teacherNotesCount'))$('teacherNotesCount').textContent=state.notes.length;
   if($('teacherUnreadCount'))$('teacherUnreadCount').textContent=unread;
   if($('teacherNotificationBadge')){
@@ -193,9 +217,8 @@ function openStudentDetails(uid){
     </div>
     <div class="teacher-section-head" style="margin-top:14px"><div><h3>آخر الملاحظات</h3><p>أحدث ملاحظاتك على الطالب.</p></div></div>
     <div class="teacher-notes-list">${notes.slice(0,5).map(n=>`<article class="teacher-note-card"><div><span class="teacher-note-category">${esc(n.category||'عام')}</span><strong>${n.visibleToStudent===true?'👁️ تظهر للطالب':'🔒 خاصة'}</strong><p>${esc(n.text||'')}</p><small>${formatDate(n.createdAt,true)}</small></div></article>`).join('')||'<div class="teacher-empty">لا توجد ملاحظات.</div>'}</div>
-    <div class="teacher-row-actions" style="margin-top:14px">${phoneDigits(phone)?`<a class="btn gold" target="_blank" rel="noopener" href="https://wa.me/${phoneDigits(phone)}">💬 واتساب الطالب</a>`:''}<button class="btn" data-open-attendance>📊 عرض سجل الحضور</button><button class="btn" data-open-note>🗒️ إضافة ملاحظة</button></div>`;
+    <div class="teacher-row-actions" style="margin-top:14px">${phoneDigits(phone)?`<a class="btn gold" target="_blank" rel="noopener" href="https://wa.me/${phoneDigits(phone)}">💬 واتساب الطالب</a>`:''}<button class="btn" data-open-attendance>📊 عرض سجل الحضور</button></div>`;
   $('studentDetailsBody')?.querySelector('[data-open-attendance]')?.addEventListener('click',()=>{closeStudentModal();openTab('attendance');if($('attendanceFilterStudent'))$('attendanceFilterStudent').value=uid;renderAttendance();});
-  $('studentDetailsBody')?.querySelector('[data-open-note]')?.addEventListener('click',()=>{closeStudentModal();openTab('notes');if($('noteStudent'))$('noteStudent').value=uid;});
   $('studentDetailsModal')?.classList.add('show');
   $('studentDetailsModal')?.setAttribute('aria-hidden','false');
 }
@@ -212,6 +235,7 @@ function renderAttendance(){
   if($('attendanceExcused'))$('attendanceExcused').textContent=excused;
   if($('attendanceRate'))$('attendanceRate').textContent=percent(present,present+absent)+'%';
   if(!$('attendanceRows'))return;
+  if(state.failedSources.has('الحضور والمدفوعات')){$('attendanceRows').innerHTML='<tr><td colspan="6">تعذر قراءة الحضور بسبب صلاحيات Firebase أو الاتصال.</td></tr>';return;}
   $('attendanceRows').innerHTML=rows.length?rows.map(x=>`<tr><td>${esc(studentName(x.studentUid,x.studentName))}</td><td>${esc(x.date||formatDate(x.createdAt))}</td><td>${esc(x.subject||'-')}</td><td><span class="teacher-status ${x.status==='حاضر'?'present':x.status==='غائب'?'absent':'excused'}">${esc(x.status||'-')}</span></td><td>${Number(x.price||0).toLocaleString('ar-EG')} ج.م</td><td>${esc(x.note||'-')}</td></tr>`).join(''):'<tr><td colspan="6">لا توجد سجلات.</td></tr>';
 }
 
@@ -219,14 +243,8 @@ function renderNotes(){
   const filter=$('notesFilterStudent')?.value||'';
   const notes=state.notes.filter(x=>!filter||x.studentUid===filter);
   if(!$('notesList'))return;
-  $('notesList').innerHTML=notes.length?notes.map(n=>`<article class="teacher-note-card"><div><span class="teacher-note-category">${esc(n.category||'عام')}</span><strong>${esc(studentName(n.studentUid,n.studentName))}</strong> <span class="teacher-note-category">${n.visibleToStudent===true?'👁️ تظهر للطالب':'🔒 خاصة'}</span><p>${esc(n.text||'')}</p><small>${formatDate(n.createdAt,true)}</small></div><button class="btn danger compact-btn" data-note-delete="${esc(n.id)}">حذف</button></article>`).join(''):'<div class="teacher-empty">لا توجد ملاحظات.</div>';
-  $('notesList').querySelectorAll('[data-note-delete]').forEach(btn=>btn.addEventListener('click',()=>deleteNote(btn.dataset.noteDelete)));
+  $('notesList').innerHTML=notes.length?notes.map(n=>`<article class="teacher-note-card"><div><span class="teacher-note-category">${esc(n.category||'عام')}</span><strong>${esc(studentName(n.studentUid,n.studentName))}</strong> <span class="teacher-note-category">${n.visibleToStudent===true?'👁️ تظهر للطالب':'🔒 خاصة'}</span><p>${esc(n.text||'')}</p><small>${formatDate(n.createdAt,true)}</small></div></article>`).join(''):'<div class="teacher-empty">لا توجد ملاحظات.</div>';
 }
-async function deleteNote(id){
-  if(!confirm('حذف الملاحظة؟'))return;
-  await deleteDoc(doc(db,'teacherStudentNotes',id));state.notes=state.notes.filter(x=>x.id!==id);renderAll();
-}
-
 function renderReports(){
   const present=state.attendance.filter(x=>x.status==='حاضر').length;
   const absent=state.attendance.filter(x=>x.status==='غائب').length;
@@ -243,6 +261,49 @@ function renderReports(){
   }).join(''):'<tr><td colspan="6">لا توجد بيانات.</td></tr>';
 }
 
+function filteredPaymentRows(){
+ const uid=$('teacherPaymentsStudent')?.value||'';
+ const from=$('teacherPaymentsFrom')?.value||'',to=$('teacherPaymentsTo')?.value||'';
+ return state.attendance.filter(x=>(!uid||x.studentUid===uid)&&(!from||String(x.date||'')>=from)&&(!to||String(x.date||'')<=to));
+}
+function paymentRowsHtml(rows){
+ return rows.map(x=>{const f=financeValue(x);return `<tr><td>${esc(x.date||'-')}</td><td>${esc(studentName(x.studentUid,x.studentName))}</td><td>${esc(x.subject||'-')}</td><td>${esc(x.status||'-')}</td><td>${money(f.due)}</td><td>${money(f.cash)}</td><td>${money(f.credit)}${!Object.hasOwn(x,'teacherAdvanceAppliedPiastres')?' *':''}</td><td>${money(f.remaining)}</td></tr>`}).join('');
+}
+function paymentSummary(rows){return rows.reduce((a,x)=>{const f=financeValue(x);a.due+=f.due;a.cash+=f.cash;a.credit+=f.credit;a.remaining+=f.remaining;return a;},{due:0,cash:0,credit:0,remaining:0});}
+function renderPayments(){
+ const filter=$('teacherPaymentsStudent'),prior=filter?.value||'';
+ if(filter){filter.innerHTML='<option value="">كل الطلاب</option>'+state.students.map(x=>`<option value="${esc(x.id)}">${esc(x.fullName||x.name||x.id)}</option>`).join('');filter.value=state.students.some(s=>s.id===prior)?prior:'';}
+ const rows=filteredPaymentRows(),s=paymentSummary(rows);
+ const ids=['teacherPaymentsDue','teacherPaymentsCash','teacherPaymentsCredit','teacherPaymentsRemaining'];
+ [s.due,s.cash,s.credit,s.remaining].forEach((v,i)=>{if($(ids[i]))$(ids[i]).textContent=state.failedSources.has('الحضور والمدفوعات')?'—':money(v);});
+ if($('teacherPaymentsRows'))$('teacherPaymentsRows').innerHTML=state.failedSources.has('الحضور والمدفوعات')?'<tr><td colspan="8">تعذر تحميل بيانات المدفوعات. راجع التنبيه أعلى اللوحة.</td></tr>':rows.length?paymentRowsHtml(rows):'<tr><td colspan="8">لا توجد حصص مطابقة.</td></tr>';
+ const grouped=new Map();
+ for(const r of rows){const uid=r.studentUid||r.studentName||r.id;const val=grouped.get(uid)||{name:studentName(r.studentUid,r.studentName),count:0,due:0,cash:0,credit:0,remaining:0};const v=financeValue(r);val.count++;val.due+=v.due;val.cash+=v.cash;val.credit+=v.credit;val.remaining+=v.remaining;grouped.set(uid,val)}
+ if($('teacherPaymentsStudentRows'))$('teacherPaymentsStudentRows').innerHTML=[...grouped.values()].map(v=>`<tr><td>${esc(v.name)}</td><td>${v.count}</td><td>${money(v.due)}</td><td>${money(v.cash+v.credit)}</td><td>${money(v.remaining)}</td></tr>`).join('')||'<tr><td colspan="5">لا توجد سجلات.</td></tr>';
+ if($('teacherPaymentsSyncNote')){
+  const latest=rows.map(x=>toDate(x.teacherFinanceSyncedAt)).filter(Boolean).sort((a,b)=>b-a)[0];
+  $('teacherPaymentsSyncNote').textContent=state.failedSources.has('الحضور والمدفوعات')?'❌ تعذر تحميل السجلات؛ لا تعتمد أرقام الدفع.':rows.some(r=>!Object.hasOwn(r,'teacherAdvanceAppliedPiastres'))?'⚠️ بعض الحصص لم تُراجع دفعاتها المقدمة من الإدارة؛ الإجمالي مبدئي حتى تتم المزامنة.':`✅ آخر مزامنة للمقدم: ${latest?formatDate(latest,true):'غير محددة'} — التقرير ليس إذنًا لصرف مستحقات المعلم.`;
+ }
+
+}
+function paymentsDocument(){
+ const title=esc(state.profile.fullName||state.profile.name||'المعلم'),rows=filteredPaymentRows(),s=paymentSummary(rows);
+ return `<h2>أكاديمية زاد المعرفة التعليمية — كشف الحضور والمدفوعات</h2><p>المعلم: ${title} | تاريخ التقرير: ${new Date().toLocaleDateString('ar-EG')}</p><p>إجمالي الحصص: ${money(s.due)} | المدفوع المباشر: ${money(s.cash)} | المقدم المخصص: ${money(s.credit)} | المتبقي: ${money(s.remaining)}</p><table><thead><tr><th>التاريخ</th><th>الطالب</th><th>المادة</th><th>الحالة</th><th>سعر الحصة</th><th>الدفع المباشر</th><th>المقدم المخصص</th><th>المتبقي</th></tr></thead><tbody>${paymentRowsHtml(rows)}</tbody></table><p>الأرقام المعروضة خاصة بحصص المعلم فقط، ولا تشمل دفعات غير مخصصة لحصة.</p>`;
+}
+function printPayments(){
+ if(state.failedSources.has('الحضور والمدفوعات')){alert('تعذر تحميل البيانات؛ لا يمكن طباعة تقرير غير مكتمل.');return;}
+ document.getElementById('teacherFinancePrintFrame')?.remove();
+ const frame=document.createElement('iframe');frame.id='teacherFinancePrintFrame';frame.setAttribute('title','طباعة مدفوعات المعلم');frame.style.cssText='position:fixed;left:-10000px;top:0;width:900px;height:600px;border:0';document.body.append(frame);
+ const d=frame.contentDocument;d.open();d.write('<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>كشف المعلم</title><style>body{font:13px Tahoma,Arial;padding:18px;color:#111}table{border-collapse:collapse;width:100%}td,th{border:1px solid #999;padding:6px;text-align:right}h2{text-align:center}@page{size:A4 landscape;margin:12mm}</style></head><body>'+paymentsDocument()+'</body></html>');d.close();
+ frame.contentWindow.focus();frame.contentWindow.print();
+}
+function exportPayments(){
+ const rows=[['التاريخ','الطالب','المادة','الحالة','قيمة الحصة','المدفوع مباشر','المقدم المخصص','المتبقي']];
+ for(const x of filteredPaymentRows()){const f=financeValue(x);rows.push([x.date,studentName(x.studentUid,x.studentName),x.subject,x.status,f.due/100,f.cash/100,f.credit/100,f.remaining/100]);}
+ const csv='\ufeff'+rows.map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\n');
+ const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'})),a=document.createElement('a');a.href=url;a.download='zad-teacher-payments-'+new Date().toISOString().slice(0,10)+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+
 function renderNotifications(){
   const list=$('teacherNotificationsList');if(!list)return;
   list.innerHTML=state.notifications.length?state.notifications.map(n=>{
@@ -252,6 +313,7 @@ function renderNotifications(){
   list.querySelectorAll('[data-notification-id]').forEach(card=>card.querySelector('[data-notification-read]')?.addEventListener('click',()=>markNotificationRead(card.dataset.notificationId)));
 }
 async function markNotificationRead(id){
+  if(state.preview)return;
   await updateDoc(doc(db,'notifications',id),{readBy:arrayUnion(state.user.uid)});
   const n=state.notifications.find(x=>x.id===id);if(n)n.readBy=[...(n.readBy||[]),state.user.uid];renderAll();
 }
@@ -283,32 +345,26 @@ function renderContact(){
     return `<div class="teacher-contact-card"><div class="teacher-avatar">${esc((s.fullName||s.name||'ط').trim().charAt(0)||'ط')}</div><div><strong>${esc(s.fullName||s.name||'-')}</strong><span>${esc(s.grade||s.studyGrade||'-')}</span></div>${digits?`<a class="btn gold compact-btn" target="_blank" rel="noopener" href="https://wa.me/${digits}">واتساب</a>`:'<span class="teacher-muted">لا يوجد رقم</span>'}</div>`;
   }).join(''):'<div class="teacher-empty">لا يوجد طلاب مرتبطون بك.</div>';
 }
-function renderAll(){renderOverview();renderStudents();renderAttendance();renderNotes();renderReports();renderNotifications();renderContact();}
+function renderAll(){renderOverview();renderStudents();renderAttendance();renderNotes();renderReports();renderNotifications();renderContact();renderPayments();showIssues();}
 
 function bindForms(){
   $('studentSearch')?.addEventListener('input',renderStudents);
   $('attendanceFilterStudent')?.addEventListener('change',renderAttendance);
   $('notesFilterStudent')?.addEventListener('change',renderNotes);
+  $('teacherPaymentsStudent')?.addEventListener('change',renderPayments);
+  $('teacherPaymentsFrom')?.addEventListener('change',renderPayments);
+  $('teacherPaymentsTo')?.addEventListener('change',renderPayments);
+  $('printTeacherPayments')?.addEventListener('click',printPayments);
+  $('exportTeacherPayments')?.addEventListener('click',exportPayments);
+  $('refreshTeacherData')?.addEventListener('click',()=>location.reload());
   $('closeStudentDetails')?.addEventListener('click',closeStudentModal);
   $('studentDetailsModal')?.addEventListener('click',e=>{if(e.target.id==='studentDetailsModal')closeStudentModal();});
   $('logout')?.addEventListener('click',()=>signOut(auth).then(()=>location.replace('../../login/index.html')));
-  $('markAllTeacherNotifications')?.addEventListener('click',markAllNotifications);
-
-  $('noteForm')?.addEventListener('submit',async e=>{
-    e.preventDefault();
-    const studentUid=$('noteStudent').value,student=state.studentMap.get(studentUid);
-    if(!student){setStatus('noteFormStatus','اختر طالبًا أولًا.',false);return;}
-    try{
-      const data={teacherUid:state.user.uid,teacherName:state.profile.fullName||state.profile.name||state.user.email,studentUid,studentName:student.fullName||student.name||student.email,category:$('noteCategory').value,text:text($('noteText').value),visibleToStudent:Boolean($('noteVisibleToStudent')?.checked),createdAt:serverTimestamp(),updatedAt:serverTimestamp()};
-      const ref=await addDoc(collection(db,'teacherStudentNotes'),data);
-      state.notes.unshift({id:ref.id,...data,createdAt:new Date()});
-      $('noteText').value='';if($('noteVisibleToStudent'))$('noteVisibleToStudent').checked=false;
-      setStatus('noteFormStatus','تم حفظ الملاحظة.');renderAll();
-    }catch(err){console.error(err);setStatus('noteFormStatus','تعذر حفظ الملاحظة: '+(err.code||err.message),false);}
-  });
+  $('markAllTeacherNotifications')?.addEventListener('click',()=>{if(!state.preview)markAllNotifications();});
 
   $('teacherProfileForm')?.addEventListener('submit',async e=>{
     e.preventDefault();
+    if(state.preview){setStatus('profileFormStatus','المعاينة الإدارية للقراءة فقط.',false);return;}
     try{
       const updates={fullName:text($('profileName').value),phone:text($('profilePhone').value),whatsapp:text($('profileWhatsapp').value),subject:text($('profileSubject').value),country:text($('profileCountry').value),city:text($('profileCity').value),bio:text($('profileBio').value),teachingGrades:csvList($('profileGrades').value),availableDays:csvList($('profileDays').value),availablePeriods:csvList($('profilePeriods').value),lessonModes:csvList($('profileModes').value),updatedAt:serverTimestamp()};
       await updateDoc(doc(db,'users',state.user.uid),updates);state.profile={...state.profile,...updates};
@@ -340,12 +396,18 @@ async function boot(user){
   }
   state.user=preview.active?{...user,uid:effectiveUid}:user;
   state.profile=p;
+  state.preview=preview.active;
   document.querySelector('[data-name]').textContent=p.fullName||p.name||user.email;
   document.querySelector('[data-email]').textContent=preview.active?(p.email||''): (user.email||p.email||'');
   setToday();initTabs();bindForms();
   if($('attendanceDate'))$('attendanceDate').value=new Date().toISOString().slice(0,10);
-  await loadTeacherStudents(effectiveUid);fillStudentSelects();
-  await Promise.all([loadAttendance(effectiveUid),loadNotes(effectiveUid),loadTeacherNotifications(effectiveUid)]);
+  // Each independent query reports errors instead of turning permission failures into silent zeroes.
+  await Promise.all([loadTeacherStudents(effectiveUid),loadAttendance(effectiveUid),loadNotes(effectiveUid),loadTeacherNotifications(effectiveUid)]);
+  finalizeStudents();fillStudentSelects();
+  if(preview.active){
+    if($('markAllTeacherNotifications'))$('markAllTeacherNotifications').disabled=true;
+    $('teacherProfileForm')?.querySelectorAll('input,textarea,button').forEach(el=>el.disabled=true);
+  }
   renderProfile();renderAll();$('loading')?.remove();
 }
 onAuthStateChanged(auth,user=>{if(!user){location.replace('../../login/index.html');return;}boot(user).catch(err=>{console.error(err);if($('loading'))$('loading').textContent='تعذر تحميل لوحة المعلم: '+(err.code||err.message);});});

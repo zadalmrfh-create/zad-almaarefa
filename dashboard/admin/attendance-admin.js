@@ -13,7 +13,7 @@ const teacherKey = name => String(name||'').normalize('NFKC').replace(/[\u064B-\
 function teacherUidForName(name) {
   const key = teacherKey(name);
   if (!key || key.includes('،')) return null;
-  const matches = teacherProfiles.filter(profile => [profile.fullName,profile.name,profile.displayName].some(n=>teacherKey(n)===key));
+  const matches = teacherProfiles.filter(profile => [profile.fullName,profile.name,profile.displayName,...(Array.isArray(profile.attendanceAliases)?profile.attendanceAliases:[])].some(n=>teacherKey(n)===key));
   return matches.length===1 ? matches[0].id : null;
 }
 
@@ -462,3 +462,57 @@ $('zadArchivedAttendanceList')?.addEventListener('click',async e=>{
   try{await restoreAttendance(button.dataset.restoreAttendance);await load();message.textContent='✅ تم استرجاع الحصة.';window.dispatchEvent(new Event('zad:attendance-archived'));}
   catch(err){alert('تعذر الاسترجاع: '+(err.code||err.message));button.disabled=false;}
 });
+
+
+// التقرير يستخدم سجلات الحضور المحملة بالفعل بصلاحيات الأدمن، ولا ينشئ طلب قراءة جديد.
+function attendancePrintReport() {
+  const matched = filteredAttendanceRecords();
+  const teacher = logFilterValue('attendanceLogTeacher','all');
+  const subject = logFilterValue('attendanceLogSubject','all');
+  const status = logFilterValue('attendanceLogStatus','all');
+  const payment = logFilterValue('attendanceLogPayment','all');
+  const search = logFilterValue('attendanceLogSearch');
+  const from = logFilterValue('attendanceLogFrom');
+  const to = logFilterValue('attendanceLogTo');
+  const due = matched.reduce((sum,r)=>sum+amountDue(r),0);
+  const paidCash = matched.reduce((sum,r)=>sum+amountPaid(r),0);
+  const appliedAdvance = matched.reduce((sum,r)=>sum+(creditFor(r)?.advanceAppliedPiastres||0),0);
+  const remaining = matched.reduce((sum,r)=>sum+attendanceLogRemaining(r),0);
+  const groups = new Map();
+  for (const r of matched) {
+    const key = r.studentUid || 'name:'+String(r.studentName||'');
+    const entry = groups.get(key) || {name:r.studentName||'غير محدد',count:0,present:0,absent:0,due:0,paid:0,advance:0,remaining:0};
+    entry.count++;
+    if(r.status==='حاضر')entry.present++;
+    if(r.status==='غائب')entry.absent++;
+    entry.due+=amountDue(r);
+    entry.paid+=amountPaid(r);
+    entry.advance+=(creditFor(r)?.advanceAppliedPiastres||0);
+    entry.remaining+=attendanceLogRemaining(r);
+    groups.set(key,entry);
+  }
+  const format=n=>cashMoney(n);
+  const tr=(values)=>'<tr>'+values.map(v=>'<td>'+esc(v)+'</td>').join('')+'</tr>';
+  const summaryRows=[...groups.values()].map(r=>tr([r.name,r.count,r.present,r.absent,format(r.due),format(r.paid),format(r.advance),format(r.remaining)])).join('');
+  const detailRows=matched.map(r=>tr([r.date||'',r.studentName||'',r.teacherName||'الإدارة',r.subject||'',r.status||'',format(amountDue(r)),format(amountPaid(r)),format(creditFor(r)?.advanceAppliedPiastres||0),format(attendanceLogRemaining(r))])).join('');
+  const generated=new Date().toLocaleString('ar-EG');
+  const content=`<h1>أكاديمية زاد المعرفة التعليمية</h1><h2>تقرير الحضور والغياب والمدفوعات</h2>
+  <p>تاريخ الإصدار: ${esc(generated)}</p>
+  <p>المعلم: ${esc(teacher==='all'?'جميع المعلمين':teacher)} | الطالب / البحث: ${esc(search||'جميع الطلاب')} | المادة: ${esc(subject==='all'?'جميع المواد':subject)}</p>
+  <p>الفترة: ${esc(from||'من البداية')} إلى ${esc(to||'آخر سجل')} | حالة الحضور: ${esc(status==='all'?'الكل':status)} | حالة الدفع: ${esc(payment==='all'?'الكل':payment)}</p>
+  <h3>الإجماليات</h3><p>عدد الحصص: ${matched.length} | عدد الطلاب: ${groups.size} | قيمة الحصص: ${format(due)} | المسدد مباشرة: ${format(paidCash)} | المقدم المستخدم لتغطية الحصص: ${format(appliedAdvance)} | المتبقي على الحصص: ${format(remaining)}</p>
+  <h3>ملخص جميع الطلاب المطابقين</h3><table><thead><tr><th>الطالب</th><th>الحصص</th><th>حضور</th><th>غياب</th><th>القيمة</th><th>المسدد مباشرة</th><th>المقدم المستخدم</th><th>المتبقي</th></tr></thead><tbody>${summaryRows||'<tr><td colspan="8">لا توجد سجلات مطابقة</td></tr>'}</tbody></table>
+  <h3>تفاصيل الحضور والغياب والمدفوعات المرتبطة بالحصص</h3><table><thead><tr><th>التاريخ</th><th>الطالب</th><th>المعلم</th><th>المادة</th><th>الحالة</th><th>قيمة الحصة</th><th>المسدد</th><th>المقدم المستخدم</th><th>المتبقي</th></tr></thead><tbody>${detailRows||'<tr><td colspan="9">لا توجد سجلات مطابقة</td></tr>'}</tbody></table>
+  <p class="note">ملاحظة محاسبية: يوضح التقرير المدفوعات المسجلة على الحصص والمقدم المستخدم منها فقط. الدفعات غير المخصصة لحصص هذا المعلم ليست ضمن الإجمالي، ولا يمثل هذا التقرير كشف مستحقات المعلم أو إثبات صرفها. الأرقام وفق البيانات المحفوظة وقت الطباعة.</p>`;
+  // iframe مخفي للطباعة بدون فتح نافذة منبثقة قد يمنعها المتصفح.
+  document.getElementById('zadAttendancePrintFrame')?.remove();
+  const frame=document.createElement('iframe');frame.id='zadAttendancePrintFrame';frame.title='تقرير الطباعة';
+  frame.style.cssText='position:fixed;left:-10000px;top:0;width:900px;height:600px;border:0';
+  document.body.appendChild(frame);
+  const d=frame.contentDocument;
+  d.open();d.write('<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>تقرير زاد المعرفة</title><style>body{font-family:Tahoma,Arial,sans-serif;color:#111;padding:20px;font-size:13px}h1,h2{text-align:center}table{border-collapse:collapse;width:100%;margin:12px 0;page-break-inside:auto}tr{page-break-inside:avoid}th,td{border:1px solid #555;padding:6px;text-align:right}th{background:#eee}.note{margin-top:25px;font-size:11px}@page{size:A4 landscape;margin:12mm}</style></head><body>'+content+'</body></html>');d.close();
+  const notice=$('attendanceReportNotice');
+  if(notice)notice.textContent=`تم تجهيز تقرير ${matched.length} حصة لـ ${groups.size} طالب؛ جارٍ فتح الطباعة.`;
+  frame.contentWindow.focus();frame.contentWindow.print();
+}
+$('attendancePrintReport')?.addEventListener('click',attendancePrintReport);

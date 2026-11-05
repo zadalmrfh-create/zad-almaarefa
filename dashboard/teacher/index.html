@@ -43,12 +43,15 @@
       <button class="teacher-tab" data-tab="students">👥 طلابي</button>
       <button class="teacher-tab" data-tab="attendance">📊 متابعة الحضور</button>
       <button class="teacher-tab" data-tab="notes">🗒️ ملاحظاتي</button>
+      <button class="teacher-tab" data-tab="payments">💳 مدفوعات طلابي</button>
       <button class="teacher-tab" data-tab="reports">📈 التقارير</button>
       <button class="teacher-tab" data-tab="notifications">🔔 التنبيهات <span class="teacher-badge" id="teacherNotificationBadge">0</span></button>
       <button class="teacher-tab" data-tab="profile">⚙️ ملفي</button>
       <button class="teacher-tab" data-tab="contact">💬 التواصل السريع</button>
     </nav>
 
+    <div id="teacherDataNotice" class="notice" role="alert" hidden style="border:1px solid #dab64d;margin-bottom:16px"></div>
+    <div style="margin-bottom:12px"><button type="button" class="btn" id="refreshTeacherData">🔄 تحديث بياناتي</button></div>
     <main class="teacher-workspace">
       <section class="teacher-panel active" data-panel="overview">
         <div class="enh-grid teacher-stats-grid">
@@ -64,7 +67,7 @@
             <div class="teacher-quick-actions">
               <button class="teacher-action-card" data-go="students"><span>👥</span><strong>عرض طلابي</strong><small>بيانات الطلاب والتواصل</small></button>
               <button class="teacher-action-card" data-go="attendance"><span>📊</span><strong>عرض الحضور</strong><small>سجلات الإدارة للقراءة فقط</small></button>
-              <button class="teacher-action-card" data-go="notes"><span>🗒️</span><strong>إضافة ملاحظة</strong><small>ملاحظات خاصة على الطلاب</small></button>
+              <button class="teacher-action-card" data-go="payments"><span>💳</span><strong>عرض مدفوعات طلابي</strong><small>اطلاع وطباعة فقط — من غير تعديل</small></button>
             </div>
           </section>
 
@@ -121,28 +124,34 @@
       </section>
 
       <section class="teacher-panel" data-panel="notes">
-        <div class="teacher-two-col">
-          <section class="card">
-            <div class="teacher-section-head"><div><h3>🗒️ إضافة ملاحظة</h3><p>اكتب ملاحظة للمتابعة، ويمكنك اختيار إظهارها للطالب.</p></div></div>
-            <form id="noteForm" class="teacher-form">
-              <label>الطالب<select id="noteStudent" class="teacher-input" required></select></label>
-              <label>نوع الملاحظة<select id="noteCategory" class="teacher-input"><option>عام</option><option>المستوى</option><option>المتابعة</option><option>الالتزام</option></select></label>
-              <label class="full">الملاحظة<textarea id="noteText" class="teacher-input" rows="5" required placeholder="اكتب ملاحظتك هنا..."></textarea></label>
-              <label class="full teacher-check-label"><input id="noteVisibleToStudent" type="checkbox"> <span>إظهار هذه الملاحظة للطالب داخل لوحة الطالب</span></label>
-              <div class="full teacher-form-actions"><button class="btn gold" type="submit">حفظ الملاحظة</button><span id="noteFormStatus" class="teacher-form-status"></span></div>
-            </form>
-          </section>
-          <section class="card">
-            <div class="teacher-section-head"><div><h3>📌 إرشاد</h3><p>استخدم الملاحظات لمتابعة مستوى الطالب وتقدمه، وتجنب كتابة بيانات حساسة غير لازمة.</p></div></div>
-            <div class="teacher-tip">يمكنك فتح ملف أي طالب من قسم <strong>طلابي</strong> لمشاهدة ملخص حضوره وملاحظاته. الملاحظة لا تظهر للطالب إلا إذا فعّلت خيار الإظهار.</div>
-          </section>
-        </div>
+        <section class="card"><div class="teacher-section-head"><div><h3>🗒️ الملاحظات — عرض فقط</h3><p>يمكن للمعلم الاطلاع على ملاحظات طلابه، وإدارة الملاحظات من صلاحيات الإدارة.</p></div></div></section>
         <section class="card">
           <div class="teacher-section-head"><div><h3>📋 الملاحظات المسجلة</h3><p>مرتبة من الأحدث إلى الأقدم.</p></div><select id="notesFilterStudent" class="teacher-input teacher-filter"><option value="">كل الطلاب</option></select></div>
           <div id="notesList" class="teacher-notes-list"><div class="teacher-empty">لا توجد ملاحظات.</div></div>
         </section>
       </section>
 
+      <section class="teacher-panel" data-panel="payments">
+        <section class="card">
+          <div class="teacher-section-head"><div><h3>💳 مدفوعات الطلاب لدى المعلم</h3><p>بيانات الحصص المرتبطة بحساب المعلم فقط. لا توجد صلاحية تعديل أو تغيير حالة السداد.</p></div><div class="actions"><button class="btn" id="printTeacherPayments" type="button">🖨️ طباعة</button><button class="btn gold" id="exportTeacherPayments" type="button">⬇️ CSV</button></div></div>
+          <div class="teacher-payment-filters" style="display:flex;flex-wrap:wrap;gap:12px;margin:14px 0">
+            <label>الطالب<select class="teacher-input" id="teacherPaymentsStudent"><option value="">كل الطلاب</option></select></label>
+            <label>من تاريخ<input class="teacher-input" id="teacherPaymentsFrom" type="date"></label>
+            <label>إلى تاريخ<input class="teacher-input" id="teacherPaymentsTo" type="date"></label>
+          </div>
+          <div class="enh-grid teacher-stats-grid">
+            <div class="enh-stat"><span>إجمالي الحصص</span><b id="teacherPaymentsDue">—</b></div>
+            <div class="enh-stat"><span>المدفوع المباشر</span><b id="teacherPaymentsCash">—</b></div>
+            <div class="enh-stat"><span>المقدم المستخدم</span><b id="teacherPaymentsCredit">—</b></div>
+            <div class="enh-stat"><span>غير المسدد</span><b id="teacherPaymentsRemaining">—</b></div>
+          </div>
+          <p id="teacherPaymentsSyncNote" class="notice" role="status"></p>
+          <h3 style="margin-top:16px">📋 ملخص حسب الطالب</h3>
+          <div class="table-wrap teacher-table-wrap"><table class="table teacher-table"><thead><tr><th>الطالب</th><th>الحصص</th><th>القيمة</th><th>المحصل</th><th>المتبقي</th></tr></thead><tbody id="teacherPaymentsStudentRows"></tbody></table></div>
+          <h3 style="margin-top:16px">تفاصيل الحصص والدفعات المرتبطة بها</h3>
+          <div class="table-wrap teacher-table-wrap"><table class="table teacher-table"><thead><tr><th>التاريخ</th><th>الطالب</th><th>المادة</th><th>الحضور</th><th>القيمة</th><th>المدفوع</th><th>المقدم</th><th>المتبقي</th></tr></thead><tbody id="teacherPaymentsRows"></tbody></table></div>
+        </section>
+      </section>
       <section class="teacher-panel" data-panel="reports">
         <section class="card">
           <div class="teacher-section-head"><div><h3>📈 تقارير المعلم</h3><p>ملخص متابعة الطلاب والحضور والملاحظات.</p></div><div class="actions"><button id="printTeacherReport" class="btn">🖨️ طباعة</button><button id="exportTeacherReport" class="btn gold">⬇️ تصدير CSV</button></div></div>
@@ -203,7 +212,7 @@
     </div>
   </div>
 
-  <script type="module" src="teacher-enhancements.js"></script>
+  <script type="module" src="teacher-enhancements.js?v=20261105-readonly2"></script>
 <script type="module" src="../admin-switcher.js"></script>
 
 <!-- متجر زاد المعرفة: إضافة مستقلة لا تمس وظائف الأكاديمية -->

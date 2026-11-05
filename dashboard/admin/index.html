@@ -786,6 +786,20 @@ onAuthStateChanged(auth, async (user) => {
         </div>
         <pre id="zadRepairReport" aria-live="polite" style="white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.9;max-width:100%;background:#0d1728;padding:15px;border-radius:10px;color:#f6ead0">جارٍ تجهيز أداة المراجعة...</pre>
       </details>
+      <details id="zadTeacherLinker" dir="rtl" style="margin:18px 0;padding:16px;border:1px solid #d8b85a;border-radius:14px;background:#152038">
+        <summary style="cursor:pointer;font-weight:700;color:#f7d96c">👨‍🏫 ربط سجلات المعلمين القديمة وتحديث عرض مدفوعاتهم (للإدارة فقط)</summary>
+        <p>بعض الحصص والحجوزات مسجلة باسم المعلم فقط بدون UID. الأداة تعرض السجلات أولًا؛ لا تغير سعر الحصة ولا حالة السداد ولا بيانات الطالب. بعد التأكيد تربط السجلات بالمعلم المختار، وتحدّث المقدم المستخدم في كشفه.</p>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:end">
+          <label>حساب المعلم<select id="zadLinkTeacher" style="min-width:210px"><option value="">اختر المعلم</option></select></label>
+          <label>اسم المعلم كما هو في السجلات<select id="zadLinkAlias" style="min-width:210px"><option value="">اختر الاسم المسجل</option></select></label>
+          <button type="button" id="zadLinkPreview" class="btn gold">🔍 مراجعة السجلات</button>
+          <button type="button" id="zadLinkApply" class="btn" hidden>✅ اعتماد الربط وتحديث أرصدة العرض</button>
+          <button type="button" id="zadLinkRefresh" class="btn">🔄 تحميل من جديد</button>
+        </div>
+        <p id="zadLinkStatus" role="status" style="white-space:pre-wrap;overflow-wrap:anywhere;color:#f3d989"></p>
+        <div id="zadLinkDetails" style="max-height:260px;overflow:auto"></div>
+        <p style="font-size:13px">المبالغ المقدمة تُستخرج من التحويلات المعتمدة والمخصصة بحسب نظام الأكاديمية، ولا تعتبر إذنًا لصرف مستحقات المعلم. عند وصول دفعة جديدة، شغّل تحديث الأرصدة مرة أخرى.</p>
+      </details>
       <h3>📚 سجل الحضور والغياب</h3>
       <div class="zad-attendance-log-filters" id="attendanceLogFilters" dir="rtl" role="search" aria-label="البحث وتصفية سجلات الحضور والغياب">
         <label class="zad-attendance-filter-search">🔎 بحث عن طالب
@@ -813,6 +827,12 @@ onAuthStateChanged(auth, async (user) => {
       </div>
       <p id="attendanceLogCount" class="zad-attendance-log-count" role="status" aria-live="polite">جارٍ تحميل السجلات...</p>
       <div class="table-wrap"><table class="table"><thead><tr><th>الطالب</th><th>التاريخ</th><th>المادة</th><th>الحالة</th><th>سعر الحصة</th><th>الدفع</th><th>سجله</th><th>إجراء</th></tr></thead><tbody id="attendanceRows"><tr><td colspan="8">جارٍ تحميل السجلات...</td></tr></tbody></table></div><details class="zad-pay-archive-history" dir="rtl"><summary>🗃️ الحصص الملغاة — سجل محفوظ للمراجعة والاسترجاع</summary><div id="zadArchivedAttendanceList">جارٍ التحميل...</div></details>
+      <div id="attendanceReportTools" dir="rtl" style="margin:16px 0;padding:15px;border:1px solid #bca26a;border-radius:14px">
+        <h3>📊 تقرير الحضور والمدفوعات حسب الفلاتر الموجودة بالأعلى</h3>
+        <p>اختر المعلم فقط لعرض كل طلابه، أو ابحث عن طالب مع تحديد المعلم. زر الطباعة يطبع البيانات المطابقة للبحث والتواريخ وحالات الدفع المحددة أعلاه.</p>
+        <button type="button" class="btn gold" id="attendancePrintReport">🖨️ طباعة تقرير الحضور والمدفوعات</button>
+        <p id="attendanceReportNotice" role="status"></p>
+      </div>
       <div id="attendanceStudentSummary" class="attendance-summary" aria-live="polite">
 <h3>📊 ملخص حضور الطلاب والمبالغ المدفوعة</h3>
 <p>تُحسب الحصص والحضور حسب المادة المختارة، أما الرصيد المالي (له / عليه) فيُحسب بشكل مستقل لكل طالب عبر جميع المواد. ويظهر الطالب الذي دفع مقدمًا حتى قبل أول حصة.</p>
@@ -3852,6 +3872,8 @@ guard('admin', async () => {
 <script type="module" src="admin-enhancements.js"></script>
 <script type="module" src="admin-workspace.js"></script>
 <script type="module" src="attendance-admin.js?v=20261103-sync1"></script>
+<script type="module" src="teacher-linker-admin.js?v=20261105-1"></script>
+
 
 <script type="module" src="account-link-repair.js?v=20261103-stable3"></script>
 <script type="module" src="manual-students-admin.js"></script>

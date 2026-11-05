@@ -253,16 +253,8 @@ service cloud.firestore {
         || (signedIn() && resource.data.studentUid == request.auth.uid)
         || (isTeacher() && resource.data.teacherUid == request.auth.uid);
 
-      allow update: if isAdmin()
-        || (
-          isTeacher()
-          && resource.data.teacherUid == request.auth.uid
-          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'updatedAt'])
-          && request.resource.data.status is string
-          && request.resource.data.status.size() <= 40
-        );
-
-      allow delete: if isAdmin();
+      // Student booking changes are admin-only; teacher dashboard is read-only.
+      allow update, delete: if isAdmin();
     }
 
     // سجل تغييرات حالات الحجوزات للتقارير. الأدمن يملك الإدارة الكاملة،
@@ -402,14 +394,10 @@ service cloud.firestore {
 
     // ملاحظات المعلم: الخاصة للمعلم والإدارة، ويمكن إظهار ملاحظات مختارة للطالب.
     match /teacherStudentNotes/{noteId} {
-      allow create: if isTeacher()
-        && request.resource.data.teacherUid == request.auth.uid
-        && request.resource.data.studentUid is string;
+      allow create, update, delete: if isAdmin();
       allow read: if isAdmin()
         || (isTeacher() && resource.data.teacherUid == request.auth.uid)
         || (signedIn() && resource.data.studentUid == request.auth.uid && resource.data.visibleToStudent == true);
-      allow update, delete: if isAdmin()
-        || (isTeacher() && resource.data.teacherUid == request.auth.uid);
     }
 
     match /libraryProgress/{progressId} {
