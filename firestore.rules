@@ -467,6 +467,12 @@ service cloud.firestore {
       }
     }
 
+    // Verified answer keys for embedded HTML exams are NEVER readable by students.
+    // Keep them separate from codeExams, because published HTML is student-readable.
+    match /codeExamAnswerKeys/{examId} {
+      allow read, create, update, delete: if isAdmin();
+    }
+
     // Client-reported results: learners may not change or remove earlier submissions.
     // These scores are not administratively verified.
     match /codeExamResults/{resultId} {
