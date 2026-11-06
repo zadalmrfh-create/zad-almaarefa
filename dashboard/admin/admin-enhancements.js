@@ -1,6 +1,8 @@
+import {sharedAdminGetDocs,clearAdminReadCache} from './firestore-read-cache.js';
+const getDocs=(ref)=>sharedAdminGetDocs(ref,rawGetDocs,auth);
 import { auth, db } from '../../firebase-config.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
-import { collection, getDocs, query, orderBy, limit, getCountFromServer } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
+import { collection, getDocs as rawGetDocs, query, orderBy, limit, getCountFromServer } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 
 const $ = id => document.getElementById(id);
 const esc = v => String(v ?? '').replace(/[&<>\"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));

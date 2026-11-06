@@ -1,7 +1,9 @@
+import {sharedAdminGetDocs,clearAdminReadCache} from './firestore-read-cache.js';
+const getDocs=(ref)=>sharedAdminGetDocs(ref,rawGetDocs,auth);
 /** إدارة مرتبات المعلمين — بيانات مستقلة عن ذمم الطلاب، للإدارة فقط. */
 import {auth,db} from '../../firebase-config.js';
 import {onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
-import {collection,doc,getDocs,setDoc,serverTimestamp,writeBatch,runTransaction} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
+import {collection,doc,getDocs as rawGetDocs,setDoc,serverTimestamp,writeBatch,runTransaction} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 
 const $=id=>document.getElementById(id);
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));

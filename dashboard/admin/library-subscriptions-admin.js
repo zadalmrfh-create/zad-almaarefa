@@ -1,7 +1,9 @@
+import {sharedAdminGetDocs,clearAdminReadCache} from './firestore-read-cache.js';
+const getDocs=(ref)=>sharedAdminGetDocs(ref,rawGetDocs,auth);
 import {auth,db,ADMIN_EMAIL} from '../../firebase-config.js';
 import {DEFAULT_LIBRARY_PRICE_PIASTRES} from '../../assets/library-subscription.js';
 import {onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
-import {collection,doc,getDoc,getDocs,serverTimestamp,setDoc,writeBatch} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
+import {collection,doc,getDoc,getDocs as rawGetDocs,serverTimestamp,setDoc,writeBatch} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 const $=id=>document.getElementById(id), esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let requests=[],users=[],grants=new Map(),adminUid='',working=false;
 const msg=(s,err=false)=>{$('libraryMembershipAdminMessage').textContent=s;$('libraryMembershipAdminMessage').style.color=err?'#fca5a5':'#e8c96d';};

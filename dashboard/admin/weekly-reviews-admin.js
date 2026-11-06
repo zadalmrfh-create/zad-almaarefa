@@ -1,6 +1,8 @@
+import {sharedAdminGetDocs,clearAdminReadCache} from './firestore-read-cache.js';
+const getDocs=(ref)=>sharedAdminGetDocs(ref,rawGetDocs,auth);
 import {auth,db} from '../../firebase-config.js';
 import {onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
-import {collection,doc,getDoc,getDocs,query,where,setDoc,deleteDoc,serverTimestamp} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
+import {collection,doc,getDoc,getDocs as rawGetDocs,query,where,setDoc,deleteDoc,serverTimestamp} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 import {TEACHER_QUESTIONS,PLATFORM_QUESTIONS,ADMIN_QUESTIONS,scoreAverage,htmlEscape} from '../../reviews/weekly-shared.js';
 const $=id=>document.getElementById(id),kindName={teacher:'المعلم',platform:'المنصة',administration:'الإدارة'};
 let all=[],published=new Map(),users=new Map(),isReady=false;

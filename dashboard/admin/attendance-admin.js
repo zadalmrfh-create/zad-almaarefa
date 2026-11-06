@@ -1,8 +1,10 @@
+import {sharedAdminGetDocs,clearAdminReadCache} from './firestore-read-cache.js';
+const getDocs=(ref)=>sharedAdminGetDocs(ref,rawGetDocs,auth);
 import {amountDue,amountPaid,amountRemaining,money as cashMoney} from '../payment-utils.js';
 import {advanceSnapshot} from '../advance-credit.js';
 import {archiveAttendance,restoreAttendance} from './attendance-archive.js';
 import { db, auth } from '../../firebase-config.js';
-import { collection, query, where, getDocs, getDoc, addDoc, updateDoc, deleteDoc, doc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
+import { collection, query, where, getDocs as rawGetDocs, getDoc, addDoc, updateDoc, deleteDoc, doc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 import { SUBJECTS, teacherForSubject, ENGLISH_TEACHERS, isEnglishSubject } from '../attendance-subjects.js';
 
 const $ = id => document.getElementById(id);
@@ -352,6 +354,7 @@ form?.addEventListener('submit', async e => {
     });
 
     message.textContent = `✅ تم حفظ حصة واحدة (${selectedSubjects.join('، ')}) بنجاح`;
+    clearAdminReadCache();
     await load();
     window.dispatchEvent(new Event('zad:attendance-changed'));
   } catch (err) {
@@ -458,12 +461,13 @@ rows?.addEventListener('click', async e => {
         : `هل تريد إلغاء حصة ${x.subject||''} للطالب ${x.studentName||''}؟\nسنبقي نسخة مؤرشفة يمكن للإدارة استرجاعها.`;
       if(!confirm(text))return;
       await archiveAttendance(x.id);
-      window.dispatchEvent(new Event('zad:attendance-archived'));
+      clearAdminReadCache();
     } else if (edit) {
       openAttendanceEditor(x);
       return;
 
     }
+    clearAdminReadCache();
     await load();
     window.dispatchEvent(new Event('zad:attendance-changed'));
   } catch (err) {
@@ -482,7 +486,7 @@ $('attendanceLogClear')?.addEventListener('click',()=>{
   }
   renderAttendanceLog();
 });
-$('refreshAttendance')?.addEventListener('click', load);
+$('refreshAttendance')?.addEventListener('click', ()=>{clearAdminReadCache();load();});
 window.addEventListener('zad:payment-approved', load);
 window.addEventListener('zad:attendance-changed', load);
 $('attendanceSummarySearch')?.addEventListener('input', render);
