@@ -11,10 +11,14 @@ let students = [], records = [], cancelledRecords = [];
 let teacherProfiles = [];
 const teacherKey = name => String(name||'').normalize('NFKC').replace(/[\u064B-\u065F\u0670]/g,'').replace(/^(الأستاذ|أستاذ|مستر|ميس|أ\/)\s*/i,'').replace(/\s+/g,' ').trim().toLowerCase();
 function teacherUidForName(name) {
-  const key = teacherKey(name);
-  if (!key || key.includes('،')) return null;
-  const matches = teacherProfiles.filter(profile => [profile.fullName,profile.name,profile.displayName,...(Array.isArray(profile.attendanceAliases)?profile.attendanceAliases:[])].some(n=>teacherKey(n)===key));
-  return matches.length===1 ? matches[0].id : null;
+  const key=teacherKey(name);
+  if(!key||key.includes('،'))return null;
+  const names=p=>[p.fullName,p.name,p.displayName,...(Array.isArray(p.attendanceAliases)?p.attendanceAliases:[])].map(teacherKey).filter(Boolean);
+  let matches=teacherProfiles.filter(p=>names(p).includes(key));
+  // السماح بمطابقة الاسم الثلاثي مع الاسم الرباعي إذا كان الحساب فريدًا.
+  if(!matches.length && key.split(' ').length>=3)
+    matches=teacherProfiles.filter(p=>names(p).some(n=>n.startsWith(key+' ')));
+  return matches.length===1?matches[0].id:null;
 }
 
 let ambiguousEmailAccounts = new Map();
@@ -160,7 +164,7 @@ function renderAttendanceLog(){
   rows.innerHTML = matches.length ? matches.map(x=>`<tr>
     <td>${esc(x.studentName || '-')}</td><td>${esc(x.date || '-')}</td><td>${esc(x.subject || '-')}</td>
     <td>${esc(x.status || '-')}</td><td>${money(x.price)}</td>
-    <td><button type="button" class="btn ${x.paid === true ? 'gold' : ''}" data-paid="${esc(x.id)}" aria-label="تغيير حالة الدفع">${creditFor(x)?.afterPiastres===0?'✅ مغطاة / مدفوعة':creditFor(x)?.advanceAppliedPiastres>0?'🟡 جزء مغطى بالمقدم، المتبقي '+cashMoney(creditFor(x).afterPiastres):amountRemaining(x)===0?'✅ مدفوعة':amountPaid(x)>0?'🟡 مدفوع جزئيًا '+cashMoney(amountPaid(x)):'⏳ غير مدفوعة'}</button></td>
+    <td><button type="button" class="btn ${amountRemaining(x)===0 ? 'gold' : (amountPaid(x)>0 || (creditFor(x)?.advanceAppliedPiastres||0)>0) ? 'attendance-partial-payment' : 'attendance-unpaid-payment'}" data-paid="${esc(x.id)}" aria-label="تغيير حالة الدفع">${creditFor(x)?.afterPiastres===0?'✅ مغطاة / مدفوعة':creditFor(x)?.advanceAppliedPiastres>0?'🟡 جزء مغطى بالمقدم، المتبقي '+cashMoney(creditFor(x).afterPiastres):amountRemaining(x)===0?'✅ مدفوعة':amountPaid(x)>0?'🟡 مدفوع جزئيًا '+cashMoney(amountPaid(x)):'⏳ غير مدفوعة'}</button></td>
     <td>${esc(x.teacherName || 'الإدارة')}</td><td>${x.status==='حاضر'?`<button type="button" class="btn" data-payroll-extra="${esc(x.id)}">➕ إضافي المرتب</button>`:'—'}</td><td><button type="button" class="btn" data-edit="${esc(x.id)}">✏️ تعديل الحصة</button> <button type="button" class="btn danger" data-del="${esc(x.id)}">حذف</button></td></tr>`).join('') : `<tr><td colspan="9">${records.length?'لا توجد حصص مطابقة للبحث والتصفية. جرّب مسح الفلاتر.':'لا توجد سجلات حضور بعد.'}</td></tr>`;
 }
 
@@ -259,6 +263,21 @@ async function load() {
   }
 }
 
+
+// قرار صريح بشأن المقدم: الاحتفاظ بالرصيد لا يستهلكه تلقائياً.
+function askAdvanceDecision({studentName,available,price}){
+ return new Promise(resolve=>{
+  const dlg=document.createElement('dialog');dlg.setAttribute('dir','rtl');
+  dlg.style.cssText='max-width:min(94vw,540px);width:100%;border:1px solid #d6ae44;border-radius:18px;background:#132239;color:#fff;padding:24px;box-shadow:0 20px 80px #0008';
+  const applied=Math.min(available,price);
+  dlg.innerHTML=`<h3 style="color:#f2c94c">💳 هل تريد الخصم من رصيد الطالب؟</h3><p>${esc(studentName)}</p><p>الرصيد المتاح: <strong>${cashMoney(available)}</strong> — سعر الحصة: <strong>${cashMoney(price)}</strong></p><p>عند الخصم تُغطّى ${cashMoney(applied)} ويتبقى على الحصة ${cashMoney(price-applied)}.</p><div style="display:flex;gap:10px;flex-wrap:wrap"><button type="button" data-answer="deduct" style="background:#f2c94c;color:#101b2b;padding:12px;border:0;border-radius:9px">خصم من الرصيد</button><button type="button" data-answer="keep" style="background:#243b58;color:white;padding:12px;border:1px solid #6480a0;border-radius:9px">الاحتفاظ بالرصيد — غير مدفوعة</button><button type="button" data-answer="cancel" style="background:transparent;color:white;padding:12px;border:1px solid #6480a0;border-radius:9px">إلغاء</button></div>`;
+  const finish=answer=>{dlg.close();dlg.remove();resolve(answer)};
+  dlg.addEventListener('click',e=>{const b=e.target.closest('[data-answer]');if(b)finish(b.dataset.answer)});
+  dlg.addEventListener('cancel',e=>{e.preventDefault();finish('cancel')});
+  document.body.append(dlg);dlg.showModal();
+ });
+}
+
 search?.addEventListener('input', filterStudents);
 form?.addEventListener('submit', async e => {
   e.preventDefault();
@@ -294,6 +313,19 @@ form?.addEventListener('submit', async e => {
         return;
       }
     }
+    // اقرأ رصيد الطالب مجددًا قبل التسجيل لتفادي الاعتماد على بيانات قديمة.
+    const [freshLessons,freshPayments]=await Promise.all([
+      getDocs(query(collection(db,'lessonAttendance'),where('studentUid','==',student.id))),
+      getDocs(query(collection(db,'vodafonePayments'),where('studentUid','==',student.id)))
+    ]);
+    const financial=advanceSnapshot(freshLessons.docs.map(d=>({id:d.id,...d.data()})),freshPayments.docs.map(d=>({id:d.id,...d.data()})));
+    const available=financial.availableAdvancePiastres;
+    const chargePiastres=Math.round(price*100);
+    let advanceUseMode='keep';
+    if(available>0 && chargePiastres>0 && $('attendanceStatus').value==='حاضر'){
+      advanceUseMode=await askAdvanceDecision({studentName:student.fullName||student.name||student.email||'الطالب',available,price:chargePiastres});
+      if(advanceUseMode==='cancel'){message.textContent='تم إلغاء تسجيل الحصة دون تغيير الرصيد.';return;}
+    }
     const commonData = {
       studentUid: student.id,
       studentName: student.fullName || student.name || student.email,
@@ -303,6 +335,7 @@ form?.addEventListener('submit', async e => {
       status: $('attendanceStatus').value,
       price,
       paid: false,
+      advanceUseMode,
       currency: 'EGP',
       note: $('attendanceNote').value.trim(),
       source: 'manual-attendance',
