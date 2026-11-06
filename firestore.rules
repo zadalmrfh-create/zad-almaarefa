@@ -849,7 +849,7 @@ service cloud.firestore {
         && request.resource.data.status == 'published'
         && request.resource.data.kind in ['teacher','platform']
         && request.resource.data.text is string
-        && request.resource.data.text.size() > 0
+        && request.resource.data.text.size() >= 0
         && request.resource.data.text.size() <= 700
         && request.resource.data.weekStart is string
         && request.resource.data.createdAt == request.time
@@ -863,6 +863,15 @@ service cloud.firestore {
         && getAfter(/databases/$(database)/documents/weeklyReviewPrivate/$(request.auth.uid + '__' + request.resource.data.weekStart + '__' + request.resource.data.kind + (request.resource.data.kind == 'teacher' ? '__' + request.resource.data.teacherUid : ''))).data.studentUid == request.auth.uid
         && getAfter(/databases/$(database)/documents/weeklyReviewPrivate/$(request.auth.uid + '__' + request.resource.data.weekStart + '__' + request.resource.data.kind + (request.resource.data.kind == 'teacher' ? '__' + request.resource.data.teacherUid : ''))).data.comment == request.resource.data.text
         && getAfter(/databases/$(database)/documents/weeklyReviewPrivate/$(request.auth.uid + '__' + request.resource.data.weekStart + '__' + request.resource.data.kind + (request.resource.data.kind == 'teacher' ? '__' + request.resource.data.teacherUid : ''))).data.publishConsent == true;
+      allow create: if isAdmin()
+        && request.resource.data.keys().hasOnly(['status','kind','text','rating','teacherUid','teacherName','weekStart','createdAt'])
+        && request.resource.data.kind in ['teacher','platform']
+        && request.resource.data.status == 'published'
+        && request.resource.data.text is string && request.resource.data.text.size() <= 700
+        && request.resource.data.rating is int && request.resource.data.rating >= 0 && request.resource.data.rating <= 5
+        && request.resource.data.teacherUid is string && request.resource.data.teacherName is string
+        && request.resource.data.weekStart is string
+        && request.resource.data.createdAt == request.time;
       allow update, delete: if isAdmin();
     }
 

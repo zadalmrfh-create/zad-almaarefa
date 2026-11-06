@@ -45,6 +45,42 @@ async function load(){
 }
 ['zwrAdminWeek','zwrAdminKind','zwrAdminTeacher'].forEach(id=>$(id)?.addEventListener('change',render));$('zwrAdminStudent')?.addEventListener('input',render);
 $('zwrAdminRefresh')?.addEventListener('click',load);
+
+// Only publish archived ratings for which an explicit consent flag is stored.
+// No UID, email, name, or private review ID is included in published documents.
+async function syncHistoricalPublic(){
+ const button=$('zwrAdminSyncPublic'),status=$('zwrAdminSyncStatus');
+ if(!button||!isReady)return;
+ button.disabled=true;status.textContent='جارٍ مراجعة الموافقات والتقييمات المنشورة...';
+ try{
+  const current=await getDocs(collection(db,'publicTestimonials'));
+  const existing=new Set(current.docs.map(d=>d.id));
+  const legacyComments=new Set(current.docs.map(d=>{
+   const v=d.data();return v.text?.trim()?[v.kind,v.weekStart,String(v.text).trim(),Number(v.rating)].join('::'):''
+  }).filter(Boolean));
+  let added=0,skipped=0;
+  for(const item of all){
+   if(!['teacher','platform'].includes(item.kind)||item.publishConsent!==true){skipped++;continue;}
+   const rating=Number(item.kind==='teacher'?item.scores?.[5]:item.scores?.[3]);
+   if(!Number.isInteger(rating)||rating<1||rating>5){skipped++;continue;}
+   const id='weekly_'+await hash(item.id);
+   const signature=[item.kind,item.weekStart,String(item.comment||'').trim(),rating].join('::');
+   if(existing.has(id)||(String(item.comment||'').trim()&&legacyComments.has(signature))){skipped++;continue;}
+   // Identity remains in weeklyReviewPrivate only; public copy is anonymous.
+   await setDoc(doc(db,'publicTestimonials',id),{
+    status:'published',kind:item.kind,text:String(item.comment||''),rating,
+    teacherUid:item.kind==='teacher'?item.teacherUid||'':'',
+    teacherName:item.kind==='teacher'?item.teacherName||'من معلمي المنصة':'',
+    weekStart:item.weekStart,createdAt:serverTimestamp()
+   });
+   existing.add(id);if(item.comment?.trim())legacyComments.add(signature);added++;
+  }
+  status.textContent=`تم نشر ${added} تقييم مؤهل، وتجاوز ${skipped} تقييم غير مؤهل أو سبق نشره. تقييمات الإدارة لم تُنشر.`;
+ }catch(error){console.error('historical-reviews-sync',error);status.textContent='تعذرت المزامنة: '+(error.code||error.message||'راجع صلاحيات Firebase وقواعد Firestore');}
+ finally{button.disabled=false}
+}
+$('zwrAdminSyncPublic')?.addEventListener('click',syncHistoricalPublic);
+
 onAuthStateChanged(auth,async user=>{
  if(!user)return;
  try{const [a,u]=await Promise.all([getDoc(doc(db,'admins',user.uid)),getDoc(doc(db,'users',user.uid))]);if(a.exists()||u.data()?.role==='admin'||(user.email==='maleksameh121@gmail.com'&&user.emailVerified))await load()}
