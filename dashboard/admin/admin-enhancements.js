@@ -1,6 +1,6 @@
 import { auth, db } from '../../firebase-config.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
-import { collection, getDocs, query, orderBy, limit } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
+import { collection, getDocs, query, orderBy, limit, getCountFromServer } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 
 const $ = id => document.getElementById(id);
 const esc = v => String(v ?? '').replace(/[&<>\"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -9,7 +9,8 @@ const dateText = v => { const d=dateValue(v); return d && !Number.isNaN(d.getTim
 
 let users = [];
 let bookings = [];
-let attempts = [];
+let attemptsCount = null;
+let attemptsNotice = '';
 
 function stat(id, value){ const el=$(id); if(el) el.textContent=String(value); }
 function renderStats(){
@@ -18,7 +19,9 @@ function renderStats(){
   stat('enhTeachers', users.filter(x=>x.role==='teacher').length);
   stat('enhPendingTeachers', users.filter(x=>x.role==='teacher' && x.status==='pending').length);
   stat('enhBookings', bookings.length);
-  stat('enhQuizAttempts', attempts.length);
+  stat('enhQuizAttempts', attemptsCount===null ? '—' : attemptsCount);
+  const attemptEl=$('enhQuizAttempts');
+  if(attemptEl) attemptEl.title=attemptsNotice || 'إجمالي محاولات الامتحانات المحفوظة في المصادر الثلاثة';
   const today = new Date(); today.setHours(0,0,0,0);
   stat('enhNewToday', users.filter(x=>{const d=dateValue(x.createdAt);return d && d>=today;}).length);
 }
@@ -47,12 +50,26 @@ function exportCSV(){
 
 async function load(){
   try{
-    const [us,book,att]=await Promise.all([
+    const [usResult,bookResult,...examResults]=await Promise.allSettled([
       getDocs(collection(db,'users')),
       getDocs(query(collection(db,'bookings'),orderBy('createdAt','desc'),limit(500))),
-      getDocs(query(collection(db,'quizAttempts'),orderBy('submittedAt','desc'),limit(1000)))
+      getCountFromServer(collection(db,'quizAttempts')),
+      getCountFromServer(collection(db,'codeExamResults')),
+      getCountFromServer(collection(db,'unitOneExamAttempts'))
     ]);
-    users=us.docs.map(d=>d.data()); bookings=book.docs.map(d=>d.data()); attempts=att.docs.map(d=>d.data());
+    if(usResult.status==='fulfilled') users=usResult.value.docs.map(d=>d.data());
+    else { users=[]; console.warn('تعذر تحميل المستخدمين',usResult.reason); }
+    if(bookResult.status==='fulfilled') bookings=bookResult.value.docs.map(d=>d.data());
+    else { bookings=[]; console.warn('تعذر تحميل الحجوزات',bookResult.reason); }
+    const examNames=['الاختبارات القصيرة','الامتحانات الإلكترونية','امتحانات الوحدة'];
+    const failed=examResults.map((r,i)=>r.status==='rejected'?examNames[i]:null).filter(Boolean);
+    attemptsCount=failed.length?null:examResults.reduce((total,r)=>total+(r.status==='fulfilled'?r.value.data().count:0),0);
+    attemptsNotice=failed.length?'تعذر قراءة '+failed.join('، ')+'؛ لا يمكن تأكيد الإجمالي.':'';
+    const attemptsLabel=document.getElementById('zadExamAttemptsStatNote');
+    if(attemptsLabel){attemptsLabel.textContent=attemptsNotice || 'من الاختبارات القصيرة والامتحانات الإلكترونية وامتحانات الوحدة';attemptsLabel.style.color=failed.length?'#f7bb60':'';}
+    for(let i=0;i<examResults.length;i++) if(examResults[i].status==='rejected') console.warn('Exam statistics read failed: '+examNames[i],examResults[i].reason);
+    if(usResult.status==='rejected'){ const el=$('enhDataStatus');if(el)el.textContent='تعذر قراءة المستخدمين من Firebase؛ أعد المحاولة بعد التأكد من صلاحيات الأدمن.'; }
+
     const countries=[...new Set(users.map(x=>x.country).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'ar'));
     const select=$('enhCountryFilter'); if(select){ select.innerHTML='<option value="all">كل البلدان</option>'+countries.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join(''); }
     renderStats(); applyFilters();

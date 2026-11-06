@@ -426,7 +426,7 @@ service cloud.firestore {
 
     match /publicStats/{statId} {
       allow read: if true;
-      allow create, update: if isAdmin() && statId in ['students', 'books', 'categories', 'tests'];
+      allow create, update: if isAdmin() && statId in ['students', 'teachers', 'books', 'categories', 'tests'];
 
       allow create: if statId == 'students'
         && signedIn()

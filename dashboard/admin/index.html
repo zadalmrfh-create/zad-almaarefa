@@ -134,22 +134,12 @@ onAuthStateChanged(auth, async (user) => {
 
 
     <div class="actions">
-        <a class="btn" href="../../sections/payment-policy.html" title="عرض سياسة المدفوعات">💳 سياسة المدفوعات</a>
 
       <a
         class="btn"
         href="../../index.html"
       >
         الرئيسية
-      </a>
-
-
-      <a
-        class="btn gold"
-        href="#contentManagement"
-        id="contentManagementBtn"
-      >
-        ⚙️ إدارة محتوى المنصة
       </a>
 
 
@@ -201,15 +191,6 @@ onAuthStateChanged(auth, async (user) => {
       <p>
         إدارة الحسابات واعتماد المعلمين.
       </p>
-
-
-      <a
-        class="btn gold"
-        href="#contentManagement"
-        style="display:inline-block;margin-top:12px"
-      >
-        ⚙️ الانتقال إلى إدارة محتوى المنصة
-      </a>
 
     </section>
 
@@ -328,7 +309,7 @@ onAuthStateChanged(auth, async (user) => {
         <div class="enh-stat">👨‍🏫 المعلمون<b id="enhTeachers">0</b><small>حسابات المعلمين</small></div>
         <div class="enh-stat">⏳ معلمون بانتظار الاعتماد<b id="enhPendingTeachers">0</b><small>تحتاج مراجعة</small></div>
         <div class="enh-stat">📅 الحجوزات<b id="enhBookings">0</b><small>إجمالي الطلبات</small></div>
-        <div class="enh-stat">📝 محاولات الاختبارات<b id="enhQuizAttempts">0</b><small>المحفوظة</small></div>
+        <div class="enh-stat">📝 محاولات الاختبارات<b id="enhQuizAttempts">—</b><small id="zadExamAttemptsStatNote">جارٍ تحميل نتائج الامتحانات المحفوظة…</small></div>
         <div class="enh-stat">🆕 تسجيلات اليوم<b id="enhNewToday">0</b><small>منذ منتصف الليل</small></div>
       </div>
     </section>
@@ -2007,6 +1988,21 @@ async function loadUsers() {
     await waitForSignedInUser();
     const snap = await getDocsWithTimeout(collection(db, 'users'));
     adminUidSet = new Set(snap.docs.filter(d => d.data().role === 'admin').map(d => d.id));
+    // الإحصائيات العامة لا تحتوي على أي معلومات شخصية.
+    const actualStudents=snap.docs.filter(d=>d.data().role==='student').length;
+    const actualTeachers=snap.docs.filter(d=>d.data().role==='teacher' && d.data().status!=='banned').length;
+    const statsSignature=`${actualStudents}:${actualTeachers}`;
+    if(window.__zadLastHomeStatsSignature!==statsSignature){
+      window.__zadLastHomeStatsSignature=statsSignature;
+      Promise.all([
+        setDoc(doc(db,'publicStats','students'),{total:actualStudents,updatedAt:serverTimestamp()},{merge:true}),
+        setDoc(doc(db,'publicStats','teachers'),{total:actualTeachers,updatedAt:serverTimestamp()},{merge:true})
+      ]).catch(error=>{
+        window.__zadLastHomeStatsSignature=null;
+        console.warn('تعذر تحديث إحصائيات الصفحة الرئيسية:',error);
+      });
+    }
+
 
 
     populateNotificationUsers(snap);
@@ -3966,7 +3962,7 @@ guard('admin', async () => {
   position:fixed!important;
   left:20px!important;
   right:auto!important;
-  bottom:94px!important;
+  bottom:67px!important;
   z-index:8000;
   display:inline-flex;
   align-items:center;
@@ -3984,10 +3980,10 @@ guard('admin', async () => {
 }
 .zad-store-access:hover{filter:brightness(1.07)}
 @media(max-width:900px){
-  .zad-store-access{left:15px!important;right:auto!important;bottom:90px!important}
+  .zad-store-access{left:15px!important;right:auto!important;bottom:63px!important}
 }
 @media(max-width:600px){
-  .zad-store-access{left:12px!important;right:auto!important;bottom:84px!important;padding:9px 12px;font-size:12px}
+  .zad-store-access{left:12px!important;right:auto!important;bottom:60px!important;padding:9px 12px;font-size:12px}
 }
 </style>
 </body>
