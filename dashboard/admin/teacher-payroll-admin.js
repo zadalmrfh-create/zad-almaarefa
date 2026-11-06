@@ -82,16 +82,24 @@ function render(){
  const notLinked=matched.filter(r=>!r._teacher.key.startsWith('uid:')).length;
  missing=filtered.length-matched.length;
  const totals={count:matched.length,base:matched.reduce((a,r)=>a+r._base,0),bonus:matched.reduce((a,r)=>a+r._bonus,0)};
- const stat=[['عدد الحصص المحتسبة',String(totals.count)],['إجمالي أجر الحصص',egp(totals.base)],['إجمالي إضافي المنصة',egp(totals.bonus)],['إجمالي مستحقات المعلمين',egp(totals.base+totals.bonus)]];
- $('salaryTotals').innerHTML=stat.map(([label,value],i)=>`<article class="salary-metric ${i===3?'salary-grand':''}"><span>${esc(label)}</span><strong>${esc(value)}</strong></article>`).join('');
+ // المبالغ المصروفة تُقرأ من دفتر التسويات، وتُربط بالحصة نفسها حتى مع فلترة الفترة.
+ const paidFor=r=>{
+  if(!r._teacher?.key?.startsWith('uid:'))return 0;
+  const ledger=settlements.get(r._teacher.key.slice(4));
+  return Math.min(r._base+r._bonus,Math.max(0,Number(ledger?.paidByLesson?.[r.id]||0)));
+ };
+ const totalPaid=matched.reduce((a,r)=>a+paidFor(r),0);
+ const gross=totals.base+totals.bonus;
+ const stat=[['عدد الحصص المحتسبة',String(totals.count)],['إجمالي أجر الحصص',egp(totals.base)],['إجمالي إضافي المنصة',egp(totals.bonus)],['إجمالي المستحقات قبل الصرف',egp(gross)],['إجمالي المصروف',egp(totalPaid)],['المتبقي للصرف',egp(Math.max(0,gross-totalPaid))]];
+ $('salaryTotals').innerHTML=stat.map(([label,value],i)=>`<article class="salary-metric ${i===5?'salary-grand':''}"><span>${esc(label)}</span><strong>${esc(value)}</strong></article>`).join('');
  const sums=new Map();
  for(const t of teachers){
   if($('salaryTeacher').value!=='all'&&$('salaryTeacher').value!==`uid:${t.id}`)continue;
-  sums.set(`uid:${t.id}`,{name:teacherName(t),base:0,bonus:0,count:0});
+  sums.set(`uid:${t.id}`,{name:teacherName(t),base:0,bonus:0,paid:0,count:0});
  }
- for(const r of matched){const t=r._teacher;const item=sums.get(t.key)||{name:t.name,base:0,bonus:0,count:0};item.count++;item.base+=r._base;item.bonus+=r._bonus;sums.set(t.key,item);}
- const groups=[...sums].sort((a,b)=>(b[1].base+b[1].bonus)-(a[1].base+a[1].bonus));
- $('salaryTeacherCards').innerHTML=groups.length?groups.map(([key,g])=>`<article class="salary-teacher-card"><strong>👨‍🏫 ${esc(g.name)}</strong><span>${g.count} حصة × حسب أجر كل حصة</span><div class="salary-subtotals"><span>الحصص: <b>${egp(g.base)}</b></span><span>الإضافي: <b>${egp(g.bonus)}</b></span></div><b class="salary-card-grand">المستحق: ${egp(g.base+g.bonus)}</b></article>`).join(''):'<p class="salary-empty">لا توجد مستحقات للمعلمين خلال الفترة المحددة.</p>';
+ for(const r of matched){const t=r._teacher;const item=sums.get(t.key)||{name:t.name,base:0,bonus:0,paid:0,count:0};item.count++;item.base+=r._base;item.bonus+=r._bonus;item.paid+=paidFor(r);sums.set(t.key,item);}
+ const groups=[...sums].sort((a,b)=>(b[1].base+b[1].bonus-b[1].paid)-(a[1].base+a[1].bonus-a[1].paid));
+ $('salaryTeacherCards').innerHTML=groups.length?groups.map(([key,g])=>`<article class="salary-teacher-card"><strong>👨‍🏫 ${esc(g.name)}</strong><span>${g.count} حصة × حسب أجر كل حصة</span><div class="salary-subtotals"><span>الحصص: <b>${egp(g.base)}</b></span><span>الإضافي: <b>${egp(g.bonus)}</b></span></div><div class="salary-subtotals"><span>الإجمالي: <b>${egp(g.base+g.bonus)}</b></span><span>تم صرف: <b>${egp(g.paid)}</b></span></div><b class="salary-card-grand">المتبقي: ${egp(Math.max(0,g.base+g.bonus-g.paid))}</b></article>`).join(''):'<p class="salary-empty">لا توجد مستحقات للمعلمين خلال الفترة المحددة.</p>';
  $('salaryRows').innerHTML=filtered.length?filtered.map(r=>`<tr><td>${esc(r.date||'—')}</td><td>${esc(r._teacher?.name||'⚠️ يحتاج تحديد معلم')}</td><td>${esc(r.studentName||'—')}</td><td>${esc(r._subjects.join('، ')||'—')}</td><td>${egp(r._base)}</td><td>${egp(r._bonus)}</td><td><b>${r._teacher?egp(r._base+r._bonus):'—'}</b></td><td>${esc(r._note||'—')}</td><td><button type="button" class="btn" data-salary-edit="${esc(r.id)}">✏️ تعديل الأجر</button></td></tr>`).join(''):'<tr><td colspan="9">لا توجد حصص حاضرة مطابقة لهذه الفلاتر.</td></tr>';
  status.textContent=`عرض ${filtered.length} حصة حاضرة، منها ${matched.length} محسوبة في المرتبات.`+(missing?` ⚠️ توجد ${missing} حصة لم يتحدد لها المعلم؛ اضغط «تعديل الأجر» لربطها قبل احتسابها.`:'')+(notLinked?` ⚠️ توجد ${notLinked} حصة مرتبطة باسم المعلم فقط؛ اربط حسابه من زر تعديل الأجر حتى تظهر في لوحة المعلم.`:'');
  annotateAttendanceButtons();
