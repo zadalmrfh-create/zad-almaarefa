@@ -1786,7 +1786,8 @@ function buildUserActionButtons({ isTeacher, isPending, isDisabled, isBanned, is
   let buttons = `
     <button class="action-btn action-view" title="عرض بيانات الطالب" data-action="view" type="button">👁️ عرض البيانات</button>
     ${!isTeacher && !isAdmin ? '<button class="action-btn zad-rpt-open" title="التقرير الشامل للطالب" data-action="comprehensive-report" type="button">📊 التقرير الشامل</button>' : ''}
-    <button class="action-btn ${isTeacher ? 'action-assigned' : 'action-assign-teacher'}" title="تعيين كمعلّم" data-action="assign-teacher" type="button">👨‍🏫 ${isTeacher ? 'معلم' : 'تعيين معلم'}</button>
+    <button class="action-btn ${isTeacher ? 'action-assigned' : 'action-assign-teacher'}" title="${isTeacher ? 'حساب معلم حاليًا' : 'تعيين كمعلّم'}" data-action="assign-teacher" type="button">👨‍🏫 ${isTeacher ? 'معلم' : 'تعيين معلم'}</button>
+    ${isTeacher && !isAdmin ? '<button class="action-btn action-revoke-teacher" title="إلغاء صلاحية المعلم وتحويل الحساب إلى طالب عادي" data-action="revoke-teacher" type="button">🎓 إلغاء صلاحية المعلم</button>' : ''}
     <button class="action-btn ${isAdmin ? 'action-assigned' : 'action-assign-admin'}" title="تعيين كأدمن" data-action="assign-admin" type="button">👑 ${isAdmin ? 'أدمن' : 'تعيين أدمن'}</button>
   `;
 
@@ -1839,6 +1840,36 @@ function bindUserEntryActions(root, { user, userDoc, name, isTeacher, isPending,
     } catch (error) {
       console.error('خطأ في تعيين المعلّم:', error);
       alert('حدث خطأ أثناء تعيين المستخدم كمعلّم.');
+    }
+  });
+
+  // سحب صلاحية المعلم لا يحذف الحساب ولا يمس سجلات الحضور والحصص والمرتبات.
+  // تغيير الدور في users/{uid} يجعل isTeacher() في قواعد Firestore تُعيد false فورًا.
+  root.querySelector('[data-action="revoke-teacher"]')?.addEventListener('click', async event => {
+    if (!isTeacher || isAdmin) return;
+    const button = event.currentTarget;
+    const confirmed = confirm(`هل تريد إلغاء صلاحية المعلم من حساب ${name}؟\n\n` +
+      'سيتحول حسابه إلى طالب نشط، ويستطيع تسجيل الدخول وفتح لوحة الطالب بشكل عادي.\n' +
+      'سيفقد حق الدخول إلى لوحة المعلم وقراءة بيانات طلابه أو مرتباته.\n' +
+      'لن يتم حذف حصصه أو سجلاته أو بياناته المالية السابقة.');
+    if (!confirmed) return;
+    try {
+      button.disabled = true;
+      button.textContent = 'جارٍ إلغاء الصلاحية…';
+      await updateDoc(doc(db, 'users', userDoc.id), {
+        role: 'student',
+        status: 'active',
+        roleChangedAt: serverTimestamp(),
+        roleChangedBy: auth.currentUser?.uid || '',
+        updatedAt: serverTimestamp()
+      });
+      await loadUsers();
+      alert('تم إلغاء صلاحية المعلم، والحساب الآن طالب نشط دون حذف السجلات القديمة.');
+    } catch (error) {
+      console.error('تعذر إلغاء صلاحية المعلم:', error);
+      alert('لم يُنفذ إلغاء صلاحية المعلم. تحقق من اتصال الإنترنت وصلاحيات Firestore: ' + (error.code || error.message || 'خطأ غير معروف'));
+      button.disabled = false;
+      button.textContent = '🎓 إلغاء صلاحية المعلم';
     }
   });
 

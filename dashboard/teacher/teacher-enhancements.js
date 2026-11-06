@@ -13,6 +13,7 @@ import {
   query,
   serverTimestamp,
   updateDoc,
+  onSnapshot,
   where
 } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 
@@ -531,6 +532,24 @@ async function boot(user){
   const p=preview.active?preview.profile:(me.exists()?me.data():{});
   if(!preview.active && (p.role!=='teacher'||p.status!=='active')){
     location.replace(admin?'../../dashboard/admin/index.html':'../../dashboard/student/index.html');return;
+  }
+  // متابعة الدور لحظيًا: عند تحويل المعلم إلى طالب أثناء فتح اللوحة،
+  // امنع استمرار عرض بيانات طلاب المعلم وأعد توجيهه للوحة الطالب.
+  if(!preview.active){
+    onSnapshot(doc(db,'users',user.uid), snapshot=>{
+      const current=snapshot.exists()?snapshot.data():null;
+      if(!current || current.role!=='teacher' || current.status!=='active'){
+        // إخفاء محتويات المعلم فور سحب الصلاحية حتى قبل تغيير الصفحة.
+        {const workspace=document.querySelector('.teacher-workspace');if(workspace){workspace.hidden=true;workspace.style.display='none';}}
+        location.replace('../../dashboard/student/index.html');
+      }
+    }, error=>{
+      console.error('تعذر متابعة صلاحية المعلم:',error);
+      if(error.code==='permission-denied'){
+        {const workspace=document.querySelector('.teacher-workspace');if(workspace){workspace.hidden=true;workspace.style.display='none';}}
+        location.replace('../../dashboard/student/index.html');
+      }
+    });
   }
   state.user=preview.active?{...user,uid:effectiveUid}:user;
   state.profile=p;
