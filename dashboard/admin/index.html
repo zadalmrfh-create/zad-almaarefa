@@ -228,16 +228,16 @@ onAuthStateChanged(auth, async (user) => {
     <label>الطالب<input id="zwrAdminStudent" type="search" placeholder="اسم الطالب" style="padding:10px;background:#14243a;color:#fff;border:1px solid #526987;border-radius:11px"></label>
     <label>المعلم<select id="zwrAdminTeacher"><option value="">كل المعلمين</option></select></label>
     <button type="button" class="btn gold" id="zwrAdminRefresh">🔄 تحديث</button>
-    <button type="button" class="btn" id="zwrAdminSyncPublic">🌟 مزامنة التقييمات المسموح بنشرها</button>
+<button type="button" class="btn gold" id="zwrAdminSyncPublic" style="border:2px solid #e9bf42;min-height:46px;font-weight:800;white-space:normal">🌟 مزامنة التقييمات المسموح بنشرها</button>
     <button type="button" class="btn" id="zwrAdminPrint">🖨️ طباعة</button>
     <button type="button" class="btn" id="zwrAdminCSV">⬇️ CSV</button>
   </div>
   <p id="zwrAdminStats" role="status">جارٍ التحميل...</p>
   <div id="zwrAdminMetrics" class="zwr-metrics"></div>
-  <div id="zwrAdminResults"></div>
-  <p>تقييمات المنصة والمعلمين تُنشر بالنجوم (مع تعليق إن وُجد). تقييمات الإدارة خاصة دائمًا. زر المزامنة يضيف التقييمات القديمة فقط عند وجود موافقة نشر محفوظة، دون تكرارها أو نشر هوية الطالب.</p><p id="zwrAdminSyncStatus" role="status"></p>
+  <p id="zwrAdminSyncStatus" role="status" aria-live="polite" style="font-weight:700"></p><div id="zwrAdminResults"></div>
+  <p>نشر الآراء للعامة متاح فقط إذا وافق الطالب على النشر. يقوم الأدمن باعتماد الرأي أو إلغاء نشره دون تغيير نص التقييم الأصلي.</p>
 </section>
-<link rel="stylesheet" href="../../reviews/weekly-admin.css"><script type="module" src="weekly-reviews-admin.js?v=20261106-public-sync"></script>
+<link rel="stylesheet" href="../../reviews/weekly-admin.css"><script type="module" src="weekly-reviews-admin.js?v=20261106-permissions4"></script>
 <section class="card" id="manualPaymentLedger" dir="rtl">
 <h2>💰 سجل المدفوعات اليدوية</h2><p>سجل دفعة حتى لو الطالب لم يرسل طلب دفع. السجل مستقل عن اعتماد تحويلات فودافون ولا يخصم تلقائيًا من المستحقات، لمنع احتساب المبلغ مرتين.</p>
 <form id="manualLedgerForm" class="admin-form">

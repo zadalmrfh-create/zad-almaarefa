@@ -28,7 +28,7 @@ function render(){
    box.append(choices);form.append(box)
   });
   const memo=document.createElement('label');memo.className='comment';memo.textContent='ملاحظاتك أو اقتراحاتك (اختياري)';const textarea=document.createElement('textarea');textarea.maxLength=700;textarea.value=data.draft?.comment||'';textarea.placeholder='اكتب رأيك بصراحة وباحترام. لا تضع بياناتك الشخصية داخل الملاحظة.';memo.append(textarea);form.append(memo);
-  const notice=document.createElement('p');notice.className='consent';notice.textContent=data.kind==='administration'?'تقييم الإدارة خاص بالإدارة فقط.':'عند إرسال التقييم، سيظهر تقييمك بالنجوم في صفحة آراء الطلاب، ومعه تعليقك إن كتبته، دون اسمك. تجنّب كتابة معلومات تكشف هويتك.';form.append(notice);
+  const notice=document.createElement('p');notice.className='consent';notice.textContent=data.kind==='administration'?'تقييم الإدارة خاص بالإدارة فقط.':'عند إرسال التقييم، ستُنشر ملاحظتك المكتوبة تلقائيًا في صفحة آراء الطلاب دون اسمك. لا تكتب معلومات تكشف هويتك.';form.append(notice);
   const button=document.createElement('button');button.className='save';button.type='submit';button.textContent='إرسال التقييم';form.append(button);
   const status=document.createElement('p');status.className='status';status.setAttribute('role','status');form.append(status);
   form.addEventListener('submit',async e=>{
@@ -42,7 +42,7 @@ function render(){
    try{
     const batch=writeBatch(db);batch.set(doc(db,'weeklyReviewPrivate',id),privateData);
     if(feedbackDoc)batch.set(feedbackDoc,{kind:'teacher',teacherUid:data.teacherUid,weekStart:week.start,scores,comment:privateData.comment,createdAt:serverTimestamp()});
-    if(data.kind!=='administration'){
+    if(data.kind!=='administration'&&privateData.comment){
       const publicRef=doc(collection(db,'publicTestimonials'));
       batch.set(publicRef,{status:'published',kind:data.kind,text:privateData.comment,rating:data.kind==='teacher'?scores[5]:scores[3],teacherUid:data.teacherUid||'',teacherName:data.kind==='teacher'?data.name||'من معلمي المنصة':'',weekStart:week.start,createdAt:serverTimestamp()});
     }

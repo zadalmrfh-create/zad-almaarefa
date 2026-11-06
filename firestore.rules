@@ -843,6 +843,21 @@ service cloud.firestore {
     // Random public document IDs contain no student identifier.
     match /publicTestimonials/{testimonialId} {
       allow get, list: if resource.data.status == 'published' || isAdmin();
+      // Admin-only historical migration; public documents contain no student identity.
+      allow create: if isAdmin()
+        && testimonialId.matches('weekly_[a-f0-9]+')
+        && request.resource.data.keys().hasOnly(['status','kind','text','rating','teacherUid','teacherName','weekStart','createdAt'])
+        && request.resource.data.status == 'published'
+        && request.resource.data.kind in ['teacher','platform']
+        && request.resource.data.text is string
+        && request.resource.data.text.size() <= 700
+        && request.resource.data.rating is int
+        && request.resource.data.rating >= 1
+        && request.resource.data.rating <= 5
+        && request.resource.data.teacherUid is string
+        && request.resource.data.teacherName is string
+        && request.resource.data.weekStart is string
+        && request.resource.data.createdAt == request.time;
       allow create: if isStudentAccount()
         && request.resource.data.keys().hasOnly(['status','kind','text','rating','teacherUid','teacherName','weekStart','createdAt'])
         && request.resource.data.keys().hasAll(['status','kind','text','rating','teacherUid','teacherName','weekStart','createdAt'])
