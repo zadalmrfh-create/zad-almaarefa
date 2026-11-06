@@ -1,7 +1,7 @@
 /** إدارة مرتبات المعلمين — بيانات مستقلة عن ذمم الطلاب، للإدارة فقط. */
 import {auth,db} from '../../firebase-config.js';
 import {onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
-import {collection,doc,getDocs,setDoc,serverTimestamp,writeBatch} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
+import {collection,doc,getDocs,setDoc,serverTimestamp,writeBatch,runTransaction} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 
 const $=id=>document.getElementById(id);
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -22,7 +22,7 @@ function weekRange(previous=false){
   const end=new Date(today);end.setUTCDate(end.getUTCDate()+6);
   return [nToIso(today),nToIso(end)];
 }
-let attendance=[],teachers=[],adjustments=new Map(),filtered=[],missing=0;
+let attendance=[],teachers=[],adjustments=new Map(),filtered=[],missing=0,settlements=new Map();
 let ready=false,loading=false;
 const status=$('salaryStatus');
 const toStudentKey=r=>r.studentUid?`uid:${r.studentUid}`:`name:${r.studentName||'—'}`;
@@ -95,6 +95,7 @@ function render(){
  $('salaryRows').innerHTML=filtered.length?filtered.map(r=>`<tr><td>${esc(r.date||'—')}</td><td>${esc(r._teacher?.name||'⚠️ يحتاج تحديد معلم')}</td><td>${esc(r.studentName||'—')}</td><td>${esc(r._subjects.join('، ')||'—')}</td><td>${egp(r._base)}</td><td>${egp(r._bonus)}</td><td><b>${r._teacher?egp(r._base+r._bonus):'—'}</b></td><td>${esc(r._note||'—')}</td><td><button type="button" class="btn" data-salary-edit="${esc(r.id)}">✏️ تعديل الأجر</button></td></tr>`).join(''):'<tr><td colspan="9">لا توجد حصص حاضرة مطابقة لهذه الفلاتر.</td></tr>';
  status.textContent=`عرض ${filtered.length} حصة حاضرة، منها ${matched.length} محسوبة في المرتبات.`+(missing?` ⚠️ توجد ${missing} حصة لم يتحدد لها المعلم؛ اضغط «تعديل الأجر» لربطها قبل احتسابها.`:'')+(notLinked?` ⚠️ توجد ${notLinked} حصة مرتبطة باسم المعلم فقط؛ اربط حسابه من زر تعديل الأجر حتى تظهر في لوحة المعلم.`:'');
  annotateAttendanceButtons();
+ renderSettlements();
 }
 function annotateAttendanceButtons(){
  document.querySelectorAll('#attendanceRows [data-payroll-extra]').forEach(btn=>{
@@ -177,6 +178,7 @@ async function refresh(){
    console.error('[salary-view-sync]',err);
    syncWarning=' ⚠️ لم تُزامن مستحقات المعلمين للعرض في لوحاتهم: '+(err.code||err.message)+'. انشر قواعد Firestore المحدثة ثم حدّث لوحة الأدمن.';
   }
+  await loadSettlements();
   ready=true;populateOptions();render();
   if(syncWarning)status.textContent+=syncWarning;
  }catch(e){console.error('[salary]',e);status.textContent='❌ تعذر تحميل المرتبات: '+(e.code||e.message)+'. تأكد من نشر قواعد Firestore الجديدة وصلاحية حساب الأدمن.';}
@@ -266,3 +268,124 @@ const [from,to]=weekRange(false);$('salaryFrom').value=from;$('salaryTo').value=
 onAuthStateChanged(auth,user=>{if(user)refresh();});
 window.addEventListener('zad:attendance-changed',refresh);
 window.addEventListener('zad:attendance-archived',refresh);
+
+
+/* تسويات المعلمين: لا يُحذف أي سجل حضور، وتُسجل الدفعات كحركات غير قابلة للتعديل.
+   كل دفعة تُخصص للحصص حسب التاريخ (الأقدم أولاً) داخل معاملة Firestore واحدة. */
+const settlementStatus=$('salarySettlementStatus');
+const money=n=>egp(n);
+const weekStart=iso=>{
+ const d=new Date(iso+'T12:00:00Z');
+ if(Number.isNaN(d.getTime()))return '';
+ d.setUTCDate(d.getUTCDate()-(d.getUTCDay()+1)%7);
+ return nToIso(d);
+};
+async function loadSettlements(){
+ const snap=await getDocs(collection(db,'teacherPayrollSettlements'));
+ settlements=new Map(snap.docs.map(d=>[d.id,d.data()]));
+}
+function teacherLessons(key){
+ return attendance.filter(r=>r.deleted!==true&&r.status==='حاضر')
+  .map(salaryRow).filter(r=>r._teacher?.key===key)
+  .sort((a,b)=>String(a.date).localeCompare(String(b.date))||a.id.localeCompare(b.id));
+}
+function settlementState(key){
+ const lessons=teacherLessons(key);
+ const teacherId=key.slice(4);
+ const state=settlements.get(teacherId)||{};
+ const paid=state.paidByLesson||{};
+ const lines=lessons.map(r=>({
+  id:r.id,date:String(r.date||'').slice(0,10),student:r.studentName||'—',
+  due:r._base+r._bonus,paid:Math.max(0,Number(paid[r.id]||0)),
+  week:weekStart(String(r.date||'').slice(0,10))
+ }));
+ return {lines,paid,teacherId,state};
+}
+function selectedSettlement(){
+ const teacher=$('salarySettlementTeacher')?.value;
+ const scope=$('salarySettlementScope')?.value;
+ const week=$('salarySettlementWeek')?.value;
+ if(!teacher)return null;
+ const state=settlementState('uid:'+teacher);
+ const relevant=state.lines.filter(l=>scope==='all'||l.week===week);
+ return {...state,relevant,available:relevant.reduce((n,l)=>n+Math.max(0,l.due-l.paid),0)};
+}
+function fillSettlementTeachers(){
+ const el=$('salarySettlementTeacher');if(!el)return;
+ const prev=el.value;
+ el.replaceChildren(new Option('اختر المعلم',''),...teachers.map(t=>new Option(teacherName(t),t.id)));
+ if(teachers.some(t=>t.id===prev))el.value=prev;
+}
+function renderSettlements(){
+ if(!ready)return;
+ fillSettlementTeachers();
+ const choice=selectedSettlement();
+ const weeks=choice?[...new Set(choice.lines.map(l=>l.week).filter(Boolean))].sort().reverse():[];
+ const weekEl=$('salarySettlementWeek');
+ const oldWeek=weekEl.value;
+ weekEl.replaceChildren(...weeks.map(w=>new Option(w+' إلى '+nToIso(new Date(new Date(w+'T12:00:00Z').getTime()+6*86400000)),w)));
+ if(weeks.includes(oldWeek))weekEl.value=oldWeek;
+ $('salarySettlementWeekWrap').hidden=$('salarySettlementScope').value!=='week';
+ const selected=selectedSettlement();
+ const total=selected?.relevant.reduce((n,l)=>n+l.due,0)||0;
+ const paid=selected?.relevant.reduce((n,l)=>n+l.paid,0)||0;
+ const remain=Math.max(0,total-paid);
+ $('salarySettlementMetrics').innerHTML=[
+  ['إجمالي المستحقات',total],['المصروف',paid],['المتبقي',remain]
+ ].map(([label,n])=>`<article class="salary-metric"><span>${esc(label)}</span><strong>${money(n)}</strong></article>`).join('');
+ const history=selected?.state.history||[];
+ $('salarySettlementHistory').innerHTML=history.length?[...history].reverse().map(x=>`<tr><td>${esc(x.date||'—')}</td><td>${money(x.amountPiastres)}</td><td>${esc(x.scope==='week'?x.week:'إجمالي الرصيد')}</td><td>${esc(x.method||'—')}</td><td>${esc(x.reference||'—')}</td><td>${esc(x.note||'—')}</td></tr>`).join(''):'<tr><td colspan="6">لا توجد عمليات صرف مسجلة لهذا المعلم.</td></tr>';
+ $('salarySettlementAmount').max=(remain/100).toFixed(2);
+ $('salarySettlementAvailable').textContent='الرصيد المتاح للصرف: '+money(remain);
+}
+for(const id of ['salarySettlementTeacher','salarySettlementScope','salarySettlementWeek'])$(id)?.addEventListener('change',renderSettlements);
+$('salarySettlementFull')?.addEventListener('click',()=>{
+ const x=selectedSettlement();if(x)$('salarySettlementAmount').value=(x.available/100).toFixed(2);
+});
+$('salarySettlementForm')?.addEventListener('submit',async e=>{
+ e.preventDefault();
+ const choice=selectedSettlement(),el=$('salarySettlementAmount');
+ const amount=Number(el.value),piastres=Math.round(amount*100);
+ if(!choice||!Number.isFinite(amount)||piastres<=0||Math.abs(piastres/100-amount)>0.00001){
+  settlementStatus.textContent='اختر معلمًا وأدخل مبلغًا صحيحًا أكبر من صفر.';return;
+ }
+ if(piastres>choice.available){settlementStatus.textContent='المبلغ أكبر من الرصيد المتاح.';return;}
+ const teacher=teachers.find(t=>t.id===choice.teacherId);
+ const scope=$('salarySettlementScope').value,week=$('salarySettlementWeek').value;
+ const method=$('salarySettlementMethod').value,reference=$('salarySettlementReference').value.trim();
+ const note=$('salarySettlementNote').value.trim();
+ if(!confirm(`تأكيد تسجيل صرف ${money(piastres)} إلى ${teacherName(teacher)}؟\nسيُخصم من ${scope==='week'?'أسبوع '+week:'أقدم المستحقات أولًا'}، ولا يمكن تعديل العملية بعد حفظها.`))return;
+ const button=e.currentTarget.querySelector('[type=submit]');button.disabled=true;
+ settlementStatus.textContent='جارٍ تسجيل الدفعة والتحقق من الرصيد...';
+ try{
+  const ref=doc(db,'teacherPayrollSettlements',choice.teacherId);
+  // All disbursements for one teacher serialize through the same Firestore document.
+  await runTransaction(db,async tx=>{
+   const snap=await tx.get(ref),data=snap.exists()?snap.data():{};
+   const allocated={...(data.paidByLesson||{})};
+   let remaining=piastres;
+   const current=teacherLessons('uid:'+choice.teacherId).map(r=>({
+    id:r.id,date:String(r.date||'').slice(0,10),due:r._base+r._bonus
+   })).filter(r=>scope==='all'||weekStart(r.date)===week);
+   for(const row of current){
+    const room=Math.max(0,row.due-Number(allocated[row.id]||0));
+    const take=Math.min(remaining,room);
+    if(take){allocated[row.id]=Number(allocated[row.id]||0)+take;remaining-=take;}
+    if(!remaining)break;
+   }
+   if(remaining)throw new Error('الرصيد المتاح تغيّر، حدّث الصفحة وراجع المبلغ.');
+   const payment={
+    id:crypto.randomUUID(),amountPiastres:piastres,scope,week:scope==='week'?week:'',
+    method,reference,note,date:cairoToday(),createdBy:auth.currentUser?.uid||''
+   };
+   tx.set(ref,{
+    teacherUid:choice.teacherId,teacherName:teacherName(teacher),
+    paidByLesson:allocated,history:[...(data.history||[]),payment],
+    updatedAt:serverTimestamp()
+   },{merge:true});
+  });
+  settlementStatus.textContent='✅ تم تسجيل الدفعة. تم تحديث الرصيد وسجل الصرف.';
+  el.value='';await loadSettlements();render();
+ }catch(err){console.error('[payroll-settlement]',err);settlementStatus.textContent='❌ لم يتم تسجيل الدفعة: '+(err.code||err.message);}
+ finally{button.disabled=false;}
+});

@@ -766,6 +766,29 @@ onAuthStateChanged(auth, async (user) => {
   <div id="salaryTotals" class="salary-totals"></div>
   <h3>👨‍🏫 مستحقات كل معلم خلال الفترة</h3>
   <div id="salaryTeacherCards" class="salary-teacher-cards"></div>
+  <div class="salary-settlement-panel" style="margin:24px 0;padding:20px;border:1px solid #cba84b;border-radius:16px;background:#101d32">
+    <h3>💳 تسوية وصرف مستحقات المعلمين</h3>
+    <p>الصرف يدوي للأدمن فقط. يمكنك الصرف من إجمالي الرصيد أو من أسبوع محدد. تُخصم الدفعة من أقدم الحصص غير المسددة داخل النطاق المختار، دون حذف الحصص أو الإضافي.</p>
+    <div class="salary-filters">
+      <label>المعلم<select id="salarySettlementTeacher"><option value="">اختر المعلم</option></select></label>
+      <label>طريقة التسوية<select id="salarySettlementScope"><option value="all">إجمالي الرصيد (الأقدم أولًا)</option><option value="week">أسبوع محدد</option></select></label>
+      <label id="salarySettlementWeekWrap" hidden>الأسبوع<select id="salarySettlementWeek"></select></label>
+    </div>
+    <div class="salary-totals" id="salarySettlementMetrics"></div>
+    <form id="salarySettlementForm">
+      <div class="salary-filters">
+        <label>المبلغ المصروف بالجنيه<input id="salarySettlementAmount" type="number" min=".01" step=".01" required></label>
+        <label>طريقة الدفع<select id="salarySettlementMethod"><option>تحويل بنكي</option><option>محفظة إلكترونية</option><option>نقدًا</option><option>طريقة أخرى</option></select></label>
+        <label>مرجع التحويل (اختياري)<input id="salarySettlementReference" maxlength="120"></label>
+        <label>ملاحظات (اختياري)<input id="salarySettlementNote" maxlength="300"></label>
+      </div>
+      <p id="salarySettlementAvailable">اختر معلمًا أولًا.</p>
+      <div class="salary-actions"><button type="button" class="btn" id="salarySettlementFull">تحديد كامل المتبقي</button><button type="submit" class="btn gold">💾 تأكيد صرف المستحقات</button></div>
+    </form>
+    <p id="salarySettlementStatus" role="status" aria-live="polite"></p>
+    <h3>📜 سجل الصرف والتسويات</h3>
+    <div class="table-wrap salary-table-wrap"><table class="table"><thead><tr><th>التاريخ</th><th>المبلغ</th><th>النطاق</th><th>طريقة الدفع</th><th>المرجع</th><th>ملاحظات</th></tr></thead><tbody id="salarySettlementHistory"><tr><td colspan="6">اختر معلمًا لعرض السجل.</td></tr></tbody></table></div>
+  </div>
   <h3>📋 تفاصيل الحصص والمستحقات</h3>
   <div class="table-wrap salary-table-wrap"><table class="table"><thead><tr><th>التاريخ</th><th>المعلم</th><th>الطالب</th><th>المادة</th><th>أجر الحصة</th><th>إضافي المنصة</th><th>إجمالي الحصة</th><th>ملاحظات</th><th>تعديل</th></tr></thead><tbody id="salaryRows"><tr><td colspan="9">جارٍ التحميل...</td></tr></tbody></table></div>
   <p class="salary-explain">مهم: عند تسجيل أكثر من مادة في حصة واحدة تُحسب حصة واحدة فقط. وإذا كان السجل يضم أكثر من معلم، يجب تحديد المعلم المستحق من زر «تعديل الأجر». الإضافي تتحمله المنصة، وليس الطالب. هذا تقرير مستحقات وليس إثبات صرف.</p>
@@ -3941,7 +3964,7 @@ guard('admin', async () => {
 <script type="module" src="admin-enhancements.js"></script>
 <script type="module" src="admin-workspace.js?v=20261105-finance2"></script>
 <script type="module" src="attendance-admin.js?v=20261105-salary1"></script>
-<script type="module" src="teacher-payroll-admin.js?v=20261105-1"></script>
+<script type="module" src="teacher-payroll-admin.js?v=20261106-settlements1"></script>
 <script type="module" src="teacher-linker-admin.js?v=20261105-1"></script>
 
 

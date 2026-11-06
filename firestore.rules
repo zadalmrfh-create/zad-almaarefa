@@ -371,6 +371,12 @@ service cloud.firestore {
 
     // استحقاقات المعلمين والإضافي الإداري: سجلات مالية خاصة بالإدارة.
     // لا تُضاف إلى مستحقات الطالب ولا تُعرض لحساب المعلم من Firebase.
+    // دفتر صرف المستحقات: الإدارة وحدها تُسجل الدفعات، ولا تُحذف الحركات.
+    match /teacherPayrollSettlements/{teacherUid} {
+      allow read, create, update: if isAdmin();
+      allow delete: if false;
+    }
+
     match /teacherPayrollAdjustments/{lessonId} {
       allow read, create, update, delete: if isAdmin();
     }
