@@ -1,7 +1,7 @@
 /** إدارة مرتبات المعلمين — بيانات مستقلة عن ذمم الطلاب، للإدارة فقط. */
 import {auth,db} from '../../firebase-config.js';
 import {onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
-import {collection,doc,getDocs,setDoc,serverTimestamp} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
+import {collection,doc,getDocs,setDoc,serverTimestamp,writeBatch} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 
 const $=id=>document.getElementById(id);
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -79,6 +79,7 @@ function render(){
  if(from&&to&&from>to){status.textContent='⚠️ تاريخ البداية بعد تاريخ النهاية. عدّل الفترة.';return;}
  filtered=getFiltered();
  const matched=filtered.filter(r=>r._teacher);
+ const notLinked=matched.filter(r=>!r._teacher.key.startsWith('uid:')).length;
  missing=filtered.length-matched.length;
  const totals={count:matched.length,base:matched.reduce((a,r)=>a+r._base,0),bonus:matched.reduce((a,r)=>a+r._bonus,0)};
  const stat=[['عدد الحصص المحتسبة',String(totals.count)],['إجمالي أجر الحصص',egp(totals.base)],['إجمالي إضافي المنصة',egp(totals.bonus)],['إجمالي مستحقات المعلمين',egp(totals.base+totals.bonus)]];
@@ -92,7 +93,7 @@ function render(){
  const groups=[...sums].sort((a,b)=>(b[1].base+b[1].bonus)-(a[1].base+a[1].bonus));
  $('salaryTeacherCards').innerHTML=groups.length?groups.map(([key,g])=>`<article class="salary-teacher-card"><strong>👨‍🏫 ${esc(g.name)}</strong><span>${g.count} حصة × حسب أجر كل حصة</span><div class="salary-subtotals"><span>الحصص: <b>${egp(g.base)}</b></span><span>الإضافي: <b>${egp(g.bonus)}</b></span></div><b class="salary-card-grand">المستحق: ${egp(g.base+g.bonus)}</b></article>`).join(''):'<p class="salary-empty">لا توجد مستحقات للمعلمين خلال الفترة المحددة.</p>';
  $('salaryRows').innerHTML=filtered.length?filtered.map(r=>`<tr><td>${esc(r.date||'—')}</td><td>${esc(r._teacher?.name||'⚠️ يحتاج تحديد معلم')}</td><td>${esc(r.studentName||'—')}</td><td>${esc(r._subjects.join('، ')||'—')}</td><td>${egp(r._base)}</td><td>${egp(r._bonus)}</td><td><b>${r._teacher?egp(r._base+r._bonus):'—'}</b></td><td>${esc(r._note||'—')}</td><td><button type="button" class="btn" data-salary-edit="${esc(r.id)}">✏️ تعديل الأجر</button></td></tr>`).join(''):'<tr><td colspan="9">لا توجد حصص حاضرة مطابقة لهذه الفلاتر.</td></tr>';
- status.textContent=`عرض ${filtered.length} حصة حاضرة، منها ${matched.length} محسوبة في المرتبات.`+(missing?` ⚠️ توجد ${missing} حصة لم يتحدد لها المعلم؛ اضغط «تعديل الأجر» لربطها قبل احتسابها.`:'');
+ status.textContent=`عرض ${filtered.length} حصة حاضرة، منها ${matched.length} محسوبة في المرتبات.`+(missing?` ⚠️ توجد ${missing} حصة لم يتحدد لها المعلم؛ اضغط «تعديل الأجر» لربطها قبل احتسابها.`:'')+(notLinked?` ⚠️ توجد ${notLinked} حصة مرتبطة باسم المعلم فقط؛ اربط حسابه من زر تعديل الأجر حتى تظهر في لوحة المعلم.`:'');
  annotateAttendanceButtons();
 }
 function annotateAttendanceButtons(){
@@ -102,6 +103,64 @@ function annotateAttendanceButtons(){
   if(btn.textContent!==label)btn.textContent=label;
  });
 }
+/**
+ * مزامنة بيانات الحصص المالية للمعلم في مجموعة آمنة مخصصة له.
+ * لا يتاح له الوصول إلى teacherPayrollAdjustments، ولا إلى بيانات غيره.
+ * الفهرس الإداري يتفادى إعادة الكتابة لكل الحصص عند كل فتح للوحة.
+ * تُزامَن الحصص الأقدم تلقائيًا فور زيارة الأدمن للوحة بعد نشر القواعد.
+ */
+async function syncTeacherSalaryViews(){
+ const snapshot=await getDocs(collection(db,'teacherPayrollViewIndex'));
+ const oldIndex=new Map(snapshot.docs.map(x=>[x.id,x.data()]));
+ const desired=new Map();
+ for(const row of attendance){
+  if(row.deleted===true||row.status!=='حاضر')continue;
+  const adjusted=salaryRow(row);
+  if(!adjusted._teacher?.key?.startsWith('uid:'))continue;
+  const teacherUid=adjusted._teacher.key.slice(4);
+  if(!teacherUid)continue;
+  const data={
+   attendanceId:row.id,teacherUid,studentUid:String(row.studentUid||''),
+   studentName:String(row.studentName||'—'),date:String(row.date||'').slice(0,10),
+   subject:adjusted._subjects.join('، '),status:'حاضر',
+   basePayPiastres:adjusted._base,bonusPiastres:adjusted._bonus,
+   note:adjusted._note
+  };
+  desired.set(row.id,{teacherUid,data,signature:JSON.stringify(data)});
+ }
+ const groups=[];
+ for(const [id,next] of desired){
+  const old=oldIndex.get(id);
+  if(old&&old.teacherUid===next.teacherUid&&old.signature===next.signature)continue;
+  const ops=[];
+  if(old?.teacherUid&&old.teacherUid!==next.teacherUid){
+   ops.push({action:'delete',ref:doc(db,'teacherPayrollViews',old.teacherUid,'lessons',id)});
+  }
+  ops.push({action:'set',ref:doc(db,'teacherPayrollViews',next.teacherUid,'lessons',id),data:next.data});
+  ops.push({action:'set',ref:doc(db,'teacherPayrollViewIndex',id),data:{teacherUid:next.teacherUid,signature:next.signature,syncedAt:serverTimestamp()}});
+  groups.push(ops);
+ }
+ for(const [id,old] of oldIndex){
+  if(desired.has(id))continue;
+  const ops=[];
+  if(old?.teacherUid)ops.push({action:'delete',ref:doc(db,'teacherPayrollViews',old.teacherUid,'lessons',id)});
+  ops.push({action:'delete',ref:doc(db,'teacherPayrollViewIndex',id)});
+  groups.push(ops);
+ }
+ if(!groups.length)return 0;
+ let batch=writeBatch(db),opsCount=0,count=0;
+ for(const group of groups){
+  if(opsCount+group.length>350){await batch.commit();batch=writeBatch(db);opsCount=0;}
+  for(const op of group){
+   if(op.action==='delete')batch.delete(op.ref);
+   else batch.set(op.ref,op.data);
+   opsCount++;
+  }
+  count++;
+ }
+ if(opsCount)await batch.commit();
+ return count;
+}
 async function refresh(){
  if(loading)return;
  loading=true;status.textContent='جارٍ تحميل سجل الحضور وبيانات المرتبات...';
@@ -110,14 +169,23 @@ async function refresh(){
   attendance=att.docs.map(d=>({id:d.id,...d.data()}));
   teachers=profiles.docs.map(d=>({id:d.id,...d.data()})).filter(x=>x.role==='teacher'&&x.status!=='banned');
   adjustments=new Map(extra.docs.map(d=>[d.id,d.data()]));
+  let syncWarning='';
+  try{
+   const synced=await syncTeacherSalaryViews();
+   if(synced)console.info(`[salary] تمت مزامنة ${synced} حصة مع كشوف المعلمين.`);
+  }catch(err){
+   console.error('[salary-view-sync]',err);
+   syncWarning=' ⚠️ لم تُزامن مستحقات المعلمين للعرض في لوحاتهم: '+(err.code||err.message)+'. انشر قواعد Firestore المحدثة ثم حدّث لوحة الأدمن.';
+  }
   ready=true;populateOptions();render();
+  if(syncWarning)status.textContent+=syncWarning;
  }catch(e){console.error('[salary]',e);status.textContent='❌ تعذر تحميل المرتبات: '+(e.code||e.message)+'. تأكد من نشر قواعد Firestore الجديدة وصلاحية حساب الأدمن.';}
  finally{loading=false;}
 }
 
 const editDialog=document.createElement('dialog');
 editDialog.id='salaryEditDialog';editDialog.dir='rtl';editDialog.className='salary-dialog';
-editDialog.innerHTML=`<form id="salaryEditForm"><h3>💼 تعديل أجر الحصة والإضافي</h3><p id="salaryEditLesson"></p><label>المعلم المستحق<select name="teacherUid"><option value="">المعلم المسجل في الحضور تلقائيًا</option></select></label><label>أجر الحصة الأساسي (بالجنيه)<input name="base" type="number" min="0" max="200000" step="0.01" required></label><label>إضافي تتحمله المنصة (بالجنيه)<input name="bonus" type="number" min="0" max="200000" step="0.01" required></label><label>سبب الإضافي / ملاحظات<input name="note" maxlength="350" placeholder="مثال: مكافأة شرح إضافي"></label><p class="salary-dialog-note">مبلغ الطالب لا يتغير. لا تُحتسب الحصص الغائبة ضمن المرتبات.</p><p id="salaryEditError" role="alert"></p><div class="salary-actions"><button class="btn gold" type="submit">💾 حفظ الأجر والإضافي</button><button class="btn" type="button" data-salary-cancel>إلغاء</button></div></form>`;
+editDialog.innerHTML=`<form id="salaryEditForm"><h3>💼 تعديل أجر الحصة والإضافي</h3><p id="salaryEditLesson"></p><label>المعلم المستحق<select name="teacherUid"><option value="">المعلم المسجل في الحضور تلقائيًا</option></select></label><label>أجر الحصة الأساسي (بالجنيه)<input name="base" type="number" min="0" max="200000" step="0.01" required></label><label>إضافي تتحمله المنصة (بالجنيه)<input name="bonus" type="number" min="0" max="200000" step="0.01" required></label><label>سبب الإضافي / ملاحظات<input name="note" maxlength="350" placeholder="مثال: مكافأة شرح إضافي"></label><p class="salary-dialog-note">مبلغ الطالب لا يتغير. لا تُحتسب الحصص الغائبة ضمن المرتبات. بعد الحفظ تتم مزامنة الإضافي مباشرة مع لوحة المعلم.</p><p id="salaryEditError" role="alert"></p><div class="salary-actions"><button class="btn gold" type="submit">💾 حفظ الأجر والإضافي</button><button class="btn" type="button" data-salary-cancel>إلغاء</button></div></form>`;
 document.body.append(editDialog);
 let editing=null;
 editDialog.querySelector('[data-salary-cancel]').addEventListener('click',()=>editDialog.close());
@@ -143,6 +211,7 @@ $('salaryEditForm').addEventListener('submit',async e=>{
  const row=attendance.find(r=>r.id===editing);const selected=form.elements.teacherUid.value;
  const teacher=selected?teachers.find(t=>t.id===selected):teacherFor(row,{teacherUid:null,teacherName:null});
  if(!teacher){error.textContent='الحصة مرتبطة بأكثر من معلم أو باسم غير محدد؛ اختر المعلم المستحق من القائمة أولًا.';return;}
+ if(!selected&&!String(teacher.key||'').startsWith('uid:')){error.textContent='اختر حساب المعلم المسجل في المنصة حتى يظهر الإضافي داخل لوحة المعلم.';return;}
  const btn=form.querySelector('button[type="submit"]');btn.disabled=true;
  try{
   await setDoc(doc(db,'teacherPayrollAdjustments',editing),{

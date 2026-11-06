@@ -45,6 +45,7 @@
       <button class="teacher-tab" data-tab="attendance">📊 متابعة الحضور</button>
       <button class="teacher-tab" data-tab="notes">🗒️ ملاحظاتي</button>
       <button class="teacher-tab" data-tab="payments">💳 مدفوعات طلابي</button>
+      <button class="teacher-tab" data-tab="salary">💼 مرتبي والإضافي</button>
       <button class="teacher-tab" data-tab="reports">📈 التقارير</button>
       <button class="teacher-tab" data-tab="weekly-reviews">⭐ تقييمات طلابي</button>
       <button class="teacher-tab" data-tab="notifications">🔔 التنبيهات <span class="teacher-badge" id="teacherNotificationBadge">0</span></button>
@@ -70,6 +71,7 @@
               <button class="teacher-action-card" data-go="students"><span>👥</span><strong>عرض طلابي</strong><small>بيانات الطلاب والتواصل</small></button>
               <button class="teacher-action-card" data-go="attendance"><span>📊</span><strong>عرض الحضور</strong><small>سجلات الإدارة للقراءة فقط</small></button>
               <button class="teacher-action-card" data-go="payments"><span>💳</span><strong>عرض مدفوعات طلابي</strong><small>اطلاع وطباعة فقط — من غير تعديل</small></button>
+              <button class="teacher-action-card" data-go="salary"><span>💼</span><strong>مستحقاتي والإضافي</strong><small>أجر الحصص + مكافآت المنصة</small></button>
             </div>
           </section>
 
@@ -135,7 +137,7 @@
 
       <section class="teacher-panel" data-panel="payments">
         <section class="card">
-          <div class="teacher-section-head"><div><h3>💳 مدفوعات الطلاب لدى المعلم</h3><p>بيانات الحصص المرتبطة بحساب المعلم فقط. لا توجد صلاحية تعديل أو تغيير حالة السداد.</p></div><div class="actions"><button class="btn" id="printTeacherPayments" type="button">🖨️ طباعة</button><button class="btn gold" id="exportTeacherPayments" type="button">⬇️ CSV</button></div></div>
+          <div class="teacher-section-head"><div><h3>💳 مدفوعات الطلاب لدى المعلم</h3><p>بيانات مدفوعات الطلاب للعرض فقط؛ ولا تعبر عن راتب المعلم. اضغط «مرتبي والإضافي» لرؤية مستحقاتك.</p></div><div class="actions"><button class="btn" type="button" data-go="salary">💼 مرتبي والإضافي</button><button class="btn" id="printTeacherPayments" type="button">🖨️ طباعة</button><button class="btn gold" id="exportTeacherPayments" type="button">⬇️ CSV</button></div></div>
           <div class="teacher-export-feedback" id="teacherPaymentsExportStatus" role="status" aria-live="polite"></div>
           <div class="teacher-payment-filters" style="display:flex;flex-wrap:wrap;gap:12px;margin:14px 0">
             <label>الطالب<select class="teacher-input" id="teacherPaymentsStudent"><option value="">كل الطلاب</option></select></label>
@@ -145,14 +147,61 @@
           <div class="enh-grid teacher-stats-grid">
             <div class="enh-stat"><span>إجمالي الحصص</span><b id="teacherPaymentsDue">—</b></div>
             <div class="enh-stat"><span>المدفوع المباشر</span><b id="teacherPaymentsCash">—</b></div>
-            <div class="enh-stat"><span>المقدم المستخدم</span><b id="teacherPaymentsCredit">—</b></div>
+            <div class="enh-stat"><span>إجمالي المحصل</span><b id="teacherPaymentsCollected">—</b></div>
             <div class="enh-stat"><span>غير المسدد</span><b id="teacherPaymentsRemaining">—</b></div>
+          </div>
+          <div class="teacher-payroll-shortcut" role="note">
+            <span>💼 <strong>إضافي المنصة هذا الأسبوع:</strong> <b id="teacherBonusQuick">—</b><small>المبلغ مكافأة من المنصة للمعلم، وليس مديونية على الطالب.</small></span>
+            <button type="button" class="btn gold" data-go="salary">عرض المرتب والإضافي بالتفصيل</button>
           </div>
           <p id="teacherPaymentsSyncNote" class="notice" role="status"></p>
           <h3 style="margin-top:16px">📋 ملخص حسب الطالب</h3>
           <div class="table-wrap teacher-table-wrap"><table class="table teacher-table"><thead><tr><th>الطالب</th><th>الحصص</th><th>القيمة</th><th>المحصل</th><th>المتبقي</th></tr></thead><tbody id="teacherPaymentsStudentRows"></tbody></table></div>
           <h3 style="margin-top:16px">تفاصيل الحصص والدفعات المرتبطة بها</h3>
-          <div class="table-wrap teacher-table-wrap"><table class="table teacher-table"><thead><tr><th>التاريخ</th><th>الطالب</th><th>المادة</th><th>الحضور</th><th>القيمة</th><th>المدفوع</th><th>المقدم</th><th>المتبقي</th></tr></thead><tbody id="teacherPaymentsRows"></tbody></table></div>
+          <div class="table-wrap teacher-table-wrap"><table class="table teacher-table"><thead><tr><th>التاريخ</th><th>الطالب</th><th>المادة</th><th>الحضور</th><th>القيمة</th><th>إجمالي المحصل</th><th>المتبقي</th></tr></thead><tbody id="teacherPaymentsRows"></tbody></table></div>
+        </section>
+      </section>
+      <section class="teacher-panel" data-panel="salary">
+        <section class="card">
+          <div class="teacher-section-head">
+            <div>
+              <h3>💼 مستحقاتي من المنصة والإضافي</h3>
+              <p>أجر كل حصة حاضرة، والمكافأة التي أضافتها الإدارة، وإجمالي المستحق. هذه الأرقام مستقلة تمامًا عن حسابات الطلاب وليست إيصال صرف.</p>
+            </div>
+            <div class="actions">
+              <button type="button" id="teacherSalaryPrint" class="btn">🖨️ طباعة</button>
+              <button type="button" id="teacherSalaryCSV" class="btn gold">⬇️ CSV</button>
+              <button type="button" id="teacherSalaryRefresh" class="btn">🔄 تحديث</button>
+            </div>
+          </div>
+          <div class="teacher-payment-filters teacher-salary-filters">
+            <label>الفترة
+              <select id="teacherSalaryPeriod" class="teacher-input">
+                <option value="week">الأسبوع الحالي (السبت – الجمعة)</option>
+                <option value="last">الأسبوع السابق</option>
+                <option value="all">كل الفترات</option>
+                <option value="custom">فترة مخصصة</option>
+              </select>
+            </label>
+            <label>من تاريخ<input id="teacherSalaryFrom" type="date" class="teacher-input"></label>
+            <label>إلى تاريخ<input id="teacherSalaryTo" type="date" class="teacher-input"></label>
+            <label>الطالب<select id="teacherSalaryStudent" class="teacher-input"><option value="all">جميع الطلاب</option></select></label>
+            <label>المادة<select id="teacherSalarySubject" class="teacher-input"><option value="all">جميع المواد</option></select></label>
+          </div>
+          <div class="enh-grid teacher-stats-grid teacher-salary-stats">
+            <div class="enh-stat"><span>عدد الحصص الحاضرة</span><b id="teacherSalaryCount">—</b></div>
+            <div class="enh-stat"><span>إجمالي أجر الحصص</span><b id="teacherSalaryBase">—</b></div>
+            <div class="enh-stat"><span>➕ إضافي من المنصة</span><b id="teacherSalaryBonus">—</b></div>
+            <div class="enh-stat teacher-salary-total"><span>إجمالي المستحق</span><b id="teacherSalaryTotal">—</b></div>
+          </div>
+          <p id="teacherSalaryStatus" class="notice" role="status" aria-live="polite">جارٍ تحميل المستحقات...</p>
+          <div id="teacherSalaryExportStatus" class="teacher-export-feedback" role="status"></div>
+          <div class="table-wrap teacher-table-wrap">
+            <table class="table teacher-table">
+              <thead><tr><th>التاريخ</th><th>الطالب</th><th>المادة</th><th>أجر الحصة</th><th>إضافي المنصة</th><th>إجمالي الحصة</th><th>ملاحظات الإدارة</th></tr></thead>
+              <tbody id="teacherSalaryRows"><tr><td colspan="7">جارٍ تحميل المستحقات...</td></tr></tbody>
+            </table>
+          </div>
         </section>
       </section>
       <section class="teacher-panel" data-panel="reports">
@@ -328,7 +377,22 @@
     }
   </style>
   <section id="teacherPrintDocument" aria-label="مستند الطباعة"></section>
-  <script type="module" src="teacher-enhancements.js?v=20261105-print-export6"></script>
+  <script type="module" src="teacher-enhancements.js?v=20261106-salary1"></script>
+  <script type="module" src="teacher-payroll-view.js?v=20261106-salary1"></script>
+  <style>
+    .teacher-payroll-shortcut{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px;margin:14px 0;background:#17283e;border:1px solid #ae8a3b;border-radius:14px;padding:14px}
+    .teacher-payroll-shortcut b{color:#f4cb67;font-size:1.15em}
+    .teacher-payroll-shortcut small{display:block;color:#b4c5d8;margin-top:3px}
+    .teacher-salary-filters{display:flex;flex-wrap:wrap;gap:12px;margin:16px 0 18px}
+    .teacher-salary-filters label{display:flex;flex-direction:column;gap:6px;flex:1 1 160px;min-width:0}
+    .teacher-salary-filters select,.teacher-salary-filters input{width:100%;min-width:0}
+    .teacher-salary-stats .teacher-salary-total{border-color:#d4ac48;background:linear-gradient(135deg,#222e42,#3a311c)}
+    .teacher-salary-stats .teacher-salary-total b{color:#f4cf6b}
+    #teacherSalaryRows td{vertical-align:middle}
+    #teacherSalaryRows .teacher-salary-bonus{color:#f4ce6e;font-weight:800}
+    @media(max-width:640px){.teacher-salary-filters label{flex-basis:100%}}
+  </style>
+
   <script type="module" src="weekly-teacher-reviews.js?v=20261105-evals1"></script>
 <script type="module" src="../admin-switcher.js"></script>
 

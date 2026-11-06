@@ -375,6 +375,18 @@ service cloud.firestore {
       allow read, create, update, delete: if isAdmin();
     }
 
+    // كشوف المرتبات المنفصلة للمعلمين: المعلم المعتمد يقرأ مستحقاته فقط.
+    // ليس له حق التعديل أو الاطلاع على سجلات المعلمين الآخرين أو الفهرس.
+    match /teacherPayrollViews/{teacherUid}/lessons/{lessonId} {
+      allow read: if isAdmin() || (isTeacher() && request.auth.uid == teacherUid);
+      allow create, update, delete: if isAdmin();
+    }
+
+    // فهرس مزامنة إداري، لا يُكشف للمعلمين أو الطلاب.
+    match /teacherPayrollViewIndex/{lessonId} {
+      allow read, create, update, delete: if isAdmin();
+    }
+
     // صلاحيات الحضور: الإدارة فقط تنشئ وتعدل وتحذف السجلات.
     // المعلم المعتمد يمكنه الاطلاع على السجلات المرتبطة بمعرّفه فقط.
     match /lessonAttendance/{attendanceId} {

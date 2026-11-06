@@ -32,7 +32,7 @@ function showIssues(){
  const el=$('teacherDataNotice');if(!el)return;
  if(state.errors.length){el.hidden=false;el.textContent='⚠️ تعذر تحميل بعض البيانات: '+state.errors.join(' | ')+' — راجع صلاحيات Firebase وربط السجلات بالمعلم.';return;}
  if(!state.attendance.length&&!state.students.length){el.hidden=false;el.textContent='لا توجد سجلات مربوطة بمعرّف المعلم في الحجوزات أو الحضور. راجع «ربط بيانات المعلمين» في لوحة الأدمن لتوصيل السجلات القديمة.';return;}
- if(state.attendance.some(x=>!Object.hasOwn(x,'teacherAdvanceAppliedPiastres'))){el.hidden=false;el.textContent='ℹ️ قد لا تشمل أرقام المدفوعات المقدمة إلا بعد «مزامنة أرصدة الحصص» من لوحة الأدمن؛ المدفوع المباشر ظاهر من سجلات الحصص.';return;}
+ if(state.attendance.some(x=>!Object.hasOwn(x,'teacherAdvanceAppliedPiastres'))){el.hidden=false;el.textContent='ℹ️ بعض سجلات الحصص لم تكتمل تسويتها المالية؛ راجع لوحة الأدمن لتحديث الأرصدة قبل اعتماد الإجمالي.';return;}
  el.hidden=true;el.textContent='';
 }
 function upsertStudent(entry){
@@ -267,22 +267,22 @@ function filteredPaymentRows(){
  return state.attendance.filter(x=>(!uid||x.studentUid===uid)&&(!from||String(x.date||'')>=from)&&(!to||String(x.date||'')<=to));
 }
 function paymentRowsHtml(rows){
- return rows.map(x=>{const f=financeValue(x);return `<tr><td>${esc(x.date||'-')}</td><td>${esc(studentName(x.studentUid,x.studentName))}</td><td>${esc(x.subject||'-')}</td><td>${esc(x.status||'-')}</td><td>${money(f.due)}</td><td>${money(f.cash)}</td><td>${money(f.credit)}${!Object.hasOwn(x,'teacherAdvanceAppliedPiastres')?' *':''}</td><td>${money(f.remaining)}</td></tr>`}).join('');
+ return rows.map(x=>{const f=financeValue(x);return `<tr><td>${esc(x.date||'-')}</td><td>${esc(studentName(x.studentUid,x.studentName))}</td><td>${esc(x.subject||'-')}</td><td>${esc(x.status||'-')}</td><td>${money(f.due)}</td><td>${money(f.total)}</td><td>${money(f.remaining)}</td></tr>`}).join('');
 }
 function paymentSummary(rows){return rows.reduce((a,x)=>{const f=financeValue(x);a.due+=f.due;a.cash+=f.cash;a.credit+=f.credit;a.remaining+=f.remaining;return a;},{due:0,cash:0,credit:0,remaining:0});}
 function renderPayments(){
  const filter=$('teacherPaymentsStudent'),prior=filter?.value||'';
  if(filter){filter.innerHTML='<option value="">كل الطلاب</option>'+state.students.map(x=>`<option value="${esc(x.id)}">${esc(x.fullName||x.name||x.id)}</option>`).join('');filter.value=state.students.some(s=>s.id===prior)?prior:'';}
  const rows=filteredPaymentRows(),s=paymentSummary(rows);
- const ids=['teacherPaymentsDue','teacherPaymentsCash','teacherPaymentsCredit','teacherPaymentsRemaining'];
- [s.due,s.cash,s.credit,s.remaining].forEach((v,i)=>{if($(ids[i]))$(ids[i]).textContent=state.failedSources.has('الحضور والمدفوعات')?'—':money(v);});
- if($('teacherPaymentsRows'))$('teacherPaymentsRows').innerHTML=state.failedSources.has('الحضور والمدفوعات')?'<tr><td colspan="8">تعذر تحميل بيانات المدفوعات. راجع التنبيه أعلى اللوحة.</td></tr>':rows.length?paymentRowsHtml(rows):'<tr><td colspan="8">لا توجد حصص مطابقة.</td></tr>';
+ const ids=['teacherPaymentsDue','teacherPaymentsCash','teacherPaymentsCollected','teacherPaymentsRemaining'];
+ [s.due,s.cash,s.cash+s.credit,s.remaining].forEach((v,i)=>{if($(ids[i]))$(ids[i]).textContent=state.failedSources.has('الحضور والمدفوعات')?'—':money(v);});
+ if($('teacherPaymentsRows'))$('teacherPaymentsRows').innerHTML=state.failedSources.has('الحضور والمدفوعات')?'<tr><td colspan="7">تعذر تحميل بيانات المدفوعات. راجع التنبيه أعلى اللوحة.</td></tr>':rows.length?paymentRowsHtml(rows):'<tr><td colspan="7">لا توجد حصص مطابقة.</td></tr>';
  const grouped=new Map();
  for(const r of rows){const uid=r.studentUid||r.studentName||r.id;const val=grouped.get(uid)||{name:studentName(r.studentUid,r.studentName),count:0,due:0,cash:0,credit:0,remaining:0};const v=financeValue(r);val.count++;val.due+=v.due;val.cash+=v.cash;val.credit+=v.credit;val.remaining+=v.remaining;grouped.set(uid,val)}
  if($('teacherPaymentsStudentRows'))$('teacherPaymentsStudentRows').innerHTML=[...grouped.values()].map(v=>`<tr><td>${esc(v.name)}</td><td>${v.count}</td><td>${money(v.due)}</td><td>${money(v.cash+v.credit)}</td><td>${money(v.remaining)}</td></tr>`).join('')||'<tr><td colspan="5">لا توجد سجلات.</td></tr>';
  if($('teacherPaymentsSyncNote')){
   const latest=rows.map(x=>toDate(x.teacherFinanceSyncedAt)).filter(Boolean).sort((a,b)=>b-a)[0];
-  $('teacherPaymentsSyncNote').textContent=state.failedSources.has('الحضور والمدفوعات')?'❌ تعذر تحميل السجلات؛ لا تعتمد أرقام الدفع.':rows.some(r=>!Object.hasOwn(r,'teacherAdvanceAppliedPiastres'))?'⚠️ بعض الحصص لم تُراجع دفعاتها المقدمة من الإدارة؛ الإجمالي مبدئي حتى تتم المزامنة.':`✅ آخر مزامنة للمقدم: ${latest?formatDate(latest,true):'غير محددة'} — التقرير ليس إذنًا لصرف مستحقات المعلم.`;
+  $('teacherPaymentsSyncNote').textContent=state.failedSources.has('الحضور والمدفوعات')?'❌ تعذر تحميل السجلات؛ لا تعتمد أرقام الدفع.':rows.some(r=>!Object.hasOwn(r,'teacherAdvanceAppliedPiastres'))?'⚠️ بعض الحصص لم تكتمل مراجعة تسويتها المالية من الإدارة؛ إجمالي المحصل مبدئي.':`✅ آخر تحديث للتسوية المالية: ${latest?formatDate(latest,true):'غير محدد'} — هذه دفعات الطلاب وليست مرتبات المعلمين.`;
  }
 
 }
@@ -318,15 +318,15 @@ function paymentsDocument(){
  const picked=$('teacherPaymentsStudent')?.selectedOptions[0]?.textContent||'كل الطلاب';
  const from=$('teacherPaymentsFrom')?.value||'بداية السجلات';
  const to=$('teacherPaymentsTo')?.value||'آخر السجلات';
- const studentRows=[...byStudent.values()].sort((a,b)=>a.name.localeCompare(b.name,'ar')).map(v=>`<tr><td>${esc(v.name)}</td>${numericCell(v.count)}${numericCell(money(v.due))}${numericCell(money(v.cash))}${numericCell(money(v.credit))}${numericCell(money(v.cash+v.credit))}${numericCell(money(v.remaining))}</tr>`).join('');
- const details=rows.map(x=>{const f=financeValue(x);return `<tr><td>${esc(x.date||'-')}</td><td>${esc(studentName(x.studentUid,x.studentName))}</td><td>${esc(x.subject||'-')}</td><td>${esc(x.status||'-')}</td>${numericCell(money(f.due))}${numericCell(money(f.cash))}${numericCell(money(f.credit))}${numericCell(money(f.remaining))}</tr>`;}).join('');
+ const studentRows=[...byStudent.values()].sort((a,b)=>a.name.localeCompare(b.name,'ar')).map(v=>`<tr><td>${esc(v.name)}</td>${numericCell(v.count)}${numericCell(money(v.due))}${numericCell(money(v.cash))}${numericCell(money(v.cash+v.credit))}${numericCell(money(v.remaining))}</tr>`).join('');
+ const details=rows.map(x=>{const f=financeValue(x);return `<tr><td>${esc(x.date||'-')}</td><td>${esc(studentName(x.studentUid,x.studentName))}</td><td>${esc(x.subject||'-')}</td><td>${esc(x.status||'-')}</td>${numericCell(money(f.due))}${numericCell(money(f.total))}${numericCell(money(f.remaining))}</tr>`;}).join('');
  const warn=rows.some(r=>!Object.hasOwn(r,'teacherAdvanceAppliedPiastres'));
  const filterLine=`الطالب: ${picked} | الفترة: ${from} إلى ${to}`;
  return reportHeader('كشف الحضور والمدفوعات',filterLine)
- +reportStats([{label:'عدد الطلاب',value:`${byStudent.size}`},{label:'عدد الحصص',value:`${rows.length}`},{label:'إجمالي قيمة الحصص',value:printedMoney(totals.due)},{label:'المحصّل (مباشر + مقدم)',value:printedMoney(totals.cash+totals.credit)},{label:'المبلغ غير المسدد',value:printedMoney(totals.remaining)}])
- +`<section class="print-section"><h2>01 <span>ملخص الحسابات حسب الطالب</span></h2><table class="print-table"><thead><tr><th>الطالب</th><th>الحصص</th><th>قيمة الحصص</th><th>مدفوع مباشر</th><th>مقدم مستخدم</th><th>إجمالي المحصل</th><th>المتبقي</th></tr></thead><tbody>${studentRows}</tbody><tfoot><tr><th>الإجمالي</th><th class="print-num">${rows.length}</th><th class="print-num">${esc(money(totals.due))}</th><th class="print-num">${esc(money(totals.cash))}</th><th class="print-num">${esc(money(totals.credit))}</th><th class="print-num">${esc(money(totals.cash+totals.credit))}</th><th class="print-num">${esc(money(totals.remaining))}</th></tr></tfoot></table></section>`
- +`<section class="print-section"><h2>02 <span>تفاصيل الحصص والمدفوعات</span></h2><table class="print-table"><thead><tr><th>التاريخ</th><th>الطالب</th><th>المادة</th><th>الحالة</th><th>قيمة الحصة</th><th>مدفوع مباشر</th><th>مقدم مستخدم</th><th>المتبقي</th></tr></thead><tbody>${details}</tbody><tfoot><tr><th colspan="4">الإجمالي النهائي</th><th class="print-num">${esc(money(totals.due))}</th><th class="print-num">${esc(money(totals.cash))}</th><th class="print-num">${esc(money(totals.credit))}</th><th class="print-num">${esc(money(totals.remaining))}</th></tr></tfoot></table></section>`
- +(warn?`<p class="print-warning">تنبيه: هناك حصص لم تؤكد الإدارة مراجعة الدفعات المقدمة الخاصة بها؛ تُعدّ الأرقام مبدئية إلى أن تتم المزامنة.</p>`:'')
+ +reportStats([{label:'عدد الطلاب',value:`${byStudent.size}`},{label:'عدد الحصص',value:`${rows.length}`},{label:'إجمالي قيمة الحصص',value:printedMoney(totals.due)},{label:'إجمالي المحصل',value:printedMoney(totals.cash+totals.credit)},{label:'المبلغ غير المسدد',value:printedMoney(totals.remaining)}])
+ +`<section class="print-section"><h2>01 <span>ملخص الحسابات حسب الطالب</span></h2><table class="print-table"><thead><tr><th>الطالب</th><th>الحصص</th><th>قيمة الحصص</th><th>مدفوع مباشر</th><th>إجمالي المحصل</th><th>المتبقي</th></tr></thead><tbody>${studentRows}</tbody><tfoot><tr><th>الإجمالي</th><th class="print-num">${rows.length}</th><th class="print-num">${esc(money(totals.due))}</th><th class="print-num">${esc(money(totals.cash))}</th><th class="print-num">${esc(money(totals.cash+totals.credit))}</th><th class="print-num">${esc(money(totals.remaining))}</th></tr></tfoot></table></section>`
+ +`<section class="print-section"><h2>02 <span>تفاصيل الحصص والمدفوعات</span></h2><table class="print-table"><thead><tr><th>التاريخ</th><th>الطالب</th><th>المادة</th><th>الحالة</th><th>قيمة الحصة</th><th>إجمالي المحصل</th><th>المتبقي</th></tr></thead><tbody>${details}</tbody><tfoot><tr><th colspan="4">الإجمالي النهائي</th><th class="print-num">${esc(money(totals.due))}</th><th class="print-num">${esc(money(totals.cash+totals.credit))}</th><th class="print-num">${esc(money(totals.remaining))}</th></tr></tfoot></table></section>`
+ +(warn?`<p class="print-warning">تنبيه: هناك حصص لم تكتمل مراجعة تسويتها المالية من الإدارة؛ تُعدّ الأرقام مبدئية إلى أن تتم المزامنة.</p>`:'')
  +`<p class="print-disclaimer">يعرض التقرير المبالغ المرتبطة بحصص المعلم فقط، ولا يشمل الدفعات غير المخصصة لحصص محددة. هذا الكشف لا يُعد إذنًا بصرف مستحقات المعلم.</p>`
  +reportFooter('عرض فقط — لا يتيح تعديل السجلات أو المدفوعات');
 }
@@ -429,10 +429,10 @@ function exportPayments(){
  if(state.failedSources.has('الحضور والمدفوعات')){alert('بيانات المدفوعات لم تُحمّل بالكامل، لذلك لا يمكن تصدير تقرير مالي.');return;}
  const entries=filteredPaymentRows();
  if(!entries.length){alert('لا توجد حصص مطابقة للفلاتر الحالية للتصدير.');return;}
- const rows=[['التاريخ','الطالب','المادة','الحالة','قيمة الحصة (جنيه)','مدفوع مباشر (جنيه)','مقدم مستخدم (جنيه)','إجمالي المحصل (جنيه)','المتبقي (جنيه)']];
- for(const x of entries){const f=financeValue(x);rows.push([x.date,studentName(x.studentUid,x.studentName),x.subject,x.status,f.due/100,f.cash/100,f.credit/100,f.total/100,f.remaining/100]);}
+ const rows=[['التاريخ','الطالب','المادة','الحالة','قيمة الحصة (جنيه)','مدفوع مباشر (جنيه)','إجمالي المحصل (جنيه)','المتبقي (جنيه)']];
+ for(const x of entries){const f=financeValue(x);rows.push([x.date,studentName(x.studentUid,x.studentName),x.subject,x.status,f.due/100,f.cash/100,f.total/100,f.remaining/100]);}
  const sums=paymentSummary(entries);
- rows.push(['الإجمالي','', '', '',sums.due/100,sums.cash/100,sums.credit/100,(sums.cash+sums.credit)/100,sums.remaining/100]);
+ rows.push(['الإجمالي','', '', '',sums.due/100,sums.cash/100,(sums.cash+sums.credit)/100,sums.remaining/100]);
  exportCsv(rows,'zad-teacher-payments-'+new Date().toISOString().slice(0,10)+'.csv','teacherPaymentsExportStatus');
 }
 
