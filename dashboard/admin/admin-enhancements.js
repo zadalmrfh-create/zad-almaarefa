@@ -48,14 +48,27 @@ function exportCSV(){
   const blob=new Blob([csv],{type:'text/csv;charset=utf-8'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`zad-users-${new Date().toISOString().slice(0,10)}.csv`; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1000);
 }
 
+// Some Firestore projects reject aggregation queries even when a normal collection
+// read is allowed. Use a direct read as a fallback; don't convert access errors to 0.
+async function countAttempts(path){
+  try { return (await getCountFromServer(collection(db,path))).data().count; }
+  catch(aggregationError){
+    try { return (await getDocs(collection(db,path))).size; }
+    catch(readError){
+      console.warn('Cannot count exam attempts',path,{aggregationError,readError});
+      throw readError;
+    }
+  }
+}
+
 async function load(){
   try{
     const [usResult,bookResult,...examResults]=await Promise.allSettled([
       getDocs(collection(db,'users')),
       getDocs(query(collection(db,'bookings'),orderBy('createdAt','desc'),limit(500))),
-      getCountFromServer(collection(db,'quizAttempts')),
-      getCountFromServer(collection(db,'codeExamResults')),
-      getCountFromServer(collection(db,'unitOneExamAttempts'))
+      countAttempts('quizAttempts'),
+      countAttempts('codeExamResults'),
+      countAttempts('unitOneExamAttempts')
     ]);
     if(usResult.status==='fulfilled') users=usResult.value.docs.map(d=>d.data());
     else { users=[]; console.warn('تعذر تحميل المستخدمين',usResult.reason); }
@@ -63,10 +76,11 @@ async function load(){
     else { bookings=[]; console.warn('تعذر تحميل الحجوزات',bookResult.reason); }
     const examNames=['الاختبارات القصيرة','الامتحانات الإلكترونية','امتحانات الوحدة'];
     const failed=examResults.map((r,i)=>r.status==='rejected'?examNames[i]:null).filter(Boolean);
-    attemptsCount=failed.length?null:examResults.reduce((total,r)=>total+(r.status==='fulfilled'?r.value.data().count:0),0);
-    attemptsNotice=failed.length?'تعذر قراءة '+failed.join('، ')+'؛ لا يمكن تأكيد الإجمالي.':'';
+    const availableCount=examResults.reduce((total,r)=>total+(r.status==='fulfilled'?Number(r.value):0),0);
+    attemptsCount=failed.length?null:availableCount;
+    attemptsNotice=failed.length?'تم العثور على '+availableCount+' محاولة في المصادر المقروءة، لكن تعذر الوصول إلى '+failed.join('، ')+'؛ الإجمالي غير مكتمل.':'';
     const attemptsLabel=document.getElementById('zadExamAttemptsStatNote');
-    if(attemptsLabel){attemptsLabel.textContent=attemptsNotice || 'من الاختبارات القصيرة والامتحانات الإلكترونية وامتحانات الوحدة';attemptsLabel.style.color=failed.length?'#f7bb60':'';}
+    if(attemptsLabel){attemptsLabel.textContent=attemptsNotice || 'محاولات الاختبارات القصيرة والامتحانات الإلكترونية وامتحانات الوحدة';attemptsLabel.style.color=failed.length?'#f7bb60':'';}
     for(let i=0;i<examResults.length;i++) if(examResults[i].status==='rejected') console.warn('Exam statistics read failed: '+examNames[i],examResults[i].reason);
     if(usResult.status==='rejected'){ const el=$('enhDataStatus');if(el)el.textContent='تعذر قراءة المستخدمين من Firebase؛ أعد المحاولة بعد التأكد من صلاحيات الأدمن.'; }
 
