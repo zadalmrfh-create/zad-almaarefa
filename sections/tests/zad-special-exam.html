@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>امتحانات زاد المعرفة | الاختبار الإلكتروني</title><link rel="icon" href="../../images/logo.png">
+<link rel="stylesheet" href="zad-special-exam.css">
+<link rel="stylesheet" href="../../assets/content-auth-guard.css?v=20261029">
+<script defer src="../../assets/content-auth-fallback.js"></script>
+<script type="module" src="../../assets/content-auth-guard.js"></script>
+</head><body>
+<header class="site-head"><a href="code-exams.html" class="back">← العودة للامتحانات</a><img src="../../images/logo.png" alt="شعار زاد المعرفة"><div><strong>منصة زاد المعرفة التعليمية</strong><span>امتحانات إلكترونية مجانية • تتطلب تسجيل الدخول</span></div></header>
+<main class="page">
+<section class="exam-intro box"><h1 id="examTitle">جارٍ تحميل الامتحان...</h1><p id="examMeta"></p><p class="notice" id="examStatus" role="status" aria-live="polite">جارٍ التحقق من تسجيل الدخول...</p></section>
+<section class="box" id="intro" hidden><h2>بيانات الطالب</h2><p>يرجى إدخال الاسم قبل بدء الاختبار. محاولة واحدة لكل امتحان، وتصل الإجابات إلى إدارة المنصة عند التسليم.</p>
+<label class="field">اسم الطالب<input id="studentName" type="text" maxlength="150" placeholder="اكتب اسم الطالب" autocomplete="name" required></label>
+<button class="btn primary" id="startBtn" type="button">بدء الامتحان</button></section>
+<section id="examPanel" hidden><div class="sticky"><span id="countAnswered">0 إجابة</span><span id="clock" role="timer"></span></div><div class="progress-track" aria-label="تقدم حل الأسئلة"><div id="answerProgress" class="progress-filled" role="progressbar" aria-valuemin="0" aria-valuenow="0" aria-valuemax="40"></div></div><div id="sectionNavigator" class="section-navigator" aria-label="التنقل بين أقسام الامتحان"></div>
+<form id="examForm" novalidate><div id="examQuestions"></div><div class="box submit-bar"><p>راجع إجاباتك قبل التسليم. الأسئلة المقالية والإكمال تراجعها الإدارة، والتصحيح الموضوعي مبدئي حتى الاعتماد.</p><button class="btn primary" type="submit" id="submitBtn">📨 تسليم الإجابات للإدارة</button></div></form></section>
+<section class="box" id="resultPanel" hidden><h2>📩 حالة التسليم</h2><div id="resultContent"></div><a class="btn" href="code-exams.html">العودة إلى الامتحانات</a></section>
+</main><script type="module" src="zad-special-exam.js"></script></body></html>

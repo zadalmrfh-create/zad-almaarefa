@@ -1,10 +1,12 @@
+import {sharedAdminGetDocs,clearAdminReadCache} from './firestore-read-cache.js';
+const getDocs=(ref)=>sharedAdminGetDocs(ref,rawGetDocs,auth);
 import {amountPaid,amountRemaining,money as paymentMoney} from '../payment-utils.js';
 import {isCurrentPayment} from '../payment-ledger-period.js';
 import {advanceSnapshot} from '../advance-credit.js';
 /* زاد المعرفة — تقرير الطالب الشامل (للإدارة فقط)
    قراءة فقط: لا تعديل لبيانات الطالب ولا سجلاته. */
 import { auth, db } from '../../firebase-config.js';
-import { collection, doc, getDoc, getDocs, query, where } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
+import { collection, doc, getDoc, getDocs as rawGetDocs, query, where } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 
 const $ = id => document.getElementById(id);
 const e = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));

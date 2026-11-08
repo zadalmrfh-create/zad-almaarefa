@@ -1,7 +1,9 @@
+import {sharedAdminGetDocs,clearAdminReadCache} from './firestore-read-cache.js';
+const getDocs=(ref)=>sharedAdminGetDocs(ref,rawGetDocs,auth);
 /** إدارة مرتبات المعلمين — بيانات مستقلة عن ذمم الطلاب، للإدارة فقط. */
 import {auth,db} from '../../firebase-config.js';
 import {onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
-import {collection,doc,getDocs,setDoc,serverTimestamp} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
+import {collection,doc,getDocs as rawGetDocs,setDoc,serverTimestamp,writeBatch,runTransaction} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 
 const $=id=>document.getElementById(id);
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -22,7 +24,7 @@ function weekRange(previous=false){
   const end=new Date(today);end.setUTCDate(end.getUTCDate()+6);
   return [nToIso(today),nToIso(end)];
 }
-let attendance=[],teachers=[],adjustments=new Map(),filtered=[],missing=0;
+let attendance=[],teachers=[],adjustments=new Map(),filtered=[],missing=0,settlements=new Map();
 let ready=false,loading=false;
 const status=$('salaryStatus');
 const toStudentKey=r=>r.studentUid?`uid:${r.studentUid}`:`name:${r.studentName||'—'}`;
@@ -34,6 +36,10 @@ function teacherFor(r,adj){
   const raw=String(r.teacherName||'').trim();
   if(!raw||raw==='غير محدد'||raw==='الإدارة'||raw.includes('،'))return null;
   const matches=teachers.filter(t=>[t.name,t.fullName,t.displayName,...(Array.isArray(t.attendanceAliases)?t.attendanceAliases:[])].some(a=>norm(a)===norm(raw)));
+  if(!matches.length && norm(raw).split(' ').length>=3){
+    const candidates=teachers.filter(t=>[t.name,t.fullName,t.displayName,...(Array.isArray(t.attendanceAliases)?t.attendanceAliases:[])].some(a=>norm(a).startsWith(norm(raw)+' ')));
+    if(candidates.length===1)matches.push(candidates[0]);
+  }
   if(matches.length===1)return {key:`uid:${matches[0].id}`,name:teacherName(matches[0])};
   return {key:`name:${raw}`,name:raw}; // Legacy record without a linked teacher account.
 }
@@ -79,21 +85,31 @@ function render(){
  if(from&&to&&from>to){status.textContent='⚠️ تاريخ البداية بعد تاريخ النهاية. عدّل الفترة.';return;}
  filtered=getFiltered();
  const matched=filtered.filter(r=>r._teacher);
+ const notLinked=matched.filter(r=>!r._teacher.key.startsWith('uid:')).length;
  missing=filtered.length-matched.length;
  const totals={count:matched.length,base:matched.reduce((a,r)=>a+r._base,0),bonus:matched.reduce((a,r)=>a+r._bonus,0)};
- const stat=[['عدد الحصص المحتسبة',String(totals.count)],['إجمالي أجر الحصص',egp(totals.base)],['إجمالي إضافي المنصة',egp(totals.bonus)],['إجمالي مستحقات المعلمين',egp(totals.base+totals.bonus)]];
- $('salaryTotals').innerHTML=stat.map(([label,value],i)=>`<article class="salary-metric ${i===3?'salary-grand':''}"><span>${esc(label)}</span><strong>${esc(value)}</strong></article>`).join('');
+ // المبالغ المصروفة تُقرأ من دفتر التسويات، وتُربط بالحصة نفسها حتى مع فلترة الفترة.
+ const paidFor=r=>{
+  if(!r._teacher?.key?.startsWith('uid:'))return 0;
+  const ledger=settlements.get(r._teacher.key.slice(4));
+  return Math.min(r._base+r._bonus,Math.max(0,Number(ledger?.paidByLesson?.[r.id]||0)));
+ };
+ const totalPaid=matched.reduce((a,r)=>a+paidFor(r),0);
+ const gross=totals.base+totals.bonus;
+ const stat=[['عدد الحصص المحتسبة',String(totals.count)],['إجمالي أجر الحصص',egp(totals.base)],['إجمالي إضافي المنصة',egp(totals.bonus)],['إجمالي المستحقات قبل الصرف',egp(gross)],['إجمالي المصروف',egp(totalPaid)],['المتبقي للصرف',egp(Math.max(0,gross-totalPaid))]];
+ $('salaryTotals').innerHTML=stat.map(([label,value],i)=>`<article class="salary-metric ${i===5?'salary-grand':''}"><span>${esc(label)}</span><strong>${esc(value)}</strong></article>`).join('');
  const sums=new Map();
  for(const t of teachers){
   if($('salaryTeacher').value!=='all'&&$('salaryTeacher').value!==`uid:${t.id}`)continue;
-  sums.set(`uid:${t.id}`,{name:teacherName(t),base:0,bonus:0,count:0});
+  sums.set(`uid:${t.id}`,{name:teacherName(t),base:0,bonus:0,paid:0,count:0});
  }
- for(const r of matched){const t=r._teacher;const item=sums.get(t.key)||{name:t.name,base:0,bonus:0,count:0};item.count++;item.base+=r._base;item.bonus+=r._bonus;sums.set(t.key,item);}
- const groups=[...sums].sort((a,b)=>(b[1].base+b[1].bonus)-(a[1].base+a[1].bonus));
- $('salaryTeacherCards').innerHTML=groups.length?groups.map(([key,g])=>`<article class="salary-teacher-card"><strong>👨‍🏫 ${esc(g.name)}</strong><span>${g.count} حصة × حسب أجر كل حصة</span><div class="salary-subtotals"><span>الحصص: <b>${egp(g.base)}</b></span><span>الإضافي: <b>${egp(g.bonus)}</b></span></div><b class="salary-card-grand">المستحق: ${egp(g.base+g.bonus)}</b></article>`).join(''):'<p class="salary-empty">لا توجد مستحقات للمعلمين خلال الفترة المحددة.</p>';
+ for(const r of matched){const t=r._teacher;const item=sums.get(t.key)||{name:t.name,base:0,bonus:0,paid:0,count:0};item.count++;item.base+=r._base;item.bonus+=r._bonus;item.paid+=paidFor(r);sums.set(t.key,item);}
+ const groups=[...sums].sort((a,b)=>(b[1].base+b[1].bonus-b[1].paid)-(a[1].base+a[1].bonus-a[1].paid));
+ $('salaryTeacherCards').innerHTML=groups.length?groups.map(([key,g])=>`<article class="salary-teacher-card"><strong>👨‍🏫 ${esc(g.name)}</strong><span>${g.count} حصة × حسب أجر كل حصة</span><div class="salary-subtotals"><span>الحصص: <b>${egp(g.base)}</b></span><span>الإضافي: <b>${egp(g.bonus)}</b></span></div><div class="salary-subtotals"><span>الإجمالي: <b>${egp(g.base+g.bonus)}</b></span><span>تم صرف: <b>${egp(g.paid)}</b></span></div><b class="salary-card-grand">المتبقي: ${egp(Math.max(0,g.base+g.bonus-g.paid))}</b></article>`).join(''):'<p class="salary-empty">لا توجد مستحقات للمعلمين خلال الفترة المحددة.</p>';
  $('salaryRows').innerHTML=filtered.length?filtered.map(r=>`<tr><td>${esc(r.date||'—')}</td><td>${esc(r._teacher?.name||'⚠️ يحتاج تحديد معلم')}</td><td>${esc(r.studentName||'—')}</td><td>${esc(r._subjects.join('، ')||'—')}</td><td>${egp(r._base)}</td><td>${egp(r._bonus)}</td><td><b>${r._teacher?egp(r._base+r._bonus):'—'}</b></td><td>${esc(r._note||'—')}</td><td><button type="button" class="btn" data-salary-edit="${esc(r.id)}">✏️ تعديل الأجر</button></td></tr>`).join(''):'<tr><td colspan="9">لا توجد حصص حاضرة مطابقة لهذه الفلاتر.</td></tr>';
- status.textContent=`عرض ${filtered.length} حصة حاضرة، منها ${matched.length} محسوبة في المرتبات.`+(missing?` ⚠️ توجد ${missing} حصة لم يتحدد لها المعلم؛ اضغط «تعديل الأجر» لربطها قبل احتسابها.`:'');
+ status.textContent=`عرض ${filtered.length} حصة حاضرة، منها ${matched.length} محسوبة في المرتبات.`+(missing?` ⚠️ توجد ${missing} حصة لم يتحدد لها المعلم؛ اضغط «تعديل الأجر» لربطها قبل احتسابها.`:'')+(notLinked?` ⚠️ توجد ${notLinked} حصة مرتبطة باسم المعلم فقط؛ اربط حسابه من زر تعديل الأجر حتى تظهر في لوحة المعلم.`:'');
  annotateAttendanceButtons();
+ renderSettlements();
 }
 function annotateAttendanceButtons(){
  document.querySelectorAll('#attendanceRows [data-payroll-extra]').forEach(btn=>{
@@ -101,6 +117,64 @@ function annotateAttendanceButtons(){
   const label=value>0?'➕ إضافي '+egp(value):'➕ إضافي المرتب';
   if(btn.textContent!==label)btn.textContent=label;
  });
+}
+/**
+ * مزامنة بيانات الحصص المالية للمعلم في مجموعة آمنة مخصصة له.
+ * لا يتاح له الوصول إلى teacherPayrollAdjustments، ولا إلى بيانات غيره.
+ * الفهرس الإداري يتفادى إعادة الكتابة لكل الحصص عند كل فتح للوحة.
+ * تُزامَن الحصص الأقدم تلقائيًا فور زيارة الأدمن للوحة بعد نشر القواعد.
+ */
+async function syncTeacherSalaryViews(){
+ const snapshot=await getDocs(collection(db,'teacherPayrollViewIndex'));
+ const oldIndex=new Map(snapshot.docs.map(x=>[x.id,x.data()]));
+ const desired=new Map();
+ for(const row of attendance){
+  if(row.deleted===true||row.status!=='حاضر')continue;
+  const adjusted=salaryRow(row);
+  if(!adjusted._teacher?.key?.startsWith('uid:'))continue;
+  const teacherUid=adjusted._teacher.key.slice(4);
+  if(!teacherUid)continue;
+  const data={
+   attendanceId:row.id,teacherUid,studentUid:String(row.studentUid||''),
+   studentName:String(row.studentName||'—'),date:String(row.date||'').slice(0,10),
+   subject:adjusted._subjects.join('، '),status:'حاضر',
+   basePayPiastres:adjusted._base,bonusPiastres:adjusted._bonus,
+   note:adjusted._note
+  };
+  desired.set(row.id,{teacherUid,data,signature:JSON.stringify(data)});
+ }
+ const groups=[];
+ for(const [id,next] of desired){
+  const old=oldIndex.get(id);
+  if(old&&old.teacherUid===next.teacherUid&&old.signature===next.signature)continue;
+  const ops=[];
+  if(old?.teacherUid&&old.teacherUid!==next.teacherUid){
+   ops.push({action:'delete',ref:doc(db,'teacherPayrollViews',old.teacherUid,'lessons',id)});
+  }
+  ops.push({action:'set',ref:doc(db,'teacherPayrollViews',next.teacherUid,'lessons',id),data:next.data});
+  ops.push({action:'set',ref:doc(db,'teacherPayrollViewIndex',id),data:{teacherUid:next.teacherUid,signature:next.signature,syncedAt:serverTimestamp()}});
+  groups.push(ops);
+ }
+ for(const [id,old] of oldIndex){
+  if(desired.has(id))continue;
+  const ops=[];
+  if(old?.teacherUid)ops.push({action:'delete',ref:doc(db,'teacherPayrollViews',old.teacherUid,'lessons',id)});
+  ops.push({action:'delete',ref:doc(db,'teacherPayrollViewIndex',id)});
+  groups.push(ops);
+ }
+ if(!groups.length)return 0;
+ let batch=writeBatch(db),opsCount=0,count=0;
+ for(const group of groups){
+  if(opsCount+group.length>350){await batch.commit();batch=writeBatch(db);opsCount=0;}
+  for(const op of group){
+   if(op.action==='delete')batch.delete(op.ref);
+   else batch.set(op.ref,op.data);
+   opsCount++;
+  }
+  count++;
+ }
+ if(opsCount)await batch.commit();
+ return count;
 }
 async function refresh(){
  if(loading)return;
@@ -110,14 +184,24 @@ async function refresh(){
   attendance=att.docs.map(d=>({id:d.id,...d.data()}));
   teachers=profiles.docs.map(d=>({id:d.id,...d.data()})).filter(x=>x.role==='teacher'&&x.status!=='banned');
   adjustments=new Map(extra.docs.map(d=>[d.id,d.data()]));
+  let syncWarning='';
+  try{
+   const synced=await syncTeacherSalaryViews();
+   if(synced)console.info(`[salary] تمت مزامنة ${synced} حصة مع كشوف المعلمين.`);
+  }catch(err){
+   console.error('[salary-view-sync]',err);
+   syncWarning=' ⚠️ لم تُزامن مستحقات المعلمين للعرض في لوحاتهم: '+(err.code||err.message)+'. انشر قواعد Firestore المحدثة ثم حدّث لوحة الأدمن.';
+  }
+  await loadSettlements();
   ready=true;populateOptions();render();
+  if(syncWarning)status.textContent+=syncWarning;
  }catch(e){console.error('[salary]',e);status.textContent='❌ تعذر تحميل المرتبات: '+(e.code||e.message)+'. تأكد من نشر قواعد Firestore الجديدة وصلاحية حساب الأدمن.';}
  finally{loading=false;}
 }
 
 const editDialog=document.createElement('dialog');
 editDialog.id='salaryEditDialog';editDialog.dir='rtl';editDialog.className='salary-dialog';
-editDialog.innerHTML=`<form id="salaryEditForm"><h3>💼 تعديل أجر الحصة والإضافي</h3><p id="salaryEditLesson"></p><label>المعلم المستحق<select name="teacherUid"><option value="">المعلم المسجل في الحضور تلقائيًا</option></select></label><label>أجر الحصة الأساسي (بالجنيه)<input name="base" type="number" min="0" max="200000" step="0.01" required></label><label>إضافي تتحمله المنصة (بالجنيه)<input name="bonus" type="number" min="0" max="200000" step="0.01" required></label><label>سبب الإضافي / ملاحظات<input name="note" maxlength="350" placeholder="مثال: مكافأة شرح إضافي"></label><p class="salary-dialog-note">مبلغ الطالب لا يتغير. لا تُحتسب الحصص الغائبة ضمن المرتبات.</p><p id="salaryEditError" role="alert"></p><div class="salary-actions"><button class="btn gold" type="submit">💾 حفظ الأجر والإضافي</button><button class="btn" type="button" data-salary-cancel>إلغاء</button></div></form>`;
+editDialog.innerHTML=`<form id="salaryEditForm"><h3>💼 تعديل أجر الحصة والإضافي</h3><p id="salaryEditLesson"></p><label>المعلم المستحق<select name="teacherUid"><option value="">المعلم المسجل في الحضور تلقائيًا</option></select></label><label>أجر الحصة الأساسي (بالجنيه)<input name="base" type="number" min="0" max="200000" step="0.01" required></label><label>إضافي تتحمله المنصة (بالجنيه)<input name="bonus" type="number" min="0" max="200000" step="0.01" required></label><label>سبب الإضافي / ملاحظات<input name="note" maxlength="350" placeholder="مثال: مكافأة شرح إضافي"></label><p class="salary-dialog-note">مبلغ الطالب لا يتغير. لا تُحتسب الحصص الغائبة ضمن المرتبات. بعد الحفظ تتم مزامنة الإضافي مباشرة مع لوحة المعلم.</p><p id="salaryEditError" role="alert"></p><div class="salary-actions"><button class="btn gold" type="submit">💾 حفظ الأجر والإضافي</button><button class="btn" type="button" data-salary-cancel>إلغاء</button></div></form>`;
 document.body.append(editDialog);
 let editing=null;
 editDialog.querySelector('[data-salary-cancel]').addEventListener('click',()=>editDialog.close());
@@ -143,6 +227,7 @@ $('salaryEditForm').addEventListener('submit',async e=>{
  const row=attendance.find(r=>r.id===editing);const selected=form.elements.teacherUid.value;
  const teacher=selected?teachers.find(t=>t.id===selected):teacherFor(row,{teacherUid:null,teacherName:null});
  if(!teacher){error.textContent='الحصة مرتبطة بأكثر من معلم أو باسم غير محدد؛ اختر المعلم المستحق من القائمة أولًا.';return;}
+ if(!selected&&!String(teacher.key||'').startsWith('uid:')){error.textContent='اختر حساب المعلم المسجل في المنصة حتى يظهر الإضافي داخل لوحة المعلم.';return;}
  const btn=form.querySelector('button[type="submit"]');btn.disabled=true;
  try{
   await setDoc(doc(db,'teacherPayrollAdjustments',editing),{
@@ -197,3 +282,124 @@ const [from,to]=weekRange(false);$('salaryFrom').value=from;$('salaryTo').value=
 onAuthStateChanged(auth,user=>{if(user)refresh();});
 window.addEventListener('zad:attendance-changed',refresh);
 window.addEventListener('zad:attendance-archived',refresh);
+
+
+/* تسويات المعلمين: لا يُحذف أي سجل حضور، وتُسجل الدفعات كحركات غير قابلة للتعديل.
+   كل دفعة تُخصص للحصص حسب التاريخ (الأقدم أولاً) داخل معاملة Firestore واحدة. */
+const settlementStatus=$('salarySettlementStatus');
+const money=n=>egp(n);
+const weekStart=iso=>{
+ const d=new Date(iso+'T12:00:00Z');
+ if(Number.isNaN(d.getTime()))return '';
+ d.setUTCDate(d.getUTCDate()-(d.getUTCDay()+1)%7);
+ return nToIso(d);
+};
+async function loadSettlements(){
+ const snap=await getDocs(collection(db,'teacherPayrollSettlements'));
+ settlements=new Map(snap.docs.map(d=>[d.id,d.data()]));
+}
+function teacherLessons(key){
+ return attendance.filter(r=>r.deleted!==true&&r.status==='حاضر')
+  .map(salaryRow).filter(r=>r._teacher?.key===key)
+  .sort((a,b)=>String(a.date).localeCompare(String(b.date))||a.id.localeCompare(b.id));
+}
+function settlementState(key){
+ const lessons=teacherLessons(key);
+ const teacherId=key.slice(4);
+ const state=settlements.get(teacherId)||{};
+ const paid=state.paidByLesson||{};
+ const lines=lessons.map(r=>({
+  id:r.id,date:String(r.date||'').slice(0,10),student:r.studentName||'—',
+  due:r._base+r._bonus,paid:Math.max(0,Number(paid[r.id]||0)),
+  week:weekStart(String(r.date||'').slice(0,10))
+ }));
+ return {lines,paid,teacherId,state};
+}
+function selectedSettlement(){
+ const teacher=$('salarySettlementTeacher')?.value;
+ const scope=$('salarySettlementScope')?.value;
+ const week=$('salarySettlementWeek')?.value;
+ if(!teacher)return null;
+ const state=settlementState('uid:'+teacher);
+ const relevant=state.lines.filter(l=>scope==='all'||l.week===week);
+ return {...state,relevant,available:relevant.reduce((n,l)=>n+Math.max(0,l.due-l.paid),0)};
+}
+function fillSettlementTeachers(){
+ const el=$('salarySettlementTeacher');if(!el)return;
+ const prev=el.value;
+ el.replaceChildren(new Option('اختر المعلم',''),...teachers.map(t=>new Option(teacherName(t),t.id)));
+ if(teachers.some(t=>t.id===prev))el.value=prev;
+}
+function renderSettlements(){
+ if(!ready)return;
+ fillSettlementTeachers();
+ const choice=selectedSettlement();
+ const weeks=choice?[...new Set(choice.lines.map(l=>l.week).filter(Boolean))].sort().reverse():[];
+ const weekEl=$('salarySettlementWeek');
+ const oldWeek=weekEl.value;
+ weekEl.replaceChildren(...weeks.map(w=>new Option(w+' إلى '+nToIso(new Date(new Date(w+'T12:00:00Z').getTime()+6*86400000)),w)));
+ if(weeks.includes(oldWeek))weekEl.value=oldWeek;
+ $('salarySettlementWeekWrap').hidden=$('salarySettlementScope').value!=='week';
+ const selected=selectedSettlement();
+ const total=selected?.relevant.reduce((n,l)=>n+l.due,0)||0;
+ const paid=selected?.relevant.reduce((n,l)=>n+l.paid,0)||0;
+ const remain=Math.max(0,total-paid);
+ $('salarySettlementMetrics').innerHTML=[
+  ['إجمالي المستحقات',total],['المصروف',paid],['المتبقي',remain]
+ ].map(([label,n])=>`<article class="salary-metric"><span>${esc(label)}</span><strong>${money(n)}</strong></article>`).join('');
+ const history=selected?.state.history||[];
+ $('salarySettlementHistory').innerHTML=history.length?[...history].reverse().map(x=>`<tr><td>${esc(x.date||'—')}</td><td>${money(x.amountPiastres)}</td><td>${esc(x.scope==='week'?x.week:'إجمالي الرصيد')}</td><td>${esc(x.method||'—')}</td><td>${esc(x.reference||'—')}</td><td>${esc(x.note||'—')}</td></tr>`).join(''):'<tr><td colspan="6">لا توجد عمليات صرف مسجلة لهذا المعلم.</td></tr>';
+ $('salarySettlementAmount').max=(remain/100).toFixed(2);
+ $('salarySettlementAvailable').textContent='الرصيد المتاح للصرف: '+money(remain);
+}
+for(const id of ['salarySettlementTeacher','salarySettlementScope','salarySettlementWeek'])$(id)?.addEventListener('change',renderSettlements);
+$('salarySettlementFull')?.addEventListener('click',()=>{
+ const x=selectedSettlement();if(x)$('salarySettlementAmount').value=(x.available/100).toFixed(2);
+});
+$('salarySettlementForm')?.addEventListener('submit',async e=>{
+ e.preventDefault();
+ const choice=selectedSettlement(),el=$('salarySettlementAmount');
+ const amount=Number(el.value),piastres=Math.round(amount*100);
+ if(!choice||!Number.isFinite(amount)||piastres<=0||Math.abs(piastres/100-amount)>0.00001){
+  settlementStatus.textContent='اختر معلمًا وأدخل مبلغًا صحيحًا أكبر من صفر.';return;
+ }
+ if(piastres>choice.available){settlementStatus.textContent='المبلغ أكبر من الرصيد المتاح.';return;}
+ const teacher=teachers.find(t=>t.id===choice.teacherId);
+ const scope=$('salarySettlementScope').value,week=$('salarySettlementWeek').value;
+ const method=$('salarySettlementMethod').value,reference=$('salarySettlementReference').value.trim();
+ const note=$('salarySettlementNote').value.trim();
+ if(!confirm(`تأكيد تسجيل صرف ${money(piastres)} إلى ${teacherName(teacher)}؟\nسيُخصم من ${scope==='week'?'أسبوع '+week:'أقدم المستحقات أولًا'}، ولا يمكن تعديل العملية بعد حفظها.`))return;
+ const button=e.currentTarget.querySelector('[type=submit]');button.disabled=true;
+ settlementStatus.textContent='جارٍ تسجيل الدفعة والتحقق من الرصيد...';
+ try{
+  const ref=doc(db,'teacherPayrollSettlements',choice.teacherId);
+  // All disbursements for one teacher serialize through the same Firestore document.
+  await runTransaction(db,async tx=>{
+   const snap=await tx.get(ref),data=snap.exists()?snap.data():{};
+   const allocated={...(data.paidByLesson||{})};
+   let remaining=piastres;
+   const current=teacherLessons('uid:'+choice.teacherId).map(r=>({
+    id:r.id,date:String(r.date||'').slice(0,10),due:r._base+r._bonus
+   })).filter(r=>scope==='all'||weekStart(r.date)===week);
+   for(const row of current){
+    const room=Math.max(0,row.due-Number(allocated[row.id]||0));
+    const take=Math.min(remaining,room);
+    if(take){allocated[row.id]=Number(allocated[row.id]||0)+take;remaining-=take;}
+    if(!remaining)break;
+   }
+   if(remaining)throw new Error('الرصيد المتاح تغيّر، حدّث الصفحة وراجع المبلغ.');
+   const payment={
+    id:crypto.randomUUID(),amountPiastres:piastres,scope,week:scope==='week'?week:'',
+    method,reference,note,date:cairoToday(),createdBy:auth.currentUser?.uid||''
+   };
+   tx.set(ref,{
+    teacherUid:choice.teacherId,teacherName:teacherName(teacher),
+    paidByLesson:allocated,history:[...(data.history||[]),payment],
+    updatedAt:serverTimestamp()
+   },{merge:true});
+  });
+  settlementStatus.textContent='✅ تم تسجيل الدفعة. تم تحديث الرصيد وسجل الصرف.';
+  el.value='';await loadSettlements();render();
+ }catch(err){console.error('[payroll-settlement]',err);settlementStatus.textContent='❌ لم يتم تسجيل الدفعة: '+(err.code||err.message);}
+ finally{button.disabled=false;}
+});

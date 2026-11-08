@@ -8,7 +8,7 @@
     {id:'home',label:'نظرة عامة',icon:'🏠',sections:['platformAnalytics','studentCounterManagement']},
     {id:'users',label:'المستخدمون',icon:'👥',sections:['usersManagement']},
     {id:'bookings',label:'الحجوزات',icon:'📅',sections:['bookingsManagement']},
-    {id:'exams',label:'الامتحانات',icon:'📝',sections:['codeExamsManagement','adminCertificatesSection','codeExamResultsSection','unitOneExamsAdmin']},
+    {id:'exams',label:'الامتحانات',icon:'📝',sections:['codeExamsManagement','adminCertificatesSection','codeExamResultsSection','teacherExamAccessAdmin','zadSpecialExamResults','unitOneExamsAdmin']},
     {id:'library',label:'المكتبة',icon:'📚',sections:['librarySubscriptionsAdminPanel','libraryDownloadTracking']},
     {id:'lessons',label:'الحضور والغياب',icon:'✅',sections:['attendanceManagement']},
     {id:'payroll',label:'مرتبات المعلمين',icon:'💼',sections:['teacherPayrollManagement']},

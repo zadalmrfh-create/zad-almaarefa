@@ -1,6 +1,8 @@
+import {sharedAdminGetDocs,clearAdminReadCache} from './firestore-read-cache.js';
+const getDocs=(ref)=>sharedAdminGetDocs(ref,rawGetDocs,auth);
 import {auth,db} from '../../firebase-config.js';
 import {onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
-import {collection,doc,getDoc,getDocs,query,where,setDoc,deleteDoc,serverTimestamp} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
+import {collection,doc,getDoc,getDocs as rawGetDocs,query,where,setDoc,deleteDoc,serverTimestamp} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 import {TEACHER_QUESTIONS,PLATFORM_QUESTIONS,ADMIN_QUESTIONS,scoreAverage,htmlEscape} from '../../reviews/weekly-shared.js';
 const $=id=>document.getElementById(id),kindName={teacher:'المعلم',platform:'المنصة',administration:'الإدارة'};
 let all=[],published=new Map(),users=new Map(),isReady=false;
@@ -27,6 +29,7 @@ function render(){if(!isReady)return;const items=visible();const mean=items.leng
  };
 }
 async function load(){
+ isReady=false;
  $('zwrAdminStats').textContent='جارٍ تحميل التقييمات...';
  try{
   const priv=await getDocs(collection(db,'weeklyReviewPrivate'));
@@ -41,12 +44,49 @@ async function load(){
   $('zwrAdminWeek').innerHTML='<option value="">كل الأسابيع</option>'+weeks.map(w=>`<option value="${htmlEscape(w)}">${htmlEscape(w)}</option>`).join('');
   $('zwrAdminTeacher').innerHTML='<option value="">كل المعلمين</option>'+teachers.map(([uid,name])=>`<option value="${htmlEscape(uid)}">${htmlEscape(name)}</option>`).join('');
   $('zwrAdminWeek').value=weeks.includes(v)?v:'';$('zwrAdminTeacher').value=teachers.some(x=>x[0]===t)?t:'';render();
- }catch(err){console.error(err);$('zwrAdminStats').textContent='تعذر تحميل التقييمات: '+(err.code||err.message)+' — راجع Firebase والصلاحيات';}
+ }catch(err){console.error(err);$('zwrAdminStats').textContent='تعذر تحميل التقييمات: '+(err.code||err.message)+' — راجع Firebase والصلاحيات';$('zwrAdminSyncStatus').textContent='فشل تحميل التقييمات: '+(err.code||err.message);}
 }
 ['zwrAdminWeek','zwrAdminKind','zwrAdminTeacher'].forEach(id=>$(id)?.addEventListener('change',render));$('zwrAdminStudent')?.addEventListener('input',render);
 $('zwrAdminRefresh')?.addEventListener('click',load);
+
+// Only publish archived ratings for which an explicit consent flag is stored.
+// No UID, email, name, or private review ID is included in published documents.
+async function syncHistoricalPublic(){
+ const button=$('zwrAdminSyncPublic'),status=$('zwrAdminSyncStatus');
+ if(!button)return;
+ if(!isReady){status.textContent='التقييمات لم تُحمّل بعد. جارٍ إعادة التحميل...';await load();if(!isReady){status.textContent='تعذر تحميل التقييمات. راجع رسالة الخطأ أعلى القسم وصلاحيات Firebase.';return;}}
+ button.disabled=true;status.textContent='جارٍ مراجعة الموافقات والتقييمات المنشورة...';
+ try{
+  const current=await getDocs(collection(db,'publicTestimonials'));
+  const existing=new Set(current.docs.map(d=>d.id));
+  const legacyComments=new Set(current.docs.map(d=>{
+   const v=d.data();return v.text?.trim()?[v.kind,v.weekStart,String(v.text).trim(),Number(v.rating)].join('::'):''
+  }).filter(Boolean));
+  let added=0,skipped=0;
+  for(const item of all){
+   if(!['teacher','platform'].includes(item.kind)||item.publishConsent!==true){skipped++;continue;}
+   const rating=Number(item.kind==='teacher'?item.scores?.[5]:item.scores?.[3]);
+   if(!Number.isInteger(rating)||rating<1||rating>5){skipped++;continue;}
+   const id='weekly_'+await hash(item.id);
+   const signature=[item.kind,item.weekStart,String(item.comment||'').trim(),rating].join('::');
+   if(existing.has(id)||(String(item.comment||'').trim()&&legacyComments.has(signature))){skipped++;continue;}
+   // Identity remains in weeklyReviewPrivate only; public copy is anonymous.
+   await setDoc(doc(db,'publicTestimonials',id),{
+    status:'published',kind:item.kind,text:String(item.comment||''),rating,
+    teacherUid:item.kind==='teacher'?item.teacherUid||'':'',
+    teacherName:item.kind==='teacher'?item.teacherName||'من معلمي المنصة':'',
+    weekStart:item.weekStart,createdAt:serverTimestamp()
+   });
+   existing.add(id);if(item.comment?.trim())legacyComments.add(signature);added++;
+  }
+  status.textContent=`تم نشر ${added} تقييم مؤهل، وتجاوز ${skipped} تقييم غير مؤهل أو سبق نشره. تقييمات الإدارة لم تُنشر.`;
+ }catch(error){console.error('historical-reviews-sync',error);status.textContent='تعذرت المزامنة: '+(error.code||error.message||'خطأ غير معروف')+(error.code==='permission-denied'?' — قواعد Firebase المنشورة تمنع إنشاء الرأي بواسطة الأدمن؛ انشر firestore.rules من هذه النسخة.':'');}
+ finally{button.disabled=false}
+}
+$('zwrAdminSyncPublic')?.addEventListener('click',syncHistoricalPublic);
+
 onAuthStateChanged(auth,async user=>{
- if(!user)return;
- try{const [a,u]=await Promise.all([getDoc(doc(db,'admins',user.uid)),getDoc(doc(db,'users',user.uid))]);if(a.exists()||u.data()?.role==='admin'||(user.email==='maleksameh121@gmail.com'&&user.emailVerified))await load()}
+ if(!user){$('zwrAdminSyncStatus').textContent='سجّل الدخول بحساب الأدمن أولًا.';return;}
+ try{const [a,u]=await Promise.all([getDoc(doc(db,'admins',user.uid)),getDoc(doc(db,'users',user.uid))]);if(a.exists()||u.data()?.role==='admin'||(user.email==='maleksameh121@gmail.com'&&user.emailVerified))await load();else $('zwrAdminSyncStatus').textContent='الحساب الحالي ليس له صلاحية الإدارة.'}
  catch(err){$('zwrAdminStats').textContent='تعذر التحقق من صلاحيات الإدارة: '+(err.code||err.message)}
 });

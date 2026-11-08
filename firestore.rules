@@ -1,0 +1,971 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    function userExists(uid) {
+      return exists(/databases/$(database)/documents/users/$(uid));
+    }
+
+    function getUser(uid) {
+      return get(/databases/$(database)/documents/users/$(uid));
+    }
+
+    function isAdmin() {
+      return signedIn() && (
+        request.auth.token.email == 'maleksameh121@gmail.com'
+        ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+        ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid))
+          && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin')
+      );
+    }
+
+    // Administrative certificate access requires a trusted role or verified admin email.
+    function isCertificateAdmin() {
+      return signedIn() && (
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+        || (userExists(request.auth.uid) && getUser(request.auth.uid).data.role == 'admin')
+        || (request.auth.token.email == 'maleksameh121@gmail.com'
+            && request.auth.token.email_verified == true)
+      );
+    }
+
+    function isTeacher() {
+      return signedIn()
+        && userExists(request.auth.uid)
+        && getUser(request.auth.uid).data.role == 'teacher'
+        && getUser(request.auth.uid).data.status == 'active';
+    }
+
+
+    // Administrator-maintained teacher/student index. One trusted document per
+    // teacher lets queries enforce enrollment without reading other teachers' data.
+    match /teacherExamStudentIndex/{teacherUid} {
+      allow get: if isAdmin() || (isTeacher() && request.auth.uid == teacherUid);
+      allow list: if isAdmin();
+      allow create, update: if isAdmin()
+        && request.resource.data.teacherUid == teacherUid
+        && request.resource.data.studentUids is list
+        && request.resource.data.studentUids.size() <= 1000;
+      allow delete: if isAdmin();
+    }
+
+    function teacherCanReadExamStudent(studentUid) {
+      return isTeacher()
+        && studentUid is string
+        && exists(/databases/$(database)/documents/teacherExamStudentIndex/$(request.auth.uid))
+        && studentUid in get(/databases/$(database)/documents/teacherExamStudentIndex/$(request.auth.uid)).data.studentUids;
+    }
+
+    match /manualPaymentLedger/{paymentId} {
+      allow read, create, update: if isAdmin();
+      allow delete: if false;
+    }
+
+    match /users/{uid} {
+      allow create: if isOwner(uid)
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.role in ['student', 'teacher']
+        && request.resource.data.status == (
+          request.resource.data.role == 'teacher' ? 'pending' : 'active'
+        )
+        && (
+          request.auth.token.email == null
+          || request.resource.data.email == request.auth.token.email
+        );
+
+      allow read: if isOwner(uid) || isAdmin()
+        || (signedIn() && resource.data.role == 'teacher' && resource.data.status == 'active');
+
+      // المستخدم يستطيع تعديل بياناته الأساسية فقط.
+      // المستخدم يستطيع تعديل بياناته الأساسية المسموح بها فقط.
+      allow update: if isAdmin()
+        || (
+          isOwner(uid)
+          && request.resource.data.uid == resource.data.uid
+          && request.resource.data.role == resource.data.role
+          && request.resource.data.status == resource.data.status
+          && request.resource.data.email == resource.data.email
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'name', 'fullName', 'phone', 'country', 'city', 'grade', 'studyGrade', 'className',
+            'subject', 'photoURL', 'displayName', 'lastLoginAt', 'updatedAt', 'profileCompletedAt',
+            'bio', 'whatsapp', 'teachingGrades', 'availableDays', 'availablePeriods', 'lessonModes'
+          ])
+        );
+
+      // حذف الحساب مسموح لصاحبه فقط، ولا يمنح حق حذف حسابات الآخرين.
+      allow delete: if isAdmin() || isOwner(uid);
+    }
+
+    match /users/{uid}/fcmTokens/{tokenId} {
+      allow read, create, update, delete: if isOwner(uid);
+    }
+
+    match /users/{uid}/library/{documentId} {
+      allow read, create, update, delete: if isOwner(uid);
+    }
+
+    match /loginLogs/{logId} {
+      allow create: if signedIn()
+        && request.resource.data.uid == request.auth.uid;
+      allow read, update, delete: if isAdmin();
+    }
+
+    match /admins/{uid} {
+      allow read: if signedIn() && request.auth.uid == uid;
+      allow create, update, delete: if false;
+    }
+
+    match /events/{id} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /teachers/{id} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /featuredStudents/{id} {
+      // Public listings may show achievements, never linked certificate files.
+      // Existing documents containing private certificate URLs must be cleaned.
+      allow read: if isAdmin() || !resource.data.keys().hasAny(['certificateLink', 'certificate']);
+      allow create: if isAdmin()
+        && !request.resource.data.keys().hasAny(['certificateLink', 'certificate']);
+      allow update: if isAdmin()
+        && !request.resource.data.keys().hasAny(['certificateLink', 'certificate']);
+      allow delete: if isAdmin();
+    }
+
+    // Permission shared by both library interfaces. The UI must recheck on each open/download.
+    match /librarySubscriptions/{uid} {
+      allow get: if isOwner(uid) || isAdmin();
+      allow list: if isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /librarySettings/{id} {
+      allow get: if id == 'main';
+      allow list: if isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /libraryPaymentRequests/{id} {
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly([
+          'studentUid','studentEmail','amountPiastres','senderPhone',
+          'reference','note','status','createdAt'
+        ])
+        && request.resource.data.studentUid == request.auth.uid
+        && request.resource.data.studentEmail == (request.auth.token.email == null ? '' : request.auth.token.email)
+        && request.resource.data.amountPiastres is int
+        && request.resource.data.amountPiastres >= 100
+        && request.resource.data.amountPiastres <= 100000000
+        && request.resource.data.senderPhone is string
+        && request.resource.data.senderPhone.matches('^01[0-9]{9}$')
+        && request.resource.data.reference is string
+        && request.resource.data.reference.size() >= 4
+        && request.resource.data.reference.size() <= 100
+        && request.resource.data.note is string
+        && request.resource.data.note.size() <= 350
+        && request.resource.data.status == 'pending'
+        && request.resource.data.createdAt == request.time;
+      allow get, list: if isAdmin()
+        || (signedIn() && resource.data.studentUid == request.auth.uid);
+      allow update: if isAdmin()
+        && resource.data.status == 'pending'
+        && request.resource.data.status in ['approved','rejected']
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'status','reviewedAt','reviewedBy','adminNote'
+        ]) && request.resource.data.reviewedBy == request.auth.uid;
+      allow delete: if isAdmin();
+    }
+
+    match /libraryBooks/{id} {
+      allow read: if signedIn();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // سجل تنزيلات الكتب: المستخدم يسجل تنزيله بنفسه، والأدمن فقط يقرأ السجل.
+    match /libraryDownloads/{downloadId} {
+      allow create: if signedIn()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.bookTitle is string
+        && request.resource.data.bookUrl is string
+        && request.resource.data.source in ['general', 'azhar']
+        && request.resource.data.bookTitle.size() > 0
+        && request.resource.data.bookTitle.size() <= 250
+        && request.resource.data.bookUrl.size() <= 2048;
+      allow read, update, delete: if isAdmin();
+    }
+
+    match /azharBooks/{id} {
+      allow read: if signedIn();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /notifications/{notificationId} {
+      allow read, create, update, delete: if isAdmin();
+
+      allow read: if signedIn()
+        && resource.data.audience == 'all';
+
+      allow read: if signedIn()
+        && resource.data.audience == 'user'
+        && resource.data.targetUid == request.auth.uid;
+
+      allow create: if signedIn()
+        && request.resource.data.audience == 'admin'
+        && request.resource.data.studentUid == request.auth.uid;
+
+      allow update: if signedIn()
+        && resource.data.audience == 'user'
+        && resource.data.targetUid == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['readBy'])
+        && request.resource.data.readBy is list
+        && request.resource.data.readBy.hasAll(resource.data.get('readBy', []));
+
+      allow update: if signedIn()
+        && resource.data.audience == 'all'
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['readBy'])
+        && request.resource.data.readBy is list
+        && request.resource.data.readBy.hasAll(resource.data.get('readBy', []));
+    }
+
+    match /bookings/{bookingId} {
+      allow create: if signedIn()
+        && request.resource.data.studentUid == request.auth.uid
+        && request.resource.data.fullName is string
+        && request.resource.data.phone is string
+        && request.resource.data.email is string
+        && request.resource.data.section in [
+          'القرآن الكريم',
+          'التزكية والتربية',
+          'اللغة العربية',
+          'العلوم الشرعية',
+          'التعليم الأزهري',
+          'اللغة الإنجليزية',
+          'العلوم',
+          'البرمجة وتكنولوجيا المعلومات'
+        ]
+        // Bookings from all four UI languages are saved using canonical Arabic enums.
+        && request.resource.data.educationType in ['غير مرتبط بنظام تعليمي', 'أزهري', 'عام', 'لغات']
+        && request.resource.data.subject is string
+        && request.resource.data.lessonType is string
+        && request.resource.data.preferredDay1 is string
+        && request.resource.data.preferredDay2 is string
+        && request.resource.data.preferredPeriod is string
+        && request.resource.data.lessonMode in ['أونلاين', 'حضوري']
+        && request.resource.data.status == 'جديد'
+        && request.resource.data.source == 'booking';
+
+      allow read: if isAdmin()
+        || (signedIn() && resource.data.studentUid == request.auth.uid)
+        || (isTeacher() && resource.data.teacherUid == request.auth.uid);
+
+      // Student booking changes are admin-only; teacher dashboard is read-only.
+      allow update, delete: if isAdmin();
+    }
+
+    // سجل تغييرات حالات الحجوزات للتقارير. الأدمن يملك الإدارة الكاملة،
+    // والمعلم المعتمد يستطيع فقط تسجيل تغيير حالة حجز مُعيّن له.
+    match /bookingStatusHistory/{historyId} {
+      allow read, update, delete: if isAdmin();
+      allow create: if isAdmin()
+        || (
+          isTeacher()
+          && request.resource.data.changedByUid == request.auth.uid
+          && request.resource.data.bookingId is string
+          && get(/databases/$(database)/documents/bookings/$(request.resource.data.bookingId)).data.teacherUid == request.auth.uid
+        );
+    }
+
+    match /lessons/{lessonId} {
+      allow read: if signedIn();
+      allow create, update, delete: if isAdmin();
+    }
+
+
+    match /questionBank/{questionId} {
+      allow read, create, update, delete: if isAdmin();
+    }
+
+    match /lessonRatings/{ratingId} {
+      allow create: if signedIn() && request.resource.data.studentUid == request.auth.uid && request.resource.data.rating is number && request.resource.data.rating >= 1 && request.resource.data.rating <= 5;
+      allow read, update, delete: if isAdmin();
+    }
+
+    match /quizzes/{quizId} {
+      allow read: if signedIn();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /quizAttempts/{attemptId} {
+      allow create: if signedIn()
+        && request.resource.data.studentUid == request.auth.uid;
+      allow read: if isAdmin()
+        || (signedIn() && resource.data.studentUid == request.auth.uid)
+        || teacherCanReadExamStudent(resource.data.studentUid);
+      allow update, delete: if isAdmin();
+    }
+
+    // Index of reviewed transfer references: written/read only by admins.
+    match /vodafoneReferenceClaims/{referenceId} {
+      allow read: if isAdmin();
+      allow create: if isAdmin()
+        && request.resource.data.paymentId is string
+        && request.resource.data.reviewedBy == request.auth.uid;
+      allow update, delete: if false;
+    }
+
+    // Vodafone Cash: student only submits a pending request; only admins can approve/reject.
+    match /vodafonePayments/{paymentId} {
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly([
+          'studentUid','studentName','amountPiastres','targetType','lessonIds',
+          'senderPhone','reference','note','method','status','createdAt'
+        ])
+        && request.resource.data.studentUid == request.auth.uid
+        && request.resource.data.studentName is string
+        && request.resource.data.studentName.size() <= 120
+        && request.resource.data.amountPiastres is int
+        && request.resource.data.amountPiastres >= 100
+        && request.resource.data.amountPiastres <= 100000000
+        && request.resource.data.targetType in ['balance','lessons','advance']
+        && request.resource.data.lessonIds is list
+        && request.resource.data.lessonIds.size() <= 30
+        && (
+          (request.resource.data.targetType in ['balance','advance'] && request.resource.data.lessonIds.size() == 0)
+          ||
+          (request.resource.data.targetType == 'lessons' && request.resource.data.lessonIds.size() > 0)
+        )
+        && request.resource.data.senderPhone is string
+        && request.resource.data.senderPhone.matches('^01[0-9]{9}$')
+        && request.resource.data.reference is string
+        && request.resource.data.reference.size() <= 100
+        && request.resource.data.note is string
+        && request.resource.data.note.size() <= 350
+        && request.resource.data.method == 'vodafone-cash'
+        && request.resource.data.status == 'pending'
+        && request.resource.data.createdAt == request.time;
+      allow get, list: if isAdmin()
+        || (signedIn() && resource.data.studentUid == request.auth.uid);
+      allow update: if isAdmin()
+        && resource.data.status == 'pending'
+        && request.resource.data.status in ['approved','rejected']
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'status','reviewedAt','reviewedBy','allocations','approvedPiastres','creditPiastres','adminNote'
+        ])
+        && request.resource.data.reviewedBy == request.auth.uid;
+      // Administrative UID correction for duplicate student profiles with exactly
+      // matching emails. This changes only ownership metadata; financial values,
+      // allocations, status and references remain immutable.
+      allow update: if isAdmin()
+        && resource.data.studentUid is string
+        && request.resource.data.studentUid is string
+        && resource.data.studentUid != request.resource.data.studentUid
+        && exists(/databases/$(database)/documents/users/$(resource.data.studentUid))
+        && exists(/databases/$(database)/documents/users/$(request.resource.data.studentUid))
+        && get(/databases/$(database)/documents/users/$(resource.data.studentUid)).data.role == 'student'
+        && get(/databases/$(database)/documents/users/$(request.resource.data.studentUid)).data.role == 'student'
+        && get(/databases/$(database)/documents/users/$(resource.data.studentUid)).data.email ==
+          get(/databases/$(database)/documents/users/$(request.resource.data.studentUid)).data.email
+        && request.resource.data.relinkFromUid == resource.data.studentUid
+        && request.resource.data.relinkedBy == request.auth.uid
+        && request.resource.data.relinkedAt == request.time
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'studentUid','studentName','relinkFromUid','relinkedBy','relinkedAt'
+        ]);
+      allow delete: if false;
+    }
+
+    // استحقاقات المعلمين والإضافي الإداري: سجلات مالية خاصة بالإدارة.
+    // لا تُضاف إلى مستحقات الطالب ولا تُعرض لحساب المعلم من Firebase.
+    // دفتر صرف المستحقات: الإدارة وحدها تُسجل الدفعات، ولا تُحذف الحركات.
+    match /teacherPayrollSettlements/{teacherUid} {
+      allow read, create, update: if isAdmin();
+      allow delete: if false;
+    }
+
+    match /teacherPayrollAdjustments/{lessonId} {
+      allow read, create, update, delete: if isAdmin();
+    }
+
+    // كشوف المرتبات المنفصلة للمعلمين: المعلم المعتمد يقرأ مستحقاته فقط.
+    // ليس له حق التعديل أو الاطلاع على سجلات المعلمين الآخرين أو الفهرس.
+    match /teacherPayrollViews/{teacherUid}/lessons/{lessonId} {
+      allow read: if isAdmin() || (isTeacher() && request.auth.uid == teacherUid);
+      allow create, update, delete: if isAdmin();
+    }
+
+    // فهرس مزامنة إداري، لا يُكشف للمعلمين أو الطلاب.
+    match /teacherPayrollViewIndex/{lessonId} {
+      allow read, create, update, delete: if isAdmin();
+    }
+
+    // صلاحيات الحضور: الإدارة فقط تنشئ وتعدل وتحذف السجلات.
+    // المعلم المعتمد يمكنه الاطلاع على السجلات المرتبطة بمعرّفه فقط.
+    match /lessonAttendance/{attendanceId} {
+      allow create, update, delete: if isAdmin();
+      allow read: if isAdmin()
+        || (signedIn() && resource.data.studentUid == request.auth.uid)
+        || (isTeacher() && resource.data.teacherUid == request.auth.uid);
+    }
+
+    // واجبات المعلم للطلاب المرتبطين به.
+    match /teacherHomeworks/{homeworkId} {
+      allow create: if isTeacher()
+        && request.resource.data.teacherUid == request.auth.uid
+        && request.resource.data.studentUid is string;
+
+      allow read: if isAdmin()
+        || (isTeacher() && resource.data.teacherUid == request.auth.uid)
+        || (signedIn() && resource.data.studentUid == request.auth.uid);
+
+      allow update, delete: if isAdmin()
+        || (isTeacher() && resource.data.teacherUid == request.auth.uid);
+    }
+
+    // ملاحظات المعلم: الخاصة للمعلم والإدارة، ويمكن إظهار ملاحظات مختارة للطالب.
+    match /teacherStudentNotes/{noteId} {
+      allow create, update, delete: if isAdmin();
+      allow read: if isAdmin()
+        || (isTeacher() && resource.data.teacherUid == request.auth.uid)
+        || (signedIn() && resource.data.studentUid == request.auth.uid && resource.data.visibleToStudent == true);
+    }
+
+    match /libraryProgress/{progressId} {
+      allow read: if signedIn() && resource.data.studentUid == request.auth.uid;
+      allow create: if signedIn() && request.resource.data.studentUid == request.auth.uid;
+      allow update, delete: if signedIn() && resource.data.studentUid == request.auth.uid;
+    }
+
+    match /publicStats/{statId} {
+      allow read: if true;
+      allow create, update: if isAdmin() && statId in ['students', 'teachers', 'books', 'categories', 'tests'];
+
+      allow create: if statId == 'students'
+        && signedIn()
+        && request.resource.data.total == 1
+        && getAfter(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'student'
+        && getAfter(/databases/$(database)/documents/studentCounterClaims/$(request.auth.uid)).data.uid == request.auth.uid;
+
+      allow update: if statId == 'students'
+        && signedIn()
+        && request.resource.data.total == resource.data.total + 1
+        && getAfter(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'student'
+        && getAfter(/databases/$(database)/documents/studentCounterClaims/$(request.auth.uid)).data.uid == request.auth.uid;
+
+      allow delete: if isAdmin();
+    }
+
+    match /studentCounterClaims/{uid} {
+      allow create: if isOwner(uid)
+        && request.resource.data.uid == request.auth.uid
+        && getAfter(/databases/$(database)/documents/users/$(uid)).data.role == 'student';
+      allow read: if isOwner(uid) || isAdmin();
+      allow update, delete: if isAdmin();
+    }
+
+
+    // Only administrators can create/edit/delete code exams; visitors see published ones.
+    match /codeExams/{examId} {
+      allow read: if isAdmin() || (signedIn() && resource.data.published == true);
+      allow create: if isAdmin()
+        && request.resource.data.keys().hasOnly(['title','stage','grade','subject','code','chunkCount','published','createdAt','updatedAt','createdBy'])
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.title is string && request.resource.data.title.size() <= 120
+        && request.resource.data.code is string && request.resource.data.code.size() <= 250000
+        && request.resource.data.chunkCount is int && request.resource.data.chunkCount >= 0 && request.resource.data.chunkCount <= 100
+        && request.resource.data.published is bool;
+      allow update: if isAdmin()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['title','stage','grade','subject','code','chunkCount','published','updatedAt'])
+        && request.resource.data.title is string && request.resource.data.title.size() <= 120
+        && request.resource.data.code is string && request.resource.data.code.size() <= 250000
+        && request.resource.data.chunkCount is int && request.resource.data.chunkCount >= 0 && request.resource.data.chunkCount <= 100
+        && request.resource.data.published is bool;
+      allow delete: if isAdmin();
+      match /chunks/{chunkId} {
+        allow read: if isAdmin() || (signedIn() && exists(/databases/$(database)/documents/codeExams/$(examId)) && get(/databases/$(database)/documents/codeExams/$(examId)).data.published == true);
+        allow create, update: if isAdmin()
+          && request.resource.data.keys().hasOnly(['index','content'])
+          && request.resource.data.index is int && request.resource.data.index >= 0 && request.resource.data.index < 100
+          && request.resource.data.content is string && request.resource.data.content.size() <= 320000;
+        allow delete: if isAdmin();
+      }
+    }
+
+    // Verified answer keys for embedded HTML exams are NEVER readable by students.
+    // Keep them separate from codeExams, because published HTML is student-readable.
+    match /codeExamAnswerKeys/{examId} {
+      allow read, create, update, delete: if isAdmin();
+    }
+
+    // Client-reported results: learners may not change or remove earlier submissions.
+    // These scores are not administratively verified.
+    match /codeExamResults/{resultId} {
+      allow read: if isAdmin() || (signedIn() && resource.data.studentUid == request.auth.uid)
+        || teacherCanReadExamStudent(resource.data.studentUid);
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['examId','examTitle','studentUid','studentName','score','total','percent','answers','excellent','source','verified','createdAt'])
+        && request.resource.data.studentUid == request.auth.uid
+        && request.resource.data.examId is string && request.resource.data.examId.size() <= 150
+        && request.resource.data.examTitle is string && request.resource.data.examTitle.size() <= 120
+        && request.resource.data.studentName is string && request.resource.data.studentName.size() <= 200
+        && request.resource.data.score is int && request.resource.data.total is int
+        && request.resource.data.total > 0 && request.resource.data.total <= 1000
+        && request.resource.data.score >= 0 && request.resource.data.score <= request.resource.data.total
+        && request.resource.data.percent is int && request.resource.data.percent >= 0 && request.resource.data.percent <= 100
+        && request.resource.data.excellent == (request.resource.data.percent >= 85)
+        && request.resource.data.answers is string && request.resource.data.answers.size() <= 12000
+        && request.resource.data.source == 'client-reported'
+        && request.resource.data.verified == false
+        && request.resource.data.createdAt == request.time
+        && exists(/databases/$(database)/documents/codeExams/$(request.resource.data.examId));
+      allow update, delete: if isAdmin();
+    }
+
+    match /studyQuestions/{questionId} {
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['studentUid','studentName','question','status','reply','createdAt'])
+        && request.resource.data.studentUid == request.auth.uid
+        && request.resource.data.question is string
+        && request.resource.data.question.size() > 2
+        && request.resource.data.question.size() <= 500
+        && request.resource.data.studentName is string
+        && request.resource.data.studentName.size() <= 90
+        && request.resource.data.status == 'pending'
+        && request.resource.data.reply == ''
+        && request.resource.data.createdAt == request.time;
+      allow read: if isAdmin() || (signedIn() && resource.data.studentUid == request.auth.uid);
+      allow update, delete: if isAdmin();
+    }
+
+    match /auditLogs/{logId} {
+      allow read: if isAdmin();
+      allow create: if isAdmin();
+      allow update, delete: if isAdmin();
+    }
+
+    // Certificates are confidential administrative documents, even for their owner.
+    // This overrides no other path: the fallback below remains deny-by-default.
+    match /certificates/{certificateId} {
+      allow read, create, update, delete: if isCertificateAdmin();
+    }
+
+    // امتحانات الوحدة الأولى: قراءة محاولة الطالب تتم بمعرف وثيقة مشتق
+    // من UID الخاص به ومعرف الامتحان. يسمح هذا بفحص المحاولة حتى قبل إنشائها.
+    // منع list للطالب يحمي محاولات بقية الطلاب من الاستعراض الجماعي.
+    function isOwnUnitOneAttempt(attemptId) {
+      return signedIn() && attemptId in [
+        request.auth.uid + '_business',
+        request.auth.uid + '_history',
+        request.auth.uid + '_arabic',
+        request.auth.uid + '_literature',
+        request.auth.uid + '_physics',
+        request.auth.uid + '_math',
+        request.auth.uid + '_english',
+        request.auth.uid + '_novel',
+        request.auth.uid + '_chemistry',
+        request.auth.uid + '_chemistry-calculations-unit1-2026',
+        request.auth.uid + '_badi-2bac-2026'
+      ];
+    }
+
+    match /unitOneExamAttempts/{attemptId} {
+      // get works for missing documents too (first attempt).
+      allow get: if isAdmin() || isOwnUnitOneAttempt(attemptId)
+        || teacherCanReadExamStudent(resource.data.studentUid);
+      // Teacher queries must be scoped to their explicitly linked student UIDs.
+      allow list: if isAdmin() || teacherCanReadExamStudent(resource.data.studentUid);
+      allow create: if signedIn()
+        && attemptId == request.auth.uid + '_' + request.resource.data.examId
+        && request.resource.data.keys().hasOnly([
+          'studentUid','studentName','examId','answers','source','createdAt'
+        ])
+        && request.resource.data.studentUid == request.auth.uid
+        && request.resource.data.studentName is string
+        && request.resource.data.studentName.size() <= 150
+        && (request.resource.data.examId != 'badi-2bac-2026' || request.resource.data.studentName.size() >= 3)
+        && request.resource.data.examId in [
+          'business','history','arabic','literature','physics',
+          'math','english','novel','chemistry',
+          'chemistry-calculations-unit1-2026','badi-2bac-2026'
+        ]
+        && request.resource.data.answers is list
+        && request.resource.data.answers.size() == 30
+        && request.resource.data.source == 'unit-one-2026'
+        && request.resource.data.createdAt == request.time;
+      allow update: if isAdmin()
+        && request.resource.data.studentUid == resource.data.studentUid
+        && request.resource.data.examId == resource.data.examId
+        && request.resource.data.answers == resource.data.answers;
+      allow delete: if isAdmin();
+    }
+
+    // ====== ZAD STORE: collections isolated from academy finances ======
+    match /storeSettings/{settingId} {
+      allow get: if settingId == 'main' || isAdmin();
+      allow list: if isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /storeProducts/{productId} {
+      // The private product document can contain storagePath; public users must NEVER read it.
+      allow get, list: if isAdmin()
+        || (isTeacher() && resource.data.teacherUid == request.auth.uid);
+      allow create, update, delete: if isAdmin();
+
+      match /lessons/{lessonId} {
+        function hasCourseAccess() {
+          return signedIn()
+            && exists(/databases/$(database)/documents/storeEntitlements/$(request.auth.uid + '_' + productId))
+            && get(/databases/$(database)/documents/storeEntitlements/$(request.auth.uid + '_' + productId)).data.active == true;
+        }
+        allow get: if isAdmin() || hasCourseAccess();
+        allow list: if isAdmin() || hasCourseAccess();
+        allow create, update, delete: if isAdmin();
+      }
+    }
+
+    match /storePublicProducts/{productId} {
+      // Safe public catalog ONLY: no directUrl / previewUrl / storagePath / videoUrl.
+      allow get, list: if true;
+      allow create, update: if isAdmin()
+        && request.resource.data.keys().hasOnly([
+          'title','type','price','stage','grade','subject','teacherName',
+          'teacherUid','schedule','duration','description','contents','coverUrl',
+          'published','deleted','deliveryReady','updatedAt'
+        ]);
+      allow delete: if isAdmin();
+    }
+
+
+    // External source URLs must never be published as public catalog fields.
+    // An approved purchase is the only way a student can read their URL here.
+    match /storeProductLinks/{productId} {
+      function hasApprovedOrder() {
+        return signedIn()
+          && exists(/databases/$(database)/documents/storeEntitlements/$(request.auth.uid + '_' + productId))
+          && get(/databases/$(database)/documents/storeEntitlements/$(request.auth.uid + '_' + productId)).data.studentUid == request.auth.uid
+          && get(/databases/$(database)/documents/storeEntitlements/$(request.auth.uid + '_' + productId)).data.active == true;
+      }
+      allow get: if isAdmin() || hasApprovedOrder();
+      allow list: if isAdmin();
+      allow create, update: if isAdmin()
+        && request.resource.data.keys().hasOnly(['url','source','updatedAt','updatedBy'])
+        && request.resource.data.url is string
+        && request.resource.data.url.size() >= 8
+        && request.resource.data.url.size() <= 2048
+        && request.resource.data.url.matches('^https://[^ ]+$');
+      allow delete: if isAdmin();
+    }
+
+    match /storeOrders/{orderId} {
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly([
+          'studentUid','buyerEmail','buyerName','productIds','paymentMethod',
+          'senderPhone','paymentReference','note','proofPath','couponCode','status','createdAt'
+        ])
+        && request.resource.data.studentUid == request.auth.uid
+        && request.resource.data.buyerEmail == (request.auth.token.email == null ? '' : request.auth.token.email)
+        && request.resource.data.buyerName is string
+        && request.resource.data.buyerName.size() > 0
+        && request.resource.data.buyerName.size() <= 120
+        && request.resource.data.productIds is list
+        && request.resource.data.productIds.size() >= 1
+        && request.resource.data.productIds.size() <= 40
+        // Do not allow billing for free interactive electronic examinations.
+        && !request.resource.data.productIds.hasAny(['lib-101', 'lib-102'])
+        && request.resource.data.paymentMethod in ['vodafone-cash','instapay']
+        && request.resource.data.senderPhone is string
+        && request.resource.data.senderPhone.matches('^01[0-9]{9}$')
+        && request.resource.data.paymentReference is string
+        && request.resource.data.paymentReference.size() >= 4
+        && request.resource.data.paymentReference.size() <= 100
+        && request.resource.data.couponCode is string
+        && request.resource.data.couponCode.size() <= 32
+        && request.resource.data.note is string
+        && request.resource.data.note.size() <= 300
+        && request.resource.data.proofPath is string
+        && (request.resource.data.proofPath == ''
+           || request.resource.data.proofPath == 'storeProofs/' + request.auth.uid + '/' + orderId)
+        && request.resource.data.status == 'pending'
+        && request.resource.data.createdAt == request.time;
+
+      allow get, list: if isAdmin()
+        || (signedIn() && resource.data.studentUid == request.auth.uid);
+      allow update, delete: if isAdmin();
+    }
+
+    match /storePaymentRefs/{refHash} {
+      allow read, create, update, delete: if isAdmin();
+    }
+
+    match /storeEntitlements/{entitlementId} {
+      allow get, list: if isAdmin()
+        || (signedIn() && resource.data.studentUid == request.auth.uid);
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /storeTeacherDrafts/{draftId} {
+      allow create: if isTeacher()
+        && request.resource.data.keys().hasOnly([
+          'teacherUid','courseId','title','position','description',
+          'videoUrl','status','createdAt'
+        ])
+        && request.resource.data.teacherUid == request.auth.uid
+        && request.resource.data.courseId is string
+        && exists(/databases/$(database)/documents/storeProducts/$(request.resource.data.courseId))
+        && get(/databases/$(database)/documents/storeProducts/$(request.resource.data.courseId)).data.teacherUid == request.auth.uid
+        && get(/databases/$(database)/documents/storeProducts/$(request.resource.data.courseId)).data.type == 'course'
+        && request.resource.data.title is string
+        && request.resource.data.title.size() > 0
+        && request.resource.data.title.size() <= 160
+        && request.resource.data.position is int
+        && request.resource.data.position >= 1
+        && request.resource.data.position <= 999
+        && request.resource.data.description is string
+        && request.resource.data.description.size() <= 1200
+        && request.resource.data.videoUrl is string
+        && request.resource.data.videoUrl.size() <= 2048
+        && request.resource.data.status == 'pending'
+        && request.resource.data.createdAt == request.time;
+      allow get, list: if isAdmin()
+        || (isTeacher() && resource.data.teacherUid == request.auth.uid);
+      allow update, delete: if isAdmin();
+    }
+
+    match /storeProgress/{progressId} {
+      function allowedOwner() {
+        return signedIn()
+          && resource.data.studentUid == request.auth.uid;
+      }
+      function enrolled(productId) {
+        return exists(/databases/$(database)/documents/storeEntitlements/$(request.auth.uid + '_' + productId))
+          && get(/databases/$(database)/documents/storeEntitlements/$(request.auth.uid + '_' + productId)).data.active == true;
+      }
+      allow read: if isAdmin() || allowedOwner();
+      allow create: if signedIn()
+        && progressId == request.resource.data.productId + '_' + request.auth.uid
+        && request.resource.data.studentUid == request.auth.uid
+        && enrolled(request.resource.data.productId)
+        && request.resource.data.completedLessonIds is list
+        && request.resource.data.completedLessonIds.size() <= 500;
+      allow update: if signedIn()
+        && allowedOwner()
+        && request.resource.data.studentUid == resource.data.studentUid
+        && request.resource.data.productId == resource.data.productId
+        && enrolled(resource.data.productId)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['completedLessonIds','updatedAt'])
+        && request.resource.data.completedLessonIds is list
+        && request.resource.data.completedLessonIds.size() <= 500;
+      allow delete: if isAdmin();
+    }
+
+    match /storeCoupons/{couponCode} {
+      allow get: if signedIn();
+      allow list: if isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Weekly review: original student identity is visible ONLY to admin and the author.
+    function validScore(v, allowNA) {
+      return v is int && (v >= 1 && v <= 5 || (allowNA && v == 0));
+    }
+    function validWeeklyScores(scores, kind) {
+      return scores is list && (
+        (kind == 'teacher' && scores.size() == 6
+          && validScore(scores[0], false) && validScore(scores[1], false)
+          && validScore(scores[2], false) && validScore(scores[3], false)
+          && validScore(scores[4], false) && validScore(scores[5], false))
+        || (kind in ['platform','administration'] && scores.size() == 4
+          && validScore(scores[0], true) && validScore(scores[1], true)
+          && validScore(scores[2], true) && validScore(scores[3], true))
+      );
+    }
+    function isStudentAccount() {
+      return signedIn() && userExists(request.auth.uid)
+        && getUser(request.auth.uid).data.role == 'student';
+    }
+    function validTeacherEvidence(data) {
+      return data.teacherUid is string && data.teacherUid.size() > 5
+        && data.sourceAttendanceId is string && data.sourceAttendanceId.size() > 0
+        && data.sourceBookingId is string && data.sourceBookingId.size() > 0
+        && exists(/databases/$(database)/documents/lessonAttendance/$(data.sourceAttendanceId))
+        && exists(/databases/$(database)/documents/bookings/$(data.sourceBookingId))
+        && get(/databases/$(database)/documents/lessonAttendance/$(data.sourceAttendanceId)).data.studentUid == request.auth.uid
+        && get(/databases/$(database)/documents/lessonAttendance/$(data.sourceAttendanceId)).data.teacherUid == data.teacherUid
+        && get(/databases/$(database)/documents/lessonAttendance/$(data.sourceAttendanceId)).data.status == 'حاضر'
+        && get(/databases/$(database)/documents/lessonAttendance/$(data.sourceAttendanceId)).data.date >= data.weekStart
+        && get(/databases/$(database)/documents/lessonAttendance/$(data.sourceAttendanceId)).data.date <= data.weekEnd
+        && get(/databases/$(database)/documents/bookings/$(data.sourceBookingId)).data.studentUid == request.auth.uid
+        && get(/databases/$(database)/documents/bookings/$(data.sourceBookingId)).data.teacherUid == data.teacherUid
+        && !(get(/databases/$(database)/documents/bookings/$(data.sourceBookingId)).data.status in ['مرفوض','ملغى','ملغي','rejected','cancelled']);
+    }
+    match /weeklyReviewPrivate/{reviewId} {
+      allow get: if isAdmin() || (signedIn() && reviewId.matches(request.auth.uid + '__.*'));
+      allow list: if isAdmin();
+      allow create: if isStudentAccount()
+        && request.resource.data.keys().hasOnly([
+          'studentUid','kind','weekStart','weekEnd','teacherUid','sourceAttendanceId',
+          'sourceBookingId','feedbackId','scores','comment','publishConsent','createdAt'
+        ])
+        && request.resource.data.keys().hasAll([
+          'studentUid','kind','weekStart','weekEnd','teacherUid','sourceAttendanceId',
+          'sourceBookingId','feedbackId','scores','comment','publishConsent','createdAt'
+        ])
+        && request.resource.data.studentUid == request.auth.uid
+        && request.resource.data.kind in ['teacher','platform','administration']
+        && request.resource.data.weekStart is string && request.resource.data.weekStart.size() == 10
+        && request.resource.data.weekEnd is string && request.resource.data.weekEnd.size() == 10
+        && request.resource.data.weekStart <= request.resource.data.weekEnd
+        && request.resource.data.comment is string && request.resource.data.comment.size() <= 700
+        && request.resource.data.publishConsent is bool
+        && request.resource.data.createdAt == request.time
+        && validWeeklyScores(request.resource.data.scores,request.resource.data.kind)
+        && (
+          (request.resource.data.kind == 'teacher'
+            && reviewId == request.auth.uid + '__' + request.resource.data.weekStart + '__teacher__' + request.resource.data.teacherUid
+            && request.resource.data.feedbackId is string && request.resource.data.feedbackId.size() >= 10
+            && validTeacherEvidence(request.resource.data))
+          || (request.resource.data.kind in ['platform','administration']
+            && reviewId == request.auth.uid + '__' + request.resource.data.weekStart + '__' + request.resource.data.kind
+            && request.resource.data.teacherUid == ''
+            && request.resource.data.sourceAttendanceId == ''
+            && request.resource.data.sourceBookingId == ''
+            && request.resource.data.feedbackId == ''
+            && (request.resource.data.kind != 'administration' || request.resource.data.publishConsent == false))
+        );
+      allow update, delete: if false;
+    }
+    // Anonymized copies: teacher reads NO student UID, names, email or original doc ID.
+    match /weeklyTeacherFeedback/{feedbackId} {
+      allow get, list: if isAdmin()
+        || (isTeacher() && resource.data.teacherUid == request.auth.uid);
+      allow create: if isStudentAccount()
+        && request.resource.data.keys().hasOnly(['kind','teacherUid','weekStart','scores','comment','createdAt'])
+        && request.resource.data.keys().hasAll(['kind','teacherUid','weekStart','scores','comment','createdAt'])
+        && request.resource.data.kind == 'teacher'
+        && request.resource.data.teacherUid is string
+        && request.resource.data.weekStart is string
+        && validWeeklyScores(request.resource.data.scores,'teacher')
+        && request.resource.data.comment is string && request.resource.data.comment.size() <= 700
+        && request.resource.data.createdAt == request.time
+        && getAfter(/databases/$(database)/documents/weeklyReviewPrivate/$(request.auth.uid + '__' + request.resource.data.weekStart + '__teacher__' + request.resource.data.teacherUid)).data.feedbackId == feedbackId
+        && getAfter(/databases/$(database)/documents/weeklyReviewPrivate/$(request.auth.uid + '__' + request.resource.data.weekStart + '__teacher__' + request.resource.data.teacherUid)).data.scores == request.resource.data.scores
+        && getAfter(/databases/$(database)/documents/weeklyReviewPrivate/$(request.auth.uid + '__' + request.resource.data.weekStart + '__teacher__' + request.resource.data.teacherUid)).data.comment == request.resource.data.comment;
+      allow update, delete: if false;
+    }
+    // Student comments are published atomically with their weekly private review.
+    // Random public document IDs contain no student identifier.
+    match /publicTestimonials/{testimonialId} {
+      allow get, list: if resource.data.status == 'published' || isAdmin();
+      // Admin-only historical migration; public documents contain no student identity.
+      allow create: if isAdmin()
+        && testimonialId.matches('weekly_[a-f0-9]+')
+        && request.resource.data.keys().hasOnly(['status','kind','text','rating','teacherUid','teacherName','weekStart','createdAt'])
+        && request.resource.data.status == 'published'
+        && request.resource.data.kind in ['teacher','platform']
+        && request.resource.data.text is string
+        && request.resource.data.text.size() <= 700
+        && request.resource.data.rating is int
+        && request.resource.data.rating >= 1
+        && request.resource.data.rating <= 5
+        && request.resource.data.teacherUid is string
+        && request.resource.data.teacherName is string
+        && request.resource.data.weekStart is string
+        && request.resource.data.createdAt == request.time;
+      allow create: if isStudentAccount()
+        && request.resource.data.keys().hasOnly(['status','kind','text','rating','teacherUid','teacherName','weekStart','createdAt'])
+        && request.resource.data.keys().hasAll(['status','kind','text','rating','teacherUid','teacherName','weekStart','createdAt'])
+        && request.resource.data.status == 'published'
+        && request.resource.data.kind in ['teacher','platform']
+        && request.resource.data.text is string
+        && request.resource.data.text.size() >= 0
+        && request.resource.data.text.size() <= 700
+        && request.resource.data.weekStart is string
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.teacherUid is string
+        && request.resource.data.teacherName is string
+        && request.resource.data.teacherName.size() <= 120
+        && request.resource.data.rating is int
+        && request.resource.data.rating >= 0
+        && request.resource.data.rating <= 5
+        && !exists(/databases/$(database)/documents/weeklyReviewPrivate/$(request.auth.uid + '__' + request.resource.data.weekStart + '__' + request.resource.data.kind + (request.resource.data.kind == 'teacher' ? '__' + request.resource.data.teacherUid : '')))
+        && getAfter(/databases/$(database)/documents/weeklyReviewPrivate/$(request.auth.uid + '__' + request.resource.data.weekStart + '__' + request.resource.data.kind + (request.resource.data.kind == 'teacher' ? '__' + request.resource.data.teacherUid : ''))).data.studentUid == request.auth.uid
+        && getAfter(/databases/$(database)/documents/weeklyReviewPrivate/$(request.auth.uid + '__' + request.resource.data.weekStart + '__' + request.resource.data.kind + (request.resource.data.kind == 'teacher' ? '__' + request.resource.data.teacherUid : ''))).data.comment == request.resource.data.text
+        && getAfter(/databases/$(database)/documents/weeklyReviewPrivate/$(request.auth.uid + '__' + request.resource.data.weekStart + '__' + request.resource.data.kind + (request.resource.data.kind == 'teacher' ? '__' + request.resource.data.teacherUid : ''))).data.publishConsent == true;
+      allow create: if isAdmin()
+        && request.resource.data.keys().hasOnly(['status','kind','text','rating','teacherUid','teacherName','weekStart','createdAt'])
+        && request.resource.data.kind in ['teacher','platform']
+        && request.resource.data.status == 'published'
+        && request.resource.data.text is string && request.resource.data.text.size() <= 700
+        && request.resource.data.rating is int && request.resource.data.rating >= 0 && request.resource.data.rating <= 5
+        && request.resource.data.teacherUid is string && request.resource.data.teacherName is string
+        && request.resource.data.weekStart is string
+        && request.resource.data.createdAt == request.time;
+      allow update, delete: if isAdmin();
+    }
+
+    // Zad special exams 2026: read own attempt, submit once; only admin reviews/prints results.
+    // Never store verified grades from an untrusted student's browser.
+    match /zad_exam_submissions/{attemptId} {
+      allow get: if isCertificateAdmin()
+        || teacherCanReadExamStudent(resource.data.studentUid)
+        || (signedIn() && attemptId in [
+          request.auth.uid + '_water-azhar-2026',
+          request.auth.uid + '_fiqh-khiyar-azhar-2026',
+          request.auth.uid + '_fiqh-khiyar-azhar-2026-v2'
+        ]);
+      allow list: if isCertificateAdmin() || teacherCanReadExamStudent(resource.data.studentUid);
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly([
+          'studentUid','studentName','examId','answers','source','createdAt'
+        ])
+        && request.resource.data.studentUid == request.auth.uid
+        && request.resource.data.examId in ['water-azhar-2026','fiqh-khiyar-azhar-2026','fiqh-khiyar-azhar-2026-v2']
+        && attemptId == request.auth.uid + '_' + request.resource.data.examId
+        && request.resource.data.studentName is string
+        && request.resource.data.studentName.size() >= 3
+        && request.resource.data.studentName.size() <= 150
+        && request.resource.data.answers is list
+        && request.resource.data.answers.size() == (
+          request.resource.data.examId == 'water-azhar-2026' ? 20
+          : (request.resource.data.examId == 'fiqh-khiyar-azhar-2026-v2' ? 40 : 89)
+        )
+        && request.resource.data.source == 'zad-special-2026'
+        && request.resource.data.createdAt == request.time;
+      allow update: if isCertificateAdmin()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'gradeDetails','finalScore','autoScore','reviewedAt','reviewedBy','status'
+        ])
+        && request.resource.data.gradeDetails is list
+        && request.resource.data.gradeDetails.size() == resource.data.answers.size()
+        && request.resource.data.finalScore is number
+        && request.resource.data.finalScore >= 0
+        && request.resource.data.finalScore <= resource.data.answers.size()
+        && request.resource.data.autoScore is number
+        && request.resource.data.autoScore >= 0
+        && request.resource.data.autoScore <= resource.data.answers.size()
+        && request.resource.data.reviewedBy == request.auth.uid
+        && request.resource.data.reviewedAt == request.time
+        && request.resource.data.status == 'graded';
+      allow delete: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

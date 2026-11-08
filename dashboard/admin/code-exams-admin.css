@@ -25,3 +25,19 @@ a.hierarchy-card[href*="code-exams"] .h-sub{color:#f1f4f9!important;font-weight:
   border-radius:10px;padding:10px 15px;cursor:pointer;
 }
 #codeExamResultsList .zad-result-actions .zad-print-answer-report:hover {background:#ffeb9a!important;}
+
+/* نافذة تحرير المفتاح النموذجي لتقارير الإجابات */
+.zad-answer-key-backdrop{position:fixed;inset:0;z-index:10050;background:rgba(1,9,23,.83);display:flex;align-items:center;justify-content:center;padding:12px;direction:rtl}
+.zad-answer-key-modal{width:min(920px,100%);max-height:93vh;overflow:auto;background:#122138;color:#ecf2fc;border:1px solid #b69245;border-radius:16px;padding:18px;box-shadow:0 18px 65px #0009;box-sizing:border-box}
+.zad-answer-key-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.zad-answer-key-head h2{font-size:22px;margin:0;color:#f1d084}
+.zad-answer-key-help{padding:10px 12px;border-radius:9px;background:#24344d;color:#dde5f0;font-size:13px;line-height:1.8}
+.zad-answer-key-list{display:grid;gap:12px}
+.zad-answer-key-item{background:#192b46;border:1px solid #3c5072;border-radius:12px;padding:12px;display:grid;gap:8px}
+.zad-key-item-top{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.zad-key-field{display:grid;gap:4px;color:#f0f3f8;font-weight:700;font-size:13px}
+.zad-key-field textarea,.zad-key-field select{width:100%;box-sizing:border-box;min-height:41px;border:1px solid #74829a;border-radius:8px;padding:8px;color:#f6f6f6;background:#0b1829;font:14px/1.7 Tahoma,Arial,sans-serif;resize:vertical;direction:rtl}
+.zad-answer-key-reference{background:#0c1a2b;color:#c4d4ec;padding:7px 11px;border-radius:8px;white-space:pre-wrap;overflow-wrap:anywhere}
+.zad-answer-key-tools{display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-top:16px}
+.zad-answer-key-status{min-height:22px;color:#f0d18a}
+@media(max-width:600px){.zad-answer-key-modal{max-height:96vh;padding:12px}.zad-answer-key-head h2{font-size:17px}}

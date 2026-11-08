@@ -1,0 +1,45 @@
+ضع كتلة match /zad_exam_submissions قبل قاعدة الرفض النهائية. الملف firestore.rules متكامل مع نسخة المشروع المرفقة. لا تستبدل قواعد منشورة أحدث دون مقارنة.
+
+    // Zad special exams 2026: read own attempt, submit once; only admin reviews/prints results.
+    // Never store verified grades from an untrusted student's browser.
+    match /zad_exam_submissions/{attemptId} {
+      allow get: if isCertificateAdmin()
+        || (signedIn() && attemptId in [
+          request.auth.uid + '_water-azhar-2026',
+          request.auth.uid + '_fiqh-khiyar-azhar-2026'
+        ]);
+      allow list: if isCertificateAdmin();
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly([
+          'studentUid','studentName','examId','answers','source','createdAt'
+        ])
+        && request.resource.data.studentUid == request.auth.uid
+        && request.resource.data.examId in ['water-azhar-2026','fiqh-khiyar-azhar-2026']
+        && attemptId == request.auth.uid + '_' + request.resource.data.examId
+        && request.resource.data.studentName is string
+        && request.resource.data.studentName.size() >= 3
+        && request.resource.data.studentName.size() <= 150
+        && request.resource.data.answers is list
+        && request.resource.data.answers.size() == (
+          request.resource.data.examId == 'water-azhar-2026' ? 20 : 89
+        )
+        && request.resource.data.source == 'zad-special-2026'
+        && request.resource.data.createdAt == request.time;
+      allow update: if isCertificateAdmin()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'gradeDetails','finalScore','autoScore','reviewedAt','reviewedBy','status'
+        ])
+        && request.resource.data.gradeDetails is list
+        && request.resource.data.gradeDetails.size() == resource.data.answers.size()
+        && request.resource.data.finalScore is number
+        && request.resource.data.finalScore >= 0
+        && request.resource.data.finalScore <= resource.data.answers.size()
+        && request.resource.data.autoScore is number
+        && request.resource.data.autoScore >= 0
+        && request.resource.data.autoScore <= resource.data.answers.size()
+        && request.resource.data.reviewedBy == request.auth.uid
+        && request.resource.data.reviewedAt == request.time
+        && request.resource.data.status == 'graded';
+      allow delete: if false;
+    }
+
