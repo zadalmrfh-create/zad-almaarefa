@@ -177,6 +177,10 @@
     </a>
 
 
+    <!-- ابدأ التعلم -->
+    <a class="btn-nav" href="./start.html">ابدأ التعلم</a>
+
+
     <button class="global-search-btn" id="globalSearchBtn" type="button" aria-label="البحث">🔎</button>
     <button id="zadMobileTheme" class="zad-mobile-theme" type="button" aria-label="تغيير الوضع الليلي والنهاري" title="تغيير الوضع">🌙</button>
 
@@ -223,6 +227,13 @@
     <i class="fa-solid fa-right-to-bracket"></i>
     تسجيل الدخول
   </a>
+
+  <button
+    class="btn-primary"
+    onclick="location.href='./start.html'"
+  >
+    ابدأ التعلم الآن
+  </button>
 
 </div>
 
@@ -469,7 +480,7 @@
   </div>
 </section>
 
-<section id="faq" class="py-20"><div class="max-w-4xl mx-auto px-4"><div class="cats-header sr"><div class="section-label">أسئلة شائعة</div><h2 class="section-title">الأسئلة المتكررة</h2></div><div class="space-y-3"><details class="faq-item"><summary>كيف أعرف مواعيد المحاضرات؟</summary><p>ستجد المواعيد في قسم الأحداث ولوحة حسابك.</p></details><details class="faq-item"><summary>أين أجد الأسئلة والملخصات؟</summary><p>من المكتبة اختر الأسئلة أو الملخصات، ثم المرحلة والصف والمادة.</p></details><details class="faq-item"><summary>كيف أتواصل مع الإدارة؟</summary><p>استخدم بيانات التواصل الموجودة أسفل الموقع.</p></details></div></div></section>
+<section id="faq" class="py-20"><div class="max-w-4xl mx-auto px-4"><div class="cats-header sr"><div class="section-label">أسئلة شائعة</div><h2 class="section-title">الأسئلة المتكررة</h2></div><div class="space-y-3"><details class="faq-item"><summary>هل التسجيل مجاني؟</summary><p>التسجيل والمكتبة مجانيان، ولا توجد اشتراكات للمنصة؛ يتم دفع سعر الحصة المحجوزة فقط إن كانت مدفوعة.</p></details><details class="faq-item"><summary>كيف أعرف مواعيد المحاضرات؟</summary><p>ستجد المواعيد في قسم الأحداث ولوحة حسابك.</p></details><details class="faq-item"><summary>أين أجد الأسئلة والملخصات؟</summary><p>من المكتبة اختر الأسئلة أو الملخصات، ثم المرحلة والصف والمادة.</p></details><details class="faq-item"><summary>كيف أتواصل مع الإدارة؟</summary><p>استخدم بيانات التواصل الموجودة أسفل الموقع.</p></details></div></div></section>
 
 <footer id="footer">
       <div class="footer-container">
@@ -1191,13 +1202,6 @@ async function loadHomeExtras(){
   const cards=[['students','👨‍🎓','الطلاب'],['books','📚','كتب المكتبة'],['teachers','👨‍🏫','المعلمون'],['categories','📚','الأقسام']];
   const draw=()=>{sg.innerHTML=cards.map(x=>`<div class="card text-center p-6"><div class="text-3xl">${x[1]}</div><div class="text-3xl font-black mt-2">${(st[x[0]]===undefined?'—':Number(st[x[0]]).toLocaleString('ar-EG'))}</div><div>${x[2]}</div></div>`).join('');};
   draw();
-  // حساب عدد الأقسام من بطاقات الأقسام المعروضة فعلًا.
-  const categoryGrid=document.getElementById('cats-grid');
-  if(categoryGrid){
-    const updateCategories=()=>{const total=categoryGrid.querySelectorAll('.cat-card').length;if(total){st.categories=total;draw();}};
-    updateCategories();
-    new MutationObserver(updateCategories).observe(categoryGrid,{childList:true});
-  }
   // محتويات المكتبة القديمة انتقلت إلى كتالوج المتجر؛ لا تعتمد على صفحة المكتبة المحذوفة.
   try {
     const {baseProducts}=await import('./store/catalog-data.js?v=20261103-home-stats');
@@ -1216,18 +1220,11 @@ async function loadHomeExtras(){
     },error=>console.info('تعذر تحديث عدد كتب المتجر لحظيًا',error));
   }catch(error){console.warn('تعذر قراءة كتالوج المتجر',error);}
   // بقية الإحصائيات تُقرأ بصورة مستقلة، ولا تستطيع استبدال عداد الكتب.
-  // قراءة عدّاد الطلاب والمعلمين كمستندين معروفين، ومتابعة تغيّرهما دون إعادة فتح الصفحة.
-  // لو المستند غير موجود أو تعذرت القراءة نعرض «—» بدل قيمة غير مؤكدة.
-  const {doc}=await import('https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js');
-  for(const id of ['students','teachers']){
-    onSnapshot(doc(db,'publicStats',id),snap=>{
-      if(!snap.exists()){delete st[id];draw();return;}
-      const raw=snap.data().total??snap.data().count;
-      if(Number.isFinite(Number(raw))&&Number(raw)>=0)st[id]=Number(raw);
-      else delete st[id];
-      draw();
-    },error=>{delete st[id];draw();console.info('تعذر تحميل إحصائية '+id,error);});
-  }
+  try{
+    const q=await getDocs(query(collection(db,'publicStats'),limit(20)));
+    q.forEach(d=>{const x=d.data()||{};if(d.id!=='books')st[d.id]=Number(x.total||x.count||0);});
+    draw();
+  }catch(error){console.info('تعذر تحميل بعض إحصائيات الرئيسية',error);}
 }
 document.addEventListener('DOMContentLoaded',loadHomeExtras);
 </script>

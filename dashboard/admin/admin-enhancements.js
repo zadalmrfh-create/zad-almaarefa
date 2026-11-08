@@ -1,8 +1,6 @@
-import {sharedAdminGetDocs,clearAdminReadCache} from './firestore-read-cache.js';
-const getDocs=(ref)=>sharedAdminGetDocs(ref,rawGetDocs,auth);
 import { auth, db } from '../../firebase-config.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
-import { collection, getDocs as rawGetDocs, query, orderBy, limit, getCountFromServer } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
+import { collection, getDocs, query, orderBy, limit } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 
 const $ = id => document.getElementById(id);
 const esc = v => String(v ?? '').replace(/[&<>\"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -11,8 +9,7 @@ const dateText = v => { const d=dateValue(v); return d && !Number.isNaN(d.getTim
 
 let users = [];
 let bookings = [];
-let attemptsCount = null;
-let attemptsNotice = '';
+let attempts = [];
 
 function stat(id, value){ const el=$(id); if(el) el.textContent=String(value); }
 function renderStats(){
@@ -21,9 +18,7 @@ function renderStats(){
   stat('enhTeachers', users.filter(x=>x.role==='teacher').length);
   stat('enhPendingTeachers', users.filter(x=>x.role==='teacher' && x.status==='pending').length);
   stat('enhBookings', bookings.length);
-  stat('enhQuizAttempts', attemptsCount===null ? '—' : attemptsCount);
-  const attemptEl=$('enhQuizAttempts');
-  if(attemptEl) attemptEl.title=attemptsNotice || 'إجمالي محاولات الامتحانات المحفوظة في المصادر الثلاثة';
+  stat('enhQuizAttempts', attempts.length);
   const today = new Date(); today.setHours(0,0,0,0);
   stat('enhNewToday', users.filter(x=>{const d=dateValue(x.createdAt);return d && d>=today;}).length);
 }
@@ -50,42 +45,14 @@ function exportCSV(){
   const blob=new Blob([csv],{type:'text/csv;charset=utf-8'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`zad-users-${new Date().toISOString().slice(0,10)}.csv`; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1000);
 }
 
-// Some Firestore projects reject aggregation queries even when a normal collection
-// read is allowed. Use a direct read as a fallback; don't convert access errors to 0.
-async function countAttempts(path){
-  try { return (await getCountFromServer(collection(db,path))).data().count; }
-  catch(aggregationError){
-    try { return (await getDocs(collection(db,path))).size; }
-    catch(readError){
-      console.warn('Cannot count exam attempts',path,{aggregationError,readError});
-      throw readError;
-    }
-  }
-}
-
 async function load(){
   try{
-    const [usResult,bookResult,...examResults]=await Promise.allSettled([
+    const [us,book,att]=await Promise.all([
       getDocs(collection(db,'users')),
       getDocs(query(collection(db,'bookings'),orderBy('createdAt','desc'),limit(500))),
-      countAttempts('quizAttempts'),
-      countAttempts('codeExamResults'),
-      countAttempts('unitOneExamAttempts')
+      getDocs(query(collection(db,'quizAttempts'),orderBy('submittedAt','desc'),limit(1000)))
     ]);
-    if(usResult.status==='fulfilled') users=usResult.value.docs.map(d=>d.data());
-    else { users=[]; console.warn('تعذر تحميل المستخدمين',usResult.reason); }
-    if(bookResult.status==='fulfilled') bookings=bookResult.value.docs.map(d=>d.data());
-    else { bookings=[]; console.warn('تعذر تحميل الحجوزات',bookResult.reason); }
-    const examNames=['الاختبارات القصيرة','الامتحانات الإلكترونية','امتحانات الوحدة'];
-    const failed=examResults.map((r,i)=>r.status==='rejected'?examNames[i]:null).filter(Boolean);
-    const availableCount=examResults.reduce((total,r)=>total+(r.status==='fulfilled'?Number(r.value):0),0);
-    attemptsCount=failed.length?null:availableCount;
-    attemptsNotice=failed.length?'تم العثور على '+availableCount+' محاولة في المصادر المقروءة، لكن تعذر الوصول إلى '+failed.join('، ')+'؛ الإجمالي غير مكتمل.':'';
-    const attemptsLabel=document.getElementById('zadExamAttemptsStatNote');
-    if(attemptsLabel){attemptsLabel.textContent=attemptsNotice || 'محاولات الاختبارات القصيرة والامتحانات الإلكترونية وامتحانات الوحدة';attemptsLabel.style.color=failed.length?'#f7bb60':'';}
-    for(let i=0;i<examResults.length;i++) if(examResults[i].status==='rejected') console.warn('Exam statistics read failed: '+examNames[i],examResults[i].reason);
-    if(usResult.status==='rejected'){ const el=$('enhDataStatus');if(el)el.textContent='تعذر قراءة المستخدمين من Firebase؛ أعد المحاولة بعد التأكد من صلاحيات الأدمن.'; }
-
+    users=us.docs.map(d=>d.data()); bookings=book.docs.map(d=>d.data()); attempts=att.docs.map(d=>d.data());
     const countries=[...new Set(users.map(x=>x.country).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'ar'));
     const select=$('enhCountryFilter'); if(select){ select.innerHTML='<option value="all">كل البلدان</option>'+countries.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join(''); }
     renderStats(); applyFilters();

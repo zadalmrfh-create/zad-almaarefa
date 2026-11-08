@@ -16,7 +16,7 @@ export function advanceSnapshot(lessons=[],payments=[]){
   for(const l of due){
     const before=amountRemaining(l);
     unpaidBefore+=before;
-    const used=l.advanceUseMode==='keep' ? 0 : Math.min(before,rest);
+    const used=Math.min(before,rest);
     byLesson.set(l.id,{beforePiastres:before,advanceAppliedPiastres:used,afterPiastres:before-used});
     rest-=used;
   }
