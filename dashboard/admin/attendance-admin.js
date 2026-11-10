@@ -166,7 +166,7 @@ function renderAttendanceLog(){
   rows.innerHTML = matches.length ? matches.map(x=>`<tr>
     <td>${esc(x.studentName || '-')}</td><td>${esc(x.date || '-')}</td><td>${esc(x.subject || '-')}</td>
     <td>${esc(x.status || '-')}</td><td>${money(x.price)}</td>
-    <td><button type="button" class="btn ${amountRemaining(x)===0 ? 'gold' : (amountPaid(x)>0 || (creditFor(x)?.advanceAppliedPiastres||0)>0) ? 'attendance-partial-payment' : 'attendance-unpaid-payment'}" data-paid="${esc(x.id)}" aria-label="تغيير حالة الدفع">${creditFor(x)?.afterPiastres===0?'✅ مغطاة / مدفوعة':creditFor(x)?.advanceAppliedPiastres>0?'🟡 جزء مغطى بالمقدم، المتبقي '+cashMoney(creditFor(x).afterPiastres):amountRemaining(x)===0?'✅ مدفوعة':amountPaid(x)>0?'🟡 مدفوع جزئيًا '+cashMoney(amountPaid(x)):'⏳ غير مدفوعة'}</button></td>
+    <td><button type="button" class="btn ${attendanceLogRemaining(x)===0 ? 'gold' : (amountPaid(x)>0 || (creditFor(x)?.advanceAppliedPiastres||0)>0) ? 'attendance-partial-payment' : 'attendance-unpaid-payment'}" data-paid="${esc(x.id)}" aria-label="تغيير حالة الدفع">${creditFor(x)?.afterPiastres===0?'✅ مغطاة / مدفوعة':creditFor(x)?.advanceAppliedPiastres>0?'🟡 جزء مغطى بالمقدم، المتبقي '+cashMoney(creditFor(x).afterPiastres):amountRemaining(x)===0?'✅ مدفوعة':amountPaid(x)>0?'🟡 مدفوع جزئيًا '+cashMoney(amountPaid(x)):'⏳ غير مدفوعة'}</button></td>
     <td>${esc(x.teacherName || 'الإدارة')}</td><td>${x.status==='حاضر'?`<button type="button" class="btn" data-payroll-extra="${esc(x.id)}">➕ إضافي المرتب</button>`:'—'}</td><td><button type="button" class="btn" data-edit="${esc(x.id)}">✏️ تعديل الحصة</button> <button type="button" class="btn danger" data-del="${esc(x.id)}">حذف</button></td></tr>`).join('') : `<tr><td colspan="9">${records.length?'لا توجد حصص مطابقة للبحث والتصفية. جرّب مسح الفلاتر.':'لا توجد سجلات حضور بعد.'}</td></tr>`;
 }
 
@@ -278,6 +278,53 @@ function askAdvanceDecision({studentName,available,price}){
   dlg.addEventListener('cancel',e=>{e.preventDefault();finish('cancel')});
   document.body.append(dlg);dlg.showModal();
  });
+}
+
+
+// A payment marked as "paid" can mean external payment or use of existing student credit.
+// Credit coverage is represented ONLY by advanceUseMode='deduct' with paid=false,
+// so advance-credit.js never counts the same charge as both cash and credit.
+function askExistingLessonBalance({studentName,available,due,covered}) {
+  return new Promise(resolve => {
+    const dialog=document.createElement('dialog');
+    dialog.dir='rtl';
+    dialog.style.cssText='width:min(96vw,550px);max-width:550px;padding:22px;border-radius:17px;border:1px solid #d6ae44;background:#132239;color:#fff;box-shadow:0 20px 85px #0009';
+    const remaining=Math.max(0,due-covered);
+    dialog.innerHTML=`<h3 style="margin-top:0;color:#f2c94c">💳 هل تريد الخصم من رصيد الطالب؟</h3>
+      <p><strong>${esc(studentName||'الطالب')}</strong></p>
+      <p>الرصيد المقدم المتاح: <strong>${cashMoney(available)}</strong><br>قيمة الحصة: <strong>${cashMoney(due)}</strong></p>
+      <p>${covered>0?`يمكن خصم ${cashMoney(covered)}، ويتبقى ${cashMoney(remaining)} على الحصة.`:'لا يوجد رصيد مقدم متاح حاليًا للخصم.'}</p>
+      <div style="display:flex;gap:9px;flex-wrap:wrap">
+      <button type="button" data-payment-choice="deduct" ${covered<=0?'disabled':''} style="padding:11px;border:0;border-radius:8px;background:#f2c94c;color:#14233a;font-weight:700;cursor:pointer">${covered>=due?'نعم، خصم من الرصيد':'نعم، خصم المتاح (تبقى الحصة مدفوعة جزئيًا)'}</button>
+      <button type="button" data-payment-choice="direct" style="padding:11px;border:1px solid #7392b8;border-radius:8px;background:#284364;color:#fff;cursor:pointer">لا، مدفوعة مباشرة دون خصم الرصيد</button>
+      <button type="button" data-payment-choice="cancel" style="padding:11px;border:1px solid #7392b8;border-radius:8px;background:transparent;color:#fff;cursor:pointer">إلغاء</button>
+      </div>`;
+    const finish=choice=>{dialog.close();dialog.remove();resolve(choice)};
+    dialog.addEventListener('click',e=>{const button=e.target.closest('[data-payment-choice]');if(button&&!button.disabled)finish(button.dataset.paymentChoice)});
+    dialog.addEventListener('cancel',e=>{e.preventDefault();finish('cancel')});
+    document.body.append(dialog);dialog.showModal();
+  });
+}
+async function chooseExistingLessonPayment(lesson,{studentUid=lesson.studentUid,price=lesson.price,status=lesson.status,studentName=lesson.studentName}={}) {
+  // Fresh reads avoid using the balance captured when the admin originally opened the page.
+  const [fresh,lessonsResponse,paymentsResponse]=await Promise.all([
+    getDoc(doc(db,'lessonAttendance',lesson.id)),
+    rawGetDocs(query(collection(db,'lessonAttendance'),where('studentUid','==',studentUid))),
+    rawGetDocs(query(collection(db,'vodafonePayments'),where('studentUid','==',studentUid)))
+  ]);
+  if(!fresh.exists()||fresh.data().deleted===true)throw new Error('لم تعد الحصة متاحة. حدّث سجلات الحضور.');
+  if(Number(fresh.data().cashPaidPiastres||0)>0)throw new Error('الحصة مرتبطة بدفعة معتمدة. لا يمكن تغيير طريقة سدادها يدويًا.');
+  const others=lessonsResponse.docs.map(d=>({id:d.id,...d.data()})).filter(x=>x.id!==lesson.id);
+  const payments=paymentsResponse.docs.map(d=>({id:d.id,...d.data()}));
+  const candidate={...fresh.data(),id:lesson.id,studentUid,price,status,paid:false,advanceUseMode:'deduct',deleted:false};
+  const coverage=advanceSnapshot([...others,candidate],payments);
+  const covered=coverage.byLesson.get(lesson.id)?.advanceAppliedPiastres||0;
+  const available=advanceSnapshot(others,payments).availableAdvancePiastres;
+  const choice=await askExistingLessonBalance({studentName,available,due:amountDue(candidate),covered});
+  if(choice==='cancel')return null;
+  return choice==='deduct'
+    ? {paid:false,paidAt:null,advanceUseMode:'deduct'}
+    : {paid:true,paidAt:fresh.data().paidAt||serverTimestamp(),advanceUseMode:'keep'};
 }
 
 search?.addEventListener('input', filterStudents);
@@ -437,6 +484,11 @@ attendanceEditForm.addEventListener('submit',async event=>{
   if (Number(original.cashPaidPiastres||0)>0 && (student.id!==original.studentUid||Math.round(price*100)!==amountDue(original)||paid!==(original.paid===true))){error.textContent='هذه الحصة مرتبطة بتحويل معتمد. لا يمكن تغيير الطالب أو السعر أو حالة الدفع حتى لا تختل الحسابات. يمكنك تغيير التاريخ والمادة والملاحظات.';return;}
   const submit=attendanceEditForm.querySelector('button[type="submit"]');submit.disabled=true;
   try{
+    let paymentChange={paid,paidAt:paid?(original.paidAt||serverTimestamp()):null,advanceUseMode:paid?'keep':(original.advanceUseMode||'keep')};
+    if(paid && original.paid!==true && attendanceLogRemaining(original)>0){
+      paymentChange=await chooseExistingLessonPayment(original,{studentUid:student.id,price,status:attendanceEditForm.elements.status.value,studentName:student.fullName||student.name||student.email});
+      if(!paymentChange)return;
+    }
     await updateDoc(doc(db,'lessonAttendance',attendanceEditingId),{
       studentUid:student.id,studentName:student.fullName||student.name||student.email||'',
       date:attendanceEditForm.elements.date.value,
@@ -444,7 +496,7 @@ attendanceEditForm.addEventListener('submit',async event=>{
       teacherName:selectedTeacherName||'غير محدد',
       teacherUid:teacherUidForName(selectedTeacherName),
       status:attendanceEditForm.elements.status.value,
-      price,paid,paidAt:paid?(original.paidAt||serverTimestamp()):null,
+      price,...paymentChange,
       note:attendanceEditForm.elements.note.value.trim(),updatedAt:serverTimestamp()
     });
     attendanceEditDialog.close();await load();
@@ -462,10 +514,16 @@ rows?.addEventListener('click', async e => {
   if (!x) return;
   try {
     if (paid) {
-      if(Number(x.cashPaidPiastres||0)>0 || (creditFor(x)?.advanceAppliedPiastres||0)>0){ alert('هذه الحصة مدفوعة أو مغطاة بمبلغ مقدم؛ لا تغيّرها يدويًا حتى لا تُحسب الدفعة مرتين.'); return; }
-      const newPaid = x.paid !== true;
-      if (!confirm(`هل تريد تغيير حالة الحصة إلى ${newPaid ? 'مدفوعة' : 'غير مدفوعة'}؟`)) return;
-      await updateDoc(doc(db, 'lessonAttendance', x.id), { paid: newPaid, paidAt: newPaid ? serverTimestamp() : null, updatedAt: serverTimestamp() });
+      if(Number(x.cashPaidPiastres||0)>0){ alert('هذه الحصة مرتبطة بتحويل معتمد؛ لا يمكن تغيير طريقة سدادها يدويًا حتى لا تُحسب الدفعة مرتين.'); return; }
+      if(attendanceLogRemaining(x)>0){
+        const paymentChange=await chooseExistingLessonPayment(x);
+        if(!paymentChange)return;
+        await updateDoc(doc(db,'lessonAttendance',x.id),{...paymentChange,updatedAt:serverTimestamp()});
+      }else{
+        if(x.paid!==true){alert('هذه الحصة مغطاة من الرصيد المقدم بالفعل، ولا يوجد دفع مباشر لإلغائه.');return;}
+        if(!confirm('هل تريد تغيير حالة الحصة إلى غير مدفوعة؟'))return;
+        await updateDoc(doc(db,'lessonAttendance',x.id),{paid:false,paidAt:null,advanceUseMode:'keep',updatedAt:serverTimestamp()});
+      }
     } else if (del) {
       const linked=Number(x.cashPaidPiastres||0)>0;
       const text=linked
