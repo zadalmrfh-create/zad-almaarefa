@@ -5,7 +5,7 @@ import {advanceSnapshot} from '../advance-credit.js';
 import {archiveAttendance,restoreAttendance} from './attendance-archive.js';
 import { db, auth } from '../../firebase-config.js';
 import { collection, query, where, getDocs as rawGetDocs, getDoc, addDoc, updateDoc, deleteDoc, doc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
-import { SUBJECTS, teacherForSubject, ENGLISH_TEACHERS, isEnglishSubject } from '../attendance-subjects.js';
+import { SUBJECTS, teacherForSubject, ENGLISH_TEACHERS, isEnglishSubject, availableScienceTeachers } from '../attendance-subjects.js';
 
 const $ = id => document.getElementById(id);
 const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -18,7 +18,7 @@ function teacherUidForName(name) {
   const names=p=>[p.fullName,p.name,p.displayName,...(Array.isArray(p.attendanceAliases)?p.attendanceAliases:[])].map(teacherKey).filter(Boolean);
   let matches=teacherProfiles.filter(p=>names(p).includes(key));
   // السماح بمطابقة الاسم الثلاثي مع الاسم الرباعي إذا كان الحساب فريدًا.
-  if(!matches.length && key.split(' ').length>=3)
+  if(!matches.length && (key.split(' ').length>=3 || key==='سعد علاء'))
     matches=teacherProfiles.filter(p=>names(p).some(n=>n.startsWith(key+' ')));
   return matches.length===1?matches[0].id:null;
 }
@@ -54,23 +54,23 @@ function getSelectedSubjects() {
 function syncAttendanceTeacher() {
   const field = $('attendanceTeacherName');
   if (!field) return;
-  const selected = getSelectedSubjects();
-  const previous = field.value;
-  const english = selected.some(isEnglishSubject);
-  const choices = !selected.length
-    ? [{ value: '', label: 'اختر المادة أولًا' }]
-    : english
-      ? ENGLISH_TEACHERS.map((name, i) => ({
-          value: teacherForSubject(selected, name),
-          label: (i === 0 ? 'مستر ' : 'ميس ') + name + (selected.length > 1 ? ' (مع معلمي باقي المواد)' : '')
-        }))
-      : [{ value: teacherForSubject(selected) || 'غير محدد', label: teacherForSubject(selected) || 'غير محدد' }];
-  field.replaceChildren(...choices.map(choice => new Option(choice.label, choice.value)));
-  if (choices.some(choice => choice.value === previous)) field.value = previous;
-  else if (english && previous.includes('فاطمة ضياء')) field.value = choices[1].value;
-  field.disabled = !english;
-  field.style.cursor = english ? 'pointer' : 'not-allowed';
-  field.setAttribute('aria-label', english ? 'اختر مدرس اللغة الإنجليزية: مستر علي عبد الحميد أو ميس فاطمة ضياء' : 'المعلم المحدد تلقائيًا');
+  const selected=getSelectedSubjects();
+  const previous=field.value;
+  const english=selected.some(isEnglishSubject);
+  const science=availableScienceTeachers(selected);
+  const choices=!selected.length
+    ? [{value:'',label:'اختر المادة أولًا'}]
+    : science.length
+      ? science.map(name=>({value:name,label:'أ/ '+name}))
+      : english
+        ? ENGLISH_TEACHERS.map((name,i)=>({value:teacherForSubject(selected,name),label:(i===0?'مستر ':'ميس ')+name+(selected.length>1?' (مع معلمي باقي المواد)':'')}))
+        : [{value:teacherForSubject(selected)||'غير محدد',label:teacherForSubject(selected)||'غير محدد'}];
+  field.replaceChildren(...choices.map(x=>new Option(x.label,x.value)));
+  if(choices.some(x=>x.value===previous))field.value=previous;
+  const selectable=choices.length>1;
+  field.disabled=!selectable;
+  field.style.cursor=selectable?'pointer':'not-allowed';
+  field.setAttribute('aria-label',selectable?'اختر معلم الحصة':'المعلم المحدد تلقائيًا');
 }
 
 subjectSelect?.addEventListener('change', syncAttendanceTeacher);
@@ -377,6 +377,7 @@ attendanceEditDialog.innerHTML=`<form id="zadAttendanceEditForm" style="display:
 <label>تاريخ الحصة<input name="date" type="date" required style="width:100%;padding:10px"></label>
 <fieldset style="border:1px solid #64748b;border-radius:8px"><legend>المواد (يمكن اختيار أكثر من مادة، وتحسب حصة واحدة)</legend><div data-edit-subjects style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px"></div></fieldset>
 <label data-edit-english-teacher style="display:none">مدرس اللغة الإنجليزية<select name="englishTeacher" style="width:100%;padding:10px"><option value="علي عبد الحميد">مستر علي عبد الحميد</option><option value="فاطمة ضياء">ميس فاطمة ضياء</option></select></label>
+<label data-edit-science-teacher style="display:none">مدرس العلوم / الكيمياء / الرياضيات<select name="scienceTeacher" style="width:100%;padding:10px"></select></label>
 <label>حالة الحضور<select name="status" style="width:100%;padding:10px"><option>حاضر</option><option>غائب</option></select></label>
 <label>سعر الحصة بالجنيه<input name="price" type="number" min="0" max="100000" step="0.01" required style="width:100%;padding:10px"></label>
 <label>حالة الدفع<select name="paid" style="width:100%;padding:10px"><option value="false">غير مدفوعة</option><option value="true">مدفوعة</option></select></label>
@@ -389,8 +390,17 @@ const attendanceEditForm=attendanceEditDialog.querySelector('form');
 let attendanceEditingId=null;
 attendanceEditDialog.querySelector('[data-cancel]').addEventListener('click',()=>attendanceEditDialog.close());
 function syncEditEnglishTeacher() {
-  const selected = [...attendanceEditForm.querySelectorAll('input[name="subjectItem"]:checked')].map(input => input.value);
-  attendanceEditForm.querySelector('[data-edit-english-teacher]').style.display = selected.some(isEnglishSubject) ? '' : 'none';
+  const selected=[...attendanceEditForm.querySelectorAll('input[name="subjectItem"]:checked')].map(input=>input.value);
+  const scientists=availableScienceTeachers(selected);
+  attendanceEditForm.querySelector('[data-edit-english-teacher]').style.display=scientists.length===0&&selected.some(isEnglishSubject)?'':'none';
+  const wrapper=attendanceEditForm.querySelector('[data-edit-science-teacher]');
+  const field=attendanceEditForm.elements.scienceTeacher;
+  const previous=field.value;
+  if(scientists.length){
+    field.replaceChildren(...scientists.map(name=>new Option('أ/ '+name,name)));
+    if(scientists.includes(previous))field.value=previous;
+    wrapper.style.display='';
+  }else wrapper.style.display='none';
 }
 attendanceEditForm.querySelector('[data-edit-subjects]').addEventListener('change', syncEditEnglishTeacher);
 
@@ -407,6 +417,7 @@ function openAttendanceEditor(record){
   attendanceEditForm.querySelector('[data-edit-subjects]').innerHTML=[...new Set([...SUBJECTS,...selected.filter(Boolean)])].map(v=>`<label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="subjectItem" value="${esc(v)}" ${selected.includes(v)?'checked':''}>${esc(v)}</label>`).join('');
   attendanceEditForm.elements.englishTeacher.value=String(record.teacherName||'').includes('فاطمة ضياء')?'فاطمة ضياء':'علي عبد الحميد';
   syncEditEnglishTeacher();
+  if(availableScienceTeachers(selected).includes(record.teacherName))attendanceEditForm.elements.scienceTeacher.value=record.teacherName;
   attendanceEditForm.querySelector('[data-edit-error]').textContent='';
   attendanceEditDialog.showModal();
 }
@@ -421,6 +432,7 @@ attendanceEditForm.addEventListener('submit',async event=>{
   if(!Number.isFinite(price)||price<0||price>100000){error.textContent='سعر الحصة غير صحيح.';return;}
   const original=records.find(r=>r.id===attendanceEditingId);
   if(!original){error.textContent='السجل غير موجود؛ حدّث الصفحة.';return;}
+  const selectedTeacherName=availableScienceTeachers(selected).length ? attendanceEditForm.elements.scienceTeacher.value : teacherForSubject(selected,attendanceEditForm.elements.englishTeacher.value);
   const paid=attendanceEditForm.elements.paid.value==='true';
   if (Number(original.cashPaidPiastres||0)>0 && (student.id!==original.studentUid||Math.round(price*100)!==amountDue(original)||paid!==(original.paid===true))){error.textContent='هذه الحصة مرتبطة بتحويل معتمد. لا يمكن تغيير الطالب أو السعر أو حالة الدفع حتى لا تختل الحسابات. يمكنك تغيير التاريخ والمادة والملاحظات.';return;}
   const submit=attendanceEditForm.querySelector('button[type="submit"]');submit.disabled=true;
@@ -429,8 +441,8 @@ attendanceEditForm.addEventListener('submit',async event=>{
       studentUid:student.id,studentName:student.fullName||student.name||student.email||'',
       date:attendanceEditForm.elements.date.value,
       subjects:selected,subject:selected.join('، '),
-      teacherName:teacherForSubject(selected,attendanceEditForm.elements.englishTeacher.value)||'غير محدد',
-      teacherUid:teacherUidForName(teacherForSubject(selected,attendanceEditForm.elements.englishTeacher.value)),
+      teacherName:selectedTeacherName||'غير محدد',
+      teacherUid:teacherUidForName(selectedTeacherName),
       status:attendanceEditForm.elements.status.value,
       price,paid,paidAt:paid?(original.paidAt||serverTimestamp()):null,
       note:attendanceEditForm.elements.note.value.trim(),updatedAt:serverTimestamp()

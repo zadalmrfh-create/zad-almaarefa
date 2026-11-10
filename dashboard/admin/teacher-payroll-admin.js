@@ -36,7 +36,7 @@ function teacherFor(r,adj){
   const raw=String(r.teacherName||'').trim();
   if(!raw||raw==='غير محدد'||raw==='الإدارة'||raw.includes('،'))return null;
   const matches=teachers.filter(t=>[t.name,t.fullName,t.displayName,...(Array.isArray(t.attendanceAliases)?t.attendanceAliases:[])].some(a=>norm(a)===norm(raw)));
-  if(!matches.length && norm(raw).split(' ').length>=3){
+  if(!matches.length && (norm(raw).split(' ').length>=3 || norm(raw)==='سعد علاء')){
     const candidates=teachers.filter(t=>[t.name,t.fullName,t.displayName,...(Array.isArray(t.attendanceAliases)?t.attendanceAliases:[])].some(a=>norm(a).startsWith(norm(raw)+' ')));
     if(candidates.length===1)matches.push(candidates[0]);
   }

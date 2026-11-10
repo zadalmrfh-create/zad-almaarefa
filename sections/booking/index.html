@@ -71,7 +71,7 @@ body{margin:0;font-family:Cairo,Arial,sans-serif;background:linear-gradient(135d
         <img src="../../images/logo.png" alt="زاد المعرفة">
         <div>
           <h1>احجز حصتك الآن</h1>
-          <p>اختر القسم والمادة التي تريد الدراسة فيها، ثم أرسل طلبك وسيتم تحديد المعلم تلقائيًا.</p>
+          <p>اختر القسم والمادة التي تريد الدراسة فيها، ثم أرسل طلبك. للعلوم والكيمياء يمكنك اختيار المعلم، والرياضيات مع أ/ سعد علاء.</p>
         </div>
       </div>
 
@@ -126,9 +126,10 @@ body{margin:0;font-family:Cairo,Arial,sans-serif;background:linear-gradient(135d
 
         <label>المادة المطلوبة
           <input name="subject" required maxlength="150"
-                 placeholder="مثال: حفظ القرآن، التجويد، النحو، الفقه، اللغة الإنجليزية، العلوم...">
+                 placeholder="مثال: الرياضيات، الكيمياء، العلوم، الفقه، اللغة الإنجليزية..." list="zadBookingSubjects">
         </label>
 
+        <datalist id="zadBookingSubjects"><option value="الرياضيات"></option><option value="الكيمياء"></option><option value="العلوم"></option></datalist>
         <div class="booking-two">
           <label>نوع الحصة
             <select name="lessonType" required>
@@ -145,7 +146,7 @@ body{margin:0;font-family:Cairo,Arial,sans-serif;background:linear-gradient(135d
             <select name="teacherUid" id="bookingTeacher" disabled aria-disabled="true">
               <option value="">يتم تحديد المعلم تلقائيًا</option>
             </select>
-            <small id="teacherAutoHint" class="auto-teacher-hint">المعلم يتحدد تلقائيًا حسب المادة ولا يمكن تغييره يدويًا.</small>
+            <small id="teacherAutoHint" class="auto-teacher-hint">المعلم يتحدد تلقائيًا، ويمكن الاختيار عند وجود أكثر من مدرس للمادة.</small>
           </label>
         </div>
 
