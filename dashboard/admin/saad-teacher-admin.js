@@ -18,7 +18,7 @@ const normalize = v => String(v||'').normalize('NFKC')
   .replace(/ة/g,'ه').replace(/ى/g,'ي')
   .replace(/^(الاستاذ|استاذ|ا\s*\/|مستر)\s*/,'')
   .replace(/\s+/g,' ').trim().toLowerCase();
-const isSaad = v => normalize(v)==='سعد علاء';
+const isSaad = v => { const name=normalize(v); return name==='سعد علاء' || name.startsWith('سعد علاء '); };
 const candidateNames = ['سعد علاء','الأستاذ سعد علاء','أ/ سعد علاء'];
 let inspected = null;
 
@@ -81,9 +81,15 @@ async function inspectSaad(){
     const uid=active[0].id;
     // Fetch only matching names; do not scan every student's private records.
     note('✅ تم العثور على حساب واحد نشط. جارٍ فحص الحجوزات والحضور المكتوب عليهما اسم سعد...');
+    // Include the verified account's real full name, while retaining old short-name lessons.
+    const account=active[0].data();
+    const recordedNames=[account.fullName,account.name,account.displayName,
+      ...(Array.isArray(account.attendanceAliases)?account.attendanceAliases:[])]
+      .filter(name=>name && isSaad(name));
+    const names=[...new Set([...candidateNames,...recordedNames])].slice(0,30);
     const [bookings,attendance]=await Promise.all([
-      getDocs(query(collection(db,'bookings'),where('teacherName','in',candidateNames))),
-      getDocs(query(collection(db,'lessonAttendance'),where('teacherName','in',candidateNames)))
+      getDocs(query(collection(db,'bookings'),where('teacherName','in',names))),
+      getDocs(query(collection(db,'lessonAttendance'),where('teacherName','in',names)))
     ]);
     const pending=[];
     let linked=0,conflicts=0;
