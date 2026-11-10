@@ -35,7 +35,7 @@ const BOOKING_SELECT_VALUES = Object.freeze({
   section: [
     "", "القرآن الكريم", "التزكية والتربية", "اللغة العربية",
     "العلوم الشرعية", "التعليم الأزهري", "اللغة الإنجليزية",
-    "العلوم", "البرمجة وتكنولوجيا المعلومات"
+    "العلوم", "الرياضيات", "البرمجة وتكنولوجيا المعلومات"
   ],
   educationType: ["", "غير مرتبط بنظام تعليمي", "أزهري", "عام", "لغات"],
   lessonType: [
@@ -99,7 +99,7 @@ function detectTeacherAssignment() {
 
   const requestedSubject = normalizeArabic(subjectInput?.value || "");
   // Maths is taught by Saad Alaa; science/chemistry may be taught by either teacher.
-  if (requestedSubject.includes("رياضيات") || requestedSubject.includes("رياضه") || requestedSubject.includes("math")) {
+  if (normalizeArabic(canonicalSection) === "الرياضيات" || requestedSubject.includes("رياضيات") || requestedSubject.includes("رياضه") || requestedSubject.includes("math")) {
     return { key:"math", targetName:"سعد علاء", hint:"الرياضيات مع الأستاذ سعد علاء." };
   }
   // Preserve the previous science teacher; allow choosing Saad Alaa as well.
@@ -203,7 +203,12 @@ async function loadBookingTeachers() {
   updateAssignedTeacher();
 }
 
-sectionSelect?.addEventListener("change", updateAssignedTeacher);
+sectionSelect?.addEventListener("change", () => {
+  if (canonicalBookingSelection("section") === "الرياضيات" && subjectInput && !subjectInput.value.trim()) {
+    subjectInput.value = "الرياضيات";
+  }
+  updateAssignedTeacher();
+});
 subjectInput?.addEventListener("input", updateAssignedTeacher);
 
 let bookingSubmitting = false;

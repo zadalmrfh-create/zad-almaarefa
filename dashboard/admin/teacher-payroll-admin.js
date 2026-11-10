@@ -41,6 +41,7 @@ function teacherFor(r,adj){
     if(candidates.length===1)matches.push(candidates[0]);
   }
   if(matches.length===1)return {key:`uid:${matches[0].id}`,name:teacherName(matches[0])};
+  if(norm(raw)==='سعد علاء')return {key:'name:سعد علاء',name:'سعد علاء'};
   return {key:`name:${raw}`,name:raw}; // Legacy record without a linked teacher account.
 }
 function salaryRow(r){
@@ -56,6 +57,8 @@ function fillSelect(id,opts,first){
 function populateOptions(){
  const relevant=attendance.filter(r=>r.deleted!==true&&r.status==='حاضر');
  const ids=new Map(teachers.map(t=>[`uid:${t.id}`,teacherName(t)]));
+ if(!teachers.some(t=>norm(teacherName(t))==='سعد علاء'||norm(teacherName(t)).startsWith('سعد علاء ')))
+  ids.set('name:سعد علاء','سعد علاء (حساب غير مربوط بعد)');
  const students=new Map();const subjects=new Set();
  for(const r of relevant){
   const t=teacherFor(r,adjustments.get(r.id));if(t)ids.set(t.key,t.name);
@@ -103,6 +106,8 @@ function render(){
   if($('salaryTeacher').value!=='all'&&$('salaryTeacher').value!==`uid:${t.id}`)continue;
   sums.set(`uid:${t.id}`,{name:teacherName(t),base:0,bonus:0,paid:0,count:0});
  }
+ if(!teachers.some(t=>norm(teacherName(t))==='سعد علاء'||norm(teacherName(t)).startsWith('سعد علاء ')) && ['all','name:سعد علاء'].includes($('salaryTeacher').value))
+  sums.set('name:سعد علاء',{name:'سعد علاء (بانتظار ربط الحساب)',base:0,bonus:0,paid:0,count:0});
  for(const r of matched){const t=r._teacher;const item=sums.get(t.key)||{name:t.name,base:0,bonus:0,paid:0,count:0};item.count++;item.base+=r._base;item.bonus+=r._bonus;item.paid+=paidFor(r);sums.set(t.key,item);}
  const groups=[...sums].sort((a,b)=>(b[1].base+b[1].bonus-b[1].paid)-(a[1].base+a[1].bonus-a[1].paid));
  $('salaryTeacherCards').innerHTML=groups.length?groups.map(([key,g])=>`<article class="salary-teacher-card"><strong>👨‍🏫 ${esc(g.name)}</strong><span>${g.count} حصة × حسب أجر كل حصة</span><div class="salary-subtotals"><span>الحصص: <b>${egp(g.base)}</b></span><span>الإضافي: <b>${egp(g.bonus)}</b></span></div><div class="salary-subtotals"><span>الإجمالي: <b>${egp(g.base+g.bonus)}</b></span><span>تم صرف: <b>${egp(g.paid)}</b></span></div><b class="salary-card-grand">المتبقي: ${egp(Math.max(0,g.base+g.bonus-g.paid))}</b></article>`).join(''):'<p class="salary-empty">لا توجد مستحقات للمعلمين خلال الفترة المحددة.</p>';

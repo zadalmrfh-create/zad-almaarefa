@@ -8,7 +8,7 @@ const say=s=>{if(status)status.textContent=s;};
 const text=v=>String(v??'').trim();
 function eligible(row,origin){
  if(!row.studentUid||!row.teacherUid||row.deleted===true||row.archived===true)return false;
- if(origin==='booking'&&['مرفوض','ملغى','ملغي','rejected','cancelled','canceled'].includes(text(row.status).toLowerCase()))return false;
+ if(origin==='booking'&&!['تم الحجز','مكتمل','confirmed','completed'].includes(text(row.status).toLowerCase()))return false;
  return true;
 }
 async function syncAccess(){
