@@ -287,6 +287,7 @@ onAuthStateChanged(auth, async (user) => {
 <section class="card" dir="rtl" id="codeExamResultsSection"><h2>📊 نتائج الامتحانات الإلكترونية</h2><p>تظهر هنا نتائج <strong>كل الامتحانات بالكود وامتحانات الوحدة الأولى بالإضافة إلى امتحان علم البديع (تانية بكالوريا)</strong> حسب تاريخ التسليم. نتائج الوحدة الأولى مبدئية حتى اعتماد درجات المقالي من قسم التصحيح الموجود أسفل النتائج. استخدم زر «طباعة تقرير الإجابات» بجانب كل نتيجة لطباعة إجابات الطالب والإجابات الصحيحة المتاحة، أو حفظها PDF.</p><div id="codeExamResultsList">جارٍ تحميل النتائج...</div></section>
 <section class="card" dir="rtl" id="saadAlaaAdminPanel" style="border:1px solid #c6a251">
  <h2>📐 إعداد مدرس الرياضيات والعلوم والكيمياء — أ/ سعد علاء</h2>
+ <p>هذه الصفحة موجودة الآن داخل تبويب <b>إعداد المعلمين</b> أعلى لوحة الإدارة. نفّذ إضافة الملف مرة واحدة فقط إذا لم يكن موجودًا في Firestore.</p>
  <p>المدرس مضاف داخل دليل طاقم التدريس والحجز والحضور. اضغط الزر لتسجيل <b>ملف تدريسه القابل للتعديل</b> في قسم «إدارة محتوى المنصة ← طاقم التدريس»، دون إنشاء حساب دخول وهمي أو المساس بالمدرسين الحاليين.</p>
  <button class="btn gold" type="button" id="createSaadTeacherProfile">➕ إضافة ملف سعد علاء للإدارة</button>
  <p id="saadTeacherAdminStatus" role="status" aria-live="polite"></p>
@@ -3988,7 +3989,7 @@ guard('admin', async () => {
 <!-- ملفات مستقلة كانت غير مُحمّلة بسبب انقطاع نهاية الصفحة -->
 <script type="module" src="admin-activity-alerts.js"></script>
 <script type="module" src="admin-enhancements.js"></script>
-<script type="module" src="admin-workspace.js?v=20261105-finance2"></script>
+<script type="module" src="admin-workspace.js?v=20261110-saadtab3"></script>
 <script type="module" src="attendance-admin.js?v=20261105-salary1"></script>
 <script type="module" src="teacher-payroll-admin.js?v=20261106-settlements-cards2"></script>
 <script type="module" src="teacher-linker-admin.js?v=20261105-1"></script>

@@ -7,6 +7,7 @@
   const groups = [
     {id:'home',label:'نظرة عامة',icon:'🏠',sections:['platformAnalytics','studentCounterManagement']},
     {id:'users',label:'المستخدمون',icon:'👥',sections:['usersManagement']},
+    {id:'teachers',label:'إعداد المعلمين',icon:'👨‍🏫',sections:['saadAlaaAdminPanel']},
     {id:'bookings',label:'الحجوزات',icon:'📅',sections:['bookingsManagement']},
     {id:'exams',label:'الامتحانات',icon:'📝',sections:['codeExamsManagement','adminCertificatesSection','codeExamResultsSection','teacherExamAccessAdmin','zadSpecialExamResults','unitOneExamsAdmin']},
     {id:'library',label:'المكتبة',icon:'📚',sections:['librarySubscriptionsAdminPanel','libraryDownloadTracking']},
