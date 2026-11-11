@@ -63,7 +63,7 @@ function syncAttendanceTeacher() {
     : science.length
       ? science.map(name=>({value:name,label:'أ/ '+name}))
       : english
-        ? ENGLISH_TEACHERS.map((name,i)=>({value:teacherForSubject(selected,name),label:(i===0?'مستر ':'ميس ')+name+(selected.length>1?' (مع معلمي باقي المواد)':'')}))
+        ? [{value:teacherForSubject(selected),label:'يحدد معلم مناهج الإنجليزي من الإدارة'}]
         : [{value:teacherForSubject(selected)||'غير محدد',label:teacherForSubject(selected)||'غير محدد'}];
   field.replaceChildren(...choices.map(x=>new Option(x.label,x.value)));
   if(choices.some(x=>x.value===previous))field.value=previous;
@@ -423,7 +423,7 @@ attendanceEditDialog.innerHTML=`<form id="zadAttendanceEditForm" style="display:
 <label>الطالب<select name="studentUid" required style="width:100%;padding:10px"></select></label>
 <label>تاريخ الحصة<input name="date" type="date" required style="width:100%;padding:10px"></label>
 <fieldset style="border:1px solid #64748b;border-radius:8px"><legend>المواد (يمكن اختيار أكثر من مادة، وتحسب حصة واحدة)</legend><div data-edit-subjects style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px"></div></fieldset>
-<label data-edit-english-teacher style="display:none">مدرس اللغة الإنجليزية<select name="englishTeacher" style="width:100%;padding:10px"><option value="علي عبد الحميد">مستر علي عبد الحميد</option><option value="فاطمة ضياء">ميس فاطمة ضياء</option></select></label>
+<label data-edit-english-teacher style="display:none">مدرس اللغة الإنجليزية<select name="englishTeacher" style="width:100%;padding:10px"><option value="">يحدد من الإدارة</option></select></label>
 <label data-edit-science-teacher style="display:none">مدرس العلوم / الكيمياء / الرياضيات<select name="scienceTeacher" style="width:100%;padding:10px"></select></label>
 <label>حالة الحضور<select name="status" style="width:100%;padding:10px"><option>حاضر</option><option>غائب</option></select></label>
 <label>سعر الحصة بالجنيه<input name="price" type="number" min="0" max="100000" step="0.01" required style="width:100%;padding:10px"></label>
@@ -462,7 +462,9 @@ function openAttendanceEditor(record){
   attendanceEditForm.elements.note.value=record.note||'';
   const selected=Array.isArray(record.subjects)?record.subjects:String(record.subject||'').split('،').map(v=>v.trim());
   attendanceEditForm.querySelector('[data-edit-subjects]').innerHTML=[...new Set([...SUBJECTS,...selected.filter(Boolean)])].map(v=>`<label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="subjectItem" value="${esc(v)}" ${selected.includes(v)?'checked':''}>${esc(v)}</label>`).join('');
-  attendanceEditForm.elements.englishTeacher.value=String(record.teacherName||'').includes('فاطمة ضياء')?'فاطمة ضياء':'علي عبد الحميد';
+  // لا تعرض المدرسين غير المتاحين في الخيارات الجديدة، مع حفظ الإسناد التاريخي للسجلات القديمة.
+  attendanceEditForm.elements.englishTeacher.replaceChildren(new Option('يحدد من الإدارة',''));
+  attendanceEditForm.elements.englishTeacher.value='';
   syncEditEnglishTeacher();
   if(availableScienceTeachers(selected).includes(record.teacherName))attendanceEditForm.elements.scienceTeacher.value=record.teacherName;
   attendanceEditForm.querySelector('[data-edit-error]').textContent='';
@@ -479,7 +481,10 @@ attendanceEditForm.addEventListener('submit',async event=>{
   if(!Number.isFinite(price)||price<0||price>100000){error.textContent='سعر الحصة غير صحيح.';return;}
   const original=records.find(r=>r.id===attendanceEditingId);
   if(!original){error.textContent='السجل غير موجود؛ حدّث الصفحة.';return;}
-  const selectedTeacherName=availableScienceTeachers(selected).length ? attendanceEditForm.elements.scienceTeacher.value : teacherForSubject(selected,attendanceEditForm.elements.englishTeacher.value);
+  // الإسناد التاريخي لا يتغير عند تعديل الحضور أو الدفع فقط.
+  const oldEnglishAssignment=selected.some(isEnglishSubject) &&
+    /^(?:مستر\s*|أ\/\s*)?(?:علي\s+عبد\s+الحميد|(?:ميس\s*)?فاطمة\s+ضياء)/.test(String(original.teacherName||''));
+  const selectedTeacherName=oldEnglishAssignment?original.teacherName:(availableScienceTeachers(selected).length ? attendanceEditForm.elements.scienceTeacher.value : teacherForSubject(selected));
   const paid=attendanceEditForm.elements.paid.value==='true';
   if (Number(original.cashPaidPiastres||0)>0 && (student.id!==original.studentUid||Math.round(price*100)!==amountDue(original)||paid!==(original.paid===true))){error.textContent='هذه الحصة مرتبطة بتحويل معتمد. لا يمكن تغيير الطالب أو السعر أو حالة الدفع حتى لا تختل الحسابات. يمكنك تغيير التاريخ والمادة والملاحظات.';return;}
   const submit=attendanceEditForm.querySelector('button[type="submit"]');submit.disabled=true;

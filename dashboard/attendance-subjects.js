@@ -19,7 +19,8 @@ export const SUBJECTS = [
   'البرمجة وتكنولوجيا المعلومات'
 ];
 
-export const ENGLISH_TEACHERS = ['علي عبد الحميد', 'فاطمة ضياء'];
+// فاطمة ضياء تقدم كورسات فقط، ولا يوجد معلم مناهج إنجليزي معتمد محدد الآن.
+export const ENGLISH_TEACHERS = [];
 export const SCIENCE_TEACHERS = ['محمد خالد محمود', 'سعد علاء'];
 export const MATH_TEACHER = 'سعد علاء';
 export const isScientificSubject = name => ['العلوم','مادة العلوم','الكيمياء','مادة الكيمياء','الرياضيات','الرياضيات (عام)','رياضيات','math','mathematics'].includes(String(name||'').trim().toLowerCase());
@@ -61,7 +62,7 @@ function teacherForSingleSubject(subject, englishTeacher = ENGLISH_TEACHERS[0]) 
   if (name === 'الرياضيات' || name === 'الرياضيات (عام)' || name === 'رياضيات') return MATH_TEACHER;
   if (name === 'الكيمياء' || name === 'مادة الكيمياء') return 'محمد خالد محمود';
   if (name === 'العلوم' || name === 'مادة العلوم') return 'محمد خالد محمود';
-  if (isEnglishSubject(name)) return ENGLISH_TEACHERS.includes(englishTeacher) ? englishTeacher : ENGLISH_TEACHERS[0];
+  if (isEnglishSubject(name)) return ENGLISH_TEACHERS.includes(englishTeacher) ? englishTeacher : 'يحدد من الإدارة';
   if (name === 'البرمجة وتكنولوجيا المعلومات' || name === 'البرمجة') return 'مالك سامح';
   if (DIYAA_SUBJECTS.has(name)) return 'ضياء الدين نبيل';
   return 'ضياء الدين نبيل';

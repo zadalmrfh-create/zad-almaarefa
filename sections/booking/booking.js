@@ -5,7 +5,8 @@ import { collection, getDocs, addDoc, serverTimestamp, query, where } from "http
 let currentUser = null;
 let activeTeachers = [];
 let assignedTeacher = { uid: null, name: "ضياء الدين نبيل" };
-let selectedEnglishTeacherName = "علي عبد الحميد";
+// ليس هناك معلم مناهج إنجليزي محدد حاليًا؛ يتم إسناد طلبات الإنجليزي الجديدة بعد مراجعة الإدارة.
+const selectedEnglishTeacherName = "يحدد من الإدارة";
 const selectedScienceTeachers = { science: "محمد خالد محمود", chemistry: "محمد خالد محمود" };
 
 onAuthStateChanged(auth, async user => {
@@ -93,7 +94,7 @@ function detectTeacherAssignment() {
     return {
       key: "english",
       targetName: selectedEnglishTeacherName,
-      hint: "اختر معلم اللغة الإنجليزية: مستر علي عبد الحميد أو ميس فاطمة ضياء."
+      hint: "سيتم تحديد معلم مناهج اللغة الإنجليزية من الإدارة بعد مراجعة الطلب. الكورسات منفصلة عن حجز المناهج."
     };
   }
 
@@ -138,8 +139,7 @@ function resolveActiveTeacher(name) {
 }
 function teacherChoicesFor(assignment) {
   if (assignment.key === 'english') return [
-    { name: 'علي عبد الحميد', label: 'مستر علي عبد الحميد' },
-    { name: 'فاطمة ضياء', label: 'ميس فاطمة ضياء' }
+    { name: 'يحدد من الإدارة', label: 'يُحدد المعلم من الإدارة بعد مراجعة الحجز' }
   ];
   if (assignment.key === 'science' || assignment.key === 'chemistry') return [
     { name: 'محمد خالد محمود', label: 'أ/ محمد خالد محمود' },
@@ -180,7 +180,7 @@ teacherSelect?.addEventListener('change',()=>{
   if(!option?.dataset.teacherName)return;
   const name=option.dataset.teacherName;
   const category=detectTeacherAssignment().key;
-  if(category==='english')selectedEnglishTeacherName=name;
+   // لا يسمح هذا النموذج بإسناد مناهج الإنجليزي لمدرب كورسات أو معلم محذوف.
   if(category==='science'||category==='chemistry')selectedScienceTeachers[category]=name;
   const found=resolveActiveTeacher(name);
   assignedTeacher={uid:found?.uid||null,name,_category:category};
@@ -195,7 +195,7 @@ async function loadBookingTeachers() {
     activeTeachers = snap.docs.map(docSnap => {
       const data = docSnap.data() || {};
       return { uid: docSnap.id, name: data.fullName || data.name || data.displayName || data.email || "معلم" };
-    });
+    }).filter(t=>!/^علي\s+عبد\s+الحميد(?:\s|$)/.test(normalizeArabic(t.name)));
   } catch (error) {
     console.warn("تعذر تحميل حسابات المعلمين، سيتم حفظ اسم المعلم المحدد تلقائيًا:", error);
     activeTeachers = [];
