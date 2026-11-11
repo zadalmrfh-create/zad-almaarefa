@@ -39,21 +39,22 @@ const LEGACY_TEACHERS = [
  { legacyKey:'legacy-dhia-calligraphy', name:'الأستاذ ضياء نبيل', subject:'الخط العربي, تحسين الخط, الزخرفة', role:'معلم الخط العربي والزخرفة الإسلامية', image:'../images/arabic-calligraphy.png', bio:'معلم متخصص في تعليم الخط العربي بأنواعه المختلفة، مع التركيز على تنمية مهارات الجمال الفني في الكتابة والزخرفة الإسلامية.' },
  { legacyKey:'legacy-dhia-arabic', name:'الأستاذ ضياء نبيل', subject:'اللغة العربية', role:'معلم متعدد التخصصات', image:'../images/arabic-teacher.png', bio:'معلم متميز في اللغة العربية، يجمع بين العلم الشرعي والأصيل والإتقان في تعليم القرآن الكريم والمواد الشرعية بأسلوب مبسط وممتع.' },
  { legacyKey:'zad-saad-alaa', name:'الأستاذ سعد علاء', subject:'الرياضيات, العلوم, الكيمياء', role:'مدرس علوم وكيمياء ورياضيات', image:'../images/saad-alaa-poster.png', bookingSection:'الرياضيات', bookingSubject:'الرياضيات', bio:'طالب بكلية التربية بجامعة الأزهر بالقاهرة. يقدّم شرحًا مبسطًا للعلوم والكيمياء والرياضيات مع الاهتمام بالتفاعل مع الطلاب ومراعاة الفروق الفردية.' },
+ { legacyKey:'zad-fatima-diaa-courses', name:'الأستاذة فاطمة ضياء', subject:'كورسات اللغة الإنجليزية', role:'مدربة كورسات اللغة الإنجليزية', image:'../images/fatima-diaa-courses.png?v=20261112', bio:'كورسات تعليمية مستقلة في اللغة الإنجليزية، وليست حصص مناهج مدرسية.' },
  { legacyKey:'zad-mohamed-khaled-mahmoud', name:'الأستاذ محمد خالد محمود', subject:'الكيمياء, العلوم', stages:'المرحلة الثانوية', specialties:1, experience:3, studentsCount:50, role:'مدرس الكيمياء والعلوم للمرحلة الثانوية', image:'../images/mohamed-khaled-mahmoud.webp', bookingSection:'العلوم', bookingSubject:'الكيمياء', bio:'شرح مبسط وتدريبات ومتابعة للمرحلة الثانوية بجميع الشعب. حصص أونلاين وبرايفت.' }
 ];
 
 function render(t){
  const name=text(t.name)||'المعلم';
- const image=photo(/سعد\s+علاء/.test(name)?'../images/saad-alaa-poster.png?v=20261110-3':/فاطمة\s+ضياء/.test(name)?'../images/fatima-diaa.jpeg':/محمد\s+خالد/.test(name)?'../images/mohamed-khaled-mahmoud.webp':t.image);
+ const image=photo(/سعد\s+علاء/.test(name)?'../images/saad-alaa-poster.png?v=20261110-3':/فاطمة\s+ضياء/.test(name)?'../images/fatima-diaa-courses.png?v=20261112':/محمد\s+خالد/.test(name)?'../images/mohamed-khaled-mahmoud.webp':t.image);
  const fullPhoto=/سعد\s+علاء/.test(name)?'../images/saad-alaa-poster.png?v=20261110-3':image;
  // صور الإعلانات القديمة تحتوي عبارة الحصة المجانية داخل الصورة نفسها.
  const neutralPoster=false;
   const coursesOnly=/فاطمة\s+ضياء/.test(name);
   // ميس فاطمة: كورسات فقط، ولا نعرض بيانات مناهج أو مراحل دراسية مخزنة سابقًا.
-  const subjects=coursesOnly?['كورسات تعليمية فقط']:text(t.subject).split(',').map(x=>x.trim()).filter(Boolean);
+  const subjects=coursesOnly?['كورسات اللغة الإنجليزية فقط']:text(t.subject).split(',').map(x=>x.trim()).filter(Boolean);
  const stages=coursesOnly?[]:text(t.stages).split(',').map(x=>x.trim()).filter(Boolean);
- const bio=coursesOnly?'تقدم كورسات تعليمية مستقلة فقط، ولا تقدم حصص مناهج الابتدائي أو الإعدادي أو الثانوي عبر المنصة.':text(t.bio);
-  const role=coursesOnly?'مدربة كورسات تعليمية':text(t.role);
+ const bio=coursesOnly?'تقدم كورسات مستقلة في اللغة الإنجليزية، وليست حصص مناهج الابتدائي أو الإعدادي أو الثانوي.':text(t.bio);
+  const role=coursesOnly?'مدربة كورسات اللغة الإنجليزية':text(t.role);
  const isHighlightedTeacher=/محمد\s+خالد/.test(name);
  const experience=isHighlightedTeacher?3:num(t.experience); const specialties=isHighlightedTeacher?1:(num(t.specialties)||subjects.length);
  const studentsCount=isHighlightedTeacher?50:num(t.studentsCount);
