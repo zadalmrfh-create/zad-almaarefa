@@ -439,7 +439,7 @@ service cloud.firestore {
         && get(/databases/$(database)/documents/lessonAttendance/$(lessonId)).data.get('deleted', false) != true
         && request.resource.data.keys().hasOnly([
           'lessonId','studentUid','studentName','teacherUid','teacherName',
-          'subject','lessonDate','stars','comment','createdAt'
+          'subject','lessonDate','stars','coverage','duration','clarity','interaction','comment','createdAt'
         ])
         && request.resource.data.lessonId == lessonId
         && request.resource.data.studentUid == request.auth.uid
@@ -450,6 +450,10 @@ service cloud.firestore {
         && request.resource.data.subject == get(/databases/$(database)/documents/lessonAttendance/$(lessonId)).data.get('subject','')
         && request.resource.data.stars is int
         && request.resource.data.stars >= 1 && request.resource.data.stars <= 5
+        && request.resource.data.coverage in ['yes','partial','no','unsure']
+        && request.resource.data.duration in ['short','suitable','long']
+        && request.resource.data.clarity in ['clear','somewhat','unclear']
+        && request.resource.data.interaction in ['yes','somewhat','no']
         && request.resource.data.comment is string && request.resource.data.comment.size() <= 500
         && request.resource.data.createdAt == request.time;
       allow update, delete: if false;
