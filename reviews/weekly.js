@@ -1,6 +1,6 @@
 import {auth,db} from '../firebase-config.js';
 import {onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
-import {doc,collection,getDoc,getDocs,query,where,runTransaction,serverTimestamp} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
+import {doc,collection,getDoc,getDocs,query,where,writeBatch,serverTimestamp} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 import {TEACHER_QUESTIONS,PLATFORM_QUESTIONS,ADMIN_QUESTIONS,lastFullWeek,reviewId,eligibleTeachers,htmlEscape} from './weekly-shared.js';
 const $=id=>document.getElementById(id);
 const week=lastFullWeek();
@@ -8,7 +8,6 @@ const intended=(()=>{const next=new URLSearchParams(location.search).get('next')
 $('weekLabel').textContent=`الأسبوع المطلوب: من ${week.start} إلى ${week.end}`;
 $('weeklyContinue').href=intended;
 let currentUser=null,forms=[];
-const pendingReviews=new Set();
 function render(){
  const target=$('evaluationItems');target.replaceChildren();
  const completed=forms.filter(x=>x.saved).length,total=forms.length;
@@ -18,8 +17,8 @@ function render(){
  for(const data of forms){
   const panel=document.createElement('article');panel.className='panel';
   const heading=document.createElement('h2');heading.textContent=data.title;panel.appendChild(heading);
-  const sub=document.createElement('p');sub.className='sub';sub.textContent=data.saved?'✅ تم إرسال التقييم وحفظه بنجاح':`الأسبوع ${week.start} — ${week.end}. أجب عن كل سؤال.`;panel.appendChild(sub);
-  if(data.saved){const done=document.createElement('p');done.className='done';done.textContent='✅ تم إرسال هذا التقييم بالفعل. لا يمكن إعادة إرساله أو تعديله.';panel.append(done);target.append(panel);continue}
+  const sub=document.createElement('p');sub.className='sub';sub.textContent=data.saved?'✅ تم تسجيل التقييم بنجاح':`الأسبوع ${week.start} — ${week.end}. أجب عن كل سؤال.`;panel.appendChild(sub);
+  if(data.saved){const done=document.createElement('p');done.className='done';done.textContent='تقييم محفوظ، ولا يمكن إرساله مرة ثانية.';panel.append(done);target.append(panel);continue}
   const form=document.createElement('form');form.noValidate=true;form.dataset.reviewKey=data.kind+'::'+(data.teacherUid||'');
   data.questions.forEach((question,i)=>{
    const box=document.createElement('div');box.className='question';const title=document.createElement('strong');title.textContent=`${i+1}. ${question}`;box.append(title);
@@ -36,45 +35,26 @@ function render(){
    e.preventDefault();const scores=data.questions.map((_,i)=>{const found=form.querySelector(`input[name="q${i}"]:checked`);return found?Number(found.value):null});
    if(scores.some(x=>x===null)){status.textContent='من فضلك أجب عن جميع الأسئلة أولًا.';return}
    if(data.kind==='teacher'&&scores.some(x=>x===0)){status.textContent='اختر تقييمًا من 1 إلى 5 لكل سؤال.';return}
-   if(data.saved)return;
-   const id=reviewId(currentUser.uid,week.start,data.kind,data.teacherUid||'');
-   if(pendingReviews.has(id))return;
-   pendingReviews.add(id);
-   button.disabled=true;button.textContent='جارٍ الإرسال...';status.textContent='جارٍ التأكد من عدم إرسال هذا التقييم مسبقًا...';
+   if(data.saved){status.textContent='✅ تم إرسال التقييم بالفعل.';return;}
+   button.disabled=true;status.textContent='جارٍ حفظ التقييم في Firebase...';
    const feedbackDoc=data.kind==='teacher'?doc(collection(db,'weeklyTeacherFeedback')):null;
+   const id=reviewId(currentUser.uid,week.start,data.kind,data.teacherUid||'');
    const privateData={studentUid:currentUser.uid,kind:data.kind,weekStart:week.start,weekEnd:week.end,teacherUid:data.teacherUid||'',sourceAttendanceId:data.attendanceId||'',sourceBookingId:data.bookingId||'',feedbackId:feedbackDoc?.id||'',scores,comment:textarea.value.trim(),publishConsent:data.kind!=='administration',createdAt:serverTimestamp()};
    try{
-    const privateRef=doc(db,'weeklyReviewPrivate',id);
-    const result=await runTransaction(db,async transaction=>{
-      // Read before writing: Firestore retries conflicts, preventing double submissions
-      // from other tabs, browsers and devices, not only this visible button.
-      const existing=await transaction.get(privateRef);
-      if(existing.exists())return 'already-sent';
-      transaction.set(privateRef,privateData);
-      if(feedbackDoc)transaction.set(feedbackDoc,{
-        kind:'teacher',teacherUid:data.teacherUid,weekStart:week.start,
-        scores,comment:privateData.comment,createdAt:serverTimestamp()
-      });
-      if(data.kind!=='administration'&&privateData.comment){
-        const publicRef=doc(collection(db,'publicTestimonials'));
-        transaction.set(publicRef,{
-          status:'published',kind:data.kind,text:privateData.comment,
-          rating:data.kind==='teacher'?scores[5]:scores[3],
-          teacherUid:data.teacherUid||'',teacherName:data.kind==='teacher'?data.name||'من معلمي المنصة':'',
-          weekStart:week.start,createdAt:serverTimestamp()
-        });
-      }
-      return 'sent';
-    });
-    for(const entry of forms){
-      const dom=[...document.querySelectorAll('form[data-review-key]')].find(f=>f.dataset.reviewKey===entry.kind+'::'+(entry.teacherUid||''));
-      if(!dom)continue;
-      entry.draft={scores:entry.questions.map((_,i)=>{const v=dom.querySelector(`input[name="q${i}"]:checked`);return v?Number(v.value):null}),comment:dom.querySelector('textarea')?.value||''};
+    const prior=await getDoc(doc(db,'weeklyReviewPrivate',id));
+    if(prior.exists()){data.saved=true;render();$('weeklyMessage').textContent='✅ هذا التقييم تم إرساله بالفعل ولا يمكن إرساله مرة ثانية.';return;}
+    const batch=writeBatch(db);batch.set(doc(db,'weeklyReviewPrivate',id),privateData);
+    if(feedbackDoc)batch.set(feedbackDoc,{kind:'teacher',teacherUid:data.teacherUid,weekStart:week.start,scores,comment:privateData.comment,createdAt:serverTimestamp()});
+    if(data.kind!=='administration'&&privateData.comment){
+      const publicRef=doc(collection(db,'publicTestimonials'));
+      batch.set(publicRef,{status:'published',kind:data.kind,text:privateData.comment,rating:data.kind==='teacher'?scores[5]:scores[3],teacherUid:data.teacherUid||'',teacherName:data.kind==='teacher'?data.name||'من معلمي المنصة':'',weekStart:week.start,createdAt:serverTimestamp()});
     }
-    data.saved=true;
-    render();
-    $('weeklyMessage').textContent=result==='already-sent'?'✅ هذا التقييم تم إرساله من قبل، ولن يُرسل مرة أخرى.':'✅ تم إرسال التقييم وحفظه بنجاح، ولا يمكن إرساله مرة أخرى.';
-   }catch(err){console.error('weekly-review-save',err);status.textContent='تعذر حفظ التقييم. لم يُحتسب مكتملًا. تحقق من صلاحيات Firestore وقواعد التقييم وأعد المحاولة. '+(err.code||err.message||'');button.disabled=false;button.textContent='إرسال التقييم'}finally{pendingReviews.delete(id)}
+    await batch.commit();for(const entry of forms){const dom=[...document.querySelectorAll('form[data-review-key]')].find(f=>f.dataset.reviewKey===entry.kind+'::'+(entry.teacherUid||''));if(!dom)continue;entry.draft={scores:entry.questions.map((_,i)=>{const v=dom.querySelector(`input[name="q${i}"]:checked`);return v?Number(v.value):null}),comment:dom.querySelector('textarea')?.value||'',consent:true}}data.saved=true;render();$('weeklyMessage').textContent='✅ تم حفظ التقييم بنجاح.';
+   }catch(err){
+    console.error('weekly-review-save',err);
+    try{const stored=await getDoc(doc(db,'weeklyReviewPrivate',id));if(stored.exists()){data.saved=true;render();$('weeklyMessage').textContent='✅ التقييم محفوظ بالفعل ولا يمكن إرساله مرة أخرى.';return;}}catch(_){}
+    status.textContent='تعذر حفظ التقييم. لم يُحتسب مكتملًا. تحقق من صلاحيات Firestore وقواعد التقييم وأعد المحاولة. '+(err.code||err.message||'');button.disabled=false
+   }
   });panel.append(form);target.append(panel)
  }
 }

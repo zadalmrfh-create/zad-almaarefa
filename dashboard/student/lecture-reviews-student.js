@@ -1,12 +1,12 @@
 import {auth,db} from '../../firebase-config.js';
 import {getPreviewContext} from '../admin-preview-core.js';
 import {onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
-import {collection,query,where,onSnapshot,doc,setDoc,serverTimestamp} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
+import {collection,query,where,onSnapshot,doc,getDoc,setDoc,serverTimestamp} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 const box=document.getElementById('studentLectureRatingsList');
 const badge=document.getElementById('studentLectureRatingBadge');
 const clean=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let uid='',lessons=[],ratings=new Map(),unsubs=[],currentUser=null,preview=false;
-let latestLessonId=null,latestPointerLoaded=false;
+let latestLessonId=null,latestPointerLoaded=false,reviewUnsub=null,subscribedLessonId=null,submittingLessonId=null;
 // Zero-cost automatic reminder shown within the student dashboard, not via WhatsApp.
 let reminderDismissedForUid='';
 function syncFreeReminder(pending){
@@ -41,7 +41,7 @@ function render(){
  const eligible=lessons.filter(x=>x.status==='حاضر'&&x.deleted!==true&&['manual-attendance','teacher-dashboard'].includes(x.source));
  eligible.sort((a,b)=>String(b.date||'').localeCompare(String(a.date||''))||(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
  const latest=eligible.find(x=>x.id===latestLessonId);
- const pending=latest&&!ratings.has(latest.id)?1:0;
+ const pending=latest&&!ratings.has(latest.id)&&submittingLessonId!==latest.id?1:0;
  if(badge)badge.textContent=pending?'(1)':'';
  syncFreeReminder(pending);
  if(!eligible.length){box.innerHTML='<div class="notice">لا توجد محاضرات مسجّلة بحضورك حتى الآن.</div>';return;}
@@ -50,7 +50,8 @@ function render(){
  box.innerHTML=sorted.map(x=>{
   const rated=ratings.get(x.id);
   const header=`<strong>${clean(x.subject||'محاضرة')}</strong><p style="margin:5px 0;color:#bfc9d8">${clean(x.date||'')} — ${clean(x.teacherName||'المعلم')}</p>`;
-  if(rated)return `<article style="padding:16px;border:1px solid #435672;border-radius:14px;background:#122039">${header}<p style="color:#e7c75d">✅ تقييمك: ${'★'.repeat(rated.stars)}${'☆'.repeat(5-rated.stars)}</p>${rated.comment?`<p>${clean(rated.comment)}</p>`:''}</article>`;
+  if(rated)return `<article style="padding:16px;border:1px solid #435672;border-radius:14px;background:#122039">${header}<p style="color:#78e0a4;font-weight:bold">✅ تم إرسال التقييم وحفظه بنجاح — لا يمكن إرساله مرة أخرى.</p><p style="color:#e7c75d">تقييمك: ${'★'.repeat(rated.stars)}${'☆'.repeat(5-rated.stars)}</p>${rated.comment?`<p>${clean(rated.comment)}</p>`:''}</article>`;
+  if(x.id===submittingLessonId)return `<article style="padding:16px;border:1px solid #435672;border-radius:14px;background:#122039">${header}<p role="status">جارٍ حفظ التقييم والتحقق منه...</p></article>`;
   if(x.id!==latestLessonId)return `<article style="padding:16px;border:1px solid #435672;border-radius:14px;background:#122039">${header}<p style="color:#bfc9d8">🔒 انتهت فترة تقييم هذه المحاضرة. التقييم متاح لآخر محاضرة فقط.</p></article>`;
   return `<article style="padding:16px;border:1px solid #bb9850;border-radius:14px;background:#14233a">${header}<p style="color:#e9c85b">🟢 هذه آخر محاضرة يمكنك تقييمها.</p><form data-rate-lesson="${clean(x.id)}" style="display:grid;gap:10px"><label>تقييم المحاضرة <select name="stars" required style="padding:10px;background:#fff;color:#142035"><option value="">اختر التقييم</option><option value="5">⭐⭐⭐⭐⭐ ممتازة</option><option value="4">⭐⭐⭐⭐ جيدة جدًا</option><option value="3">⭐⭐⭐ جيدة</option><option value="2">⭐⭐ تحتاج تحسين</option><option value="1">⭐ لم أستفد بالشكل المطلوب</option></select></label><label>هل شرح المعلم الجزء المقرر لمحاضرة اليوم؟ <select name="coverage" required style="padding:10px;background:#fff;color:#142035"><option value="">اختر إجابة</option><option value="yes">نعم، تم شرح المقرر</option><option value="partial">تم شرح جزء منه</option><option value="no">لا، لم يتم شرح المقرر</option><option value="unsure">لا أعرف المقرر المحدد</option></select></label><label>إيه رأيك في مدة الحصة؟ <select name="duration" required style="padding:10px;background:#fff;color:#142035"><option value="">اختر إجابة</option><option value="short">قصيرة ومحتاجة وقت أكتر</option><option value="suitable">مناسبة</option><option value="long">طويلة زيادة</option></select></label><label>هل كان شرح المعلم واضحًا؟ <select name="clarity" required style="padding:10px;background:#fff;color:#142035"><option value="">اختر إجابة</option><option value="clear">واضح جدًا</option><option value="somewhat">واضح إلى حد ما</option><option value="unclear">محتاج توضيح أكتر</option></select></label><label>هل أتاح لك المعلم السؤال والتفاعل؟ <select name="interaction" required style="padding:10px;background:#fff;color:#142035"><option value="">اختر إجابة</option><option value="yes">نعم</option><option value="somewhat">إلى حد ما</option><option value="no">لا</option></select></label><label>نصيحتك أو اقتراحك لتطوير المحاضرات (اختياري)<textarea name="comment" maxlength="500" rows="3" placeholder="إيه اللي عجبك وإيه اللي تحب يتحسن؟" style="width:100%;padding:10px"></textarea></label><button class="btn gold" type="submit" ${preview?'disabled title="المعاينة لا تسمح بالتقييم"':''}>🌟 إرسال التقييم</button><small data-rate-message role="status"></small></form></article>`;
  }).join('');
@@ -61,28 +62,55 @@ box?.addEventListener('submit',async e=>{
  const stars=Number(form.elements.stars.value),comment=String(form.elements.comment.value||'').trim();
  const coverage=form.elements.coverage.value,duration=form.elements.duration.value,clarity=form.elements.clarity.value,interaction=form.elements.interaction.value;
  const message=form.querySelector('[data-rate-message]'),btn=form.querySelector('button[type=submit]');
+ if(submittingLessonId===id||ratings.has(id)){message.textContent='✅ تم إرسال هذا التقييم بالفعل، ولا يمكن إرساله مرة ثانية.';return;}
  if(!lesson||preview||currentUser?.uid!==uid){message.textContent='افتح حساب الطالب نفسه لإرسال التقييم.';return;}
  if(!latestPointerLoaded||lesson.id!==latestLessonId){message.textContent='انتهت فترة التقييم لهذه الحصة؛ آخر محاضرة فقط متاحة.';return;}
  if(!Number.isInteger(stars)||stars<1||stars>5||comment.length>500||!['yes','partial','no','unsure'].includes(coverage)||!['short','suitable','long'].includes(duration)||!['clear','somewhat','unclear'].includes(clarity)||!['yes','somewhat','no'].includes(interaction)){message.textContent='من فضلك أجب عن أسئلة تقييم المحاضرة.';return;}
- btn.disabled=true;message.textContent='جارٍ حفظ التقييم...';
+ btn.disabled=true;submittingLessonId=id;message.textContent='جارٍ حفظ التقييم...';
  try{
+  // Re-read the exact document before writing: prevents accidental resubmission.
+  const target=doc(db,'lectureReviews',id);
+  const existing=await getDoc(target);
+  if(existing.exists()){ratings.set(id,existing.data());message.textContent='✅ تم إرسال التقييم بالفعل.';render();return;}
   await setDoc(doc(db,'lectureReviews',id),{
    lessonId:id,studentUid:uid,studentName:lesson.studentName||'',teacherUid:lesson.teacherUid||null,
    teacherName:lesson.teacherName||'',subject:lesson.subject||'',lessonDate:lesson.date||'',stars,coverage,duration,clarity,interaction,comment,createdAt:serverTimestamp()
   });
-  message.textContent='✅ تم إرسال تقييمك بنجاح.';
- }catch(error){message.textContent=error.code==='permission-denied'?'تعذّر الحفظ: يلزم نشر قواعد Firestore المرفقة، والتأكد أن الحصة مسجّلة حاضرًا.':(error.code||error.message||'تعذر إرسال التقييم');btn.disabled=false;}
+  const verified=await getDoc(target);
+  if(!verified.exists())throw new Error('تعذر التأكد من وصول التقييم إلى قاعدة البيانات.');
+  ratings.set(id,verified.data());
+  render();
+ }catch(error){
+  // If another tab submitted first, treat the existing review as success.
+  try{const existing=await getDoc(doc(db,'lectureReviews',id));if(existing.exists()){ratings.set(id,existing.data());render();return;}}catch(_){}
+  message.textContent=error.code==='permission-denied'?'تعذّر الحفظ: راجع قواعد Firestore وحالة حضور المحاضرة.':(error.code||error.message||'تعذر إرسال التقييم');btn.disabled=false;
+ }finally{submittingLessonId=null;}
 });
 onAuthStateChanged(auth,async user=>{
- unsubs.forEach(fn=>fn());unsubs=[];uid='';lessons=[];ratings.clear();latestLessonId=null;latestPointerLoaded=false;currentUser=user;preview=false;
+ unsubs.forEach(fn=>fn());unsubs=[];if(reviewUnsub){reviewUnsub();reviewUnsub=null;}subscribedLessonId=null;submittingLessonId=null;uid='';lessons=[];ratings.clear();latestLessonId=null;latestPointerLoaded=false;currentUser=user;preview=false;
  document.getElementById('zadLectureRatingReminder')?.remove();
  if(!user){if(box)box.textContent='سجّل الدخول لعرض تقييمات المحاضرات.';return;}
  const pv=await getPreviewContext(user,'student');if(pv.denied){if(box)box.textContent='لا يمكن عرض هذا الحساب.';return;}
  uid=pv.uid;preview=pv.active;
  const onError=e=>{if(box)box.textContent='تعذر عرض التقييمات: '+(e.code||e.message)};
- unsubs.push(onSnapshot(doc(db,'latestLectureReview',uid),snap=>{latestPointerLoaded=true;latestLessonId=snap.exists()?snap.data().lessonId:null;render();},onError));
+ unsubs.push(onSnapshot(doc(db,'latestLectureReview',uid),snap=>{
+   latestPointerLoaded=true;latestLessonId=snap.exists()?snap.data().lessonId:null;
+   if(subscribedLessonId!==latestLessonId){
+     if(reviewUnsub){reviewUnsub();reviewUnsub=null;}
+     subscribedLessonId=latestLessonId;
+     if(latestLessonId){
+       const trackedId=latestLessonId;
+       reviewUnsub=onSnapshot(doc(db,'lectureReviews',trackedId),review=>{
+         if(trackedId!==latestLessonId)return;
+         if(review.exists())ratings.set(trackedId,review.data());else ratings.delete(trackedId);
+         render();
+       },onError);
+     }
+   }
+   render();
+ },onError));
  // A shared link opens the rating tab directly, after the normal tab controls are loaded.
  if(new URLSearchParams(location.search).get('tab')==='lectureRatings')setTimeout(()=>document.querySelector('[data-student-tab="lectureRatings"]')?.click(),0);
  unsubs.push(onSnapshot(query(collection(db,'lessonAttendance'),where('studentUid','==',uid)),snap=>{lessons=snap.docs.map(d=>({id:d.id,...d.data()}));render();},onError));
- unsubs.push(onSnapshot(query(collection(db,'lectureReviews'),where('studentUid','==',uid)),snap=>{ratings=new Map(snap.docs.map(d=>[d.id,d.data()]));render();},onError));
+ // Read only the current review by its attendance ID; never query other students' reviews.
 });

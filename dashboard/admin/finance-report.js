@@ -1,6 +1,8 @@
+import {sharedAdminGetDocs,clearAdminReadCache} from './firestore-read-cache.js';
+const getDocs=(ref)=>sharedAdminGetDocs(ref,rawGetDocs,auth);
 import {db,auth} from '../../firebase-config.js';
 import {onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
-import {getDocs,getDoc,doc,collection} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
+import {getDocs as rawGetDocs,getDoc,doc,collection} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 import {amountDue,amountPaid,money} from '../payment-utils.js';
 const $=id=>document.getElementById(id),esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let rows=[],manual=[],loaded=false;

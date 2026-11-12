@@ -69,3 +69,9 @@
 .zad-attendance-view #zadTeacherLinker>summary,.zad-attendance-view #zadStudentUidRepairPanel>summary{padding:3px 0;line-height:1.8}
 @media(max-width:850px){.zad-finance-modes{grid-template-columns:1fr}.zad-attendance-modes{grid-template-columns:repeat(2,minmax(0,1fr))}.zad-finance-workspace .zad-student-account-controls{grid-template-columns:1fr}}
 @media(max-width:530px){.zad-finance-view,.zad-attendance-view{padding:12px}.zad-finance-mode{min-height:100px;padding:13px}.zad-finance-mode strong{font-size:16px}.zad-finance-mode small{font-size:12px}.zad-attendance-mode{font-size:13px;padding:10px 6px}}
+
+/* Merged specialty exam tools and teacher configuration – accessible within parent tabs */
+.zad-admin-merged-detail{margin-top:22px;padding:14px;border:1px solid #b99a48;border-radius:14px;background:rgba(22,35,55,.4)}
+.zad-admin-merged-detail>summary{cursor:pointer;font-weight:800;font-size:1.06rem;color:#efd18b;padding:8px;list-style:revert}
+.zad-admin-merged-detail[open]>summary{margin-bottom:14px}
+.zad-admin-merged-detail>.card{margin:10px 0;border-color:#475a74}

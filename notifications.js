@@ -625,9 +625,12 @@ export function initNotifications() {
   // متابعة حالة تسجيل الدخول
   // ---------------------------------------------------
 
+  let notificationRefreshTimer=null;
+  const stopRefreshing=()=>{if(notificationRefreshTimer){clearInterval(notificationRefreshTimer);notificationRefreshTimer=null;}};
   onAuthStateChanged(
     auth,
     async user => {
+      stopRefreshing();
 
       // =================================================
       // المستخدم غير مسجل
@@ -658,12 +661,22 @@ export function initNotifications() {
 
       ui.bell.style.display =
         'inline-flex';
+      // تظهر الإشعارات في الصفحة الرئيسية مباشرة دون فتح لوحة الطالب.
 
 
       ui.list.innerHTML =
         '<div class="zad-notifications-empty">جارٍ تحميل الإشعارات…</div>';
 
 
+      const refreshNotifications=async()=>{
+        if(auth.currentUser?.uid!==user.uid || document.hidden)return;
+        try{
+          const notices=await loadNotifications(user.uid);
+          if(auth.currentUser?.uid!==user.uid)return;
+          renderNotifications(ui,notices,user.uid);
+        }catch(error){console.warn('تعذر تحديث الإشعارات:',error);}
+      };
+      notificationRefreshTimer=setInterval(refreshNotifications,30000);
       try {
 
         const notifications =
@@ -704,7 +717,14 @@ export function initNotifications() {
 
     }
   );
-
+  document.addEventListener('visibilitychange',()=>{
+    if(!document.hidden && auth.currentUser){
+      // تحديث آمن للعرض فور الرجوع إلى الصفحة
+      loadNotifications(auth.currentUser.uid).then(notices=>{
+        if(auth.currentUser)renderNotifications(ui,notices,auth.currentUser.uid);
+      }).catch(err=>console.warn('تعذر تحديث الإشعارات:',err));
+    }
+  });
 }
 
 
