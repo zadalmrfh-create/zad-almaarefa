@@ -1,27 +1,20 @@
-import {sharedAdminGetDocs,clearAdminReadCache} from './firestore-read-cache.js';
-const getDocs=(ref)=>sharedAdminGetDocs(ref,rawGetDocs,auth);
 import {amountDue,amountPaid,amountRemaining,money as cashMoney} from '../payment-utils.js';
 import {advanceSnapshot} from '../advance-credit.js';
 import {archiveAttendance,restoreAttendance} from './attendance-archive.js';
 import { db, auth } from '../../firebase-config.js';
-import { collection, query, where, getDocs as rawGetDocs, getDoc, addDoc, updateDoc, deleteDoc, doc, writeBatch, serverTimestamp } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
-import { SUBJECTS, teacherForSubject, ENGLISH_TEACHERS, isEnglishSubject, availableScienceTeachers } from '../attendance-subjects.js';
+import { collection, query, where, getDocs, getDoc, addDoc, updateDoc, deleteDoc, doc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
+import { SUBJECTS, teacherForSubject, ENGLISH_TEACHERS, isEnglishSubject } from '../attendance-subjects.js';
 
 const $ = id => document.getElementById(id);
 const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 let students = [], records = [], cancelledRecords = [];
-let latestLectureByStudent = new Map();
 let teacherProfiles = [];
 const teacherKey = name => String(name||'').normalize('NFKC').replace(/[\u064B-\u065F\u0670]/g,'').replace(/^(الأستاذ|أستاذ|مستر|ميس|أ\/)\s*/i,'').replace(/\s+/g,' ').trim().toLowerCase();
 function teacherUidForName(name) {
-  const key=teacherKey(name);
-  if(!key||key.includes('،'))return null;
-  const names=p=>[p.fullName,p.name,p.displayName,...(Array.isArray(p.attendanceAliases)?p.attendanceAliases:[])].map(teacherKey).filter(Boolean);
-  let matches=teacherProfiles.filter(p=>names(p).includes(key));
-  // السماح بمطابقة الاسم الثلاثي مع الاسم الرباعي إذا كان الحساب فريدًا.
-  if(!matches.length && (key.split(' ').length>=3 || key==='سعد علاء'))
-    matches=teacherProfiles.filter(p=>names(p).some(n=>n.startsWith(key+' ')));
-  return matches.length===1?matches[0].id:null;
+  const key = teacherKey(name);
+  if (!key || key.includes('،')) return null;
+  const matches = teacherProfiles.filter(profile => [profile.fullName,profile.name,profile.displayName,...(Array.isArray(profile.attendanceAliases)?profile.attendanceAliases:[])].some(n=>teacherKey(n)===key));
+  return matches.length===1 ? matches[0].id : null;
 }
 
 let ambiguousEmailAccounts = new Map();
@@ -55,23 +48,23 @@ function getSelectedSubjects() {
 function syncAttendanceTeacher() {
   const field = $('attendanceTeacherName');
   if (!field) return;
-  const selected=getSelectedSubjects();
-  const previous=field.value;
-  const english=selected.some(isEnglishSubject);
-  const science=availableScienceTeachers(selected);
-  const choices=!selected.length
-    ? [{value:'',label:'اختر المادة أولًا'}]
-    : science.length
-      ? science.map(name=>({value:name,label:'أ/ '+name}))
-      : english
-        ? [{value:teacherForSubject(selected),label:'يحدد معلم مناهج الإنجليزي من الإدارة'}]
-        : [{value:teacherForSubject(selected)||'غير محدد',label:teacherForSubject(selected)||'غير محدد'}];
-  field.replaceChildren(...choices.map(x=>new Option(x.label,x.value)));
-  if(choices.some(x=>x.value===previous))field.value=previous;
-  const selectable=choices.length>1;
-  field.disabled=!selectable;
-  field.style.cursor=selectable?'pointer':'not-allowed';
-  field.setAttribute('aria-label',selectable?'اختر معلم الحصة':'المعلم المحدد تلقائيًا');
+  const selected = getSelectedSubjects();
+  const previous = field.value;
+  const english = selected.some(isEnglishSubject);
+  const choices = !selected.length
+    ? [{ value: '', label: 'اختر المادة أولًا' }]
+    : english
+      ? ENGLISH_TEACHERS.map((name, i) => ({
+          value: teacherForSubject(selected, name),
+          label: (i === 0 ? 'مستر ' : 'ميس ') + name + (selected.length > 1 ? ' (مع معلمي باقي المواد)' : '')
+        }))
+      : [{ value: teacherForSubject(selected) || 'غير محدد', label: teacherForSubject(selected) || 'غير محدد' }];
+  field.replaceChildren(...choices.map(choice => new Option(choice.label, choice.value)));
+  if (choices.some(choice => choice.value === previous)) field.value = previous;
+  else if (english && previous.includes('فاطمة ضياء')) field.value = choices[1].value;
+  field.disabled = !english;
+  field.style.cursor = english ? 'pointer' : 'not-allowed';
+  field.setAttribute('aria-label', english ? 'اختر مدرس اللغة الإنجليزية: مستر علي عبد الحميد أو ميس فاطمة ضياء' : 'المعلم المحدد تلقائيًا');
 }
 
 subjectSelect?.addEventListener('change', syncAttendanceTeacher);
@@ -167,8 +160,8 @@ function renderAttendanceLog(){
   rows.innerHTML = matches.length ? matches.map(x=>`<tr>
     <td>${esc(x.studentName || '-')}</td><td>${esc(x.date || '-')}</td><td>${esc(x.subject || '-')}</td>
     <td>${esc(x.status || '-')}</td><td>${money(x.price)}</td>
-    <td><button type="button" class="btn ${attendanceLogRemaining(x)===0 ? 'gold' : (amountPaid(x)>0 || (creditFor(x)?.advanceAppliedPiastres||0)>0) ? 'attendance-partial-payment' : 'attendance-unpaid-payment'}" data-paid="${esc(x.id)}" aria-label="تغيير حالة الدفع">${creditFor(x)?.afterPiastres===0?'✅ مغطاة / مدفوعة':creditFor(x)?.advanceAppliedPiastres>0?'🟡 جزء مغطى بالمقدم، المتبقي '+cashMoney(creditFor(x).afterPiastres):amountRemaining(x)===0?'✅ مدفوعة':amountPaid(x)>0?'🟡 مدفوع جزئيًا '+cashMoney(amountPaid(x)):'⏳ غير مدفوعة'}</button></td>
-    <td>${esc(x.teacherName || 'الإدارة')}</td><td>${x.status==='حاضر'?`<button type="button" class="btn" data-payroll-extra="${esc(x.id)}">➕ إضافي المرتب</button>`:'—'}</td><td>${x.status==='حاضر' && latestLectureByStudent.get(x.studentUid)===x.id?`<button type="button" class="btn gold" data-copy-lecture-rating="${esc(x.id)}">🔗 نسخ لينك التقييم</button> `:''}<button type="button" class="btn" data-edit="${esc(x.id)}">✏️ تعديل الحصة</button> <button type="button" class="btn danger" data-del="${esc(x.id)}">حذف</button></td></tr>`).join('') : `<tr><td colspan="9">${records.length?'لا توجد حصص مطابقة للبحث والتصفية. جرّب مسح الفلاتر.':'لا توجد سجلات حضور بعد.'}</td></tr>`;
+    <td><button type="button" class="btn ${x.paid === true ? 'gold' : ''}" data-paid="${esc(x.id)}" aria-label="تغيير حالة الدفع">${creditFor(x)?.afterPiastres===0?'✅ مغطاة / مدفوعة':creditFor(x)?.advanceAppliedPiastres>0?'🟡 جزء مغطى بالمقدم، المتبقي '+cashMoney(creditFor(x).afterPiastres):amountRemaining(x)===0?'✅ مدفوعة':amountPaid(x)>0?'🟡 مدفوع جزئيًا '+cashMoney(amountPaid(x)):'⏳ غير مدفوعة'}</button></td>
+    <td>${esc(x.teacherName || 'الإدارة')}</td><td>${x.status==='حاضر'?`<button type="button" class="btn" data-payroll-extra="${esc(x.id)}">➕ إضافي المرتب</button>`:'—'}</td><td><button type="button" class="btn" data-edit="${esc(x.id)}">✏️ تعديل الحصة</button> <button type="button" class="btn danger" data-del="${esc(x.id)}">حذف</button></td></tr>`).join('') : `<tr><td colspan="9">${records.length?'لا توجد حصص مطابقة للبحث والتصفية. جرّب مسح الفلاتر.':'لا توجد سجلات حضور بعد.'}</td></tr>`;
 }
 
 function render() {
@@ -223,8 +216,7 @@ function render() {
 async function load() {
   try {
     message.textContent = 'جارٍ تحميل بيانات الحضور والطلاب والمدفوعات...';
-    const [us, att, pay, latest] = await Promise.all([getDocs(collection(db, 'users')), getDocs(collection(db, 'lessonAttendance')), getDocs(collection(db, 'vodafonePayments')), getDocs(collection(db, 'latestLectureReview'))]);
-    latestLectureByStudent=new Map(latest.docs.map(d=>[d.id,d.data().lessonId]));
+    const [us, att, pay] = await Promise.all([getDocs(collection(db, 'users')), getDocs(collection(db, 'lessonAttendance')), getDocs(collection(db, 'vodafonePayments'))]);
     teacherProfiles=us.docs.map(d=>({id:d.id,...d.data()})).filter(x=>x.role==='teacher' && x.status==='active');
     const allStudentProfiles=us.docs.map(d=>({id:d.id,...d.data()})).filter(x=>x.role==='student');
     const candidateStudents=allStudentProfiles.filter(x=>!x.linkedToUid);
@@ -267,68 +259,6 @@ async function load() {
   }
 }
 
-
-// قرار صريح بشأن المقدم: الاحتفاظ بالرصيد لا يستهلكه تلقائياً.
-function askAdvanceDecision({studentName,available,price}){
- return new Promise(resolve=>{
-  const dlg=document.createElement('dialog');dlg.setAttribute('dir','rtl');
-  dlg.style.cssText='max-width:min(94vw,540px);width:100%;border:1px solid #d6ae44;border-radius:18px;background:#132239;color:#fff;padding:24px;box-shadow:0 20px 80px #0008';
-  const applied=Math.min(available,price);
-  dlg.innerHTML=`<h3 style="color:#f2c94c">💳 هل تريد الخصم من رصيد الطالب؟</h3><p>${esc(studentName)}</p><p>الرصيد المتاح: <strong>${cashMoney(available)}</strong> — سعر الحصة: <strong>${cashMoney(price)}</strong></p><p>عند الخصم تُغطّى ${cashMoney(applied)} ويتبقى على الحصة ${cashMoney(price-applied)}.</p><div style="display:flex;gap:10px;flex-wrap:wrap"><button type="button" data-answer="deduct" style="background:#f2c94c;color:#101b2b;padding:12px;border:0;border-radius:9px">خصم من الرصيد</button><button type="button" data-answer="keep" style="background:#243b58;color:white;padding:12px;border:1px solid #6480a0;border-radius:9px">الاحتفاظ بالرصيد — غير مدفوعة</button><button type="button" data-answer="cancel" style="background:transparent;color:white;padding:12px;border:1px solid #6480a0;border-radius:9px">إلغاء</button></div>`;
-  const finish=answer=>{dlg.close();dlg.remove();resolve(answer)};
-  dlg.addEventListener('click',e=>{const b=e.target.closest('[data-answer]');if(b)finish(b.dataset.answer)});
-  dlg.addEventListener('cancel',e=>{e.preventDefault();finish('cancel')});
-  document.body.append(dlg);dlg.showModal();
- });
-}
-
-
-// A payment marked as "paid" can mean external payment or use of existing student credit.
-// Credit coverage is represented ONLY by advanceUseMode='deduct' with paid=false,
-// so advance-credit.js never counts the same charge as both cash and credit.
-function askExistingLessonBalance({studentName,available,due,covered}) {
-  return new Promise(resolve => {
-    const dialog=document.createElement('dialog');
-    dialog.dir='rtl';
-    dialog.style.cssText='width:min(96vw,550px);max-width:550px;padding:22px;border-radius:17px;border:1px solid #d6ae44;background:#132239;color:#fff;box-shadow:0 20px 85px #0009';
-    const remaining=Math.max(0,due-covered);
-    dialog.innerHTML=`<h3 style="margin-top:0;color:#f2c94c">💳 هل تريد الخصم من رصيد الطالب؟</h3>
-      <p><strong>${esc(studentName||'الطالب')}</strong></p>
-      <p>الرصيد المقدم المتاح: <strong>${cashMoney(available)}</strong><br>قيمة الحصة: <strong>${cashMoney(due)}</strong></p>
-      <p>${covered>0?`يمكن خصم ${cashMoney(covered)}، ويتبقى ${cashMoney(remaining)} على الحصة.`:'لا يوجد رصيد مقدم متاح حاليًا للخصم.'}</p>
-      <div style="display:flex;gap:9px;flex-wrap:wrap">
-      <button type="button" data-payment-choice="deduct" ${covered<=0?'disabled':''} style="padding:11px;border:0;border-radius:8px;background:#f2c94c;color:#14233a;font-weight:700;cursor:pointer">${covered>=due?'نعم، خصم من الرصيد':'نعم، خصم المتاح (تبقى الحصة مدفوعة جزئيًا)'}</button>
-      <button type="button" data-payment-choice="direct" style="padding:11px;border:1px solid #7392b8;border-radius:8px;background:#284364;color:#fff;cursor:pointer">لا، مدفوعة مباشرة دون خصم الرصيد</button>
-      <button type="button" data-payment-choice="cancel" style="padding:11px;border:1px solid #7392b8;border-radius:8px;background:transparent;color:#fff;cursor:pointer">إلغاء</button>
-      </div>`;
-    const finish=choice=>{dialog.close();dialog.remove();resolve(choice)};
-    dialog.addEventListener('click',e=>{const button=e.target.closest('[data-payment-choice]');if(button&&!button.disabled)finish(button.dataset.paymentChoice)});
-    dialog.addEventListener('cancel',e=>{e.preventDefault();finish('cancel')});
-    document.body.append(dialog);dialog.showModal();
-  });
-}
-async function chooseExistingLessonPayment(lesson,{studentUid=lesson.studentUid,price=lesson.price,status=lesson.status,studentName=lesson.studentName}={}) {
-  // Fresh reads avoid using the balance captured when the admin originally opened the page.
-  const [fresh,lessonsResponse,paymentsResponse]=await Promise.all([
-    getDoc(doc(db,'lessonAttendance',lesson.id)),
-    rawGetDocs(query(collection(db,'lessonAttendance'),where('studentUid','==',studentUid))),
-    rawGetDocs(query(collection(db,'vodafonePayments'),where('studentUid','==',studentUid)))
-  ]);
-  if(!fresh.exists()||fresh.data().deleted===true)throw new Error('لم تعد الحصة متاحة. حدّث سجلات الحضور.');
-  if(Number(fresh.data().cashPaidPiastres||0)>0)throw new Error('الحصة مرتبطة بدفعة معتمدة. لا يمكن تغيير طريقة سدادها يدويًا.');
-  const others=lessonsResponse.docs.map(d=>({id:d.id,...d.data()})).filter(x=>x.id!==lesson.id);
-  const payments=paymentsResponse.docs.map(d=>({id:d.id,...d.data()}));
-  const candidate={...fresh.data(),id:lesson.id,studentUid,price,status,paid:false,advanceUseMode:'deduct',deleted:false};
-  const coverage=advanceSnapshot([...others,candidate],payments);
-  const covered=coverage.byLesson.get(lesson.id)?.advanceAppliedPiastres||0;
-  const available=advanceSnapshot(others,payments).availableAdvancePiastres;
-  const choice=await askExistingLessonBalance({studentName,available,due:amountDue(candidate),covered});
-  if(choice==='cancel')return null;
-  return choice==='deduct'
-    ? {paid:false,paidAt:null,advanceUseMode:'deduct'}
-    : {paid:true,paidAt:fresh.data().paidAt||serverTimestamp(),advanceUseMode:'keep'};
-}
-
 search?.addEventListener('input', filterStudents);
 form?.addEventListener('submit', async e => {
   e.preventDefault();
@@ -364,19 +294,6 @@ form?.addEventListener('submit', async e => {
         return;
       }
     }
-    // اقرأ رصيد الطالب مجددًا قبل التسجيل لتفادي الاعتماد على بيانات قديمة.
-    const [freshLessons,freshPayments]=await Promise.all([
-      getDocs(query(collection(db,'lessonAttendance'),where('studentUid','==',student.id))),
-      getDocs(query(collection(db,'vodafonePayments'),where('studentUid','==',student.id)))
-    ]);
-    const financial=advanceSnapshot(freshLessons.docs.map(d=>({id:d.id,...d.data()})),freshPayments.docs.map(d=>({id:d.id,...d.data()})));
-    const available=financial.availableAdvancePiastres;
-    const chargePiastres=Math.round(price*100);
-    let advanceUseMode='keep';
-    if(available>0 && chargePiastres>0 && $('attendanceStatus').value==='حاضر'){
-      advanceUseMode=await askAdvanceDecision({studentName:student.fullName||student.name||student.email||'الطالب',available,price:chargePiastres});
-      if(advanceUseMode==='cancel'){message.textContent='تم إلغاء تسجيل الحصة دون تغيير الرصيد.';return;}
-    }
     const commonData = {
       studentUid: student.id,
       studentName: student.fullName || student.name || student.email,
@@ -386,7 +303,6 @@ form?.addEventListener('submit', async e => {
       status: $('attendanceStatus').value,
       price,
       paid: false,
-      advanceUseMode,
       currency: 'EGP',
       note: $('attendanceNote').value.trim(),
       source: 'manual-attendance',
@@ -395,35 +311,14 @@ form?.addEventListener('submit', async e => {
     };
 
     // حصة واحدة بس مهما كان عدد المواد المختارة؛ السعر والدفع والحضور يحسبون مرة واحدة.
-    const attendanceRef=doc(collection(db,'lessonAttendance'));
-    const attendanceBatch=writeBatch(db);
-    const attendanceTeacherName=$('attendanceTeacherName')?.value || teacherForSubject(selectedSubjects) || 'غير محدد';
-    attendanceBatch.set(attendanceRef,{
+    await addDoc(collection(db, 'lessonAttendance'), {
       ...commonData,
       subjects: selectedSubjects,
       subject: selectedSubjects.join('، '),
-      teacherName: attendanceTeacherName
+      teacherName: $('attendanceTeacherName')?.value || teacherForSubject(selectedSubjects) || 'غير محدد'
     });
-    // Replaces the previous eligible lecture atomically; old review links expire.
-    if(commonData.status==='حاضر'){
-      attendanceBatch.set(doc(db,'latestLectureReview',student.id),{
-        studentUid:student.id,lessonId:attendanceRef.id,updatedAt:serverTimestamp()
-      });
-    }
-    // In the same atomic commit, send one personal request to rate a present lesson.
-    if(commonData.status==='حاضر'){
-      attendanceBatch.set(doc(db,'notifications','lecture-review-'+attendanceRef.id),{
-        audience:'user',targetUid:student.id,studentUid:student.id,
-        type:'lecture-review',lessonId:attendanceRef.id,
-        title:'🌟 قيّم محاضرتك الجديدة',
-        message:`تم تسجيل حضورك في ${selectedSubjects.join('، ')} مع ${attendanceTeacherName}. افتح قسم «تقييم المحاضرات» في لوحة الطالب لمشاركة رأيك.`,
-        createdAt:serverTimestamp(),createdBy:auth.currentUser?.uid||null,readBy:[]
-      });
-    }
-    await attendanceBatch.commit();
 
     message.textContent = `✅ تم حفظ حصة واحدة (${selectedSubjects.join('، ')}) بنجاح`;
-    clearAdminReadCache();
     await load();
     window.dispatchEvent(new Event('zad:attendance-changed'));
   } catch (err) {
@@ -445,8 +340,7 @@ attendanceEditDialog.innerHTML=`<form id="zadAttendanceEditForm" style="display:
 <label>الطالب<select name="studentUid" required style="width:100%;padding:10px"></select></label>
 <label>تاريخ الحصة<input name="date" type="date" required style="width:100%;padding:10px"></label>
 <fieldset style="border:1px solid #64748b;border-radius:8px"><legend>المواد (يمكن اختيار أكثر من مادة، وتحسب حصة واحدة)</legend><div data-edit-subjects style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px"></div></fieldset>
-<label data-edit-english-teacher style="display:none">مدرس اللغة الإنجليزية<select name="englishTeacher" style="width:100%;padding:10px"><option value="">يحدد من الإدارة</option></select></label>
-<label data-edit-science-teacher style="display:none">مدرس العلوم / الكيمياء / الرياضيات<select name="scienceTeacher" style="width:100%;padding:10px"></select></label>
+<label data-edit-english-teacher style="display:none">مدرس اللغة الإنجليزية<select name="englishTeacher" style="width:100%;padding:10px"><option value="علي عبد الحميد">مستر علي عبد الحميد</option><option value="فاطمة ضياء">ميس فاطمة ضياء</option></select></label>
 <label>حالة الحضور<select name="status" style="width:100%;padding:10px"><option>حاضر</option><option>غائب</option></select></label>
 <label>سعر الحصة بالجنيه<input name="price" type="number" min="0" max="100000" step="0.01" required style="width:100%;padding:10px"></label>
 <label>حالة الدفع<select name="paid" style="width:100%;padding:10px"><option value="false">غير مدفوعة</option><option value="true">مدفوعة</option></select></label>
@@ -459,17 +353,8 @@ const attendanceEditForm=attendanceEditDialog.querySelector('form');
 let attendanceEditingId=null;
 attendanceEditDialog.querySelector('[data-cancel]').addEventListener('click',()=>attendanceEditDialog.close());
 function syncEditEnglishTeacher() {
-  const selected=[...attendanceEditForm.querySelectorAll('input[name="subjectItem"]:checked')].map(input=>input.value);
-  const scientists=availableScienceTeachers(selected);
-  attendanceEditForm.querySelector('[data-edit-english-teacher]').style.display=scientists.length===0&&selected.some(isEnglishSubject)?'':'none';
-  const wrapper=attendanceEditForm.querySelector('[data-edit-science-teacher]');
-  const field=attendanceEditForm.elements.scienceTeacher;
-  const previous=field.value;
-  if(scientists.length){
-    field.replaceChildren(...scientists.map(name=>new Option('أ/ '+name,name)));
-    if(scientists.includes(previous))field.value=previous;
-    wrapper.style.display='';
-  }else wrapper.style.display='none';
+  const selected = [...attendanceEditForm.querySelectorAll('input[name="subjectItem"]:checked')].map(input => input.value);
+  attendanceEditForm.querySelector('[data-edit-english-teacher]').style.display = selected.some(isEnglishSubject) ? '' : 'none';
 }
 attendanceEditForm.querySelector('[data-edit-subjects]').addEventListener('change', syncEditEnglishTeacher);
 
@@ -484,11 +369,8 @@ function openAttendanceEditor(record){
   attendanceEditForm.elements.note.value=record.note||'';
   const selected=Array.isArray(record.subjects)?record.subjects:String(record.subject||'').split('،').map(v=>v.trim());
   attendanceEditForm.querySelector('[data-edit-subjects]').innerHTML=[...new Set([...SUBJECTS,...selected.filter(Boolean)])].map(v=>`<label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="subjectItem" value="${esc(v)}" ${selected.includes(v)?'checked':''}>${esc(v)}</label>`).join('');
-  // لا تعرض المدرسين غير المتاحين في الخيارات الجديدة، مع حفظ الإسناد التاريخي للسجلات القديمة.
-  attendanceEditForm.elements.englishTeacher.replaceChildren(new Option('يحدد من الإدارة',''));
-  attendanceEditForm.elements.englishTeacher.value='';
+  attendanceEditForm.elements.englishTeacher.value=String(record.teacherName||'').includes('فاطمة ضياء')?'فاطمة ضياء':'علي عبد الحميد';
   syncEditEnglishTeacher();
-  if(availableScienceTeachers(selected).includes(record.teacherName))attendanceEditForm.elements.scienceTeacher.value=record.teacherName;
   attendanceEditForm.querySelector('[data-edit-error]').textContent='';
   attendanceEditDialog.showModal();
 }
@@ -503,48 +385,20 @@ attendanceEditForm.addEventListener('submit',async event=>{
   if(!Number.isFinite(price)||price<0||price>100000){error.textContent='سعر الحصة غير صحيح.';return;}
   const original=records.find(r=>r.id===attendanceEditingId);
   if(!original){error.textContent='السجل غير موجود؛ حدّث الصفحة.';return;}
-  // الإسناد التاريخي لا يتغير عند تعديل الحضور أو الدفع فقط.
-  const oldEnglishAssignment=selected.some(isEnglishSubject) &&
-    /^(?:مستر\s*|أ\/\s*)?(?:علي\s+عبد\s+الحميد|(?:ميس\s*)?فاطمة\s+ضياء)/.test(String(original.teacherName||''));
-  const selectedTeacherName=oldEnglishAssignment?original.teacherName:(availableScienceTeachers(selected).length ? attendanceEditForm.elements.scienceTeacher.value : teacherForSubject(selected));
   const paid=attendanceEditForm.elements.paid.value==='true';
   if (Number(original.cashPaidPiastres||0)>0 && (student.id!==original.studentUid||Math.round(price*100)!==amountDue(original)||paid!==(original.paid===true))){error.textContent='هذه الحصة مرتبطة بتحويل معتمد. لا يمكن تغيير الطالب أو السعر أو حالة الدفع حتى لا تختل الحسابات. يمكنك تغيير التاريخ والمادة والملاحظات.';return;}
   const submit=attendanceEditForm.querySelector('button[type="submit"]');submit.disabled=true;
   try{
-    let paymentChange={paid,paidAt:paid?(original.paidAt||serverTimestamp()):null,advanceUseMode:paid?'keep':(original.advanceUseMode||'keep')};
-    if(paid && original.paid!==true && attendanceLogRemaining(original)>0){
-      paymentChange=await chooseExistingLessonPayment(original,{studentUid:student.id,price,status:attendanceEditForm.elements.status.value,studentName:student.fullName||student.name||student.email});
-      if(!paymentChange)return;
-    }
-    const newStatus=attendanceEditForm.elements.status.value;
-    const batch=writeBatch(db);
-    batch.update(doc(db,'lessonAttendance',attendanceEditingId),{
+    await updateDoc(doc(db,'lessonAttendance',attendanceEditingId),{
       studentUid:student.id,studentName:student.fullName||student.name||student.email||'',
       date:attendanceEditForm.elements.date.value,
       subjects:selected,subject:selected.join('، '),
-      teacherName:selectedTeacherName||'غير محدد',
-      teacherUid:teacherUidForName(selectedTeacherName),
-      status:newStatus,
-      price,...paymentChange,
+      teacherName:teacherForSubject(selected,attendanceEditForm.elements.englishTeacher.value)||'غير محدد',
+      teacherUid:teacherUidForName(teacherForSubject(selected,attendanceEditForm.elements.englishTeacher.value)),
+      status:attendanceEditForm.elements.status.value,
+      price,paid,paidAt:paid?(original.paidAt||serverTimestamp()):null,
       note:attendanceEditForm.elements.note.value.trim(),updatedAt:serverTimestamp()
     });
-    // An absent->present correction is a newly eligible lecture.
-    if(original.status!=='حاضر' && newStatus==='حاضر'){
-      batch.set(doc(db,'latestLectureReview',student.id),{
-        studentUid:student.id,lessonId:attendanceEditingId,updatedAt:serverTimestamp()
-      });
-    }
-    // If a previously absent lesson is marked present, invite the student only once.
-    if(original.status!=='حاضر' && newStatus==='حاضر'){
-      batch.set(doc(db,'notifications','lecture-review-'+attendanceEditingId),{
-        audience:'user',targetUid:student.id,studentUid:student.id,
-        type:'lecture-review',lessonId:attendanceEditingId,
-        title:'🌟 قيّم محاضرتك الجديدة',
-        message:`تم تسجيل حضورك في ${selected.join('، ')} مع ${selectedTeacherName||'المعلم'}. افتح قسم «تقييم المحاضرات» في لوحة الطالب لمشاركة رأيك.`,
-        createdAt:serverTimestamp(),createdBy:auth.currentUser?.uid||null,readBy:[]
-      });
-    }
-    await batch.commit();
     attendanceEditDialog.close();await load();
     window.dispatchEvent(new Event('zad:attendance-changed'));
     message.textContent='✅ تم تعديل الحصة بنجاح؛ المواد المتعددة تظل حصة واحدة.';
@@ -553,18 +407,6 @@ attendanceEditForm.addEventListener('submit',async event=>{
 });
 
 rows?.addEventListener('click', async e => {
-  const copyButton=e.target.closest('[data-copy-lecture-rating]');
-  if(copyButton){
-    const lectureId=copyButton.dataset.copyLectureRating;
-    const target=records.find(x=>x.id===lectureId);
-    if(!target || latestLectureByStudent.get(target.studentUid)!==lectureId){alert('هذه ليست آخر محاضرة قابلة للتقييم. حدّث السجلات.');return;}
-    const url=new URL('../student/index.html', import.meta.url);
-    url.searchParams.set('tab','lectureRatings');url.searchParams.set('lessonId',lectureId);
-    const msg=`🌟 تقييم آخر محاضرة - منصة زاد المعرفة\n\n${target.subject||'المحاضرة'} مع ${target.teacherName||'المعلم'}\nافتح الرابط وسجّل الدخول بحسابك لتقييم المحاضرة:\n${url.href}`;
-    try {await navigator.clipboard.writeText(msg);alert('✅ تم نسخ رسالة التقييم والرابط. تقدر تبعتها للطالب على واتساب.');}
-    catch {window.prompt('انسخ رسالة التقييم وأرسلها للطالب:',msg);}
-    return;
-  }
   const bonusButton=e.target.closest('[data-payroll-extra]');
   if(bonusButton){ document.dispatchEvent(new CustomEvent('zad:payroll-edit',{detail:{lessonId:bonusButton.dataset.payrollExtra}}));return; }
   const edit = e.target.closest('[data-edit]'), del = e.target.closest('[data-del]'), paid = e.target.closest('[data-paid]');
@@ -572,16 +414,10 @@ rows?.addEventListener('click', async e => {
   if (!x) return;
   try {
     if (paid) {
-      if(Number(x.cashPaidPiastres||0)>0){ alert('هذه الحصة مرتبطة بتحويل معتمد؛ لا يمكن تغيير طريقة سدادها يدويًا حتى لا تُحسب الدفعة مرتين.'); return; }
-      if(attendanceLogRemaining(x)>0){
-        const paymentChange=await chooseExistingLessonPayment(x);
-        if(!paymentChange)return;
-        await updateDoc(doc(db,'lessonAttendance',x.id),{...paymentChange,updatedAt:serverTimestamp()});
-      }else{
-        if(x.paid!==true){alert('هذه الحصة مغطاة من الرصيد المقدم بالفعل، ولا يوجد دفع مباشر لإلغائه.');return;}
-        if(!confirm('هل تريد تغيير حالة الحصة إلى غير مدفوعة؟'))return;
-        await updateDoc(doc(db,'lessonAttendance',x.id),{paid:false,paidAt:null,advanceUseMode:'keep',updatedAt:serverTimestamp()});
-      }
+      if(Number(x.cashPaidPiastres||0)>0 || (creditFor(x)?.advanceAppliedPiastres||0)>0){ alert('هذه الحصة مدفوعة أو مغطاة بمبلغ مقدم؛ لا تغيّرها يدويًا حتى لا تُحسب الدفعة مرتين.'); return; }
+      const newPaid = x.paid !== true;
+      if (!confirm(`هل تريد تغيير حالة الحصة إلى ${newPaid ? 'مدفوعة' : 'غير مدفوعة'}؟`)) return;
+      await updateDoc(doc(db, 'lessonAttendance', x.id), { paid: newPaid, paidAt: newPaid ? serverTimestamp() : null, updatedAt: serverTimestamp() });
     } else if (del) {
       const linked=Number(x.cashPaidPiastres||0)>0;
       const text=linked
@@ -589,13 +425,12 @@ rows?.addEventListener('click', async e => {
         : `هل تريد إلغاء حصة ${x.subject||''} للطالب ${x.studentName||''}؟\nسنبقي نسخة مؤرشفة يمكن للإدارة استرجاعها.`;
       if(!confirm(text))return;
       await archiveAttendance(x.id);
-      clearAdminReadCache();
+      window.dispatchEvent(new Event('zad:attendance-archived'));
     } else if (edit) {
       openAttendanceEditor(x);
       return;
 
     }
-    clearAdminReadCache();
     await load();
     window.dispatchEvent(new Event('zad:attendance-changed'));
   } catch (err) {
@@ -614,7 +449,7 @@ $('attendanceLogClear')?.addEventListener('click',()=>{
   }
   renderAttendanceLog();
 });
-$('refreshAttendance')?.addEventListener('click', ()=>{clearAdminReadCache();load();});
+$('refreshAttendance')?.addEventListener('click', load);
 window.addEventListener('zad:payment-approved', load);
 window.addEventListener('zad:attendance-changed', load);
 $('attendanceSummarySearch')?.addEventListener('input', render);

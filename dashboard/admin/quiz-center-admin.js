@@ -1,7 +1,5 @@
-import {sharedAdminGetDocs,clearAdminReadCache} from './firestore-read-cache.js';
-const getDocs=(ref)=>sharedAdminGetDocs(ref,rawGetDocs,auth);
 import { auth, db } from '../../firebase-config.js';
-import { collection, getDocs as rawGetDocs, addDoc, deleteDoc, doc, serverTimestamp, query, orderBy, limit } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
+import { collection, getDocs, addDoc, deleteDoc, doc, serverTimestamp, query, orderBy, limit } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 const $q=id=>document.getElementById(id); const escQ=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const qWrap=$q('fullQuizQuestions'); let qIndex=0;
 function addFullQ(data={}){ const i=qIndex++; const box=document.createElement('div'); box.className='card'; box.style.marginTop='10px'; const type=data.type||'mcq';

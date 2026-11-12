@@ -71,14 +71,10 @@ body{margin:0;font-family:Cairo,Arial,sans-serif;background:linear-gradient(135d
         <img src="../../images/logo.png" alt="زاد المعرفة">
         <div>
           <h1>احجز حصتك الآن</h1>
-          <p>اختر القسم والمادة التي تريد الدراسة فيها، ثم أرسل طلبك. للعلوم والكيمياء يمكنك اختيار المعلم، والرياضيات مع أ/ سعد علاء.</p>
+          <p>اختر القسم والمادة التي تريد الدراسة فيها، ثم أرسل طلبك وسيتم تحديد المعلم تلقائيًا.</p>
         </div>
       </div>
 
-      <div style="padding:16px 18px;margin:0 0 20px;border-radius:15px;background:linear-gradient(120deg,#102b4c,#183c60);border:1px solid #c9a84c;color:#fff;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap" id="saadBookingShortcut">
-        <div><strong style="display:block;font-size:17px">📐 أ/ سعد علاء — الرياضيات والعلوم والكيمياء</strong><small style="display:block;color:#d8e4f2">اختار أ/ سعد مباشرة للحجز، ولو علوم أو كيمياء تقدر تختار بينه وبين أ/ محمد خالد.</small></div>
-        <a style="display:inline-flex;padding:11px 19px;border-radius:11px;background:#f2d27d;color:#172133;font-weight:800;text-decoration:none" href="?section=%D8%A7%D9%84%D8%B1%D9%8A%D8%A7%D8%B6%D9%8A%D8%A7%D8%AA&amp;subject=%D8%A7%D9%84%D8%B1%D9%8A%D8%A7%D8%B6%D9%8A%D8%A7%D8%AA&amp;teacher=%D8%B3%D8%B9%D8%AF%20%D8%B9%D9%84%D8%A7%D8%A1">احجز مع أ/ سعد علاء</a>
-      </div>
       <form id="bookingForm" class="booking-form">
         <div class="booking-two">
           <label>القسم المطلوب
@@ -91,7 +87,6 @@ body{margin:0;font-family:Cairo,Arial,sans-serif;background:linear-gradient(135d
               <option value="التعليم الأزهري">التعليم الأزهري</option>
               <option value="اللغة الإنجليزية">اللغة الإنجليزية</option>
               <option value="العلوم">العلوم</option>
-              <option value="الرياضيات">الرياضيات</option>
               <option value="البرمجة وتكنولوجيا المعلومات">البرمجة وتكنولوجيا المعلومات</option>
             </select>
           </label>
@@ -131,10 +126,9 @@ body{margin:0;font-family:Cairo,Arial,sans-serif;background:linear-gradient(135d
 
         <label>المادة المطلوبة
           <input name="subject" required maxlength="150"
-                 placeholder="مثال: الرياضيات، الكيمياء، العلوم، الفقه، اللغة الإنجليزية..." list="zadBookingSubjects">
+                 placeholder="مثال: حفظ القرآن، التجويد، النحو، الفقه، اللغة الإنجليزية، العلوم...">
         </label>
 
-        <datalist id="zadBookingSubjects"><option value="الرياضيات"></option><option value="الكيمياء"></option><option value="العلوم"></option></datalist>
         <div class="booking-two">
           <label>نوع الحصة
             <select name="lessonType" required>
@@ -151,7 +145,7 @@ body{margin:0;font-family:Cairo,Arial,sans-serif;background:linear-gradient(135d
             <select name="teacherUid" id="bookingTeacher" disabled aria-disabled="true">
               <option value="">يتم تحديد المعلم تلقائيًا</option>
             </select>
-            <small id="teacherAutoHint" class="auto-teacher-hint">المعلم يتحدد تلقائيًا، ويمكن الاختيار عند وجود أكثر من مدرس للمادة.</small>
+            <small id="teacherAutoHint" class="auto-teacher-hint">المعلم يتحدد تلقائيًا حسب المادة ولا يمكن تغييره يدويًا.</small>
           </label>
         </div>
 
@@ -198,7 +192,7 @@ body{margin:0;font-family:Cairo,Arial,sans-serif;background:linear-gradient(135d
       </form>
     </div>
   </main>
-  <script type="module" src="./booking.js?v=20261110-payment5"></script>
+  <script type="module" src="./booking.js"></script>
 <script type="module" src="../../reviews/weekly-review-guard.js?v=20261105-evals1"></script>
 </body>
 </html>

@@ -99,7 +99,7 @@ onAuthStateChanged(auth, async (user) => {
 @media(max-width:520px){.zad-attendance-log-filters{grid-template-columns:minmax(0,1fr)}.zad-attendance-log-filters .zad-attendance-filter-search{grid-column:span 1}.zad-attendance-log-filters #attendanceLogClear{width:100%}}
 </style>
 
-<style>.attendance-partial-payment{background:#e3b934!important;color:#14213a!important;border-color:#e3b934!important}.attendance-unpaid-payment{background:#18283f!important;color:#e4eaf5!important;border-color:#3a4d67!important}</style></head>
+</head>
 
 
 <body>
@@ -134,12 +134,22 @@ onAuthStateChanged(auth, async (user) => {
 
 
     <div class="actions">
+        <a class="btn" href="../../sections/payment-policy.html" title="عرض سياسة المدفوعات">💳 سياسة المدفوعات</a>
 
       <a
         class="btn"
         href="../../index.html"
       >
         الرئيسية
+      </a>
+
+
+      <a
+        class="btn gold"
+        href="#contentManagement"
+        id="contentManagementBtn"
+      >
+        ⚙️ إدارة محتوى المنصة
       </a>
 
 
@@ -192,6 +202,15 @@ onAuthStateChanged(auth, async (user) => {
         إدارة الحسابات واعتماد المعلمين.
       </p>
 
+
+      <a
+        class="btn gold"
+        href="#contentManagement"
+        style="display:inline-block;margin-top:12px"
+      >
+        ⚙️ الانتقال إلى إدارة محتوى المنصة
+      </a>
+
     </section>
 
     <section class="card admin-quick-nav-card" id="adminQuickNav">
@@ -228,16 +247,15 @@ onAuthStateChanged(auth, async (user) => {
     <label>الطالب<input id="zwrAdminStudent" type="search" placeholder="اسم الطالب" style="padding:10px;background:#14243a;color:#fff;border:1px solid #526987;border-radius:11px"></label>
     <label>المعلم<select id="zwrAdminTeacher"><option value="">كل المعلمين</option></select></label>
     <button type="button" class="btn gold" id="zwrAdminRefresh">🔄 تحديث</button>
-<button type="button" class="btn gold" id="zwrAdminSyncPublic" style="border:2px solid #e9bf42;min-height:46px;font-weight:800;white-space:normal">🌟 مزامنة التقييمات المسموح بنشرها</button>
     <button type="button" class="btn" id="zwrAdminPrint">🖨️ طباعة</button>
     <button type="button" class="btn" id="zwrAdminCSV">⬇️ CSV</button>
   </div>
   <p id="zwrAdminStats" role="status">جارٍ التحميل...</p>
   <div id="zwrAdminMetrics" class="zwr-metrics"></div>
-  <p id="zwrAdminSyncStatus" role="status" aria-live="polite" style="font-weight:700"></p><div id="zwrAdminResults"></div>
+  <div id="zwrAdminResults"></div>
   <p>نشر الآراء للعامة متاح فقط إذا وافق الطالب على النشر. يقوم الأدمن باعتماد الرأي أو إلغاء نشره دون تغيير نص التقييم الأصلي.</p>
 </section>
-<link rel="stylesheet" href="../../reviews/weekly-admin.css"><script type="module" src="weekly-reviews-admin.js?v=20261106-permissions4"></script>
+<link rel="stylesheet" href="../../reviews/weekly-admin.css"><script type="module" src="weekly-reviews-admin.js?v=20261105-evals1"></script>
 <section class="card" id="manualPaymentLedger" dir="rtl">
 <h2>💰 سجل المدفوعات اليدوية</h2><p>سجل دفعة حتى لو الطالب لم يرسل طلب دفع. السجل مستقل عن اعتماد تحويلات فودافون ولا يخصم تلقائيًا من المستحقات، لمنع احتساب المبلغ مرتين.</p>
 <form id="manualLedgerForm" class="admin-form">
@@ -283,40 +301,6 @@ onAuthStateChanged(auth, async (user) => {
 </section>
 <section class="card" dir="rtl" id="adminCertificatesSection"><h2>🏅 شهادات التقدير — للإدارة فقط</h2><p>إصدار شهادة للطالب بعد مراجعة النتيجة. يمكن تعديل الشهادة أو طباعتها أو حذفها من هنا فقط. انسخ معرّف حساب الطالب UID من بياناته في Firebase.</p><form id="certificateAdminForm" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin:18px 0"><label style="display:grid;gap:6px">معرّف حساب الطالب (UID)<input name="studentUid" value="" required style="width:100%;padding:10px;border-radius:9px;color:#17233b;background:#fff;border:1px solid #64748b;font:inherit"></label><label style="display:grid;gap:6px">اسم الطالب<input name="studentName" value="" required style="width:100%;padding:10px;border-radius:9px;color:#17233b;background:#fff;border:1px solid #64748b;font:inherit"></label><label style="display:grid;gap:6px">سبب التكريم أو اسم الامتحان<input name="title" value="" required style="width:100%;padding:10px;border-radius:9px;color:#17233b;background:#fff;border:1px solid #64748b;font:inherit"></label><label style="display:grid;gap:6px">التقدير<input name="grade" value="ممتاز"  style="width:100%;padding:10px;border-radius:9px;color:#17233b;background:#fff;border:1px solid #64748b;font:inherit"></label><label style="display:grid;gap:6px">عبارة الشهادة<input name="description" value=""  style="width:100%;padding:10px;border-radius:9px;color:#17233b;background:#fff;border:1px solid #64748b;font:inherit"></label><label style="display:grid;gap:6px">تاريخ الإصدار<input name="issueDate" value=""  style="width:100%;padding:10px;border-radius:9px;color:#17233b;background:#fff;border:1px solid #64748b;font:inherit"></label><div style="display:grid;gap:6px;align-content:center;padding:12px;border:1px solid #b9821a;border-radius:10px;background:#101d31;color:#f1d17b"><strong>🏅 ختم زاد المعرفة</strong><span style="font-size:13px;line-height:1.6">يظهر الختم الرسمي تلقائيًا على الشهادة بدلًا من إمضاء المعلم.</span></div><div style="display:flex;align-items:end;gap:8px"><button type="submit" class="btn gold" id="certificateSubmit">إصدار الشهادة</button><button type="button" class="btn" id="certificatePrintPreview">🖨️ معاينة وطباعة الشهادة بالختم الرسمي</button><button type="button" class="btn" id="certificateCancel" hidden>إلغاء التعديل</button></div></form><p id="certificateAdminStatus" aria-live="polite"></p><div id="certificateAdminList"></div></section><script type="module" src="certificates-admin.js"></script>
 <section class="card" dir="rtl" id="codeExamResultsSection"><h2>📊 نتائج الامتحانات الإلكترونية</h2><p>تظهر هنا نتائج <strong>كل الامتحانات بالكود وامتحانات الوحدة الأولى بالإضافة إلى امتحان علم البديع (تانية بكالوريا)</strong> حسب تاريخ التسليم. نتائج الوحدة الأولى مبدئية حتى اعتماد درجات المقالي من قسم التصحيح الموجود أسفل النتائج. استخدم زر «طباعة تقرير الإجابات» بجانب كل نتيجة لطباعة إجابات الطالب والإجابات الصحيحة المتاحة، أو حفظها PDF.</p><div id="codeExamResultsList">جارٍ تحميل النتائج...</div></section>
-<section class="card" dir="rtl" id="saadAlaaAdminPanel" style="border:1px solid #c6a251">
- <h2>📐 إعداد مدرس الرياضيات والعلوم والكيمياء — أ/ سعد علاء</h2>
- <p>هذه الأدوات موجودة داخل قسم <b>المستخدمون ← إدارة وإعدادات المعلمين</b>. نفّذ إضافة الملف مرة واحدة فقط إذا لم يكن موجودًا في Firestore.</p>
- <p>المدرس مضاف داخل دليل طاقم التدريس والحجز والحضور. اضغط الزر لتسجيل <b>ملف تدريسه القابل للتعديل</b> في قسم «إدارة محتوى المنصة ← طاقم التدريس»، دون إنشاء حساب دخول وهمي أو المساس بالمدرسين الحاليين.</p>
- <button class="btn gold" type="button" id="createSaadTeacherProfile">➕ إضافة ملف سعد علاء للإدارة</button>
- <p id="saadTeacherAdminStatus" role="status" aria-live="polite"></p>
- <div style="display:grid;gap:12px;margin:15px 0;padding:15px;border:1px solid #526780;border-radius:12px;background:#101f35">
-  <strong>🔗 فحص وربط حساب سعد علاء بالحجوزات والحضور</strong>
-  <p id="saadAdminAccountInfo" role="status" aria-live="polite">افحص إذا كان حساب سعد نشطًا، ثم راجع أي سجلات قديمة مسجلة باسمه دون UID.</p>
-  <div class="actions" style="display:flex;gap:10px;flex-wrap:wrap">
-   <button type="button" class="btn" id="saadAdminInspect">🔍 فحص الحساب والسجلات</button>
-   <button type="button" class="btn gold" id="saadAdminLink" disabled>🔗 ربط السجلات التي تم التحقق منها</button>
-  </div>
-  <small>لا يجري إنشاء حساب أو صرف مرتبات أو تعديل مبالغ. الربط متاح فقط لحساب معلم نشط واحد مطابق للاسم، وبموافقة الإدارة الصريحة.</small>
- </div>
- <p>لظهور الحضور والمرتبات ونتائج الامتحانات في حسابه: يسجل سعد حسابه الحقيقي، وتعتمده الإدارة بصفة <b>معلم نشط</b>؛ ثم ترتبط الحجوزات والحصص بمعرّف UID الخاص به. بعد ذلك شغّل «مزامنة صلاحيات نتائج طلاب المعلمين». لا تُنشئ كلمات مرور أو معرفات UID تجريبية.</p>
-</section><script type="module" src="saad-teacher-admin.js?v=20261110-4"></script>
-<section class="card" dir="rtl" id="teacherExamAccessAdmin" style="border:1px solid #9b8241">
-  <h2>👨‍🏫 ربط نتائج الامتحانات بالمعلمين</h2>
-  <p>يرتبط المعلم بطلاب حجوزاته أو حصصه المسجلة برقم UID فقط. بعد ضبط ربط المعلمين، اضغط «مزامنة صلاحيات النتائج» مرة، وأعدها عند نقل طالب لمعلم آخر. لن يطلع المعلم على نتائج أي طالب غير معتمد له.</p>
-  <button id="syncTeacherExamAccess" type="button" class="btn gold">🔗 مزامنة صلاحيات نتائج طلاب المعلمين</button>
-  <p id="teacherExamAccessStatus" role="status" aria-live="polite">المزامنة يدوية للحفاظ على حصة قراءات Firebase.</p>
-</section>
-<script type="module" src="teacher-exam-access-admin.js?v=20261110-4"></script>
-<section class="card" dir="rtl" id="zadSpecialExamResults" style="border:2px solid #bd9841">
-<h2>📘 امتحانا العلوم المتكاملة والفقه — مراجعة الإجابات</h2>
-<p>استلام إجابات الطلاب من الامتحانين الجديدين، وتصحيح الاختياري والصح والخطأ مبدئيًا، ومراجعة المقالية والإكمال، واعتماد الدرجة وطباعة تقرير الإجابات كاملًا.</p>
-<p>يُجرى تحميل النتائج عند الضغط على الزر فقط لتقليل قراءات Firebase.</p>
-<button type="button" class="btn gold" id="zadSpecialReload">🔄 تحميل إجابات الطلاب</button>
-<p id="zadSpecialAdminStatus" role="status">جارٍ تجهيز لوحة النتائج...</p>
-<div id="zadSpecialAdminList"></div><div id="zadSpecialReview" hidden></div>
-</section>
-<link rel="stylesheet" href="zad-special-results-admin.css">
-<script type="module" src="zad-special-results-admin.js"></script>
 <link rel="stylesheet" href="code-exams-admin.css">
 <script type="module" src="code-exam-results-admin.js"></script>
 <section class="card" dir="rtl" id="unitOneExamsAdmin" style="border:1px solid #bb983c">
@@ -344,7 +328,7 @@ onAuthStateChanged(auth, async (user) => {
         <div class="enh-stat">👨‍🏫 المعلمون<b id="enhTeachers">0</b><small>حسابات المعلمين</small></div>
         <div class="enh-stat">⏳ معلمون بانتظار الاعتماد<b id="enhPendingTeachers">0</b><small>تحتاج مراجعة</small></div>
         <div class="enh-stat">📅 الحجوزات<b id="enhBookings">0</b><small>إجمالي الطلبات</small></div>
-        <div class="enh-stat">📝 محاولات الاختبارات<b id="enhQuizAttempts">—</b><small id="zadExamAttemptsStatNote">جارٍ تحميل نتائج الامتحانات المحفوظة…</small></div>
+        <div class="enh-stat">📝 محاولات الاختبارات<b id="enhQuizAttempts">0</b><small>المحفوظة</small></div>
         <div class="enh-stat">🆕 تسجيلات اليوم<b id="enhNewToday">0</b><small>منذ منتصف الليل</small></div>
       </div>
     </section>
@@ -800,46 +784,10 @@ onAuthStateChanged(auth, async (user) => {
   <div id="salaryTotals" class="salary-totals"></div>
   <h3>👨‍🏫 مستحقات كل معلم خلال الفترة</h3>
   <div id="salaryTeacherCards" class="salary-teacher-cards"></div>
-  <div class="salary-settlement-panel" style="margin:24px 0;padding:20px;border:1px solid #cba84b;border-radius:16px;background:#101d32">
-    <h3>💳 تسوية وصرف مستحقات المعلمين</h3>
-    <p>الصرف يدوي للأدمن فقط. يمكنك الصرف من إجمالي الرصيد أو من أسبوع محدد. تُخصم الدفعة من أقدم الحصص غير المسددة داخل النطاق المختار، دون حذف الحصص أو الإضافي.</p>
-    <div class="salary-filters">
-      <label>المعلم<select id="salarySettlementTeacher"><option value="">اختر المعلم</option></select></label>
-      <label>طريقة التسوية<select id="salarySettlementScope"><option value="all">إجمالي الرصيد (الأقدم أولًا)</option><option value="week">أسبوع محدد</option></select></label>
-      <label id="salarySettlementWeekWrap" hidden>الأسبوع<select id="salarySettlementWeek"></select></label>
-    </div>
-    <div class="salary-totals" id="salarySettlementMetrics"></div>
-    <form id="salarySettlementForm">
-      <div class="salary-filters">
-        <label>المبلغ المصروف بالجنيه<input id="salarySettlementAmount" type="number" min=".01" step=".01" required></label>
-        <label>طريقة الدفع<select id="salarySettlementMethod"><option>تحويل بنكي</option><option>محفظة إلكترونية</option><option>نقدًا</option><option>طريقة أخرى</option></select></label>
-        <label>مرجع التحويل (اختياري)<input id="salarySettlementReference" maxlength="120"></label>
-        <label>ملاحظات (اختياري)<input id="salarySettlementNote" maxlength="300"></label>
-      </div>
-      <p id="salarySettlementAvailable">اختر معلمًا أولًا.</p>
-      <div class="salary-actions"><button type="button" class="btn" id="salarySettlementFull">تحديد كامل المتبقي</button><button type="submit" class="btn gold">💾 تأكيد صرف المستحقات</button></div>
-    </form>
-    <p id="salarySettlementStatus" role="status" aria-live="polite"></p>
-    <h3>📜 سجل الصرف والتسويات</h3>
-    <div class="table-wrap salary-table-wrap"><table class="table"><thead><tr><th>التاريخ</th><th>المبلغ</th><th>النطاق</th><th>طريقة الدفع</th><th>المرجع</th><th>ملاحظات</th></tr></thead><tbody id="salarySettlementHistory"><tr><td colspan="6">اختر معلمًا لعرض السجل.</td></tr></tbody></table></div>
-  </div>
   <h3>📋 تفاصيل الحصص والمستحقات</h3>
   <div class="table-wrap salary-table-wrap"><table class="table"><thead><tr><th>التاريخ</th><th>المعلم</th><th>الطالب</th><th>المادة</th><th>أجر الحصة</th><th>إضافي المنصة</th><th>إجمالي الحصة</th><th>ملاحظات</th><th>تعديل</th></tr></thead><tbody id="salaryRows"><tr><td colspan="9">جارٍ التحميل...</td></tr></tbody></table></div>
   <p class="salary-explain">مهم: عند تسجيل أكثر من مادة في حصة واحدة تُحسب حصة واحدة فقط. وإذا كان السجل يضم أكثر من معلم، يجب تحديد المعلم المستحق من زر «تعديل الأجر». الإضافي تتحمله المنصة، وليس الطالب. هذا تقرير مستحقات وليس إثبات صرف.</p>
 </section>
-
-<section class="card" dir="rtl" id="lectureReviewsAdminSection" style="border:1px solid #bda04f">
- <h2>🌟 تقييمات المحاضرات</h2>
- <p>عند تسجيل الطالب حاضرًا تصله دعوة تقييم. هنا تظهر تقييماته لكل حصة، ومعدل التقييم حسب المعلم، دون إظهارها للطلاب الآخرين.</p>
- <div class="actions" style="gap:10px;flex-wrap:wrap;margin:12px 0">
-  <label>المعلم <select id="lectureRatingsTeacher"><option value="all">جميع المعلمين</option></select></label>
-  <button type="button" class="btn" id="lectureRatingsRefresh">🔄 تحديث التقييمات</button>
-  <strong id="lectureRatingsSummary" style="color:#e6c769"></strong>
- </div>
- <div id="lectureRatingsByTeacher" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin:15px 0"></div>
- <div id="lectureRatingsList" style="display:grid;gap:12px">جارٍ تحميل تقييمات المحاضرات...</div>
-</section>
-
 <section class="card" id="attendanceManagement">
       <h2>📋 تسجيل الحضور والغياب يدويًا</h2>
       <p class="admin-muted">اختر حساب الطالب من المنصة، ثم حدد التاريخ والمواد وسعر الحصة. يمكنك اختيار مادة واحدة أو أكثر، ولا يشترط إنشاء محاضرة مباشرة.</p>
@@ -849,7 +797,7 @@ onAuthStateChanged(auth, async (user) => {
         <p id="attendanceIdentityWarning" class="attendance-full" role="status" style="color:#f5d76e;font-size:13px;margin:0">جارٍ التأكد من الحسابات...</p>
         <label>تاريخ الحصة<input id="attendanceDate" type="date" required></label>
         <label>المواد <small style="color:#94a3b8;font-weight:400">(يمكن اختيار أكثر من مادة)</small><details id="attendanceSubjectPicker" class="zad-subject-picker"><summary id="attendanceSubjectSummary">اختر مادة أو أكثر ▾</summary><div id="attendanceSubjectOptions" class="zad-subject-options"></div></details><select id="attendanceSubject" multiple hidden aria-hidden="true" tabindex="-1"></select></label>
-        <label>المعلم <small style="color:#94a3b8;font-weight:400">(اختر المعلم عند وجود أكثر من مدرس للمادة)</small><select id="attendanceTeacherName" aria-label="معلم الحصة" style="background:#121e30;color:#f5d76e;font-weight:bold;min-height:44px"><option value="">اختر المادة أولًا</option></select></label>
+        <label>المعلم <small style="color:#94a3b8;font-weight:400">(اختر المعلم عند تحديد اللغة الإنجليزية)</small><select id="attendanceTeacherName" aria-label="معلم الحصة" style="background:#121e30;color:#f5d76e;font-weight:bold;min-height:44px"><option value="">اختر المادة أولًا</option></select></label>
         <label>الحالة<select id="attendanceStatus" required><option value="حاضر">✅ حاضر</option><option value="غائب">❌ غائب</option></select></label>
         <label>سعر الحصة (بالجنيه المصري)<input id="attendancePrice" type="number" min="0" max="100000" step="0.01" value="0" required></label>
         <label class="attendance-full">ملاحظات (اختياري)<textarea id="attendanceNote" rows="2" maxlength="500"></textarea></label>
@@ -1838,8 +1786,7 @@ function buildUserActionButtons({ isTeacher, isPending, isDisabled, isBanned, is
   let buttons = `
     <button class="action-btn action-view" title="عرض بيانات الطالب" data-action="view" type="button">👁️ عرض البيانات</button>
     ${!isTeacher && !isAdmin ? '<button class="action-btn zad-rpt-open" title="التقرير الشامل للطالب" data-action="comprehensive-report" type="button">📊 التقرير الشامل</button>' : ''}
-    <button class="action-btn ${isTeacher ? 'action-assigned' : 'action-assign-teacher'}" title="${isTeacher ? 'حساب معلم حاليًا' : 'تعيين كمعلّم'}" data-action="assign-teacher" type="button">👨‍🏫 ${isTeacher ? 'معلم' : 'تعيين معلم'}</button>
-    ${isTeacher && !isAdmin ? '<button class="action-btn action-revoke-teacher" title="إلغاء صلاحية المعلم وتحويل الحساب إلى طالب عادي" data-action="revoke-teacher" type="button">🎓 إلغاء صلاحية المعلم</button>' : ''}
+    <button class="action-btn ${isTeacher ? 'action-assigned' : 'action-assign-teacher'}" title="تعيين كمعلّم" data-action="assign-teacher" type="button">👨‍🏫 ${isTeacher ? 'معلم' : 'تعيين معلم'}</button>
     <button class="action-btn ${isAdmin ? 'action-assigned' : 'action-assign-admin'}" title="تعيين كأدمن" data-action="assign-admin" type="button">👑 ${isAdmin ? 'أدمن' : 'تعيين أدمن'}</button>
   `;
 
@@ -1892,36 +1839,6 @@ function bindUserEntryActions(root, { user, userDoc, name, isTeacher, isPending,
     } catch (error) {
       console.error('خطأ في تعيين المعلّم:', error);
       alert('حدث خطأ أثناء تعيين المستخدم كمعلّم.');
-    }
-  });
-
-  // سحب صلاحية المعلم لا يحذف الحساب ولا يمس سجلات الحضور والحصص والمرتبات.
-  // تغيير الدور في users/{uid} يجعل isTeacher() في قواعد Firestore تُعيد false فورًا.
-  root.querySelector('[data-action="revoke-teacher"]')?.addEventListener('click', async event => {
-    if (!isTeacher || isAdmin) return;
-    const button = event.currentTarget;
-    const confirmed = confirm(`هل تريد إلغاء صلاحية المعلم من حساب ${name}؟\n\n` +
-      'سيتحول حسابه إلى طالب نشط، ويستطيع تسجيل الدخول وفتح لوحة الطالب بشكل عادي.\n' +
-      'سيفقد حق الدخول إلى لوحة المعلم وقراءة بيانات طلابه أو مرتباته.\n' +
-      'لن يتم حذف حصصه أو سجلاته أو بياناته المالية السابقة.');
-    if (!confirmed) return;
-    try {
-      button.disabled = true;
-      button.textContent = 'جارٍ إلغاء الصلاحية…';
-      await updateDoc(doc(db, 'users', userDoc.id), {
-        role: 'student',
-        status: 'active',
-        roleChangedAt: serverTimestamp(),
-        roleChangedBy: auth.currentUser?.uid || '',
-        updatedAt: serverTimestamp()
-      });
-      await loadUsers();
-      alert('تم إلغاء صلاحية المعلم، والحساب الآن طالب نشط دون حذف السجلات القديمة.');
-    } catch (error) {
-      console.error('تعذر إلغاء صلاحية المعلم:', error);
-      alert('لم يُنفذ إلغاء صلاحية المعلم. تحقق من اتصال الإنترنت وصلاحيات Firestore: ' + (error.code || error.message || 'خطأ غير معروف'));
-      button.disabled = false;
-      button.textContent = '🎓 إلغاء صلاحية المعلم';
     }
   });
 
@@ -2059,21 +1976,6 @@ async function loadUsers() {
     await waitForSignedInUser();
     const snap = await getDocsWithTimeout(collection(db, 'users'));
     adminUidSet = new Set(snap.docs.filter(d => d.data().role === 'admin').map(d => d.id));
-    // الإحصائيات العامة لا تحتوي على أي معلومات شخصية.
-    const actualStudents=snap.docs.filter(d=>d.data().role==='student').length;
-    const actualTeachers=snap.docs.filter(d=>d.data().role==='teacher' && d.data().status!=='banned').length;
-    const statsSignature=`${actualStudents}:${actualTeachers}`;
-    if(window.__zadLastHomeStatsSignature!==statsSignature){
-      window.__zadLastHomeStatsSignature=statsSignature;
-      Promise.all([
-        setDoc(doc(db,'publicStats','students'),{total:actualStudents,updatedAt:serverTimestamp()},{merge:true}),
-        setDoc(doc(db,'publicStats','teachers'),{total:actualTeachers,updatedAt:serverTimestamp()},{merge:true})
-      ]).catch(error=>{
-        window.__zadLastHomeStatsSignature=null;
-        console.warn('تعذر تحديث إحصائيات الصفحة الرئيسية:',error);
-      });
-    }
-
 
 
     populateNotificationUsers(snap);
@@ -3818,7 +3720,15 @@ async function ensureLegacyTeachers() {
       bio: 'معلم متميز في اللغة العربية، يجمع بين العلم الشرعي والأصيل والإتقان في تعليم القرآن الكريم والمواد الشرعية بأسلوب مبسط وممتع.',
       visible: true
     },
-    // لم يعد هناك ملف افتراضي لهذا المعلم؛ السجلات التاريخية منفصلة عن الدليل.
+    {
+      legacyKey: 'zad-ali-abdelhamid',
+      name: 'الأستاذ علي عبد الحميد',
+      subject: 'اللغة الإنجليزية, المرحلة الإعدادية, المرحلة الثانوية',
+      role: 'مدرس اللغة الإنجليزية للمرحلتين الإعدادية والثانوية',
+      image: '../images/ali-abdelhamid.webp',
+      bio: 'تأسيس قوي في اللغة الإنجليزية، شرح مبسط، متابعة مستمرة وتدريب على الأسئلة.',
+      visible: true
+    }
   ];
   // الاحتفاظ بالقائمة القديمة للرجوع إليها دون الكتابة فوق بيانات المعلمين الموجودة.
   return legacyTeachers;
@@ -4001,10 +3911,9 @@ guard('admin', async () => {
 <!-- ملفات مستقلة كانت غير مُحمّلة بسبب انقطاع نهاية الصفحة -->
 <script type="module" src="admin-activity-alerts.js"></script>
 <script type="module" src="admin-enhancements.js"></script>
-<script type="module" src="admin-workspace.js?v=20261112-lecture-ratings1"></script>
-<script type="module" src="attendance-admin.js?v=20261112-latest1"></script>
-<script type="module" src="lecture-reviews-admin.js?v=20261112-1"></script>
-<script type="module" src="teacher-payroll-admin.js?v=20261106-settlements-cards2"></script>
+<script type="module" src="admin-workspace.js?v=20261105-finance2"></script>
+<script type="module" src="attendance-admin.js?v=20261105-salary1"></script>
+<script type="module" src="teacher-payroll-admin.js?v=20261105-1"></script>
 <script type="module" src="teacher-linker-admin.js?v=20261105-1"></script>
 
 
@@ -4026,7 +3935,7 @@ guard('admin', async () => {
   position:fixed!important;
   left:20px!important;
   right:auto!important;
-  bottom:67px!important;
+  bottom:94px!important;
   z-index:8000;
   display:inline-flex;
   align-items:center;
@@ -4044,11 +3953,11 @@ guard('admin', async () => {
 }
 .zad-store-access:hover{filter:brightness(1.07)}
 @media(max-width:900px){
-  .zad-store-access{left:15px!important;right:auto!important;bottom:63px!important}
+  .zad-store-access{left:15px!important;right:auto!important;bottom:90px!important}
 }
 @media(max-width:600px){
-  .zad-store-access{left:12px!important;right:auto!important;bottom:60px!important;padding:9px 12px;font-size:12px}
+  .zad-store-access{left:12px!important;right:auto!important;bottom:84px!important;padding:9px 12px;font-size:12px}
 }
 </style>
-<a href="remove-teacher-record.html" title="حذف سجل فاطمة أشرف من Firebase" style="position:fixed;bottom:12px;right:12px;z-index:101;background:#b48b25;color:#071629;border-radius:10px;padding:6px 12px;font-size:12px">تنظيف سجل المعلمة المحذوفة</a></body>
+</body>
 </html>

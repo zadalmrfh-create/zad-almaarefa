@@ -1,8 +1,6 @@
-import {sharedAdminGetDocs,clearAdminReadCache} from './firestore-read-cache.js';
-const getDocs=(ref)=>sharedAdminGetDocs(ref,rawGetDocs,auth);
 import {auth,db} from '../../firebase-config.js';
 import {onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
-import {collection,doc,getDoc,getDocs as rawGetDocs,updateDoc,writeBatch,serverTimestamp,arrayUnion} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
+import {collection,doc,getDoc,getDocs,updateDoc,writeBatch,serverTimestamp,arrayUnion} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 import {advanceSnapshot} from '../advance-credit.js';
 import {amountPaid,amountDue} from '../payment-utils.js';
 

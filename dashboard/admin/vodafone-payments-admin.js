@@ -1,9 +1,7 @@
-import {sharedAdminGetDocs,clearAdminReadCache} from './firestore-read-cache.js';
-const getDocs=(ref)=>sharedAdminGetDocs(ref,rawGetDocs,auth);
 /* إدارة تحويلات فودافون كاش: إظهار مصدر التحويل، توقيته والحصص المرتبطة به؛ دون حذف سجلات مالية معتمدة. */
 import {auth,db} from '../../firebase-config.js';
 import {onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
-import {collection,doc,getDoc,getDocs as rawGetDocs,query,where,runTransaction,serverTimestamp} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
+import {collection,doc,getDoc,getDocs,query,where,runTransaction,serverTimestamp} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 import {amountDue,amountPaid,amountRemaining,money,html,isCharge} from '../payment-utils.js';
 import {isCurrentPayment,ledgerStartedAt} from '../payment-ledger-period.js';
 import {groupStudentAccounts,hasStudentFinancialActivity} from '../student-account-balance.js';
