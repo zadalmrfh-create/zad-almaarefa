@@ -12,6 +12,7 @@
     {id:'exams',label:'الامتحانات',icon:'📝',sections:['codeExamsManagement','adminCertificatesSection','codeExamResultsSection','teacherExamAccessAdmin','zadSpecialExamResults','unitOneExamsAdmin']},
     {id:'library',label:'المكتبة',icon:'📚',sections:['librarySubscriptionsAdminPanel','libraryDownloadTracking']},
     {id:'lessons',label:'الحضور والغياب',icon:'✅',sections:['attendanceManagement']},
+    {id:'lectureRatings',label:'تقييمات المحاضرات',icon:'🌟',sections:['lectureReviewsAdminSection']},
     {id:'payroll',label:'مرتبات المعلمين',icon:'💼',sections:['teacherPayrollManagement']},
     {id:'payments',label:'المدفوعات',icon:'💳',sections:['zadVodafoneAdminPanel','manualPaymentLedger']},
     {id:'content',label:'المحتوى',icon:'⚙️',sections:['contentManagement']},

@@ -4,12 +4,13 @@ import {amountDue,amountPaid,amountRemaining,money as cashMoney} from '../paymen
 import {advanceSnapshot} from '../advance-credit.js';
 import {archiveAttendance,restoreAttendance} from './attendance-archive.js';
 import { db, auth } from '../../firebase-config.js';
-import { collection, query, where, getDocs as rawGetDocs, getDoc, addDoc, updateDoc, deleteDoc, doc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
+import { collection, query, where, getDocs as rawGetDocs, getDoc, addDoc, updateDoc, deleteDoc, doc, writeBatch, serverTimestamp } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 import { SUBJECTS, teacherForSubject, ENGLISH_TEACHERS, isEnglishSubject, availableScienceTeachers } from '../attendance-subjects.js';
 
 const $ = id => document.getElementById(id);
 const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 let students = [], records = [], cancelledRecords = [];
+let latestLectureByStudent = new Map();
 let teacherProfiles = [];
 const teacherKey = name => String(name||'').normalize('NFKC').replace(/[\u064B-\u065F\u0670]/g,'').replace(/^(الأستاذ|أستاذ|مستر|ميس|أ\/)\s*/i,'').replace(/\s+/g,' ').trim().toLowerCase();
 function teacherUidForName(name) {
@@ -167,7 +168,7 @@ function renderAttendanceLog(){
     <td>${esc(x.studentName || '-')}</td><td>${esc(x.date || '-')}</td><td>${esc(x.subject || '-')}</td>
     <td>${esc(x.status || '-')}</td><td>${money(x.price)}</td>
     <td><button type="button" class="btn ${attendanceLogRemaining(x)===0 ? 'gold' : (amountPaid(x)>0 || (creditFor(x)?.advanceAppliedPiastres||0)>0) ? 'attendance-partial-payment' : 'attendance-unpaid-payment'}" data-paid="${esc(x.id)}" aria-label="تغيير حالة الدفع">${creditFor(x)?.afterPiastres===0?'✅ مغطاة / مدفوعة':creditFor(x)?.advanceAppliedPiastres>0?'🟡 جزء مغطى بالمقدم، المتبقي '+cashMoney(creditFor(x).afterPiastres):amountRemaining(x)===0?'✅ مدفوعة':amountPaid(x)>0?'🟡 مدفوع جزئيًا '+cashMoney(amountPaid(x)):'⏳ غير مدفوعة'}</button></td>
-    <td>${esc(x.teacherName || 'الإدارة')}</td><td>${x.status==='حاضر'?`<button type="button" class="btn" data-payroll-extra="${esc(x.id)}">➕ إضافي المرتب</button>`:'—'}</td><td><button type="button" class="btn" data-edit="${esc(x.id)}">✏️ تعديل الحصة</button> <button type="button" class="btn danger" data-del="${esc(x.id)}">حذف</button></td></tr>`).join('') : `<tr><td colspan="9">${records.length?'لا توجد حصص مطابقة للبحث والتصفية. جرّب مسح الفلاتر.':'لا توجد سجلات حضور بعد.'}</td></tr>`;
+    <td>${esc(x.teacherName || 'الإدارة')}</td><td>${x.status==='حاضر'?`<button type="button" class="btn" data-payroll-extra="${esc(x.id)}">➕ إضافي المرتب</button>`:'—'}</td><td>${x.status==='حاضر' && latestLectureByStudent.get(x.studentUid)===x.id?`<button type="button" class="btn gold" data-copy-lecture-rating="${esc(x.id)}">🔗 نسخ لينك التقييم</button> `:''}<button type="button" class="btn" data-edit="${esc(x.id)}">✏️ تعديل الحصة</button> <button type="button" class="btn danger" data-del="${esc(x.id)}">حذف</button></td></tr>`).join('') : `<tr><td colspan="9">${records.length?'لا توجد حصص مطابقة للبحث والتصفية. جرّب مسح الفلاتر.':'لا توجد سجلات حضور بعد.'}</td></tr>`;
 }
 
 function render() {
@@ -222,7 +223,8 @@ function render() {
 async function load() {
   try {
     message.textContent = 'جارٍ تحميل بيانات الحضور والطلاب والمدفوعات...';
-    const [us, att, pay] = await Promise.all([getDocs(collection(db, 'users')), getDocs(collection(db, 'lessonAttendance')), getDocs(collection(db, 'vodafonePayments'))]);
+    const [us, att, pay, latest] = await Promise.all([getDocs(collection(db, 'users')), getDocs(collection(db, 'lessonAttendance')), getDocs(collection(db, 'vodafonePayments')), getDocs(collection(db, 'latestLectureReview'))]);
+    latestLectureByStudent=new Map(latest.docs.map(d=>[d.id,d.data().lessonId]));
     teacherProfiles=us.docs.map(d=>({id:d.id,...d.data()})).filter(x=>x.role==='teacher' && x.status==='active');
     const allStudentProfiles=us.docs.map(d=>({id:d.id,...d.data()})).filter(x=>x.role==='student');
     const candidateStudents=allStudentProfiles.filter(x=>!x.linkedToUid);
@@ -393,12 +395,32 @@ form?.addEventListener('submit', async e => {
     };
 
     // حصة واحدة بس مهما كان عدد المواد المختارة؛ السعر والدفع والحضور يحسبون مرة واحدة.
-    await addDoc(collection(db, 'lessonAttendance'), {
+    const attendanceRef=doc(collection(db,'lessonAttendance'));
+    const attendanceBatch=writeBatch(db);
+    const attendanceTeacherName=$('attendanceTeacherName')?.value || teacherForSubject(selectedSubjects) || 'غير محدد';
+    attendanceBatch.set(attendanceRef,{
       ...commonData,
       subjects: selectedSubjects,
       subject: selectedSubjects.join('، '),
-      teacherName: $('attendanceTeacherName')?.value || teacherForSubject(selectedSubjects) || 'غير محدد'
+      teacherName: attendanceTeacherName
     });
+    // Replaces the previous eligible lecture atomically; old review links expire.
+    if(commonData.status==='حاضر'){
+      attendanceBatch.set(doc(db,'latestLectureReview',student.id),{
+        studentUid:student.id,lessonId:attendanceRef.id,updatedAt:serverTimestamp()
+      });
+    }
+    // In the same atomic commit, send one personal request to rate a present lesson.
+    if(commonData.status==='حاضر'){
+      attendanceBatch.set(doc(db,'notifications','lecture-review-'+attendanceRef.id),{
+        audience:'user',targetUid:student.id,studentUid:student.id,
+        type:'lecture-review',lessonId:attendanceRef.id,
+        title:'🌟 قيّم محاضرتك الجديدة',
+        message:`تم تسجيل حضورك في ${selectedSubjects.join('، ')} مع ${attendanceTeacherName}. افتح قسم «تقييم المحاضرات» في لوحة الطالب لمشاركة رأيك.`,
+        createdAt:serverTimestamp(),createdBy:auth.currentUser?.uid||null,readBy:[]
+      });
+    }
+    await attendanceBatch.commit();
 
     message.textContent = `✅ تم حفظ حصة واحدة (${selectedSubjects.join('، ')}) بنجاح`;
     clearAdminReadCache();
@@ -494,16 +516,35 @@ attendanceEditForm.addEventListener('submit',async event=>{
       paymentChange=await chooseExistingLessonPayment(original,{studentUid:student.id,price,status:attendanceEditForm.elements.status.value,studentName:student.fullName||student.name||student.email});
       if(!paymentChange)return;
     }
-    await updateDoc(doc(db,'lessonAttendance',attendanceEditingId),{
+    const newStatus=attendanceEditForm.elements.status.value;
+    const batch=writeBatch(db);
+    batch.update(doc(db,'lessonAttendance',attendanceEditingId),{
       studentUid:student.id,studentName:student.fullName||student.name||student.email||'',
       date:attendanceEditForm.elements.date.value,
       subjects:selected,subject:selected.join('، '),
       teacherName:selectedTeacherName||'غير محدد',
       teacherUid:teacherUidForName(selectedTeacherName),
-      status:attendanceEditForm.elements.status.value,
+      status:newStatus,
       price,...paymentChange,
       note:attendanceEditForm.elements.note.value.trim(),updatedAt:serverTimestamp()
     });
+    // An absent->present correction is a newly eligible lecture.
+    if(original.status!=='حاضر' && newStatus==='حاضر'){
+      batch.set(doc(db,'latestLectureReview',student.id),{
+        studentUid:student.id,lessonId:attendanceEditingId,updatedAt:serverTimestamp()
+      });
+    }
+    // If a previously absent lesson is marked present, invite the student only once.
+    if(original.status!=='حاضر' && newStatus==='حاضر'){
+      batch.set(doc(db,'notifications','lecture-review-'+attendanceEditingId),{
+        audience:'user',targetUid:student.id,studentUid:student.id,
+        type:'lecture-review',lessonId:attendanceEditingId,
+        title:'🌟 قيّم محاضرتك الجديدة',
+        message:`تم تسجيل حضورك في ${selected.join('، ')} مع ${selectedTeacherName||'المعلم'}. افتح قسم «تقييم المحاضرات» في لوحة الطالب لمشاركة رأيك.`,
+        createdAt:serverTimestamp(),createdBy:auth.currentUser?.uid||null,readBy:[]
+      });
+    }
+    await batch.commit();
     attendanceEditDialog.close();await load();
     window.dispatchEvent(new Event('zad:attendance-changed'));
     message.textContent='✅ تم تعديل الحصة بنجاح؛ المواد المتعددة تظل حصة واحدة.';
@@ -512,6 +553,18 @@ attendanceEditForm.addEventListener('submit',async event=>{
 });
 
 rows?.addEventListener('click', async e => {
+  const copyButton=e.target.closest('[data-copy-lecture-rating]');
+  if(copyButton){
+    const lectureId=copyButton.dataset.copyLectureRating;
+    const target=records.find(x=>x.id===lectureId);
+    if(!target || latestLectureByStudent.get(target.studentUid)!==lectureId){alert('هذه ليست آخر محاضرة قابلة للتقييم. حدّث السجلات.');return;}
+    const url=new URL('../student/index.html', import.meta.url);
+    url.searchParams.set('tab','lectureRatings');url.searchParams.set('lessonId',lectureId);
+    const msg=`🌟 تقييم آخر محاضرة - منصة زاد المعرفة\n\n${target.subject||'المحاضرة'} مع ${target.teacherName||'المعلم'}\nافتح الرابط وسجّل الدخول بحسابك لتقييم المحاضرة:\n${url.href}`;
+    try {await navigator.clipboard.writeText(msg);alert('✅ تم نسخ رسالة التقييم والرابط. تقدر تبعتها للطالب على واتساب.');}
+    catch {window.prompt('انسخ رسالة التقييم وأرسلها للطالب:',msg);}
+    return;
+  }
   const bonusButton=e.target.closest('[data-payroll-extra]');
   if(bonusButton){ document.dispatchEvent(new CustomEvent('zad:payroll-edit',{detail:{lessonId:bonusButton.dataset.payrollExtra}}));return; }
   const edit = e.target.closest('[data-edit]'), del = e.target.closest('[data-del]'), paid = e.target.closest('[data-paid]');

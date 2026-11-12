@@ -206,6 +206,7 @@
       <button class="student-tab" data-student-tab="attendance">✅ حضوري</button>
       <button class="student-tab" data-student-tab="payments">💳 المدفوعات</button>
       <button class="student-tab" data-student-tab="notes">🗒️ ملاحظات المعلم</button>
+      <button class="student-tab" data-student-tab="lectureRatings">🌟 تقييم المحاضرات <span id="studentLectureRatingBadge"></span></button>
       <button class="student-tab" data-student-tab="progress">📊 تقدمي</button>
       <button class="student-tab" data-student-tab="bookings">📅 حجوزاتي</button>
       <button class="student-tab" data-student-tab="lessons">🎥 المحاضرات</button>
@@ -442,6 +443,13 @@ if(!container.children.length)container.textContent='لا توجد كتب محف
         </div>
 
     </section>
+
+<section class="card student-panel" data-student-panel="lectureRatings" id="studentLectureRatingsPanel" dir="rtl">
+ <h3 style="color:#f2ce69">🌟 قيّم محاضراتك</h3>
+ <p style="color:var(--muted);margin:8px 0 16px">التقييم متاح لآخر محاضرة حضرتها فقط، ويمكنك فتح رابط التقييم من الإدارة مباشرة بعد تسجيل الدخول. المحاضرات السابقة للعرض فقط.</p>
+ <div id="studentLectureRatingsList" style="display:grid;gap:14px"><div class="notice">جارٍ تحميل طلبات تقييم المحاضرات...</div></div>
+</section>
+
     <section class="card student-panel" data-student-panel="notifications" id="studentNotificationsCard">
       <div class="actions" style="justify-content:space-between"><div><h3>🔔 تنبيهاتي</h3><p style="color:var(--muted)">إشعارات الحساب والحجوزات والمتابعة.</p></div><button id="markAllStudentNotifications" class="btn" type="button">✓ تحديد الكل كمقروء</button></div>
       <div id="studentNotificationsList" class="student-info-list"><div class="notice">جارٍ تحميل التنبيهات...</div></div>
@@ -1317,6 +1325,7 @@ document
 ></script>
 
 <script type="module" src="../student/student-enhancements.js"></script>
+<script type="module" src="../student/lecture-reviews-student.js?v=20261112-latest1"></script>
 <script type="module" src="access-diagnostics.js"></script>
 <script>document.addEventListener('DOMContentLoaded',()=>{try{const recent=JSON.parse(localStorage.getItem('zadRecentBooks')||'[]');const fav=JSON.parse(localStorage.getItem('zadFavorites')||'[]');const reads=JSON.parse(localStorage.getItem('zadReadBooks')||'[]');const score=Math.min(100,(recent.length*8)+(fav.length*5)+(reads.length*12));const bar=document.getElementById('smartProgressBar'),txt=document.getElementById('smartProgressText');if(bar)bar.style.width=score+'%';if(txt)txt.textContent=score+'%';}catch(e){}});</script>
 <section dir="rtl" style="max-width:1000px;margin:25px auto;padding:20px;border-radius:16px;background:#17233b;color:#f4e8cd;border:1px solid #b5964a"><h2>📨 أسئلتي المرسلة للإدارة</h2><div id="zad-my-questions">جاري التحميل...</div></section>

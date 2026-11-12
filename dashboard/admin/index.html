@@ -829,6 +829,19 @@ onAuthStateChanged(auth, async (user) => {
   <div class="table-wrap salary-table-wrap"><table class="table"><thead><tr><th>التاريخ</th><th>المعلم</th><th>الطالب</th><th>المادة</th><th>أجر الحصة</th><th>إضافي المنصة</th><th>إجمالي الحصة</th><th>ملاحظات</th><th>تعديل</th></tr></thead><tbody id="salaryRows"><tr><td colspan="9">جارٍ التحميل...</td></tr></tbody></table></div>
   <p class="salary-explain">مهم: عند تسجيل أكثر من مادة في حصة واحدة تُحسب حصة واحدة فقط. وإذا كان السجل يضم أكثر من معلم، يجب تحديد المعلم المستحق من زر «تعديل الأجر». الإضافي تتحمله المنصة، وليس الطالب. هذا تقرير مستحقات وليس إثبات صرف.</p>
 </section>
+
+<section class="card" dir="rtl" id="lectureReviewsAdminSection" style="border:1px solid #bda04f">
+ <h2>🌟 تقييمات المحاضرات</h2>
+ <p>عند تسجيل الطالب حاضرًا تصله دعوة تقييم. هنا تظهر تقييماته لكل حصة، ومعدل التقييم حسب المعلم، دون إظهارها للطلاب الآخرين.</p>
+ <div class="actions" style="gap:10px;flex-wrap:wrap;margin:12px 0">
+  <label>المعلم <select id="lectureRatingsTeacher"><option value="all">جميع المعلمين</option></select></label>
+  <button type="button" class="btn" id="lectureRatingsRefresh">🔄 تحديث التقييمات</button>
+  <strong id="lectureRatingsSummary" style="color:#e6c769"></strong>
+ </div>
+ <div id="lectureRatingsByTeacher" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin:15px 0"></div>
+ <div id="lectureRatingsList" style="display:grid;gap:12px">جارٍ تحميل تقييمات المحاضرات...</div>
+</section>
+
 <section class="card" id="attendanceManagement">
       <h2>📋 تسجيل الحضور والغياب يدويًا</h2>
       <p class="admin-muted">اختر حساب الطالب من المنصة، ثم حدد التاريخ والمواد وسعر الحصة. يمكنك اختيار مادة واحدة أو أكثر، ولا يشترط إنشاء محاضرة مباشرة.</p>
@@ -3990,8 +4003,9 @@ guard('admin', async () => {
 <!-- ملفات مستقلة كانت غير مُحمّلة بسبب انقطاع نهاية الصفحة -->
 <script type="module" src="admin-activity-alerts.js"></script>
 <script type="module" src="admin-enhancements.js"></script>
-<script type="module" src="admin-workspace.js?v=20261110-saadtab4"></script>
-<script type="module" src="attendance-admin.js?v=20261111-noali2"></script>
+<script type="module" src="admin-workspace.js?v=20261112-lecture-ratings1"></script>
+<script type="module" src="attendance-admin.js?v=20261112-latest1"></script>
+<script type="module" src="lecture-reviews-admin.js?v=20261112-1"></script>
 <script type="module" src="teacher-payroll-admin.js?v=20261106-settlements-cards2"></script>
 <script type="module" src="teacher-linker-admin.js?v=20261105-1"></script>
 
