@@ -6,10 +6,9 @@
 
   const groups = [
     {id:'home',label:'نظرة عامة',icon:'🏠',sections:['platformAnalytics','studentCounterManagement']},
-    {id:'users',label:'المستخدمون',icon:'👥',sections:['usersManagement']},
-    {id:'teachers',label:'إعداد المعلمين',icon:'👨‍🏫',sections:['saadAlaaAdminPanel']},
+    {id:'users',label:'المستخدمون',icon:'👥',sections:['usersManagement','saadAlaaAdminPanel','teacherExamAccessAdmin']},
     {id:'bookings',label:'الحجوزات',icon:'📅',sections:['bookingsManagement']},
-    {id:'exams',label:'الامتحانات',icon:'📝',sections:['codeExamsManagement','adminCertificatesSection','codeExamResultsSection','teacherExamAccessAdmin','zadSpecialExamResults','unitOneExamsAdmin']},
+    {id:'exams',label:'الامتحانات',icon:'📝',sections:['codeExamsManagement','adminCertificatesSection','codeExamResultsSection','zadSpecialExamResults','unitOneExamsAdmin']},
     {id:'library',label:'المكتبة',icon:'📚',sections:['librarySubscriptionsAdminPanel','libraryDownloadTracking']},
     {id:'lessons',label:'الحضور والغياب',icon:'✅',sections:['attendanceManagement']},
     {id:'lectureRatings',label:'تقييمات المحاضرات',icon:'🌟',sections:['lectureReviewsAdminSection']},
@@ -197,6 +196,36 @@
   }
   preparePayments();
   prepareAttendance();
+  // Consolidate specialty science/fiqh result tools with the ordinary exam results.
+  // Move original DOM nodes rather than cloning, preserving Firestore listeners and IDs.
+  function consolidateAdministrativeSections(){
+    const generalResults=document.getElementById('codeExamResultsSection');
+    const specialResults=document.getElementById('zadSpecialExamResults');
+    if(generalResults&&specialResults){
+      const examDetails=document.createElement('details');
+      examDetails.className='zad-admin-merged-detail';
+      examDetails.id='zadSpecialExamResultsDetails';
+      const summary=document.createElement('summary');
+      summary.textContent='📘 نتائج وتصحيح امتحانات العلوم المتكاملة والفقه';
+      examDetails.append(summary,specialResults);
+      generalResults.append(examDetails);
+    }
+    const users=document.getElementById('usersManagement');
+    const teacherSetup=document.getElementById('saadAlaaAdminPanel');
+    const teacherExamAccess=document.getElementById('teacherExamAccessAdmin');
+    if(users&&(teacherSetup||teacherExamAccess)){
+      const teacherDetails=document.createElement('details');
+      teacherDetails.className='zad-admin-merged-detail';
+      teacherDetails.id='zadTeacherSettingsDetails';
+      const summary=document.createElement('summary');
+      summary.textContent='👨‍🏫 إدارة وإعدادات المعلمين';
+      teacherDetails.append(summary);
+      if(teacherSetup)teacherDetails.append(teacherSetup);
+      if(teacherExamAccess)teacherDetails.append(teacherExamAccess);
+      users.append(teacherDetails);
+    }
+  }
+  consolidateAdministrativeSections();
 
   function activate(id,updateHash=true){
     const target=groups.some(g=>g.id===id)?id:'home';
@@ -223,6 +252,7 @@
     const el=document.getElementById(id);
     if(el && container.contains(el)){
       e.preventDefault();activate(findGroup(id).id,false);
+      el.closest('details')?.setAttribute('open','');
       if(id==='manualPaymentLedger'){showPaymentMode('review');if(manualPaymentTools)manualPaymentTools.open=true;}
       if(id==='attendanceManagement')showAttendanceMode('log');
       if(id==='zadVodafoneAdminPanel')showPaymentMode(null);
