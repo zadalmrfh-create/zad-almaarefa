@@ -259,7 +259,7 @@ onAuthStateChanged(auth, async (user) => {
 
 <section class="card" id="codeExamsManagement" dir="rtl">
   <h2>🧑‍💻 امتحانات بالكود</h2>
-  <p>الصق كود HTML كامل (ويمكن تضمين CSS وJavaScript بداخله)، وعاين الامتحان ثم انشره للطلاب. الكود يعمل في إطار مستقل معزول.</p>
+  <p>الصق كود HTML كامل (ويمكن تضمين CSS وJavaScript بداخله)، وعاين الامتحان ثم انشره للطلاب. الكود يعمل في إطار مستقل معزول. تظهر تسليمات الطلاب تلقائيًا هنا عندما يستطيع الكود إظهار الدرجة أو يحتوي على مفتاح إجابات واضح؛ الأكواد التي لا تحسب أي نتيجة تحتاج ضبط آلية تصحيحها.</p>
   <div class="codeexam-fields">
     <label>اسم الامتحان <input id="ceTitle" maxlength="120" placeholder="مثال: امتحان النحو - الصف الثاني الثانوي"></label>
     <label>المرحلة <select id="ceStage"><option value="prep">الإعدادية</option><option value="secondary">الثانوية الأزهرية</option><option value="general">عام</option></select></label>
@@ -279,10 +279,11 @@ onAuthStateChanged(auth, async (user) => {
   <p id="ceStatus" role="status" aria-live="polite"></p>
   <div id="cePreviewBox" hidden><h3>معاينة الامتحان</h3><iframe id="ceFrame" sandbox="allow-scripts" referrerpolicy="no-referrer" title="معاينة الامتحان" style="width:100%;height:540px;border:1px solid #8a763f;border-radius:12px;background:white"></iframe></div>
   <h3 style="margin-top:24px">الامتحانات المحفوظة</h3>
+  <p class="zad-exam-hint">كل امتحان منشور له زر «📊 نتائج الامتحان» يفتح نتائج طلابه مباشرة. العدد يتحدث تلقائيًا عند تسليم الطلاب وحفظ نتائجهم.</p>
   <div id="ceList">جاري تحميل الامتحانات...</div>
 </section>
 <section class="card" dir="rtl" id="adminCertificatesSection"><h2>🏅 شهادات التقدير — للإدارة فقط</h2><p>إصدار شهادة للطالب بعد مراجعة النتيجة. يمكن تعديل الشهادة أو طباعتها أو حذفها من هنا فقط. انسخ معرّف حساب الطالب UID من بياناته في Firebase.</p><form id="certificateAdminForm" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin:18px 0"><label style="display:grid;gap:6px">معرّف حساب الطالب (UID)<input name="studentUid" value="" required style="width:100%;padding:10px;border-radius:9px;color:#17233b;background:#fff;border:1px solid #64748b;font:inherit"></label><label style="display:grid;gap:6px">اسم الطالب<input name="studentName" value="" required style="width:100%;padding:10px;border-radius:9px;color:#17233b;background:#fff;border:1px solid #64748b;font:inherit"></label><label style="display:grid;gap:6px">سبب التكريم أو اسم الامتحان<input name="title" value="" required style="width:100%;padding:10px;border-radius:9px;color:#17233b;background:#fff;border:1px solid #64748b;font:inherit"></label><label style="display:grid;gap:6px">التقدير<input name="grade" value="ممتاز"  style="width:100%;padding:10px;border-radius:9px;color:#17233b;background:#fff;border:1px solid #64748b;font:inherit"></label><label style="display:grid;gap:6px">عبارة الشهادة<input name="description" value=""  style="width:100%;padding:10px;border-radius:9px;color:#17233b;background:#fff;border:1px solid #64748b;font:inherit"></label><label style="display:grid;gap:6px">تاريخ الإصدار<input name="issueDate" value=""  style="width:100%;padding:10px;border-radius:9px;color:#17233b;background:#fff;border:1px solid #64748b;font:inherit"></label><div style="display:grid;gap:6px;align-content:center;padding:12px;border:1px solid #b9821a;border-radius:10px;background:#101d31;color:#f1d17b"><strong>🏅 ختم زاد المعرفة</strong><span style="font-size:13px;line-height:1.6">يظهر الختم الرسمي تلقائيًا على الشهادة بدلًا من إمضاء المعلم.</span></div><div style="display:flex;align-items:end;gap:8px"><button type="submit" class="btn gold" id="certificateSubmit">إصدار الشهادة</button><button type="button" class="btn" id="certificatePrintPreview">🖨️ معاينة وطباعة الشهادة بالختم الرسمي</button><button type="button" class="btn" id="certificateCancel" hidden>إلغاء التعديل</button></div></form><p id="certificateAdminStatus" aria-live="polite"></p><div id="certificateAdminList"></div></section><script type="module" src="certificates-admin.js"></script>
-<section class="card" dir="rtl" id="codeExamResultsSection"><h2>📊 نتائج الامتحانات الإلكترونية</h2><p>تظهر هنا نتائج <strong>كل الامتحانات بالكود وامتحانات الوحدة الأولى بالإضافة إلى امتحان علم البديع (تانية بكالوريا)</strong> حسب تاريخ التسليم. نتائج الوحدة الأولى مبدئية حتى اعتماد درجات المقالي من قسم التصحيح الموجود أسفل النتائج. استخدم زر «طباعة تقرير الإجابات» بجانب كل نتيجة لطباعة إجابات الطالب والإجابات الصحيحة المتاحة، أو حفظها PDF.</p><div id="codeExamResultsList">جارٍ تحميل النتائج...</div></section>
+<section class="card" dir="rtl" id="codeExamResultsSection"><h2>📊 نتائج الامتحانات الإلكترونية</h2><p>الامتحانات التي تنشرها من الأعلى تظهر تلقائيًا هنا، حتى لو لم يسلم أي طالب بعد. تظهر النتائج المسجلة لحظة وصولها إلى Firebase، بدون إعداد يدوي جديد.</p><p>تظهر هنا نتائج <strong>كل الامتحانات بالكود وامتحانات الوحدة الأولى بالإضافة إلى امتحان علم البديع (تانية بكالوريا)</strong> حسب تاريخ التسليم. نتائج الوحدة الأولى مبدئية حتى اعتماد درجات المقالي من قسم التصحيح الموجود أسفل النتائج. استخدم زر «طباعة تقرير الإجابات» بجانب كل نتيجة لطباعة إجابات الطالب والإجابات الصحيحة المتاحة، أو حفظها PDF.</p><div id="codeExamResultsList">جارٍ تحميل النتائج...</div></section>
 <section class="card" dir="rtl" id="saadAlaaAdminPanel" style="border:1px solid #c6a251">
  <h2>📐 إعداد مدرس الرياضيات والعلوم والكيمياء — أ/ سعد علاء</h2>
  <p>هذه الأدوات موجودة داخل قسم <b>المستخدمون ← إدارة وإعدادات المعلمين</b>. نفّذ إضافة الملف مرة واحدة فقط إذا لم يكن موجودًا في Firestore.</p>
@@ -317,8 +318,8 @@ onAuthStateChanged(auth, async (user) => {
 </section>
 <link rel="stylesheet" href="zad-special-results-admin.css">
 <script type="module" src="zad-special-results-admin.js"></script>
-<link rel="stylesheet" href="code-exams-admin.css">
-<script type="module" src="code-exam-results-admin.js"></script>
+<link rel="stylesheet" href="code-exams-admin.css?v=20261113-results1">
+<script type="module" src="code-exam-results-admin.js?v=20261113-results1"></script>
 <section class="card" dir="rtl" id="unitOneExamsAdmin" style="border:1px solid #bb983c">
 <h2>📚 امتحانات الوحدة الأولى — الصف الثاني الثانوي والبكالوريا</h2>
 <p>امتحانات الوحدة الأولى وامتحان علم البديع (تانية بكالوريا)، 30 سؤالًا في كل امتحان. إجابات الاختيار والصح والخطأ والإكمال تُصحَّح آليًا كدرجة أولية؛ تُراجع الإدارة الأسئلة المقالية الأربعة وتثبت الدرجة النهائية.</p>
@@ -328,7 +329,7 @@ onAuthStateChanged(auth, async (user) => {
 <div id="ueAdminAttempts"></div>
 </section>
 <script type="module" src="unit-one-review.js"></script>
-<script type="module" src="code-exams-admin.js"></script>
+<script type="module" src="code-exams-admin.js?v=20261113-results1"></script>
 
     <!-- =====================================================
          PLATFORM ANALYTICS

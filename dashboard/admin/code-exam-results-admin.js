@@ -8,7 +8,7 @@ import { collection, getDoc, doc, onSnapshot, deleteDoc, setDoc, serverTimestamp
 const box = document.getElementById('codeExamResultsList');
 const make = (tag, text, cls) => { const e = document.createElement(tag); if (text !== undefined) e.textContent=text; if(cls)e.className=cls; return e; };
 const norm = t => String(t??'').trim().toLowerCase().replace(/[\u064b-\u065f\u0670]/g,'').replace(/[أإآ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه').replace(/\s+/g,' ');
-const state={code:[],units:[],bank:new Map(),codeError:'',unitError:'',ready:false};
+const state={code:[],units:[],bank:new Map(),exams:new Map((window.__zadCodeExams||[]).map(x=>[String(x.id),x])),selectedExamId:'',codeError:'',unitError:'',ready:false};
 let unsubs=[];
 const dateText=t=>{try{return t?.toDate?.().toLocaleString('ar-EG')||'—'}catch{return '—'}};
 const ordered=(a,b)=>(b.data.createdAt?.seconds||0)-(a.data.createdAt?.seconds||0);
@@ -213,15 +213,82 @@ function renderUnit(entry){
   },'zad-delete-result');
   actions.append(del,status);row.append(actions,details);return row;
 }
+function resultDate(value){
+  try{return value?.toDate?.().toLocaleDateString('ar-EG') || '—';}
+  catch{return '—';}
+}
+function setExamFilter(examId=''){
+  state.selectedExamId=String(examId||'');
+  render();
+  document.getElementById('codeExamResultsSection')?.scrollIntoView({behavior:'smooth',block:'start'});
+}
+window.zadShowCodeExamResults=setExamFilter;
+window.addEventListener('zad:code-exams-changed',event=>{
+  const list=Array.isArray(event.detail?.exams)?event.detail.exams:[];
+  state.exams=new Map(list.map(x=>[String(x.id),x]));
+  render();
+});
 function render(){
   if(!box)return;
   box.replaceChildren();
-  const head=make('p',`نتائج الامتحانات بالكود: ${state.code.length} | نتائج امتحانات الوحدة الأولى التسعة: ${state.units.length} | الإجمالي: ${state.code.length+state.units.length}`);
-  head.style.color='#ffdf80';box.append(head);
-  if(state.codeError||state.unitError){const errors=make('p',[state.codeError&&'نتائج الأكواد: '+state.codeError,state.unitError&&'نتائج الوحدة الأولى: '+state.unitError].filter(Boolean).join(' | '));errors.style.color='#ffac96';box.append(errors);}
-  const all=[...state.code.map(x=>({...x,kind:'code'})),...state.units.map(x=>({...x,kind:'unit'}))].sort(ordered);
-  if(!all.length){box.append(make('p',state.codeError||state.unitError?'لا توجد بيانات متاحة من المصادر التي أمكن قراءتها.':'لا توجد نتائج محفوظة بعد.'));return;}
-  for(const e of all)box.append(e.kind==='unit'?renderUnit(e):renderCode(e));
+  const head=make('p',`نتائج الامتحانات بالكود: ${state.code.length} | نتائج امتحانات الوحدة الأولى: ${state.units.length} | الإجمالي: ${state.code.length+state.units.length}`);
+  head.className='zad-exam-count-head';box.append(head);
+  if(state.codeError||state.unitError){
+    const errors=make('p',[state.codeError&&'نتائج الأكواد: '+state.codeError,state.unitError&&'نتائج الوحدة الأولى: '+state.unitError].filter(Boolean).join(' | '));errors.style.color='#ffac96';box.append(errors);
+  }
+  const counts=new Map();
+  for(const item of state.code){
+    const key=String(item.data.examId||'');
+    if(key)counts.set(key,(counts.get(key)||0)+1);
+  }
+  window.__zadCodeExamCounts=Object.fromEntries(counts);
+  window.dispatchEvent(new CustomEvent('zad:code-exam-counts-changed',{detail:{counts:window.__zadCodeExamCounts}}));
+  const known=[...state.exams.values()].sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+  const group=make('section',undefined,'zad-exam-auto-summary');
+  group.append(make('h3','📚 امتحاناتك ونتائجها التلقائية'));
+  group.append(make('p','ينضم أي امتحان جديد إلى هذه القائمة بمجرد حفظه. عند وصول نتائج الطلاب من Firebase تتغير الأعداد مباشرة.'));
+  const cards=make('div',undefined,'zad-exam-auto-grid');
+  for(const exam of known){
+    const id=String(exam.id),matched=state.code.filter(r=>r.data.examId===id);
+    const panel=make('article',undefined,'zad-exam-auto-card');
+    panel.append(make('strong',exam.title||'امتحان بدون عنوان'));
+    panel.append(make('small',[exam.grade,exam.subject,exam.published?'✅ منشور':'📝 مسودة'].filter(Boolean).join(' • ')));
+    const uniqueStudents=new Set(matched.map(r=>r.data.studentUid).filter(Boolean)).size;
+    panel.append(make('div',`عدد الطلاب: ${uniqueStudents} • عدد التسليمات: ${matched.length}`,'zad-exam-auto-count'));
+    if(matched.length){
+      const avg=Math.round(matched.reduce((s,e)=>s+Number(e.data.percent||0),0)/matched.length);
+      const dates=matched.slice().sort(ordered);
+      panel.append(make('small',`متوسط النتائج المبدئية: ${avg}% • أحدث تسليم: ${resultDate(dates[0]?.data.createdAt)}`));
+    }else panel.append(make('small','لا توجد نتائج محفوظة لهذا الامتحان حتى الآن.'));
+    panel.append(action(`📊 عرض النتائج (${matched.length})`,()=>setExamFilter(id),'btn gold'));
+    cards.append(panel);
+  }
+  if(!known.length)cards.append(make('p','ستظهر هنا الامتحانات المنشورة من لوحة الأدمن بمجرد تحميلها.'));
+  group.append(cards);box.append(group);
+  const toolbar=make('div',undefined,'zad-exam-result-filterbar');
+  const label=make('label','تصفية نتائج الامتحانات بالكود: ');
+  const select=document.createElement('select');select.setAttribute('aria-label','اختر الامتحان لعرض نتائجه');
+  const allOpt=new Option('كل الامتحانات والنتائج','');select.append(allOpt);
+  for(const exam of known){select.append(new Option(`${exam.title||exam.id} (${counts.get(exam.id)||0})`,exam.id));}
+  // Old results remain accessible even after the original exam has been deleted.
+  for(const id of counts.keys()){
+    if(!state.exams.has(id))select.append(new Option('امتحان قديم أو محذوف ('+counts.get(id)+')',id));
+  }
+  if(state.selectedExamId && ![...select.options].some(opt=>opt.value===state.selectedExamId))state.selectedExamId='';
+  select.value=state.selectedExamId;
+  select.addEventListener('change',()=>setExamFilter(select.value));
+  label.append(select);toolbar.append(label);
+  const reset=action('عرض كل النتائج',()=>setExamFilter(''),'btn');
+  toolbar.append(reset);box.append(toolbar);
+  const filteredCode=state.selectedExamId?state.code.filter(e=>String(e.data.examId||'')===state.selectedExamId):state.code;
+  const all=[...filteredCode.map(x=>({...x,kind:'code'})),...(state.selectedExamId?[]:state.units.map(x=>({...x,kind:'unit'})))].sort(ordered);
+  const selectedName=state.selectedExamId?(state.exams.get(state.selectedExamId)?.title||filteredCode[0]?.data.examTitle||'الامتحان المحدد'):'';
+  box.append(make('h3',state.selectedExamId?`📋 نتائج: ${selectedName} (${filteredCode.length})`:`📋 جميع نتائج الطلاب (${all.length})`));
+  if(!all.length){
+    box.append(make('p',state.codeError||state.unitError?'لا توجد نتائج متاحة من المصادر التي أمكن قراءتها.':state.selectedExamId?'لم يُحفظ أي تسليم لهذا الامتحان بعد.':'لم يُحفظ أي تسليم من الطلاب بعد.'));
+    return;
+  }
+  for(const entry of all)box.append(entry.kind==='unit'?renderUnit(entry):renderCode(entry));
 }
 function watch(user){
   for(const u of unsubs)u();unsubs=[];state.code=[];state.units=[];state.codeError='';state.unitError='';render();
