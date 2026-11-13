@@ -2,7 +2,7 @@
 import {db,auth} from '../firebase-config.js';
 import {onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
 import {doc,getDoc,getDocs,collection,query,where} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
-import {lastFullWeek,reviewId,eligibleTeachers} from './weekly-shared.js';
+import {lastFullWeek,lastFullMonth,reviewId,eligibleTeachers} from './weekly-shared.js';
 const target=new URL('./weekly.html',import.meta.url);
 const current=new URL(location.href);
 if(current.pathname!==target.pathname){
@@ -12,7 +12,9 @@ if(current.pathname!==target.pathname){
    const account=await getDoc(doc(db,'users',user.uid));
    if(account.data()?.role!=='student')return;
    const week=lastFullWeek();
-   const [platform,admin]=await Promise.all(['platform','administration'].map(kind=>getDoc(doc(db,'weeklyReviewPrivate',reviewId(user.uid,week.start,kind)))));
+   const month=lastFullMonth();
+   // General platform/administration feedback is required once per completed month.
+   const [platform,admin]=await Promise.all(['platform','administration'].map(kind=>getDoc(doc(db,'weeklyReviewPrivate',reviewId(user.uid,month.start,kind)))));
    let needed=!platform.exists()||!admin.exists();
    if(!needed){
     const [a,b]=await Promise.all([

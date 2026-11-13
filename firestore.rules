@@ -866,15 +866,16 @@ service cloud.firestore {
       allow list: if isAdmin();
       allow create: if isStudentAccount()
         && request.resource.data.keys().hasOnly([
-          'studentUid','kind','weekStart','weekEnd','teacherUid','sourceAttendanceId',
+          'studentUid','kind','periodType','weekStart','weekEnd','teacherUid','sourceAttendanceId',
           'sourceBookingId','feedbackId','scores','comment','publishConsent','createdAt'
         ])
         && request.resource.data.keys().hasAll([
-          'studentUid','kind','weekStart','weekEnd','teacherUid','sourceAttendanceId',
+          'studentUid','kind','periodType','weekStart','weekEnd','teacherUid','sourceAttendanceId',
           'sourceBookingId','feedbackId','scores','comment','publishConsent','createdAt'
         ])
         && request.resource.data.studentUid == request.auth.uid
         && request.resource.data.kind in ['teacher','platform','administration']
+        && request.resource.data.periodType == (request.resource.data.kind == 'teacher' ? 'weekly' : 'monthly')
         && request.resource.data.weekStart is string && request.resource.data.weekStart.size() == 10
         && request.resource.data.weekEnd is string && request.resource.data.weekEnd.size() == 10
         && request.resource.data.weekStart <= request.resource.data.weekEnd
@@ -888,6 +889,9 @@ service cloud.firestore {
             && request.resource.data.feedbackId is string && request.resource.data.feedbackId.size() >= 10
             && validTeacherEvidence(request.resource.data))
           || (request.resource.data.kind in ['platform','administration']
+            // A unique ID keyed to the first day of a calendar month blocks duplicate general reviews.
+            && request.resource.data.weekStart.matches('^[0-9]{4}-(0[1-9]|1[0-2])-01$')
+            && request.resource.data.weekEnd.matches('^[0-9]{4}-(0[1-9]|1[0-2])-(28|29|30|31)$')
             && reviewId == request.auth.uid + '__' + request.resource.data.weekStart + '__' + request.resource.data.kind
             && request.resource.data.teacherUid == ''
             && request.resource.data.sourceAttendanceId == ''

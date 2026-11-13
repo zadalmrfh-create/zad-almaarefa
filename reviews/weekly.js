@@ -1,11 +1,12 @@
 import {auth,db} from '../firebase-config.js';
 import {onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
 import {doc,collection,getDoc,getDocs,query,where,writeBatch,serverTimestamp} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
-import {TEACHER_QUESTIONS,PLATFORM_QUESTIONS,ADMIN_QUESTIONS,lastFullWeek,reviewId,eligibleTeachers,htmlEscape} from './weekly-shared.js';
+import {TEACHER_QUESTIONS,PLATFORM_QUESTIONS,ADMIN_QUESTIONS,lastFullWeek,lastFullMonth,reviewId,eligibleTeachers,htmlEscape} from './weekly-shared.js';
 const $=id=>document.getElementById(id);
 const week=lastFullWeek();
+const month=lastFullMonth();
 const intended=(()=>{const next=new URLSearchParams(location.search).get('next');if(!next)return '../dashboard/student/index.html';try{const url=new URL(next,location.href);if(url.origin===location.origin&&url.pathname!==location.pathname)return url.href}catch(_){}return '../dashboard/student/index.html'})();
-$('weekLabel').textContent=`الأسبوع المطلوب: من ${week.start} إلى ${week.end}`;
+$('weekLabel').textContent=`تقييم المعلمين: ${week.start} إلى ${week.end} (آخر أسبوع مكتمل) | تقييم المنصة والإدارة: ${month.start} إلى ${month.end} (آخر شهر مكتمل)`;
 $('weeklyContinue').href=intended;
 let currentUser=null,forms=[];
 function render(){
@@ -17,7 +18,7 @@ function render(){
  for(const data of forms){
   const panel=document.createElement('article');panel.className='panel';
   const heading=document.createElement('h2');heading.textContent=data.title;panel.appendChild(heading);
-  const sub=document.createElement('p');sub.className='sub';sub.textContent=data.saved?'✅ تم تسجيل التقييم بنجاح':`الأسبوع ${week.start} — ${week.end}. أجب عن كل سؤال.`;panel.appendChild(sub);
+  const sub=document.createElement('p');sub.className='sub';sub.textContent=data.saved?'✅ تم تسجيل التقييم بنجاح':`${data.kind==='teacher'?'الأسبوع':'الشهر'} ${data.period.start} — ${data.period.end}. أجب عن كل سؤال.`;panel.appendChild(sub);
   if(data.saved){const done=document.createElement('p');done.className='done';done.textContent='تقييم محفوظ، ولا يمكن إرساله مرة ثانية.';panel.append(done);target.append(panel);continue}
   const form=document.createElement('form');form.noValidate=true;form.dataset.reviewKey=data.kind+'::'+(data.teacherUid||'');
   data.questions.forEach((question,i)=>{
@@ -38,16 +39,16 @@ function render(){
    if(data.saved){status.textContent='✅ تم إرسال التقييم بالفعل.';return;}
    button.disabled=true;status.textContent='جارٍ حفظ التقييم في Firebase...';
    const feedbackDoc=data.kind==='teacher'?doc(collection(db,'weeklyTeacherFeedback')):null;
-   const id=reviewId(currentUser.uid,week.start,data.kind,data.teacherUid||'');
-   const privateData={studentUid:currentUser.uid,kind:data.kind,weekStart:week.start,weekEnd:week.end,teacherUid:data.teacherUid||'',sourceAttendanceId:data.attendanceId||'',sourceBookingId:data.bookingId||'',feedbackId:feedbackDoc?.id||'',scores,comment:textarea.value.trim(),publishConsent:data.kind!=='administration',createdAt:serverTimestamp()};
+   const id=reviewId(currentUser.uid,data.period.start,data.kind,data.teacherUid||'');
+   const privateData={studentUid:currentUser.uid,kind:data.kind,periodType:data.kind==='teacher'?'weekly':'monthly',weekStart:data.period.start,weekEnd:data.period.end,teacherUid:data.teacherUid||'',sourceAttendanceId:data.attendanceId||'',sourceBookingId:data.bookingId||'',feedbackId:feedbackDoc?.id||'',scores,comment:textarea.value.trim(),publishConsent:data.kind!=='administration',createdAt:serverTimestamp()};
    try{
     const prior=await getDoc(doc(db,'weeklyReviewPrivate',id));
     if(prior.exists()){data.saved=true;render();$('weeklyMessage').textContent='✅ هذا التقييم تم إرساله بالفعل ولا يمكن إرساله مرة ثانية.';return;}
     const batch=writeBatch(db);batch.set(doc(db,'weeklyReviewPrivate',id),privateData);
-    if(feedbackDoc)batch.set(feedbackDoc,{kind:'teacher',teacherUid:data.teacherUid,weekStart:week.start,scores,comment:privateData.comment,createdAt:serverTimestamp()});
+    if(feedbackDoc)batch.set(feedbackDoc,{kind:'teacher',teacherUid:data.teacherUid,weekStart:data.period.start,scores,comment:privateData.comment,createdAt:serverTimestamp()});
     if(data.kind!=='administration'&&privateData.comment){
       const publicRef=doc(collection(db,'publicTestimonials'));
-      batch.set(publicRef,{status:'published',kind:data.kind,text:privateData.comment,rating:data.kind==='teacher'?scores[5]:scores[3],teacherUid:data.teacherUid||'',teacherName:data.kind==='teacher'?data.name||'من معلمي المنصة':'',weekStart:week.start,createdAt:serverTimestamp()});
+      batch.set(publicRef,{status:'published',kind:data.kind,text:privateData.comment,rating:data.kind==='teacher'?scores[5]:scores[3],teacherUid:data.teacherUid||'',teacherName:data.kind==='teacher'?data.name||'من معلمي المنصة':'',weekStart:data.period.start,createdAt:serverTimestamp()});
     }
     await batch.commit();for(const entry of forms){const dom=[...document.querySelectorAll('form[data-review-key]')].find(f=>f.dataset.reviewKey===entry.kind+'::'+(entry.teacherUid||''));if(!dom)continue;entry.draft={scores:entry.questions.map((_,i)=>{const v=dom.querySelector(`input[name="q${i}"]:checked`);return v?Number(v.value):null}),comment:dom.querySelector('textarea')?.value||'',consent:true}}data.saved=true;render();$('weeklyMessage').textContent='✅ تم حفظ التقييم بنجاح.';
    }catch(err){
@@ -70,10 +71,10 @@ async function load(user){
   const a=attendanceSnap.docs.map(d=>({id:d.id,...d.data()}));
   const b=bookingSnap.docs.map(d=>({id:d.id,...d.data()}));
   const teacherOptions=eligibleTeachers(a,b,week);
-  const entries=teacherOptions.map(t=>({...t,kind:'teacher',teacherUid:t.uid,title:`تقييم المعلم: ${t.name}${t.subject?' — '+t.subject:''}`,questions:TEACHER_QUESTIONS}));
-  entries.push({kind:'platform',title:'تقييم منصة زاد المعرفة',questions:PLATFORM_QUESTIONS});
-  entries.push({kind:'administration',title:'تقييم إدارة الأكاديمية',questions:ADMIN_QUESTIONS});
-  const docs=await Promise.all(entries.map(x=>getDoc(doc(db,'weeklyReviewPrivate',reviewId(user.uid,week.start,x.kind,x.teacherUid||'')))));
+  const entries=teacherOptions.map(t=>({...t,kind:'teacher',period:week,teacherUid:t.uid,title:`تقييم المعلم: ${t.name}${t.subject?' — '+t.subject:''}`,questions:TEACHER_QUESTIONS}));
+  entries.push({kind:'platform',period:month,title:'التقييم الشهري لمنصة زاد المعرفة',questions:PLATFORM_QUESTIONS});
+  entries.push({kind:'administration',period:month,title:'التقييم الشهري لإدارة الأكاديمية',questions:ADMIN_QUESTIONS});
+  const docs=await Promise.all(entries.map(x=>getDoc(doc(db,'weeklyReviewPrivate',reviewId(user.uid,x.period.start,x.kind,x.teacherUid||'')))));
   forms=entries.map((x,i)=>({...x,saved:docs[i].exists()}));
   render();
   if(!teacherOptions.length&&a.some(r=>r.status==='حاضر'&&r.date>=week.start&&r.date<=week.end&&!r.teacherUid)){

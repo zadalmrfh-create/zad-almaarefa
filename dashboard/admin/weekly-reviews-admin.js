@@ -7,25 +7,26 @@ import {TEACHER_QUESTIONS,PLATFORM_QUESTIONS,ADMIN_QUESTIONS,scoreAverage,htmlEs
 const $=id=>document.getElementById(id),kindName={teacher:'المعلم',platform:'المنصة',administration:'الإدارة'};
 let all=[],published=new Map(),users=new Map(),isReady=false;
 const questions=kind=>kind==='teacher'?TEACHER_QUESTIONS:kind==='platform'?PLATFORM_QUESTIONS:ADMIN_QUESTIONS;
+const periodName=row=>row.periodType==='monthly'?'الشهر':'الأسبوع';
 async function nameFor(uid){if(!uid)return 'غير معروف';if(users.has(uid))return users.get(uid);try{const snap=await getDoc(doc(db,'users',uid));const name=snap.data()?.fullName||snap.data()?.name||snap.data()?.email||uid;users.set(uid,name);return name}catch(e){users.set(uid,uid);return uid}}
 async function hash(s){const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return Array.from(new Uint8Array(buf)).map(x=>x.toString(16).padStart(2,'0')).join('')}
 function visible(){let k=$('zwrAdminKind').value,w=$('zwrAdminWeek').value,t=$('zwrAdminTeacher').value,student=($('zwrAdminStudent').value||'').trim().toLowerCase();return all.filter(x=>(!k||x.kind===k)&&(!w||x.weekStart===w)&&(!t||x.teacherUid===t)&&(!student||String(x.studentName).toLowerCase().includes(student)))}
 function downloadCSV(items){
- const rows=[['النوع','الأسبوع','الطالب','المعلم','السؤال','الدرجة','الملاحظة']];
- items.forEach(x=>x.scores.forEach((n,i)=>rows.push([kindName[x.kind],x.weekStart,x.studentName,x.teacherName,questions(x.kind)[i],n===0?'لا ينطبق':n,x.comment||''])));
+ const rows=[['النوع','الفترة','بداية الفترة','الطالب','المعلم','السؤال','الدرجة','الملاحظة']];
+ items.forEach(x=>x.scores.forEach((n,i)=>rows.push([kindName[x.kind],periodName(x),x.weekStart,x.studentName,x.teacherName,questions(x.kind)[i],n===0?'لا ينطبق':n,x.comment||''])));
  const output='\ufeff'+rows.map(row=>row.map(x=>'"'+String(x??'').replaceAll('"','""')+'"').join(',')).join('\r\n');
- const url=URL.createObjectURL(new Blob([output],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download='zad-weekly-reviews.csv';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);
+ const url=URL.createObjectURL(new Blob([output],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download='zad-all-reviews.csv';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);
 }
 function render(){if(!isReady)return;const items=visible();const mean=items.length?items.reduce((s,x)=>s+scoreAverage(x.scores),0)/items.length:0;
  $('zwrAdminStats').textContent=`${items.length} تقييم — المتوسط ${items.length?mean.toFixed(2)+' / 5':'—'} — المعلمون: ${new Set(items.filter(x=>x.kind==='teacher').map(x=>x.teacherUid)).size}`;
  $('zwrAdminMetrics').innerHTML=['teacher','platform','administration'].map(kind=>{const list=items.filter(x=>x.kind===kind);if(!list.length)return '';return `<div class="zwr-metric"><b>${kindName[kind]} (${list.length})</b>${questions(kind).map((q,i)=>{const nums=list.map(x=>x.scores[i]).filter(v=>v>0);const avg=nums.length?nums.reduce((a,b)=>a+b,0)/nums.length:0;return `<p><span>${htmlEscape(q)}</span><strong>${nums.length?avg.toFixed(1)+'/5':'—'}</strong></p>`}).join('')}</div>`}).join('');
  $('zwrAdminResults').innerHTML=items.length?items.map(x=>{
-  return `<article class="zwr-item"><header><strong>${htmlEscape(kindName[x.kind])} | الأسبوع ${htmlEscape(x.weekStart)}</strong><span>👤 ${htmlEscape(x.studentName)}${x.kind==='teacher'?' — '+htmlEscape(x.teacherName):''}</span></header><div class="zwr-grid">${questions(x.kind).map((q,i)=>`<div><small>${htmlEscape(q)}</small><b>${x.scores[i]===0?'لا ينطبق':x.scores[i]+'/5'}</b></div>`).join('')}</div><p>💬 ${htmlEscape(x.comment||'بدون ملاحظة')}</p></article>`;
+  return `<article class="zwr-item"><header><strong>${htmlEscape(kindName[x.kind])} | ${periodName(x)} ${htmlEscape(x.weekStart)}</strong><span>👤 ${htmlEscape(x.studentName)}${x.kind==='teacher'?' — '+htmlEscape(x.teacherName):''}</span></header><div class="zwr-grid">${questions(x.kind).map((q,i)=>`<div><small>${htmlEscape(q)}</small><b>${x.scores[i]===0?'لا ينطبق':x.scores[i]+'/5'}</b></div>`).join('')}</div><p>💬 ${htmlEscape(x.comment||'بدون ملاحظة')}</p></article>`;
  }).join(''):'<p>لا توجد تقييمات لهذه الفلاتر.</p>';
  $('zwrAdminCSV').onclick=()=>downloadCSV(items);
  $('zwrAdminPrint').onclick=()=>{
   const printable=$('zwrAdminResults').cloneNode(true);printable.querySelectorAll('.zwr-actions').forEach(x=>x.remove());
-  const sheet=document.createElement('div');sheet.id='zwrAdminPrintable';sheet.innerHTML=`<div style="text-align:center"><img src="../../images/logo.png" style="width:85px"><h1>أكاديمية زاد المعرفة — تقرير التقييمات الأسبوعية</h1><p>${htmlEscape($('zwrAdminStats').textContent)}</p></div>`;sheet.append(printable);document.body.append(sheet);document.body.classList.add('zwr-admin-printing');window.print();setTimeout(()=>{sheet.remove();document.body.classList.remove('zwr-admin-printing')},1500)
+  const sheet=document.createElement('div');sheet.id='zwrAdminPrintable';sheet.innerHTML=`<div style="text-align:center"><img src="../../images/logo.png" style="width:85px"><h1>أكاديمية زاد المعرفة — تقرير تقييمات المعلمين الأسبوعية والتقييمات العامة الشهرية</h1><p>${htmlEscape($('zwrAdminStats').textContent)}</p></div>`;sheet.append(printable);document.body.append(sheet);document.body.classList.add('zwr-admin-printing');window.print();setTimeout(()=>{sheet.remove();document.body.classList.remove('zwr-admin-printing')},1500)
  };
 }
 async function load(){
@@ -41,7 +42,7 @@ async function load(){
   const weeks=[...new Set(all.map(x=>x.weekStart))].sort().reverse();
   const teachers=[...new Map(all.filter(x=>x.kind==='teacher').map(x=>[x.teacherUid,x.teacherName])).entries()];
   const v=$('zwrAdminWeek').value,t=$('zwrAdminTeacher').value;
-  $('zwrAdminWeek').innerHTML='<option value="">كل الأسابيع</option>'+weeks.map(w=>`<option value="${htmlEscape(w)}">${htmlEscape(w)}</option>`).join('');
+  $('zwrAdminWeek').innerHTML='<option value="">كل الفترات</option>'+weeks.map(w=>`<option value="${htmlEscape(w)}">${htmlEscape(w)}</option>`).join('');
   $('zwrAdminTeacher').innerHTML='<option value="">كل المعلمين</option>'+teachers.map(([uid,name])=>`<option value="${htmlEscape(uid)}">${htmlEscape(name)}</option>`).join('');
   $('zwrAdminWeek').value=weeks.includes(v)?v:'';$('zwrAdminTeacher').value=teachers.some(x=>x[0]===t)?t:'';render();
  }catch(err){console.error(err);$('zwrAdminStats').textContent='تعذر تحميل التقييمات: '+(err.code||err.message)+' — راجع Firebase والصلاحيات';$('zwrAdminSyncStatus').textContent='فشل تحميل التقييمات: '+(err.code||err.message);}

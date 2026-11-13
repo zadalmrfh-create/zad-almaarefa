@@ -29,6 +29,14 @@ export function lastFullWeek(){
  const end=new Date(start);end.setUTCDate(start.getUTCDate()+6);
  return {start:start.toISOString().slice(0,10),end:end.toISOString().slice(0,10)};
 }
+// Last fully completed calendar month in Cairo, used ONLY for platform/admin reviews.
+export function lastFullMonth(){
+ const parts=Object.fromEntries(new Intl.DateTimeFormat('en-US',{timeZone:'Africa/Cairo',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date()).map(p=>[p.type,p.value]));
+ const y=Number(parts.year),m=Number(parts.month);
+ const start=new Date(Date.UTC(y,m-2,1));
+ const end=new Date(Date.UTC(y,m-1,0));
+ return {start:start.toISOString().slice(0,10),end:end.toISOString().slice(0,10)};
+}
 export function reviewId(uid,week,kind,teacherUid=''){
  return `${uid}__${week}__${kind==='teacher'?'teacher__'+teacherUid:kind}`;
 }

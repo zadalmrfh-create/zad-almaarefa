@@ -210,7 +210,7 @@ onAuthStateChanged(auth, async (user) => {
         <a class="admin-quick-link" href="#codeExamResultsSection"><span>📘</span><strong>نتائج الامتحانات</strong><small>درجات وتقارير</small></a>
         <a class="admin-quick-link" href="#libraryDownloadTracking"><span>📥</span><strong>تنزيلات المكتبة</strong><small>متابعة التنزيل</small></a>
         
-        <a class="admin-quick-link" href="#weeklyReviewsAdmin"><span>⭐</span><strong>التقييمات الأسبوعية</strong><small>المعلمون والمنصة والإدارة</small></a>
+        <a class="admin-quick-link" href="#weeklyReviewsAdmin"><span>⭐</span><strong>التقييمات</strong><small>المعلمون أسبوعيًا، والمنصة والإدارة شهريًا</small></a>
         <a class="admin-quick-link" href="#attendanceManagement"><span>✅</span><strong>الحضور</strong><small>متابعة الغياب</small></a>
         <a class="admin-quick-link" href="#teacherPayrollManagement"><span>💼</span><strong>مرتبات المعلمين</strong><small>الأسبوع والإضافي والتقارير</small></a>
         <a class="admin-quick-link" href="#loginLogsManagement"><span>🔐</span><strong>سجلات الدخول</strong><small>آخر النشاطات</small></a>
@@ -224,7 +224,7 @@ onAuthStateChanged(auth, async (user) => {
   <p>تقييمات المعلمين والمنصة والإدارة، مع أسماء الطلاب للأدمن فقط. آراء المعلمين المنشورة لا تحتوي على هوية الطالب. لا يمكن تعديل درجات التقييم.</p>
   <div class="zwr-controls">
     <label>النوع<select id="zwrAdminKind"><option value="">جميع الأنواع</option><option value="teacher">المعلمون</option><option value="platform">المنصة</option><option value="administration">الإدارة</option></select></label>
-    <label>الأسبوع<select id="zwrAdminWeek"><option value="">كل الأسابيع</option></select></label>
+    <label>الفترة (أسبوع / شهر)<select id="zwrAdminWeek"><option value="">كل الفترات</option></select></label>
     <label>الطالب<input id="zwrAdminStudent" type="search" placeholder="اسم الطالب" style="padding:10px;background:#14243a;color:#fff;border:1px solid #526987;border-radius:11px"></label>
     <label>المعلم<select id="zwrAdminTeacher"><option value="">كل المعلمين</option></select></label>
     <button type="button" class="btn gold" id="zwrAdminRefresh">🔄 تحديث</button>
@@ -237,7 +237,7 @@ onAuthStateChanged(auth, async (user) => {
   <p id="zwrAdminSyncStatus" role="status" aria-live="polite" style="font-weight:700"></p><div id="zwrAdminResults"></div>
   <p>نشر الآراء للعامة متاح فقط إذا وافق الطالب على النشر. يقوم الأدمن باعتماد الرأي أو إلغاء نشره دون تغيير نص التقييم الأصلي.</p>
 </section>
-<link rel="stylesheet" href="../../reviews/weekly-admin.css"><script type="module" src="weekly-reviews-admin.js?v=20261106-permissions4"></script>
+<link rel="stylesheet" href="../../reviews/weekly-admin.css"><script type="module" src="weekly-reviews-admin.js?v=20261113-monthly1"></script>
 <section class="card" id="manualPaymentLedger" dir="rtl">
 <h2>💰 سجل المدفوعات اليدوية</h2><p>سجل دفعة حتى لو الطالب لم يرسل طلب دفع. السجل مستقل عن اعتماد تحويلات فودافون ولا يخصم تلقائيًا من المستحقات، لمنع احتساب المبلغ مرتين.</p>
 <form id="manualLedgerForm" class="admin-form">
@@ -4003,7 +4003,8 @@ guard('admin', async () => {
 <script type="module" src="admin-enhancements.js"></script>
 <script type="module" src="admin-workspace.js?v=20261112-lecture-ratings1"></script>
 <script type="module" src="attendance-admin.js?v=20261112-latest1"></script>
-<script type="module" src="lecture-reviews-admin.js?v=20261112-1"></script>
+<link rel="stylesheet" href="lecture-reviews-share.css?v=20261113-share1">
+<script type="module" src="lecture-reviews-admin.js?v=20261113-share1"></script>
 <script type="module" src="teacher-payroll-admin.js?v=20261106-settlements-cards2"></script>
 <script type="module" src="teacher-linker-admin.js?v=20261105-1"></script>
 
