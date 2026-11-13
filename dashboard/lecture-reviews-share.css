@@ -1,0 +1,17 @@
+/* مشاركة تقييمات المحاضرات — خاص بلوحة الإدارة */
+.zad-lecture-rating-card{padding:16px;border:1px solid #52617c;border-radius:12px;background:#15223a;min-width:0;overflow-wrap:anywhere}
+.zad-lecture-share-wrap{border-top:1px solid #3f4c63;margin-top:17px;padding-top:14px}
+.zad-lecture-share-toggle{display:inline-flex;align-items:center;justify-content:center;gap:8px;max-width:100%;min-height:44px;background:linear-gradient(135deg,#f5d466,#dbaf37);border:1px solid #f6da7c;border-radius:12px;padding:10px 18px;font-size:15px;font-weight:800;color:#19273c;cursor:pointer;box-shadow:0 3px 10px #0002;font-family:inherit}
+.zad-lecture-share-toggle:hover{filter:brightness(1.05)}
+.zad-lecture-share-toggle:focus-visible,.zad-lecture-share-buttons button:focus-visible{outline:3px solid #a3cef9;outline-offset:3px}
+.zad-lecture-share-panel{margin-top:13px;border:1px solid #4a6080;border-radius:14px;padding:14px;background:#1c2b44}
+.zad-lecture-share-panel[hidden]{display:none!important}
+.zad-lecture-share-buttons{display:flex;flex-wrap:wrap;gap:9px}
+.zad-lecture-share-buttons button{font-size:14px;font-weight:600;line-height:1.5;font-family:inherit;min-height:43px;padding:9px 14px;border-radius:10px;background:#304361;color:#f8fbff;border:1px solid #6e7e9b;cursor:pointer}
+.zad-lecture-share-buttons button.zad-share-whatsapp{background:#17633a;border-color:#2a985e;color:white}
+.zad-lecture-share-buttons button.zad-share-telegram{background:#246d96;border-color:#419bca;color:white}
+.zad-lecture-share-buttons button:hover{filter:brightness(1.12)}
+.zad-lecture-share-buttons button:disabled{opacity:.6;cursor:wait}
+.zad-lecture-share-privacy{font-size:12px;line-height:1.7;color:#cbd5e1;margin:12px 0 4px}
+.zad-lecture-share-status{font-size:13px;color:#ffdd80;min-height:1.3em;margin:7px 0 0}
+@media(max-width:600px){.zad-lecture-share-toggle{width:100%}.zad-lecture-share-buttons{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.zad-lecture-share-buttons button{font-size:13px;padding:9px 6px}}
