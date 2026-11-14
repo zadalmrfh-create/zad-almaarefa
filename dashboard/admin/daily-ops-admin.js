@@ -2,7 +2,6 @@
 import {auth,db} from '../../firebase-config.js';
 import {onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
 import {collection,doc,getDoc,getDocs,query,where,orderBy,limit} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
-import {codeExamProgress} from './exam-result-verification.js';
 import {cairoDay,followingDay,LIMITS,BOOKING_REVIEW,row,timeText,csvReport,groupSpecs} from './daily-ops-core.js';
 
 const $=id=>document.getElementById(id);
@@ -19,7 +18,22 @@ async function isAdmin(user){
  const [a,b]=await Promise.allSettled([getDoc(doc(db,'admins',user.uid)),getDoc(doc(db,'users',user.uid))]);
  return (a.status==='fulfilled'&&a.value.exists())||(b.status==='fulfilled'&&b.value.data()?.role==='admin')||(user.email?.toLowerCase()==='maleksameh121@gmail.com'&&user.emailVerified===true);
 }
-function entries(snapshot,kind){return snapshot.docs.map(d=>row(kind,d.id,d.data()))}
+// Self-contained essay detector: the daily center must run even if the optional
+// exam-result-verification module is old or missing. This reads metadata ONLY;
+// it does not grade, alter, or approve any result.
+const essayTypes = new Set(['essay','textarea','long-answer','long_text']);
+function hasPendingEssay(result){
+  if(!result || result.verified===true) return false;
+  let answers=result.answers;
+  if(typeof answers==='string'){
+    try{answers=JSON.parse(answers)}catch{return false}
+  }
+  if(!answers || !['zad-answers-v2','zad-answers-v3'].includes(answers.format) || !Array.isArray(answers.questions)) return false;
+  return answers.questions.slice(0,150).some(q=>
+    essayTypes.has(String(q?.type||'').toLowerCase()) || String(q?.answerStatus||'').toLowerCase()==='essay'
+  );
+}
+
 async function collect(day){
  const tasks=[
   getDocs(query(collection(db,'bookings'),where('status','in',['جديد','قيد المراجعة','تم التواصل','pending']),limit(LIMITS.bookings))),
@@ -33,7 +47,7 @@ async function collect(day){
    const key=kinds[i],r=settled[i];
    if(r.status==='rejected') {errors[key]=String(r.reason?.code||r.reason?.message||r.reason);continue}
    let docs=r.value.docs;
-   if(key==='essays')docs=docs.filter(x=>{try{return codeExamProgress(x.data()).pendingEssay===true}catch{return false}});
+   if(key==='essays')docs=docs.filter(x=>hasPendingEssay(x.data()));
    next[key]=docs.map(d=>row(key,d.id,d.data()));
  }
  return {records:next,errors};
