@@ -74,6 +74,7 @@ onAuthStateChanged(auth, async (user) => {
 });
 </script>
 <link rel="stylesheet" href="admin-workspace.css?v=20261105-finance2">
+<link rel="stylesheet" href="daily-ops.css?v=20261114-stage3">
 <link rel="stylesheet" href="teacher-payroll-admin.css?v=20261105-1">
 <style>
 .zad-subject-picker{position:relative;width:100%;min-width:0;color:#f7e5aa}
@@ -285,7 +286,7 @@ onAuthStateChanged(auth, async (user) => {
   <div id="ceList">جاري تحميل الامتحانات...</div>
 </section>
 <section class="card" dir="rtl" id="adminCertificatesSection"><h2>🏅 شهادات التقدير — للإدارة فقط</h2><p>إصدار شهادة للطالب بعد مراجعة النتيجة. يمكن تعديل الشهادة أو طباعتها أو حذفها من هنا فقط. انسخ معرّف حساب الطالب UID من بياناته في Firebase.</p><form id="certificateAdminForm" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin:18px 0"><label style="display:grid;gap:6px">معرّف حساب الطالب (UID)<input name="studentUid" value="" required style="width:100%;padding:10px;border-radius:9px;color:#17233b;background:#fff;border:1px solid #64748b;font:inherit"></label><label style="display:grid;gap:6px">اسم الطالب<input name="studentName" value="" required style="width:100%;padding:10px;border-radius:9px;color:#17233b;background:#fff;border:1px solid #64748b;font:inherit"></label><label style="display:grid;gap:6px">سبب التكريم أو اسم الامتحان<input name="title" value="" required style="width:100%;padding:10px;border-radius:9px;color:#17233b;background:#fff;border:1px solid #64748b;font:inherit"></label><label style="display:grid;gap:6px">التقدير<input name="grade" value="ممتاز"  style="width:100%;padding:10px;border-radius:9px;color:#17233b;background:#fff;border:1px solid #64748b;font:inherit"></label><label style="display:grid;gap:6px">عبارة الشهادة<input name="description" value=""  style="width:100%;padding:10px;border-radius:9px;color:#17233b;background:#fff;border:1px solid #64748b;font:inherit"></label><label style="display:grid;gap:6px">تاريخ الإصدار<input name="issueDate" value=""  style="width:100%;padding:10px;border-radius:9px;color:#17233b;background:#fff;border:1px solid #64748b;font:inherit"></label><div style="display:grid;gap:6px;align-content:center;padding:12px;border:1px solid #b9821a;border-radius:10px;background:#101d31;color:#f1d17b"><strong>🏅 ختم زاد المعرفة</strong><span style="font-size:13px;line-height:1.6">يظهر الختم الرسمي تلقائيًا على الشهادة بدلًا من إمضاء المعلم.</span></div><div style="display:flex;align-items:end;gap:8px"><button type="submit" class="btn gold" id="certificateSubmit">إصدار الشهادة</button><button type="button" class="btn" id="certificatePrintPreview">🖨️ معاينة وطباعة الشهادة بالختم الرسمي</button><button type="button" class="btn" id="certificateCancel" hidden>إلغاء التعديل</button></div></form><p id="certificateAdminStatus" aria-live="polite"></p><div id="certificateAdminList"></div></section><script type="module" src="certificates-admin.js"></script>
-<section class="card" dir="rtl" id="codeExamResultsSection"><h2>📊 نتائج الامتحانات الإلكترونية</h2><p>الامتحانات التي تنشرها من الأعلى تظهر تلقائيًا هنا، حتى لو لم يسلم أي طالب بعد. تظهر النتائج المسجلة لحظة وصولها إلى Firebase، بدون إعداد يدوي جديد.</p><p>تظهر هنا نتائج <strong>كل الامتحانات بالكود وامتحانات الوحدة الأولى بالإضافة إلى امتحان علم البديع (تانية بكالوريا)</strong> حسب تاريخ التسليم. نتائج الوحدة الأولى مبدئية حتى اعتماد درجات المقالي من قسم التصحيح الموجود أسفل النتائج. استخدم زر «طباعة تقرير الإجابات» بجانب كل نتيجة لطباعة إجابات الطالب والإجابات الصحيحة المتاحة، أو حفظها PDF.</p><div id="codeExamResultsList">جارٍ تحميل النتائج...</div></section>
+<section class="card" dir="rtl" id="codeExamResultsSection"><h2>📊 نتائج الامتحانات الإلكترونية</h2><p>الامتحانات التي تنشرها من الأعلى تظهر تلقائيًا هنا، حتى لو لم يسلم أي طالب بعد. تظهر النتائج المسجلة لحظة وصولها إلى Firebase، بدون إعداد يدوي جديد.</p><p>تظهر هنا نتائج <strong>كل الامتحانات بالكود وامتحانات الوحدة الأولى بالإضافة إلى امتحان علم البديع (تانية بكالوريا)</strong> حسب تاريخ التسليم. تظهر نتائج الأسئلة الموضوعية مباشرة بلا اعتماد يدوي، وتظل درجة المقالي في انتظار تصحيح الإدارة فقط. نتائج الوحدة الأولى لها قسم تصحيح المقالي الخاص بها أسفل النتائج. استخدم زر «طباعة تقرير الإجابات» بجانب كل نتيجة لطباعة إجابات الطالب والإجابات الصحيحة المتاحة، أو حفظها PDF.</p><div id="codeExamResultsList">جارٍ تحميل النتائج...</div></section>
 <section class="card" dir="rtl" id="saadAlaaAdminPanel" style="border:1px solid #c6a251">
  <h2>📐 إعداد مدرس الرياضيات والعلوم والكيمياء — أ/ سعد علاء</h2>
  <p>هذه الأدوات موجودة داخل قسم <b>المستخدمون ← إدارة وإعدادات المعلمين</b>. نفّذ إضافة الملف مرة واحدة فقط إذا لم يكن موجودًا في Firestore.</p>
@@ -320,8 +321,8 @@ onAuthStateChanged(auth, async (user) => {
 </section>
 <link rel="stylesheet" href="zad-special-results-admin.css">
 <script type="module" src="zad-special-results-admin.js"></script>
-<link rel="stylesheet" href="code-exams-admin.css?v=20261113-results1">
-<script type="module" src="code-exam-results-admin.js?v=20261113-results1"></script>
+<link rel="stylesheet" href="code-exams-admin.css?v=20261114-essay-auto1">
+<script type="module" src="code-exam-results-admin.js?v=20261114-essay-auto1"></script>
 <section class="card" dir="rtl" id="unitOneExamsAdmin" style="border:1px solid #bb983c">
 <h2>📚 امتحانات الوحدة الأولى — الصف الثاني الثانوي والبكالوريا</h2>
 <p>امتحانات الوحدة الأولى وامتحان علم البديع (تانية بكالوريا)، 30 سؤالًا في كل امتحان. إجابات الاختيار والصح والخطأ والإكمال تُصحَّح آليًا كدرجة أولية؛ تُراجع الإدارة الأسئلة المقالية الأربعة وتثبت الدرجة النهائية.</p>
@@ -336,6 +337,24 @@ onAuthStateChanged(auth, async (user) => {
     <!-- =====================================================
          PLATFORM ANALYTICS
     ====================================================== -->
+    <section class="card" id="zadDailyOpsSection" dir="rtl">
+  <div class="zad-ops-head"><div><h2>📋 مركز المتابعة اليومية</h2><p>الحجوزات والتحويلات وتصحيح المقالي والحصص في مكان واحد — قراءة فقط.</p></div></div>
+  <div class="zad-ops-actions">
+    <label for="zadOpsDate">تاريخ الحصص <input id="zadOpsDate" type="date" aria-label="تاريخ الحصص"></label>
+    <button id="zadOpsRefresh" type="button" class="btn gold">🔄 تحميل متابعة اليوم</button>
+    <button id="zadOpsCSV" type="button" class="btn" disabled>📥 تصدير CSV</button>
+    <button id="zadOpsPrint" type="button" class="btn" disabled>🖨️ طباعة ملخص</button>
+  </div>
+  <div class="zad-ops-shortcuts" aria-label="اختصارات التقارير">
+    <button type="button" class="btn" data-zad-ops-shortcut="student">👤 تقارير الطلاب الشاملة</button>
+    <button type="button" class="btn" data-zad-ops-shortcut="attendance">📋 تقارير الحضور والغياب</button>
+    <button type="button" class="btn" data-zad-ops-shortcut="teachers">🔗 مراجعة صلاحيات نتائج المعلمين</button>
+  </div>
+  <p style="font-size:12px;color:#b8c5da;margin:6px 0">لتقرير طالب معيّن: افتح «تقارير الطلاب الشاملة»، واختر الطالب من قائمة المستخدمين ثم اضغط تقريره. مزامنة المعلمين تظل بموافقة الإدارة.</p>
+  <p id="zadOpsStatus" class="zad-ops-status" role="status" aria-live="polite">اضغط تحميل متابعة اليوم لاستعراض البيانات.</p>
+  <div id="zadOpsSummary" aria-live="polite"></div>
+  <p style="color:#afbed2;font-size:12px;line-height:1.7">الأعداد مبنية على قراءات محدودة لتقليل استهلاك Firebase؛ قد تكون جزئية إذا تجاوز عدد السجلات الحد الموضح. التقارير لا تعدّل المدفوعات أو نتائج الطلاب.</p>
+</section>
     <section class="card" id="platformAnalytics">
       <div class="actions" style="justify-content:space-between;align-items:center">
         <div><h2 style="margin:0">📊 إحصائيات المنصة</h2><p id="enhDataStatus" style="margin:6px 0;color:var(--muted)">بيانات مباشرة من Firebase.</p></div>
@@ -4017,6 +4036,7 @@ guard('admin', async () => {
 <script type="module" src="quiz-center-admin.js"></script>
 <script type="module" src="reports-admin.js"></script>
 <script type="module" src="student-comprehensive-report.js"></script>
+<script type="module" src="daily-ops-admin.js?v=20261114-stage3"></script>
 <script type="module" src="exam-answer-report.js"></script>
 <script type="module" src="vodafone-payments-admin.js?v=20261105-finance2"></script>
 <script type="module" src="library-subscriptions-admin.js"></script>

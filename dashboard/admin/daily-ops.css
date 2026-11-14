@@ -1,0 +1,21 @@
+/* Stage 3: operations overview — isolated styles, compatible with existing admin tabs. */
+#zadDailyOpsSection{min-width:0}
+#zadDailyOpsSection .zad-ops-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px}
+#zadDailyOpsSection .zad-ops-head h2{margin:0;color:#f5d57f}
+#zadDailyOpsSection .zad-ops-head p{margin:5px 0;color:#bfcee0}
+.zad-ops-actions{display:flex;flex-wrap:wrap;align-items:end;gap:9px}
+.zad-ops-actions label{display:grid;gap:5px;font-size:13px;color:#dfe6f1}
+.zad-ops-actions input{padding:10px;border:1px solid #4e6280;border-radius:9px;background:#101a2d;color:#fff;color-scheme:dark;font:inherit}
+.zad-ops-actions .btn{min-height:42px}
+.zad-ops-shortcuts{display:flex;flex-wrap:wrap;gap:8px;margin-top:13px}.zad-ops-shortcuts>.btn{font-size:13px}.zad-ops-status{margin:16px 0;color:#bfcee0;line-height:1.7}
+.zad-ops-counters{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:16px 0 22px}
+.zad-ops-counter{min-width:0;border:1px solid #45617f;border-radius:14px;background:#182943;color:#fff;padding:14px;display:flex;flex-direction:column;gap:6px;text-align:right;cursor:pointer;font:inherit}
+.zad-ops-counter:hover,.zad-ops-counter:focus-visible{border-color:#e8c252}
+.zad-ops-counter strong{font-size:13px;line-height:1.5}.zad-ops-counter b{font-size:24px;color:#f7d677}.zad-ops-counter small{color:#afc1d8;font-size:12px}
+.zad-ops-group{border:1px solid #344962;border-radius:12px;background:#112037;margin:11px 0;padding:14px;min-width:0}
+.zad-ops-group-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px}.zad-ops-group-head h3{font-size:17px;color:#f5d57f;margin:0}
+.zad-ops-list{display:grid;gap:8px}.zad-ops-item{display:flex;gap:12px;justify-content:space-between;align-items:center;padding:10px 12px;background:#17283e;border:1px solid #334b69;border-radius:10px}
+.zad-ops-item-content{min-width:0;display:flex;flex-direction:column;gap:4px;overflow-wrap:anywhere}.zad-ops-item-content strong{color:#f5f7fb}.zad-ops-item-content span{color:#cedaeb;font-size:13px}.zad-ops-item-content small{color:#aebdd0}
+.zad-ops-empty{margin:5px 0;color:#aec1d7;font-size:13px}.zad-ops-warning{padding:12px;border:1px solid #a16a3d;background:#3c2b24;color:#ffe4c4;border-radius:10px}
+@media(max-width:1000px){.zad-ops-counters{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){.zad-ops-counters{grid-template-columns:1fr}.zad-ops-actions{width:100%}.zad-ops-actions>*{flex:1}.zad-ops-actions input{width:100%}.zad-ops-item{align-items:flex-start}.zad-ops-item>.btn{flex:none}}

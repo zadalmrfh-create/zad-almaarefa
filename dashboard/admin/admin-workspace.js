@@ -5,7 +5,7 @@
   if (!main || !quickNav) return;
 
   const groups = [
-    {id:'home',label:'نظرة عامة',icon:'🏠',sections:['platformAnalytics','studentCounterManagement']},
+    {id:'home',label:'نظرة عامة',icon:'🏠',sections:['zadDailyOpsSection','platformAnalytics','studentCounterManagement']},
     {id:'users',label:'المستخدمون',icon:'👥',sections:['usersManagement','saadAlaaAdminPanel','teacherExamAccessAdmin']},
     {id:'bookings',label:'الحجوزات',icon:'📅',sections:['bookingsManagement']},
     {id:'exams',label:'الامتحانات',icon:'📝',sections:['codeExamsManagement','adminCertificatesSection','codeExamResultsSection','zadSpecialExamResults','unitOneExamsAdmin']},
@@ -241,7 +241,16 @@
     }
     if(updateHash) history.replaceState(null,'',`#panel-${target}`);
   }
-  window.addEventListener('zad:open-admin-tab', event => { activate(event.detail?.tab || 'exams'); });
+  window.addEventListener('zad:open-admin-tab', event => {
+    const data=event.detail||{};
+    activate(data.tab||'exams');
+    if(data.tab==='payments' && data.financeMode)showPaymentMode(data.financeMode);
+    if(data.tab==='lessons' && data.attendanceMode)showAttendanceMode(data.attendanceMode);
+    if(data.sectionId){
+      const el=document.getElementById(data.sectionId);
+      if(el){el.closest('details')?.setAttribute('open','');setTimeout(()=>el.scrollIntoView({behavior:'smooth',block:'start'}),0);}
+    }
+  });
   tabs.addEventListener('click',e=>{
     const b=e.target.closest('[data-admin-tab]');
     if(b){activate(b.dataset.adminTab);tabs.scrollIntoView({block:'start',behavior:'smooth'});}
