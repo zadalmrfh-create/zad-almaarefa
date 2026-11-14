@@ -1,3 +1,4 @@
+import { gradeForDisplay, hasApprovedGrade } from '../admin/exam-result-verification.js';
 // Student-scoped results. Back-end Rules enforce the admin-approved relationship.
 // Results load ONLY after the teacher clicks the button to avoid unnecessary reads.
 import {auth,db} from '../../firebase-config.js';
@@ -15,10 +16,10 @@ function title(x,entry){const exam=banks[entry.type]?.get(x.examId);return exam?
 function verified(entry){const d=entry.data;
  if(entry.type==='special')return Array.isArray(d.gradeDetails)&&Number.isFinite(Number(d.finalScore));
  if(entry.type==='unit')return Number.isFinite(Number(d.finalScore))&&Array.isArray(d.essayMarks);
- if(entry.type==='code')return d.verified===true;
+ if(entry.type==='code')return hasApprovedGrade(d);
  return d.verified===true||d.status==='graded';
 }
-function grade(entry){const d=entry.data;let n=null,total=null;
+function grade(entry){const d=entry.data;if(entry.type==='code'){const g=gradeForDisplay(d);return `${g.score} من ${g.total} (${g.percent}%) — ${g.approved?'معتمدة':'مبدئية غير معتمدة'}`;}let n=null,total=null;
  if(verified(entry)&&Number.isFinite(Number(d.finalScore)))n=Number(d.finalScore);
  else if(Number.isFinite(Number(d.score))&&(entry.type==='code'||entry.type==='quiz'))n=Number(d.score);
  total=entry.type==='special'?banks.special.get(d.examId)?.total??(d.examId==='fiqh-khiyar-azhar-2026-v2'?40:d.examId==='water-azhar-2026'?20:null):entry.type==='unit'?30:(d.total??d.maxScore??null);

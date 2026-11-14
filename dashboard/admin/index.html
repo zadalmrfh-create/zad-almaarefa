@@ -209,6 +209,7 @@ onAuthStateChanged(auth, async (user) => {
         <a class="admin-quick-link" href="#codeExamsManagement"><span>🧑‍💻</span><strong>امتحانات بالكود</strong><small>إضافة ونشر</small></a>
         <a class="admin-quick-link" href="#codeExamResultsSection"><span>📘</span><strong>نتائج الامتحانات</strong><small>درجات وتقارير</small></a>
         <a class="admin-quick-link" href="#libraryDownloadTracking"><span>📥</span><strong>تنزيلات المكتبة</strong><small>متابعة التنزيل</small></a>
+        <a class="admin-quick-link" href="library-protected-admin.html"><span>🔒</span><strong>كتب محمية</strong><small>رفع PDF للمشتركين</small></a>
         
         <a class="admin-quick-link" href="#weeklyReviewsAdmin"><span>⭐</span><strong>التقييمات</strong><small>المعلمون أسبوعيًا، والمنصة والإدارة شهريًا</small></a>
         <a class="admin-quick-link" href="#attendanceManagement"><span>✅</span><strong>الحضور</strong><small>متابعة الغياب</small></a>
@@ -266,6 +267,7 @@ onAuthStateChanged(auth, async (user) => {
     <label>الصف <input id="ceGrade" maxlength="70" placeholder="مثال: الثاني الثانوي"></label>
     <label>المادة <input id="ceSubject" maxlength="70" placeholder="مثال: النحو"></label>
   </div>
+  <p style="border:1px solid #967d42;border-radius:9px;padding:10px;color:#f6df9e">⚠️ كود HTML المنشور يصل إلى جهاز الطالب، فلا تضع فيه مفتاح إجابات سرّيًا. الدرجة الصادرة من متصفح الطالب مبدئية ولا تصبح معتمدة إلا بعد مراجعة الأدمن.</p>
   <label class="codeexam-code-label">كود الامتحان (HTML + CSS + JavaScript داخل الملف)
     <textarea id="ceCode" dir="ltr" spellcheck="false" placeholder="<!doctype html> ..."></textarea>
   </label>

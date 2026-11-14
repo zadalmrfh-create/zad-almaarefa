@@ -191,6 +191,27 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    // Stage 2: metadata for newly uploaded, protected library PDFs.
+    // Legacy external/public URLs remain public until explicitly migrated.
+    function librarySubscriptionActive() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/librarySubscriptions/$(request.auth.uid))
+        && get(/databases/$(database)/documents/librarySubscriptions/$(request.auth.uid)).data.status == 'active'
+        && (!('expiresAt' in get(/databases/$(database)/documents/librarySubscriptions/$(request.auth.uid)).data)
+            || get(/databases/$(database)/documents/librarySubscriptions/$(request.auth.uid)).data.expiresAt > request.time);
+    }
+    match /libraryProtectedBooks/{bookId} {
+      allow get: if isAdmin() || (librarySubscriptionActive() && resource.data.published == true);
+      allow list: if isAdmin();
+      allow create, update: if isAdmin()
+        && request.resource.data.keys().hasOnly(['title','storagePath','published','createdAt','createdBy','updatedAt'])
+        && request.resource.data.title is string && request.resource.data.title.size() >= 2 && request.resource.data.title.size() <= 180
+        && request.resource.data.storagePath == ('libraryProtected/' + bookId + '/content.pdf')
+        && request.resource.data.published is bool
+        && request.resource.data.createdBy is string;
+      allow delete: if isAdmin();
+    }
+
     match /libraryBooks/{id} {
       allow read: if signedIn();
       allow create, update, delete: if isAdmin();
@@ -624,7 +645,24 @@ service cloud.firestore {
         && request.resource.data.verified == false
         && request.resource.data.createdAt == request.time
         && exists(/databases/$(database)/documents/codeExams/$(request.resource.data.examId));
-      allow update, delete: if isAdmin();
+      // Only an administrator may publish or revise the independent final grade.
+      // Never modify the student's original submitted answers/provisional grade.
+      allow update: if isAdmin()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'verified','finalScore','finalTotal','finalPercent','reviewNote','reviewedBy','reviewedAt'
+        ])
+        && request.resource.data.verified == true
+        && request.resource.data.finalScore is int
+        && request.resource.data.finalTotal is int
+        && request.resource.data.finalTotal >= 1 && request.resource.data.finalTotal <= 1000
+        && request.resource.data.finalScore >= 0
+        && request.resource.data.finalScore <= request.resource.data.finalTotal
+        && request.resource.data.finalPercent is int
+        && request.resource.data.finalPercent >= 0 && request.resource.data.finalPercent <= 100
+        && request.resource.data.reviewNote is string && request.resource.data.reviewNote.size() <= 500
+        && request.resource.data.reviewedBy == request.auth.uid
+        && request.resource.data.reviewedAt == request.time;
+      allow delete: if isAdmin();
     }
 
     match /studyQuestions/{questionId} {

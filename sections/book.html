@@ -10,7 +10,8 @@ document.getElementById('icon').textContent=b.icon;
 document.getElementById('cat').textContent=b.cat;
 document.getElementById('grade').textContent=b.grade;
 document.getElementById('desc').textContent=b.desc;
-const gate='book-access.html?'+new URLSearchParams({url:b.url,title:b.title,cat:b.cat,grade:b.grade,source:'general'}).toString();
+const secureId=String(p.get('id')||'').trim();
+const gate='book-access.html?'+new URLSearchParams(secureId?{id:secureId,title:b.title,cat:b.cat,grade:b.grade,source:'general'}:{url:b.url,title:b.title,cat:b.cat,grade:b.grade,source:'general'}).toString();
 for(const id of ['preview','download']) {
   const link=document.getElementById(id);
   link.href=gate; link.removeAttribute('target'); link.removeAttribute('rel');

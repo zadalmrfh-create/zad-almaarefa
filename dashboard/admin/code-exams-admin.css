@@ -58,3 +58,17 @@ a.hierarchy-card[href*="code-exams"] .h-sub{color:#f1f4f9!important;font-weight:
 .zad-exam-result-filterbar label{display:grid;gap:8px;color:#e1eaf7;flex:1;min-width:220px}
 .zad-exam-result-filterbar select{width:100%;padding:10px 13px;background:#0b1729;color:#fff;border:1px solid #71829e;border-radius:10px;font:inherit}
 @media(max-width:560px){.zad-exam-auto-summary{padding:11px}.zad-exam-result-filterbar{display:grid}.zad-exam-result-filterbar label{min-width:0}.zad-exam-auto-grid{grid-template-columns:1fr}}
+
+/* Stage 2: explicit code-exam grading. */
+.zad-exam-approval-overlay{position:fixed;inset:0;z-index:11100;display:grid;place-items:center;padding:12px;background:#020915dc;direction:rtl}
+.zad-exam-approval-panel{max-height:94vh;overflow-y:auto;width:min(780px,100%);background:#122138;border:1px solid #d1b154;border-radius:18px;color:#f6f7fa;padding:20px;box-sizing:border-box}
+.zad-exam-approval-panel h2{margin-top:0;color:#f2d785}.zad-exam-approval-panel p{line-height:1.8}
+.zad-approval-answers{max-height:210px;overflow:auto;background:#0e1b2f;border:1px solid #435571;border-radius:10px;padding:10px;white-space:pre-wrap;overflow-wrap:anywhere;color:#fff;line-height:1.7}
+.zad-exam-approval-warning{border:1px solid #947e45;border-radius:10px;padding:12px;background:#3a2b16}
+.zad-exam-approval-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.zad-exam-approval-form label{display:grid;gap:6px}.zad-exam-approval-form input:not([type=checkbox]),.zad-exam-approval-form textarea{padding:10px;min-width:0;border-radius:9px;background:#0b172b;color:#fff;border:1px solid #576d8c;font:inherit}
+.zad-exam-approval-form label:nth-child(3),.zad-exam-approval-form .zad-approval-checkbox,.zad-exam-approval-form .zad-approval-actions,.zad-exam-approval-form p{grid-column:1/-1}
+.zad-exam-approval-form .zad-approval-checkbox{display:flex;align-items:start;gap:8px;line-height:1.8}
+.zad-approval-checkbox input{margin-top:5px;flex:none}
+.zad-approval-actions{display:flex;flex-wrap:wrap;gap:9px}
+@media(max-width:540px){.zad-exam-approval-form{grid-template-columns:1fr}.zad-exam-approval-panel{padding:12px}}

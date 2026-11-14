@@ -2,8 +2,9 @@ import {loadOriginalExamHtml,recoverExamQuestionLabels,recoverExamAutomaticAnswe
 import { printableExamResult } from './certificates-admin.js';
 import { printUnitExamAnswers, printCodeExamAnswers, parseCodeAnswers } from './exam-answer-report.js';
 import { auth, db } from '../../firebase-config.js';
+import { hasApprovedGrade, gradeForDisplay, createApproval } from './exam-result-verification.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
-import { collection, getDoc, doc, onSnapshot, deleteDoc, setDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
+import { collection, getDoc, doc, onSnapshot, deleteDoc, setDoc, updateDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 
 const box = document.getElementById('codeExamResultsList');
 const make = (tag, text, cls) => { const e = document.createElement(tag); if (text !== undefined) e.textContent=text; if(cls)e.className=cls; return e; };
@@ -133,26 +134,70 @@ async function printCodeReport(result,button){
   button.disabled=true;const original=button.textContent;button.textContent='جارٍ تجهيز التقرير…';
   try{
     const key=await fetchCodeAnswerKey(result.examId);
-    printCodeExamAnswers(result,key,preview);
+    printCodeExamAnswers(hasApprovedGrade(result)?{...result,score:result.finalScore,total:result.finalTotal,percent:result.finalPercent,excellent:result.finalPercent>=85}:result,key,preview);
   }catch(error){
     alert('تعذر تحميل الإجابات النموذجية: '+(error.code||error.message)+'\nسيظهر التقرير بالإجابات المسجلة فقط.');
     if(!preview.closed)printCodeExamAnswers(result,null,preview);
   }finally{button.disabled=false;button.textContent=original;}
 }
 
+function reviewCodeGrade(resultId, result){
+  const overlay=make('div',undefined,'zad-exam-approval-overlay');
+  overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');
+  overlay.setAttribute('aria-label','مراجعة واعتماد درجة الامتحان');
+  const panel=make('section',undefined,'zad-exam-approval-panel');
+  const current=gradeForDisplay(result);
+  panel.append(make('h2','✅ مراجعة واعتماد نتيجة الامتحان'));
+  panel.append(make('p',(result.studentName||'طالب')+' — '+(result.examTitle||'امتحان')));
+  panel.append(make('p','الدرجة المرسلة من متصفح الطالب: '+(result.score??'—')+' من '+(result.total??'—')+'. هذه درجة مبدئية لا تثبت صحة التصحيح.'));
+  const answers=make('pre',String(result.answers||'لا توجد إجابات مسجلة؛ راجع أدلة أخرى قبل الاعتماد.').slice(0,12000),'zad-approval-answers');
+  panel.append(make('h3','إجابات الطالب المسجلة (كما وصلت من جهازه)'),answers);
+  panel.append(make('p','استخدم «طباعة تقرير الإجابات» و«الإجابات النموذجية» في بطاقة النتيجة للمقارنة، خصوصًا الأسئلة المقالية. لا تعتمد الدرجة تلقائيًا من بيانات المتصفح.','zad-exam-approval-warning'));
+  const form=make('form',undefined,'zad-exam-approval-form');
+  const field=(title,value)=>{const wrap=make('label',title);const input=document.createElement('input');input.type='number';input.min='0';input.max='1000';input.step='1';input.required=true;input.value=String(value);wrap.append(input);form.append(wrap);return input;};
+  const score=field('الدرجة النهائية بعد مراجعتك',current.approved?current.score:result.score||0);
+  const total=field('الدرجة الكلية',current.approved?current.total:result.total||1);
+  const noteWrap=make('label','ملاحظة داخل سجل المراجعة (اختياري)');const note=document.createElement('textarea');note.maxLength=500;note.rows=2;note.value=result.reviewNote||'';noteWrap.append(note);form.append(noteWrap);
+  const consent=make('label',undefined,'zad-approval-checkbox');
+  const check=document.createElement('input');check.type='checkbox';check.required=true;
+  consent.append(check,make('span','أؤكد أنني راجعت إجابات الطالب أو دليلًا مستقلًا قبل اعتماد الدرجة.'));
+  form.append(consent);
+  const buttons=make('div',undefined,'zad-approval-actions');
+  const cancel=action('إلغاء',()=>overlay.remove(),'btn');
+  const save=make('button','اعتماد النتيجة النهائية','btn gold');save.type='submit';
+  buttons.append(cancel,save);form.append(buttons);
+  const status=make('p','');status.setAttribute('role','status');form.append(status);
+  form.addEventListener('submit',async(event)=>{
+    event.preventDefault();if(!check.checked){status.textContent='يجب تأكيد المراجعة أولًا.';return;}
+    let payload;try{payload=createApproval(score.value,total.value,note.value);}catch(error){status.textContent=error.message;return;}
+    if(!confirm('سيُعرض المجموع المعتمد في لوحة الطالب والمعلم، وقد يصبح مؤهلًا لإصدار شهادة. تأكيد اعتماد الدرجة؟'))return;
+    save.disabled=true;status.textContent='جارٍ حفظ اعتماد الإدارة...';
+    try{
+      await updateDoc(doc(db,'codeExamResults',resultId),{...payload,reviewedBy:auth.currentUser.uid,reviewedAt:serverTimestamp()});
+      status.textContent='✅ تم اعتماد النتيجة بنجاح.';
+      overlay.remove(); // onSnapshot refreshes the row.
+    }catch(error){status.textContent='تعذر اعتماد النتيجة: '+(error.code||error.message);save.disabled=false;}
+  });
+  panel.append(form);overlay.append(panel);document.body.append(overlay);
+  overlay.addEventListener('click',ev=>{if(ev.target===overlay)overlay.remove()});score.focus();
+}
+
 function renderCode(entry){
   const {id,data:x}=entry;
   const row=make('article',undefined,'zad-exam-result-row');
   row.append(make('strong',(x.studentName||'طالب')+' — '+(x.examTitle||'امتحان')));
-  row.append(make('div',`${x.score??0} من ${x.total??0} (${x.percent??0}%)${x.excellent?' — ممتاز 🏅':''} · تصحيح إلكتروني مبدئي · ${dateText(x.createdAt)}`));
+  const grade=gradeForDisplay(x);
+  row.append(make('div',grade.approved?
+    `✅ الدرجة المعتمدة: ${grade.score} من ${grade.total} (${grade.percent}%)${grade.excellent?' — ممتاز 🏅':''} · اعتمدت ${dateText(x.reviewedAt)} · ${dateText(x.createdAt)}`:
+    `⏳ درجة مبدئية من متصفح الطالب: ${grade.score} من ${grade.total} (${grade.percent}%) · بانتظار مراجعة الإدارة · ${dateText(x.createdAt)}`));
   const actions=make('div',undefined,'zad-result-actions');
   const answers=parseCodeAnswers(x.answers);
   const pre=make('pre',answers.length?answers.map(q=>`السؤال ${q.number}: ${q.question||'نص السؤال غير محفوظ'}\nإجابة الطالب: ${q.studentAnswer||'لم يجب'}`).join('\n\n'):'لم تتوفر بيانات الإجابات من كود الامتحان.');pre.hidden=true;pre.style.whiteSpace='pre-wrap';
   const show=action('عرض الإجابات',()=>{pre.hidden=!pre.hidden;show.textContent=pre.hidden?'عرض الإجابات':'إخفاء الإجابات'});
-  const pct=Number(x.percent ?? (Number(x.total)>0?Number(x.score)/Number(x.total)*100:0));
-  const certData={studentUid:x.studentUid||'',studentName:x.studentName||'الطالب',title:x.examTitle||'الامتحان',grade:gradeFromPercent(pct),description:`تقديرًا لمشاركته في ${x.examTitle||'الامتحان'}، وحصوله على ${x.score??0} من ${x.total??0} (${Math.round(pct)}%).`,issueDate:new Date().toLocaleDateString('ar-EG')};
+  const certData={studentUid:x.studentUid||'',studentName:x.studentName||'الطالب',title:x.examTitle||'الامتحان',grade:gradeFromPercent(grade.percent),description:`تقديرًا لمشاركته في ${x.examTitle||'الامتحان'}، وحصوله على ${grade.score} من ${grade.total} (${grade.percent}%).`,issueDate:new Date().toLocaleDateString('ar-EG')};
   const cert=action('🖨️ طباعة الشهادة',()=>printableExamResult(certData),'zad-result-print-certificate btn gold');
   const edit=action('✏️ تعديل الشهادة',()=>window.dispatchEvent(new CustomEvent('zad:certificate-from-exam',{detail:certData})),'zad-result-edit-certificate btn');
+  const approve=action(grade.approved?'✏️ تعديل الدرجة المعتمدة':'✅ مراجعة واعتماد الدرجة',()=>reviewCodeGrade(id,x),'btn gold');
   const status=make('span',undefined,'zad-delete-status');status.setAttribute('role','status');
   const del=action('🗑️ حذف النتيجة',async()=>{
     if(!confirm(`حذف نتيجة ${x.studentName||'الطالب'} — ${x.examTitle||'الامتحان'} نهائيًا؟`))return;
@@ -161,7 +206,10 @@ function renderCode(entry){
   },'zad-delete-result');
   const print=action('🖨️ طباعة تقرير الإجابات',()=>printCodeReport(x,print),'zad-print-answer-report btn');
   const editKey=action('📝 الإجابات النموذجية',()=>editCodeAnswerKey(x),'btn');
-  actions.append(show,print,editKey,cert,edit,del,status);row.append(actions,pre);return row;
+  actions.append(show,print,editKey,approve);
+  if(grade.approved)actions.append(cert,edit);
+  else actions.append(make('small','🔒 الشهادة متاحة بعد اعتماد الدرجة من الإدارة.'));
+  actions.append(del,status);row.append(actions,pre);return row;
 }
 function correct(q){if(!q)return '—';if(q.type==='mcq')return q.options?.[q.answer]??'—';if(q.type==='tf')return q.answer?'صح':'خطأ';if(q.type==='fill')return (q.answers||[]).join(' / ');return 'يصحّحه الأدمن'}
 function provided(q,a){if(a===null||a===undefined||a==='')return '— لم يُجب —';if(q?.type==='mcq')return q.options?.[a]??'—';if(q?.type==='tf')return a?'صح':'خطأ';return String(a)}

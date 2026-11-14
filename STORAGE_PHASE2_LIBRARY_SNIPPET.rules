@@ -1,0 +1,31 @@
+// Paste ONLY this match block INSIDE service firebase.storage { match /b/{bucket}/o { ... } }
+// Keep the existing storeProtected / storeProofs and other rules.
+match /libraryProtected/{bookId}/{fileName} {
+  function libraryAdmin() {
+    // Check admin identity using the verified owner account; this avoids exceeding
+    // the Storage Rules limit of 2 Firestore document reads per evaluation.
+    return request.auth != null
+      && request.auth.token.email == 'maleksameh121@gmail.com'
+      && request.auth.token.email_verified == true;
+  }
+  function subscribed() {
+    return request.auth != null
+      && firestore.exists(/databases/(default)/documents/librarySubscriptions/$(request.auth.uid))
+      && firestore.get(/databases/(default)/documents/librarySubscriptions/$(request.auth.uid)).data.status == 'active'
+      && (!('expiresAt' in firestore.get(/databases/(default)/documents/librarySubscriptions/$(request.auth.uid)).data)
+          || firestore.get(/databases/(default)/documents/librarySubscriptions/$(request.auth.uid)).data.expiresAt > request.time);
+  }
+  allow get: if fileName == 'content.pdf' && (
+    libraryAdmin() || (
+      subscribed()
+      && firestore.exists(/databases/(default)/documents/libraryProtectedBooks/$(bookId))
+      && firestore.get(/databases/(default)/documents/libraryProtectedBooks/$(bookId)).data.published == true
+    )
+  );
+  allow list: if false;
+  allow create, update: if fileName == 'content.pdf' && libraryAdmin()
+    && request.resource.size > 0
+    && request.resource.size <= 30 * 1024 * 1024
+    && request.resource.contentType == 'application/pdf';
+  allow delete: if fileName == 'content.pdf' && libraryAdmin();
+}

@@ -1,0 +1,39 @@
+name: Zad - Stage 2 security and grades
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'dashboard/admin/**'
+      - 'dashboard/student/exam-results-student.js'
+      - 'dashboard/teacher/teacher-exam-results.js'
+      - 'assets/library-book-access.js'
+      - 'sections/book.html'
+      - 'firestore.rules'
+      - 'STORAGE_PHASE2_LIBRARY_SNIPPET.rules'
+      - 'tests/stage2.test.mjs'
+      - 'scripts/check-stage2.mjs'
+      - '.github/workflows/stage2-checks.yml'
+  pull_request:
+    paths:
+      - 'dashboard/admin/**'
+      - 'dashboard/student/exam-results-student.js'
+      - 'dashboard/teacher/teacher-exam-results.js'
+      - 'assets/library-book-access.js'
+      - 'sections/book.html'
+      - 'firestore.rules'
+      - 'STORAGE_PHASE2_LIBRARY_SNIPPET.rules'
+      - 'tests/stage2.test.mjs'
+      - 'scripts/check-stage2.mjs'
+      - '.github/workflows/stage2-checks.yml'
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node scripts/check-stage2.mjs
+      - run: node --test tests/stage2.test.mjs
