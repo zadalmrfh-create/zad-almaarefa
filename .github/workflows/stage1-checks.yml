@@ -1,0 +1,33 @@
+name: Zad - Prepublish checks
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'dashboard/student/**'
+      - 'dashboard/admin/**'
+      - 'firestore.rules'
+      - 'scripts/check-stage1.mjs'
+      - 'tests/stage1.test.mjs'
+      - '.github/workflows/stage1-checks.yml'
+  pull_request:
+    paths:
+      - 'dashboard/student/**'
+      - 'dashboard/admin/**'
+      - 'firestore.rules'
+      - 'scripts/check-stage1.mjs'
+      - 'tests/stage1.test.mjs'
+      - '.github/workflows/stage1-checks.yml'
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate repository and entry points
+        run: node scripts/check-stage1.mjs
+      - name: Run stage 1 regression tests
+        run: node --test tests/stage1.test.mjs

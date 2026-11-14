@@ -466,6 +466,7 @@ const tick=()=>{document.querySelectorAll('.lesson-countdown').forEach(el=>{cons
 <script type="module">
 
 import {getPreviewContext} from '../admin-preview-core.js';
+import { lessonRatingId, lessonOpenId, validLessonRating } from './lesson-interactions.js';
 import {
     auth,
     db
@@ -488,6 +489,7 @@ import {
     where,
     getDocs,
     addDoc,
+    setDoc,
     serverTimestamp
 } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 
@@ -666,25 +668,30 @@ function lessonDate(value) {
 async function openMeet(lesson, uid) {
     const meetUrl = lesson.meetUrl || lesson.meetLink || lesson.googleMeetUrl || lesson.googleMeet;
     if (!meetUrl) { alert('رابط Google Meet غير موجود لهذه المحاضرة.'); return; }
-    const meetWindow = window.open('about:blank','_blank');
-    try {
-        try {
-            await addDoc(collection(db, 'lessonAttendance'), {
-                lessonId: lesson.id,
-                studentUid: uid,
-                lessonTitle: lesson.title || lesson.name || '',
-                action: 'meet_open',
-                openedAt: serverTimestamp()
-            });
-        } catch (attendanceError) {
-            console.warn('تعذر تسجيل فتح المحاضرة:', attendanceError);
-        }
-        if (meetWindow && !meetWindow.closed) meetWindow.location.href = meetUrl;
-        else window.location.href = meetUrl;
-    } catch (e) {
-        console.error(e);
-        if (meetWindow && !meetWindow.closed) meetWindow.location.href = meetUrl;
-        else window.location.href = meetUrl;
+
+    // A click is an opening event, NOT proof of attending the lesson.
+    // Open Meet immediately; Firestore must never hold the student on a blank tab.
+    const meetWindow = window.open('about:blank', '_blank');
+    const logVisit = (auth.currentUser?.uid === uid)
+        ? setDoc(doc(db, 'lessonOpenEvents', lessonOpenId(uid, lesson.id)), {
+            lessonId: lesson.id,
+            studentUid: uid,
+            lessonTitle: String(lesson.title || lesson.name || '').slice(0, 160),
+            action: 'meet_open',
+            openedAt: serverTimestamp()
+          }).catch(error => {
+            // Reopening the same lesson is intentionally not another event.
+            // A permissions error may also mean the new rules haven't been published.
+            console.warn('تعذر تسجيل محاولة فتح Google Meet (لا يؤثر على الدخول):', error.code || error.message);
+          })
+        : Promise.resolve();
+
+    if (meetWindow && !meetWindow.closed) {
+        meetWindow.location.replace(meetUrl);
+    } else {
+        // Fallback on browsers that block new windows: allow a short logging window.
+        await Promise.race([logVisit, new Promise(resolve => setTimeout(resolve, 900))]);
+        window.location.href = meetUrl;
     }
 }
 
@@ -707,7 +714,15 @@ async function loadLiveLessons(
 
     try {
 
+        // Include legacy quick ratings that were stored with random document IDs.
+        // A student-only query lets old ratings remain acknowledged after migration.
+        const oldRatingsPromise = (auth.currentUser?.uid === uid)
+            ? studentRequest(getDocs(query(collection(db, 'lessonRatings'), where('studentUid', '==', uid))), 'التقييمات السابقة', 8000)
+                .catch(error => { console.warn('تعذر تحميل التقييمات السابقة:', error.code || error.message); return null; })
+            : Promise.resolve(null);
         const snap = await studentRequest(getDocs(collection(db, 'lessons')), 'المحاضرات');
+        const oldRatings = await oldRatingsPromise;
+        const ratedLessonIds = new Set(oldRatings ? oldRatings.docs.map(d => String(d.data().lessonId || '')) : []);
 
 
         const lessons = [];
@@ -870,14 +885,67 @@ async function loadLiveLessons(
             );
 
 
-            card.querySelector('.rate-lesson-btn')?.addEventListener('click', async () => {
-                const value = Number(prompt('قيّم المحاضرة من 1 إلى 5', '5'));
-                if (!value || value < 1 || value > 5) return;
-                try {
-                    await addDoc(collection(db, 'lessonRatings'), { lessonId: lesson.id, studentUid: uid, rating: value, createdAt: serverTimestamp() });
-                    alert('تم تسجيل تقييمك، شكرًا لك ⭐');
-                } catch(e) { alert('تعذر حفظ التقييم: ' + (e.code || e.message)); }
-            });
+            // A student may submit exactly one quick-star rating for each lesson.
+            const rateButton = card.querySelector('.rate-lesson-btn');
+            if (rateButton) {
+                const currentUid = auth.currentUser?.uid;
+                if (currentUid !== uid) {
+                    // Admin preview of another student's dashboard must not submit on their behalf.
+                    rateButton.disabled = true;
+                    rateButton.textContent = '⭐ التقييم متاح للطالب فقط';
+                } else {
+                    const ratingRef = doc(db, 'lessonRatings', lessonRatingId(uid, lesson.id));
+                    const showRated = () => {
+                        rateButton.textContent = '✅ تم إرسال التقييم';
+                        rateButton.disabled = true;
+                        rateButton.title = 'سبق إرسال تقييم هذه المحاضرة ولا يمكن إرساله مرة أخرى';
+                    };
+
+                    rateButton.addEventListener('click', async () => {
+                        if (rateButton.disabled) return;
+                        rateButton.disabled = true;
+                        try {
+                            const existing = await studentRequest(getDoc(ratingRef), 'التقييم', 8000);
+                            if (existing.exists() || ratedLessonIds.has(String(lesson.id))) { showRated(); return; }
+                            const raw = prompt('قيّم المحاضرة من 1 إلى 5', '5');
+                            if (raw === null) { rateButton.disabled = false; return; }
+                            const value = Number(raw);
+                            if (!validLessonRating(value)) {
+                                alert('اختر رقمًا صحيحًا من 1 إلى 5.');
+                                rateButton.disabled = false;
+                                return;
+                            }
+                            await setDoc(ratingRef, {
+                                lessonId: lesson.id,
+                                studentUid: uid,
+                                rating: value,
+                                createdAt: serverTimestamp()
+                            });
+                            showRated();
+                            alert('✅ تم إرسال التقييم وحفظه بنجاح.');
+                        } catch (error) {
+                            // Handles a concurrent submission from a second tab/device.
+                            try {
+                                const stored = await getDoc(ratingRef);
+                                if (stored.exists()) { showRated(); return; }
+                            } catch (checkError) {
+                                console.warn('تعذر التحقق من حالة التقييم:', checkError.code || checkError.message);
+                            }
+                            rateButton.disabled = false;
+                            alert('تعذر حفظ التقييم: ' + (error.code || error.message));
+                        }
+                    });
+
+                    // The owner-only query also covers old randomly named rating records.
+                    // If that query was unavailable, fall back to checking this stable ID.
+                    if (ratedLessonIds.has(String(lesson.id))) showRated();
+                    else if (!oldRatings) {
+                        studentRequest(getDoc(ratingRef), 'حالة التقييم', 8000)
+                            .then(snapshot => { if (snapshot.exists()) showRated(); })
+                            .catch(error => console.warn('تعذر تحميل حالة التقييم:', error.code || error.message));
+                    }
+                }
+            }
             liveLessonsList.appendChild(
                 card
             );

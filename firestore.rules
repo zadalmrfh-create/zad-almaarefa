@@ -301,9 +301,53 @@ service cloud.firestore {
       allow read, create, update, delete: if isAdmin();
     }
 
+    // Quick lesson stars: deterministic ID = student UID + lesson ID.
+    // Students can create a rating once; admins retain historical moderation rights.
     match /lessonRatings/{ratingId} {
-      allow create: if signedIn() && request.resource.data.studentUid == request.auth.uid && request.resource.data.rating is number && request.resource.data.rating >= 1 && request.resource.data.rating <= 5;
-      allow read, update, delete: if isAdmin();
+      allow get: if isAdmin()
+        || (signedIn() && ratingId.matches(request.auth.uid + '__.*'))
+        || (signedIn() && resource != null && resource.data.studentUid == request.auth.uid);
+      // Scoped student query: where('studentUid','==',auth.uid). Includes old random IDs.
+      allow list: if isAdmin()
+        || (signedIn() && resource.data.studentUid == request.auth.uid);
+      allow create: if signedIn()
+        && userExists(request.auth.uid)
+        && getUser(request.auth.uid).data.role == 'student'
+        && request.resource.data.keys().hasOnly(['lessonId','studentUid','rating','createdAt'])
+        && request.resource.data.keys().hasAll(['lessonId','studentUid','rating','createdAt'])
+        && request.resource.data.lessonId is string
+        && request.resource.data.lessonId.size() > 0
+        && request.resource.data.lessonId.size() <= 150
+        && ratingId == request.auth.uid + '__' + request.resource.data.lessonId
+        && exists(/databases/$(database)/documents/lessons/$(request.resource.data.lessonId))
+        && request.resource.data.studentUid == request.auth.uid
+        && request.resource.data.rating is int
+        && request.resource.data.rating >= 1
+        && request.resource.data.rating <= 5
+        && request.resource.data.createdAt == request.time;
+      allow update, delete: if isAdmin();
+    }
+
+    // Opening Google Meet is NOT attendance. Student submits a single read-only
+    // opening event; only admins may view it. Official attendance stays admin-only.
+    match /lessonOpenEvents/{eventId} {
+      allow get, list: if isAdmin();
+      allow create: if signedIn()
+        && userExists(request.auth.uid)
+        && getUser(request.auth.uid).data.role == 'student'
+        && request.resource.data.keys().hasOnly(['lessonId','studentUid','lessonTitle','action','openedAt'])
+        && request.resource.data.keys().hasAll(['lessonId','studentUid','lessonTitle','action','openedAt'])
+        && request.resource.data.studentUid == request.auth.uid
+        && request.resource.data.lessonId is string
+        && request.resource.data.lessonId.size() > 0
+        && request.resource.data.lessonId.size() <= 150
+        && eventId == request.auth.uid + '__' + request.resource.data.lessonId
+        && exists(/databases/$(database)/documents/lessons/$(request.resource.data.lessonId))
+        && request.resource.data.lessonTitle is string
+        && request.resource.data.lessonTitle.size() <= 160
+        && request.resource.data.action == 'meet_open'
+        && request.resource.data.openedAt == request.time;
+      allow update, delete: if false;
     }
 
     match /quizzes/{quizId} {
