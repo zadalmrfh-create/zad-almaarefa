@@ -1,0 +1,33 @@
+/* Stage 4: responsive student experience, existing site palette preserved. */
+.zad-stage4-next{display:flex;align-items:center;gap:12px;flex-wrap:wrap;border:1px solid #a78636;background:linear-gradient(110deg,#1a2b43,#233650);border-radius:14px;padding:13px 16px;margin:12px 0;color:#e9edf4}
+.zad-stage4-next span{color:#eacd77;font-weight:900}.zad-stage4-next strong{flex:1;font-size:14px;line-height:1.6}
+.zad-stage4-head{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}
+.zad-stage4-head h3{margin:0 0 4px;color:#f4d780}.zad-stage4-head p{margin:0;color:#c4d2e1}
+.zad-stage4-week-controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:16px 0}
+.zad-stage4-week-controls strong{font-size:13px;color:#f1d482}
+.zad-stage4-schedule-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:10px;margin:15px 0}
+.zad-stage4-day{min-width:0;border:1px solid #384f6c;background:#15243a;border-radius:14px;padding:13px}
+.zad-stage4-day h4{margin:0 0 9px;color:#f1d488;font-size:15px}.zad-stage4-empty{font-size:13px;color:#b9c5d8}
+.zad-stage4-lesson{padding:11px;margin-bottom:8px;border-radius:10px;background:#223450;border:1px solid #64738a;display:grid;gap:6px}
+.zad-stage4-lesson strong{font-size:15px}.zad-stage4-lesson span{font-size:13px;color:#d3deeb;overflow-wrap:anywhere}
+.zad-stage4-lesson .btn{justify-self:start}.zad-stage4-booking-prefs{margin-top:18px;border:1px solid #3d526d;padding:12px;border-radius:10px}
+.zad-stage4-booking-prefs summary{cursor:pointer;color:#ebc969;font-weight:700}.zad-stage4-booking-prefs p{border-bottom:1px solid #35465d;padding:8px 0;font-size:13px}
+.zad-stage4-progress{margin:16px 0 5px}.zad-stage4-progress h4{margin:0 0 10px;color:#ead17f}
+.zad-stage4-metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+.zad-stage4-metric{display:grid;gap:5px;text-align:center;background:#182942;border:1px solid #40536b;padding:14px 8px;border-radius:12px}
+.zad-stage4-metric strong{font-size:21px;color:#eccc75}.zad-stage4-metric span{font-size:12px;color:#cfdaea}
+.zad-stage4-help{font-size:12px;line-height:1.9;color:#becbdd}.zad-stage4-bottom-nav{display:none}
+@media(max-width:760px){
+ .student-tabs{overflow-x:auto;flex-wrap:nowrap;scroll-snap-type:x proximity;scrollbar-width:thin;-webkit-overflow-scrolling:touch}
+ .student-tab{scroll-snap-align:start;min-height:45px}
+ .student-panel.card,.student-panel .card{max-width:100%;min-width:0}
+ .student-panel .table-wrap{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+ .zad-stage4-next{padding:12px}.zad-stage4-week-controls .btn,.zad-stage4-head .btn{min-height:44px}
+ .zad-stage4-bottom-nav{position:fixed;bottom:0;left:0;right:0;display:flex;direction:rtl;justify-content:space-around;align-items:stretch;gap:2px;padding:5px 6px calc(6px + env(safe-area-inset-bottom,0px));background:#0f1b2edc;border-top:1px solid #b69750;backdrop-filter:blur(12px);z-index:5000}
+ .zad-stage4-bottom-nav button,.zad-stage4-bottom-nav a{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:7px 2px;color:#f7ebd6;background:transparent;border:0;border-radius:10px;text-align:center;font:800 18px Cairo,Tajawal,sans-serif;text-decoration:none;cursor:pointer}
+ .zad-stage4-bottom-nav span{font-size:10px;white-space:nowrap}.zad-stage4-bottom-nav .active,.zad-stage4-bottom-nav button:hover{background:#d9af42;color:#0e1a2e}
+ body{padding-bottom:calc(90px + env(safe-area-inset-bottom,0px))!important}
+ body .zad-store-access{bottom:calc(105px + env(safe-area-inset-bottom,0px))!important}
+}
+@media(max-width:370px){.zad-stage4-bottom-nav span{font-size:9px}.zad-stage4-week-controls strong{width:100%}}
+@media(prefers-reduced-motion:reduce){.student-tab,.zad-stage4-bottom-nav *{scroll-behavior:auto!important;transition:none!important}}

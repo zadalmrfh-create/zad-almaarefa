@@ -1,3 +1,4 @@
+import { codeExamProgress } from '../../dashboard/admin/exam-result-verification.js';
 import {auth,db} from '../../firebase-config.js';
 import {examAuthReady} from './exam-auth-gate.js';
 import {printCodeExamAnswers} from '../../dashboard/admin/exam-answer-report.js';
@@ -35,7 +36,7 @@ async function saveExamResult(){
     if(!submitted){status.textContent='تعذر حفظ النتيجة في Firebase: '+(error.code||error.message)+' — اضغط إعادة المحاولة حتى تظهر رسالة نجاح الحفظ.';retry.hidden=false;return}
   }
   retry.hidden=true;
-  status.textContent='✅ تم تسجيل نتيجة الامتحان في لوحة الطالب ولوحة الإدارة تلقائيًا. النتيجة مبدئية وتحتاج مراجعة الإدارة.';
+  status.textContent='✅ تم حفظ النتيجة وإرسالها إلى لوحتي الطالب والإدارة.'+(codeExamProgress(receipt).pendingEssay?' ⏳ في انتظار نتيجة الأسئلة المقالية؛ ستظهر الدرجة النهائية بعد تصحيحها.':' ✅ ظهرت درجة الأسئلة الموضوعية تلقائيًا.');
 }
 try{user=await withTimeout(examAuthReady,15000,'انتهت مهلة تسجيل الدخول؛ أعد فتح الصفحة.')}catch(e){$('status').textContent=e.message;$('title').textContent='تعذر تحميل الامتحان'}
 function printAnswersReport(){ if(receipt)printCodeExamAnswers(receipt); }
@@ -44,11 +45,11 @@ const makeBridge=(html)=>{const s=String(html||''),tag='__BRIDGE__';return /<\/b
 if(!user){$('status').textContent='سجّل دخولك لبدء الامتحان.';}else if(!id||id.length>150){$('status').textContent='رابط الامتحان غير صحيح.'}else try{
  const s=await withTimeout(getDoc(doc(db,'codeExams',id)),15000,'انتهت مهلة قراءة الامتحان من Firebase');if(!s.exists()||!s.data().published)throw Error('الامتحان غير متاح حاليًا');exam=s.data();document.title=exam.title+' | زاد المعرفة';$('title').textContent=exam.title;$('details').textContent=[exam.grade,exam.subject].filter(Boolean).join(' • ');
  let html=exam.code||'';if(exam.chunkCount){const parts=await withTimeout(getDocs(query(collection(db,'codeExams',id,'chunks'),orderBy('index'))),15000,'انتهت مهلة تحميل أسئلة الامتحان');if(parts.size!==exam.chunkCount)throw Error('لم تكتمل أجزاء الامتحان');html=parts.docs.map(x=>x.data().content).join('')}
- const bridge=await fetch('code-exam-bridge.js').then(r=>{if(!r.ok)throw Error('تعذر تحميل ربط النتائج');return r.text()});$('examFrame').srcdoc=makeBridge(html).replace('__BRIDGE__',bridge);$('examFrame').hidden=false;$('status').textContent='';
+ const bridge=await fetch('code-exam-bridge.js?v=20261114-essay-auto1').then(r=>{if(!r.ok)throw Error('تعذر تحميل ربط النتائج');return r.text()});$('examFrame').srcdoc=makeBridge(html).replace('__BRIDGE__',bridge);$('examFrame').hidden=false;$('status').textContent='';
 }catch(e){$('status').textContent='تعذر فتح الامتحان: '+e.message}
 window.addEventListener('message',async event=>{if(event.source!==$('examFrame').contentWindow||event.data?.source!=='zad-code-exam'||event.data?.type!=='finish'||handled||!exam)return;const score=Number(event.data.score),total=Number(event.data.total);if(!Number.isInteger(score)||!Number.isInteger(total)||total<1||score<0||score>total)return;handled=true;const percent=Math.round(score/total*100);const resolvedName=await studentName();receipt={examId:id,examTitle:exam.title,studentUid:user?.uid||'',studentName:resolvedName,score,total,percent,answers:String(event.data.answers||'').slice(0,12000),excellent:percent>=85,source:'client-reported',verified:false};$('resultPanel').hidden=false;
  const mode=event.data.method==='key-comparison'?'تصحيح تلقائي للأسئلة الموضوعية': 'نتيجة حسبها كود الامتحان تلقائيًا';
- $('resultInfo').textContent=`${receipt.studentName}: ${score} من ${total} (${percent}%) — ${mode}${percent>=85?' 🏅':''}`;
+ const progress=codeExamProgress(receipt);$('resultInfo').textContent=progress.pendingEssay?`${receipt.studentName}: ${progress.score===null?'درجة الموضوعي غير متاحة بعد':progress.score+' من '+progress.total} — ⏳ في انتظار نتيجة الأسئلة المقالية.`:`${receipt.studentName}: ${score} من ${total} (${percent}%) — ${mode} — النتيجة تظهر تلقائيًا دون اعتماد يدوي.`;
  if(!user){$('saveStatus').textContent='انتهت جلسة تسجيل الدخول. يرجى تسجيل الدخول من جديد.';return}
  await saveExamResult();
 });

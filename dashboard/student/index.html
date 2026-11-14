@@ -103,6 +103,7 @@
 @media(max-width:680px){.wrap{width:95%;max-width:100%}.top{flex-wrap:wrap;gap:12px}.top .actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:100%;gap:8px}.top .actions .btn{min-width:0;padding:11px 6px;font-size:12px}.student-tabs{top:0;overflow-x:auto;scrollbar-width:thin;padding:6px}.student-tab{min-height:40px}.student-progress-card{min-width:0}.table-wrap{overflow-x:auto;max-width:100%}}
 </style>
 <link rel="stylesheet" href="../vodafone-payment.css">
+<link rel="stylesheet" href="stage4-student.css?v=20261114-stage4a">
 </head>
 
 <body>
@@ -208,6 +209,7 @@
       <button class="student-tab" data-student-tab="notes">🗒️ ملاحظات المعلم</button>
       <button class="student-tab" data-student-tab="lectureRatings">🌟 تقييم المحاضرات <span id="studentLectureRatingBadge"></span></button>
       <button class="student-tab" data-student-tab="progress">📊 تقدمي</button>
+      <button class="student-tab" type="button" data-student-tab="schedule">🗓️ جدول حصصي</button>
       <button class="student-tab" data-student-tab="bookings">📅 حجوزاتي</button>
       <button class="student-tab" data-student-tab="lessons">🎥 المحاضرات</button>
       <button class="student-tab" data-student-tab="profile">👤 ملفي</button>
@@ -217,6 +219,11 @@
 
     <section class="student-panel active" data-student-panel="overview">
 <section class="card" style="margin-bottom:16px;background:linear-gradient(135deg,rgba(201,168,76,.16),rgba(124,111,205,.09))"><div class="actions" style="justify-content:space-between;align-items:center"><div><small style="color:var(--gold)">مركز التعلم</small><h2 id="smartStudentWelcome" style="margin:4px 0">أهلًا بك 👋</h2><p style="color:var(--muted);margin:0">أكمل من حيث توقفت وتابع نشاطك في مكان واحد.</p></div><a class="btn gold" href="../../sections/library.html">📚 افتح المكتبة</a></div><div style="margin-top:15px"><div style="display:flex;justify-content:space-between;font-size:12px"><span>تقدم نشاطك</span><b id="smartProgressText">0%</b></div><div style="height:9px;background:rgba(148,163,184,.16);border-radius:99px;overflow:hidden;margin-top:6px"><span id="smartProgressBar" style="display:block;height:100%;width:0;background:var(--gold);border-radius:99px"></span></div></div></section>
+
+    <section class="zad-stage4-next" id="zadStage4NextLesson" role="status" aria-live="polite">
+      <span>🗓️ جدول الحصص</span><strong>اضغط «جدول حصصي» لمتابعة مواعيدك الحقيقية.</strong>
+      <button class="btn" type="button" data-stage4-open="schedule">فتح الجدول</button>
+    </section>
 
     <section class="stats-grid">
         <div class="card stat-card"><span>✅</span><strong id="studentAttendanceCount">0</strong><small>سجلات حضوري</small></div>
@@ -325,6 +332,11 @@
         <div class="student-progress-card"><b id="progressLibraryCount">0</b><span>عناصر مكتبتي</span></div>
       </div>
       <div id="studentProgressMessage" class="notice" style="margin-top:14px">سيظهر ملخص تقدمك هنا.</div>
+      <div id="zadStage4Progress" class="zad-stage4-progress" aria-live="polite">
+        <h4>📈 إنجازي الدراسي من بياناتي الفعلية</h4>
+        <div id="zadStage4ProgressCards" class="zad-stage4-metrics">يُحمَّل الملخص بعد تسجيل الدخول.</div>
+        <p class="zad-stage4-help">يُحسب الحضور من السجلات الرسمية فقط. درجات المقالي غير المكتملة لا تدخل في متوسط النتائج.</p>
+      </div>
     </section>
 
 
@@ -368,6 +380,24 @@ if(!container.children.length)container.textContent='لا توجد كتب محف
         <div class="profile-mini"><b id="profileBookingCount">0</b><span>حجوزات</span></div>
         <div class="profile-mini"><b id="profileLibraryCount">0</b><span>عناصر المكتبة</span></div>
       </div>
+    </section>
+
+    <section class="card student-panel" data-student-panel="schedule" id="zadStage4ScheduleSection">
+      <div class="zad-stage4-head">
+        <div><h3>🗓️ جدول حصصي الأسبوعي</h3>
+          <p>محاضرات لها مواعيد فعلية في المنصة. أيام الحجز المفضلة ليست موعدًا مؤكدًا.</p></div>
+        <button id="zadStage4Reload" class="btn gold" type="button">🔄 تحديث الجدول</button>
+      </div>
+      <div class="zad-stage4-week-controls">
+        <button type="button" id="zadStage4ThisWeek" class="btn gold">الأسبوع الحالي</button>
+        <button type="button" id="zadStage4NextWeek" class="btn">الأسبوع القادم</button>
+        <strong id="zadStage4WeekLabel">جارٍ تحديد الأسبوع...</strong>
+      </div>
+      <p id="zadStage4ScheduleStatus" role="status" aria-live="polite">اضغط تحديث الجدول لعرض أحدث المواعيد.</p>
+      <div id="zadStage4ScheduleList" class="zad-stage4-schedule-list"></div>
+      <details class="zad-stage4-booking-prefs"><summary>📌 طلبات الحجز وأيامي المفضلة (ليست مواعيد نهائية)</summary>
+        <div id="zadStage4BookingPrefs">جارٍ تحميل الحجوزات...</div>
+      </details>
     </section>
 
     <section class="card student-panel" data-student-panel="bookings" id="myBookingsCard">
@@ -452,7 +482,8 @@ if(!container.children.length)container.textContent='لا توجد كتب محف
 
     <section class="card student-panel" data-student-panel="notifications" id="studentNotificationsCard">
       <div class="actions" style="justify-content:space-between"><div><h3>🔔 تنبيهاتي</h3><p style="color:var(--muted)">إشعارات الحساب والحجوزات والمتابعة.</p></div><button id="markAllStudentNotifications" class="btn" type="button">✓ تحديد الكل كمقروء</button></div>
-      <div id="studentNotificationsList" class="student-info-list"><div class="notice">جارٍ تحميل التنبيهات...</div></div>
+      <div id="studentNotificationsList" class="student-info-list"><div class="notice">جارٍ تحميل التنبيهات...</div></div><button id="zadStage4RefreshNotifications" type="button" class="btn" style="margin-top:10px">🔄 تحديث قائمة التنبيهات</button>
+      <p class="zad-stage4-help">تنبيهات الحصص القادمة تظهر داخل اللوحة عند فتحها، وليست رسائل هاتف أو إشعارات دفع خارجية.</p>
     </section>
 
 </main>
@@ -1408,7 +1439,7 @@ const box=document.getElementById('zad-my-questions');onAuthStateChanged(auth,as
  <div class="zad-results-toolbar"><h3>سجل الامتحانات</h3><span>أحدث الامتحانات أولاً</span></div>
  <div id="zad-student-exam-results" class="zad-results-grid" aria-live="polite">جارٍ تحميل النتائج...</div>
  <p class="zad-results-disclaimer">النتائج آلية، ولا تتيح لوحة الطالب إصدار شهادات أو استلامها أو عرضها أو طباعتها. إصدار الشهادات وحفظها لدى الإدارة فقط.</p>
-</section><link rel="stylesheet" href="exam-results-student.css"><script type="module" src="exam-results-student.js"></script><script type="module" src="vodafone-payment-student.js?v=20261103-sync1"></script>
+</section><link rel="stylesheet" href="exam-results-student.css"><script type="module" src="exam-results-student.js?v=20261114-stage4a"></script><script type="module" src="vodafone-payment-student.js?v=20261103-sync1"></script>
 <script type="module" src="../admin-switcher.js"></script>
 
 <!-- متجر زاد المعرفة: إضافة مستقلة لا تمس وظائف الأكاديمية -->
@@ -1444,5 +1475,13 @@ const box=document.getElementById('zad-my-questions');onAuthStateChanged(auth,as
 }
 </style>
 <script type="module" src="../../reviews/weekly-review-guard.js?v=20261105-evals1"></script>
+<nav class="zad-stage4-bottom-nav" aria-label="اختصارات لوحة الطالب للموبايل">
+  <button type="button" data-stage4-open="overview">🏠 <span>الرئيسية</span></button>
+  <button type="button" data-stage4-open="schedule">🗓️ <span>الجدول</span></button>
+  <a href="../../sections/tests/code-exams.html">📝 <span>امتحانات</span></a>
+  <button type="button" data-stage4-open="progress">📊 <span>تقدمي</span></button>
+  <button type="button" data-stage4-open="notifications">🔔 <span>التنبيهات</span></button>
+</nav>
+<script type="module" src="stage4-student.js?v=20261114-stage4a"></script>
 </body>
 </html>

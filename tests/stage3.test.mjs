@@ -39,7 +39,7 @@ test('daily module reads only on demand and does not mutate Firebase',()=>{
  assert.match(src,/button\?\.addEventListener\('click',load\)/);
  assert.match(src,/Promise\.allSettled/);
  assert.doesNotMatch(src,/\b(addDoc|setDoc|updateDoc|deleteDoc|onSnapshot)\b/);
- assert.match(src,/codeExamProgress\(x\.data\(\)\)\.pendingEssay/);
+ assert.match(src,/hasPendingEssay\(x\.data\(\)\)/);
 });
 test('stage 3 leaves teacher and essay grading code unchanged',()=>{
  const src=read('dashboard/admin/daily-ops-admin.js');

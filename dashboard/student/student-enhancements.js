@@ -107,6 +107,12 @@ function renderDashboard(){
   const relevant=present+absent;
   const unread=notifications.filter(n=>!(Array.isArray(n.readBy)&&n.readBy.includes(uid))).length;
   const confirmed=bookings.filter(b=>['تم الحجز','مكتمل','مؤكد'].includes(b.status)).length;
+  window.dispatchEvent(new CustomEvent('zad:stage4-dashboard-data',{detail:{
+    attendance:rows.map(x=>({status:x.status,date:x.date||'',deleted:x.deleted===true})),
+    bookings:bookings.map(x=>({status:x.status,subject:x.subject||'',preferredDay1:x.preferredDay1||'',preferredDay2:x.preferredDay2||''})),
+    unreadNotifications:unread,teacherNotes:notes.length,
+    dataError:attendanceLoadError||''
+  }}));
 
   if($('studentAttendanceCount'))$('studentAttendanceCount').textContent=attendanceLoadError?'—':rows.length;
   if($('studentNotesCount'))$('studentNotesCount').textContent=notes.length;
@@ -223,6 +229,7 @@ $('zadCopyStudentUid')?.addEventListener('click',async()=>{
 });
 
 window.addEventListener('zad:payments-updated',()=>{if(uid)loadDashboardData().catch(console.error);});
+window.addEventListener('zad:stage4-refresh-student',()=>{if(uid)loadDashboardData().catch(error=>console.warn('تعذر تحديث لوحة الطالب',error));});
 onAuthStateChanged(auth,async user=>{
   if(!user)return;const pv=await getPreviewContext(user,'student');if(pv.denied)return;uid=pv.uid;
   try{const snap=await getDoc(doc(db,'users',uid));if(snap.exists())fill(snap.data());else setStatus('لم يتم العثور على بيانات حسابك في قاعدة البيانات.');await loadDashboardData();}

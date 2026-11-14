@@ -72,3 +72,12 @@ a.hierarchy-card[href*="code-exams"] .h-sub{color:#f1f4f9!important;font-weight:
 .zad-approval-checkbox input{margin-top:5px;flex:none}
 .zad-approval-actions{display:flex;flex-wrap:wrap;gap:9px}
 @media(max-width:540px){.zad-exam-approval-form{grid-template-columns:1fr}.zad-exam-approval-panel{padding:12px}}
+
+
+/* Auto objective + essay-only correction panel */
+.zad-essay-mark-row{grid-column:1/-1;display:grid;gap:9px;padding:14px;background:#192b46;border:1px solid #63789b;border-radius:12px}
+.zad-essay-mark-row>strong{line-height:1.7;color:#f6dd9d}
+.zad-essay-mark-row .zad-approval-answers{max-height:190px;margin:0}
+.zad-essay-scoring{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.zad-exam-approval-form>label,.zad-exam-approval-form>.zad-approval-actions,.zad-exam-approval-form>p{grid-column:1/-1}
+@media(max-width:540px){.zad-essay-scoring{grid-template-columns:1fr}}

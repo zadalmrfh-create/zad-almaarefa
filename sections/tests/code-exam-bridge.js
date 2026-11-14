@@ -240,8 +240,10 @@
     const objective=enriched.filter(q=>q.type!=='essay');
     const fullyKeyed=objective.length>0&&objective.every(q=>q.correctAnswer||q.answerStatus==='unanswered');
     const automatic=fullyKeyed?{score:objective.filter(q=>q.answerStatus==='correct').length,total:objective.length,source:'key-comparison'}:null;
-    const result=external||automatic;
+    const hasEssay=enriched.some(q=>q.type==='essay');
+    const result=automatic||external||(hasEssay?{score:0,total:Math.max(1,objective.length),source:'essay-pending'}:null);
     if(!result)return;
+    payload.gradingMethod=result.source;
     let answers=JSON.stringify(payload);
     while(enriched.length&&answers.length>11950){enriched.pop();answers=JSON.stringify({...payload,questions:enriched})}
     done=true;

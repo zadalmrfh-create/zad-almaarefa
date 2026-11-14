@@ -649,9 +649,12 @@ service cloud.firestore {
       // Never modify the student's original submitted answers/provisional grade.
       allow update: if isAdmin()
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
-          'verified','finalScore','finalTotal','finalPercent','reviewNote','reviewedBy','reviewedAt'
+          'verified','finalScore','finalTotal','finalPercent','reviewNote','reviewedBy','reviewedAt','essayGrades'
         ])
         && request.resource.data.verified == true
+        && request.resource.data.essayGrades is list
+        && request.resource.data.essayGrades.size() > 0
+        && request.resource.data.essayGrades.size() <= 150
         && request.resource.data.finalScore is int
         && request.resource.data.finalTotal is int
         && request.resource.data.finalTotal >= 1 && request.resource.data.finalTotal <= 1000

@@ -211,7 +211,7 @@
           <div class="teacher-section-head">
             <div>
               <h3>📝 نتائج امتحانات طلابي</h3>
-              <p>درجات وإجابات الطلاب المرتبطين بحسابك فقط. تظهر النتيجة المعتمدة منفصلة عن التصحيح المبدئي، ولا يمكنك تعديل أي درجة.</p>
+              <p>درجات وإجابات الطلاب المرتبطين بحسابك فقط. تظهر الدرجة الموضوعية تلقائيًا فور التسليم، وتظل الأسئلة المقالية بانتظار تصحيح الإدارة فقط. لا يمكنك تعديل الدرجات.</p>
             </div>
             <button type="button" class="btn gold" id="teacherExamLoad">🔄 تحميل النتائج</button>
           </div>
@@ -219,7 +219,7 @@
           <div class="teacher-exam-summary" id="teacherExamSummary" hidden>
             <div class="enh-stat"><span>عدد النتائج</span><b id="teacherExamCount">0</b></div>
             <div class="enh-stat"><span>طلاب لديهم نتائج</span><b id="teacherExamStudentCount">0</b></div>
-            <div class="enh-stat"><span>نتائج معتمدة</span><b id="teacherExamVerifiedCount">0</b></div>
+            <div class="enh-stat"><span>نتائج نهائية بعد المراجعة</span><b id="teacherExamVerifiedCount">0</b></div>
           </div>
           <div class="teacher-exam-filters">
             <label>الطالب<select id="teacherExamStudentFilter" class="teacher-input"><option value="">كل طلابي</option></select></label>
@@ -404,7 +404,7 @@
   <section id="teacherPrintDocument" aria-label="مستند الطباعة"></section>
   <script type="module" src="teacher-enhancements.js?v=20261106-salary1"></script>
   <link rel="stylesheet" href="teacher-exam-results.css?v=20261108-1">
-  <script type="module" src="teacher-exam-results.js?v=20261108-1"></script>
+  <script type="module" src="teacher-exam-results.js?v=20261114-essay-auto1"></script>
   <script type="module" src="teacher-payroll-view.js?v=20261106-salary1"></script>
   <style>
     .teacher-payroll-shortcut{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px;margin:14px 0;background:#17283e;border:1px solid #ae8a3b;border-radius:14px;padding:14px}
