@@ -694,7 +694,7 @@ onAuthStateChanged(auth, async (user) => {
 
       </form>
 
-
+      <button type="button" id="addEnglishTeacherProfile" class="btn gold" hidden>إضافة بطاقة مستر بلال للإدارة</button>
 
       <div class="table-wrap">
 
@@ -1484,6 +1484,8 @@ onAuthStateChanged(auth, async (user) => {
 ===================================================== */
 
 import { guard } from '../dashboard.js';
+import { ENGLISH_TEACHER_NAME, ENGLISH_TEACHER_PROFILE, isEnglishTeacherProfile } from '../../assets/english-teacher.js';
+import { isEnglishSubject } from '../attendance-subjects.js';
 
 import {
   auth,
@@ -2535,6 +2537,17 @@ lessonAudience?.addEventListener('change', () => {
   if (selected) loadLessonStudents();
 });
 lessonStudentSearch?.addEventListener('input', renderLessonStudents);
+$('lessonSubject')?.addEventListener('input', () => {
+  const field = $('lessonTeacher');
+  if (editingLessonId) return;
+  if (isEnglishSubject($('lessonSubject').value) && !field.value.trim()) {
+    field.value = ENGLISH_TEACHER_NAME;
+    field.dataset.autoEnglish = 'true';
+  } else if (!isEnglishSubject($('lessonSubject').value) && field.dataset.autoEnglish === 'true') {
+    if (field.value === ENGLISH_TEACHER_NAME) field.value = '';
+    delete field.dataset.autoEnglish;
+  }
+});
 loadLessonStudents();
 lessonForm?.addEventListener('submit', async (event) => {
   event.preventDefault();
@@ -2552,7 +2565,8 @@ lessonForm?.addEventListener('submit', async (event) => {
     title: $('lessonTitle').value.trim(),
     subject: $('lessonSubject').value.trim(),
     grade: $('lessonGrade').value.trim(),
-    teacherName: $('lessonTeacher').value.trim(),
+    teacherName: $('lessonTeacher').value.trim()
+      || (!editingLessonId && isEnglishSubject($('lessonSubject').value) ? ENGLISH_TEACHER_NAME : ''),
     date: $('lessonDate').value,
     meetUrl,
     preQuiz: questions,
@@ -3445,6 +3459,7 @@ let editingContentId =
 
 const contentRows =
   $('contentRows');
+const englishProfileButton = $('addEnglishTeacherProfile');
 
 
 const fieldSets = {
@@ -3927,8 +3942,11 @@ async function loadContent() {
   if (!contentRows) return;
   contentRows.innerHTML = '<tr><td colspan="5">جارٍ تحميل المحتوى…</td></tr>';
   try {
-    const snap = await getDocsWithTimeout(collection(db, activeContentType));
-    const items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    const type = activeContentType;
+    const snap = await getDocsWithTimeout(collection(db, type));
+    if (type !== activeContentType) return;
+    const items = snap.docs.map(d => ({ ...d.data(), id: d.id }));
+    if (englishProfileButton) englishProfileButton.hidden = type !== 'teachers' || items.some(isEnglishTeacherProfile);
     contentRows.innerHTML = items.length ? items.map(item => `
       <tr>
         <td>${escapeHtml(contentTypes[activeContentType])}</td>
@@ -3947,6 +3965,7 @@ async function loadContent() {
 function switchContentTab(tab) {
   if (!(tab in contentTypes)) return;
   activeContentType = tab;
+  if (englishProfileButton) englishProfileButton.hidden = true;
   editingContentId = null;
   $('contentType').value = tab;
   $('contentId').value = '';
@@ -3957,6 +3976,23 @@ function switchContentTab(tab) {
 }
 document.querySelectorAll('[data-content-tab]').forEach(button => button.addEventListener('click', () => switchContentTab(button.dataset.contentTab)));
 $('contentCancel')?.addEventListener('click', () => switchContentTab(activeContentType));
+englishProfileButton?.addEventListener('click', async () => {
+  englishProfileButton.disabled = true;
+  try {
+    const profiles = await getDocsWithTimeout(collection(db, 'teachers'));
+    if (!profiles.docs.some(profile => isEnglishTeacherProfile({...profile.data(), id: profile.id}))) {
+      const ref = doc(db, 'teachers', ENGLISH_TEACHER_PROFILE.legacyKey);
+      const saved = await getDoc(ref);
+      if (!saved.exists()) await setDoc(ref, {...ENGLISH_TEACHER_PROFILE, visible: true, createdAt: serverTimestamp()});
+    }
+    setContentStatus('بطاقة مستر بلال مسجلة في إدارة طاقم التدريس.');
+    if (activeContentType === 'teachers') await loadContent();
+  } catch (error) {
+    setContentStatus('تعذر حفظ البطاقة: ' + (error.code || error.message), true);
+  } finally {
+    englishProfileButton.disabled = false;
+  }
+});
 $('contentForm')?.addEventListener('submit', async event => {
   event.preventDefault();
   const submit = event.currentTarget.querySelector('[type="submit"]');
@@ -4024,10 +4060,10 @@ guard('admin', async () => {
 <script type="module" src="admin-activity-alerts.js"></script>
 <script type="module" src="admin-enhancements.js"></script>
 <script type="module" src="admin-workspace.js?v=20261112-lecture-ratings1"></script>
-<script type="module" src="attendance-admin.js?v=20261112-latest1"></script>
+<script type="module" src="attendance-admin.js?v=20261116-english"></script>
 <link rel="stylesheet" href="lecture-reviews-share.css?v=20261113-share2">
 <script type="module" src="lecture-reviews-admin.js?v=20261113-share2"></script>
-<script type="module" src="teacher-payroll-admin.js?v=20261106-settlements-cards2"></script>
+<script type="module" src="teacher-payroll-admin.js?v=20261116-english"></script>
 <script type="module" src="teacher-linker-admin.js?v=20261105-1"></script>
 
 

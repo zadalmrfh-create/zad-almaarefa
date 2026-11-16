@@ -5,7 +5,8 @@ import {advanceSnapshot} from '../advance-credit.js';
 import {archiveAttendance,restoreAttendance} from './attendance-archive.js';
 import { db, auth } from '../../firebase-config.js';
 import { collection, query, where, getDocs as rawGetDocs, getDoc, addDoc, updateDoc, deleteDoc, doc, writeBatch, serverTimestamp } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
-import { SUBJECTS, teacherForSubject, ENGLISH_TEACHERS, isEnglishSubject, availableScienceTeachers } from '../attendance-subjects.js';
+import { ENGLISH_TEACHER_NAME, findEnglishTeacherAccount, isEnglishCurriculumTeacher } from '../../assets/english-teacher.js';
+import { SUBJECTS, teacherForSubject, isEnglishSubject, availableScienceTeachers } from '../attendance-subjects.js';
 
 const $ = id => document.getElementById(id);
 const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -16,6 +17,7 @@ const teacherKey = name => String(name||'').normalize('NFKC').replace(/[\u064B-\
 function teacherUidForName(name) {
   const key=teacherKey(name);
   if(!key||key.includes('،'))return null;
+  if(isEnglishCurriculumTeacher(name))return findEnglishTeacherAccount(teacherProfiles)?.id || null;
   const names=p=>[p.fullName,p.name,p.displayName,...(Array.isArray(p.attendanceAliases)?p.attendanceAliases:[])].map(teacherKey).filter(Boolean);
   let matches=teacherProfiles.filter(p=>names(p).includes(key));
   // السماح بمطابقة الاسم الثلاثي مع الاسم الرباعي إذا كان الحساب فريدًا.
@@ -57,15 +59,13 @@ function syncAttendanceTeacher() {
   if (!field) return;
   const selected=getSelectedSubjects();
   const previous=field.value;
-  const english=selected.some(isEnglishSubject);
+  const defaultTeacher=teacherForSubject(selected);
   const science=availableScienceTeachers(selected);
   const choices=!selected.length
     ? [{value:'',label:'اختر المادة أولًا'}]
     : science.length
       ? science.map(name=>({value:name,label:'أ/ '+name}))
-      : english
-        ? [{value:teacherForSubject(selected),label:'يحدد معلم مناهج الإنجليزي من الإدارة'}]
-        : [{value:teacherForSubject(selected)||'غير محدد',label:teacherForSubject(selected)||'غير محدد'}];
+      : [{value:defaultTeacher,label:defaultTeacher === ENGLISH_TEACHER_NAME ? 'مستر '+defaultTeacher : defaultTeacher}];
   field.replaceChildren(...choices.map(x=>new Option(x.label,x.value)));
   if(choices.some(x=>x.value===previous))field.value=previous;
   const selectable=choices.length>1;
@@ -225,7 +225,7 @@ async function load() {
     message.textContent = 'جارٍ تحميل بيانات الحضور والطلاب والمدفوعات...';
     const [us, att, pay, latest] = await Promise.all([getDocs(collection(db, 'users')), getDocs(collection(db, 'lessonAttendance')), getDocs(collection(db, 'vodafonePayments')), getDocs(collection(db, 'latestLectureReview'))]);
     latestLectureByStudent=new Map(latest.docs.map(d=>[d.id,d.data().lessonId]));
-    teacherProfiles=us.docs.map(d=>({id:d.id,...d.data()})).filter(x=>x.role==='teacher' && x.status==='active');
+    teacherProfiles=us.docs.map(d=>({...d.data(),id:d.id})).filter(x=>x.role==='teacher' && x.status==='active');
     const allStudentProfiles=us.docs.map(d=>({id:d.id,...d.data()})).filter(x=>x.role==='student');
     const candidateStudents=allStudentProfiles.filter(x=>!x.linkedToUid);
     const emailGroups=new Map();
@@ -341,6 +341,7 @@ form?.addEventListener('submit', async e => {
 
   const selectedSubjects = getSelectedSubjects();
   if (!selectedSubjects.length) { message.textContent = 'اختر مادة واحدة على الأقل.'; return; }
+  const attendanceTeacherName=$('attendanceTeacherName')?.value || teacherForSubject(selectedSubjects) || 'غير محدد';
 
   const price = Number($('attendancePrice').value);
   if (!Number.isFinite(price) || price < 0 || price > 100000) { message.textContent = 'أدخل سعر حصة صحيحًا.'; return; }
@@ -380,7 +381,7 @@ form?.addEventListener('submit', async e => {
     const commonData = {
       studentUid: student.id,
       studentName: student.fullName || student.name || student.email,
-      teacherUid: teacherUidForName($('attendanceTeacherName')?.value),
+      teacherUid: teacherUidForName(attendanceTeacherName),
       recordedByUid: auth.currentUser?.uid || null,
       date: $('attendanceDate').value,
       status: $('attendanceStatus').value,
@@ -397,7 +398,6 @@ form?.addEventListener('submit', async e => {
     // حصة واحدة بس مهما كان عدد المواد المختارة؛ السعر والدفع والحضور يحسبون مرة واحدة.
     const attendanceRef=doc(collection(db,'lessonAttendance'));
     const attendanceBatch=writeBatch(db);
-    const attendanceTeacherName=$('attendanceTeacherName')?.value || teacherForSubject(selectedSubjects) || 'غير محدد';
     attendanceBatch.set(attendanceRef,{
       ...commonData,
       subjects: selectedSubjects,
@@ -445,7 +445,7 @@ attendanceEditDialog.innerHTML=`<form id="zadAttendanceEditForm" style="display:
 <label>الطالب<select name="studentUid" required style="width:100%;padding:10px"></select></label>
 <label>تاريخ الحصة<input name="date" type="date" required style="width:100%;padding:10px"></label>
 <fieldset style="border:1px solid #64748b;border-radius:8px"><legend>المواد (يمكن اختيار أكثر من مادة، وتحسب حصة واحدة)</legend><div data-edit-subjects style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px"></div></fieldset>
-<label data-edit-english-teacher style="display:none">مدرس اللغة الإنجليزية<select name="englishTeacher" style="width:100%;padding:10px"><option value="">يحدد من الإدارة</option></select></label>
+<label data-edit-english-teacher hidden>معلم الحصة<input name="englishTeacher" readonly style="width:100%;padding:10px"></label>
 <label data-edit-science-teacher style="display:none">مدرس العلوم / الكيمياء / الرياضيات<select name="scienceTeacher" style="width:100%;padding:10px"></select></label>
 <label>حالة الحضور<select name="status" style="width:100%;padding:10px"><option>حاضر</option><option>غائب</option></select></label>
 <label>سعر الحصة بالجنيه<input name="price" type="number" min="0" max="100000" step="0.01" required style="width:100%;padding:10px"></label>
@@ -458,10 +458,18 @@ document.body.append(attendanceEditDialog);
 const attendanceEditForm=attendanceEditDialog.querySelector('form');
 let attendanceEditingId=null;
 attendanceEditDialog.querySelector('[data-cancel]').addEventListener('click',()=>attendanceEditDialog.close());
-function syncEditEnglishTeacher() {
+function preservedEnglishTeacher(record, subjects) {
+  if (!record?.teacherName || !subjects.some(isEnglishSubject)) return '';
+  const originalSubjects = subjectsOfAttendance(record);
+  return originalSubjects.length === subjects.length && originalSubjects.every(subject => subjects.includes(subject))
+    ? record.teacherName : '';
+}
+function syncEditTeachers() {
   const selected=[...attendanceEditForm.querySelectorAll('input[name="subjectItem"]:checked')].map(input=>input.value);
   const scientists=availableScienceTeachers(selected);
-  attendanceEditForm.querySelector('[data-edit-english-teacher]').style.display=scientists.length===0&&selected.some(isEnglishSubject)?'':'none';
+  attendanceEditForm.querySelector('[data-edit-english-teacher]').hidden=!selected.some(isEnglishSubject);
+  const original=records.find(record=>record.id===attendanceEditingId);
+  attendanceEditForm.elements.englishTeacher.value=preservedEnglishTeacher(original,selected) || teacherForSubject(selected);
   const wrapper=attendanceEditForm.querySelector('[data-edit-science-teacher]');
   const field=attendanceEditForm.elements.scienceTeacher;
   const previous=field.value;
@@ -471,7 +479,7 @@ function syncEditEnglishTeacher() {
     wrapper.style.display='';
   }else wrapper.style.display='none';
 }
-attendanceEditForm.querySelector('[data-edit-subjects]').addEventListener('change', syncEditEnglishTeacher);
+attendanceEditForm.querySelector('[data-edit-subjects]').addEventListener('change', syncEditTeachers);
 
 function openAttendanceEditor(record){
   attendanceEditingId=record.id;
@@ -484,10 +492,7 @@ function openAttendanceEditor(record){
   attendanceEditForm.elements.note.value=record.note||'';
   const selected=Array.isArray(record.subjects)?record.subjects:String(record.subject||'').split('،').map(v=>v.trim());
   attendanceEditForm.querySelector('[data-edit-subjects]').innerHTML=[...new Set([...SUBJECTS,...selected.filter(Boolean)])].map(v=>`<label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="subjectItem" value="${esc(v)}" ${selected.includes(v)?'checked':''}>${esc(v)}</label>`).join('');
-  // لا تعرض المدرسين غير المتاحين في الخيارات الجديدة، مع حفظ الإسناد التاريخي للسجلات القديمة.
-  attendanceEditForm.elements.englishTeacher.replaceChildren(new Option('يحدد من الإدارة',''));
-  attendanceEditForm.elements.englishTeacher.value='';
-  syncEditEnglishTeacher();
+  syncEditTeachers();
   if(availableScienceTeachers(selected).includes(record.teacherName))attendanceEditForm.elements.scienceTeacher.value=record.teacherName;
   attendanceEditForm.querySelector('[data-edit-error]').textContent='';
   attendanceEditDialog.showModal();
@@ -503,10 +508,9 @@ attendanceEditForm.addEventListener('submit',async event=>{
   if(!Number.isFinite(price)||price<0||price>100000){error.textContent='سعر الحصة غير صحيح.';return;}
   const original=records.find(r=>r.id===attendanceEditingId);
   if(!original){error.textContent='السجل غير موجود؛ حدّث الصفحة.';return;}
-  // الإسناد التاريخي لا يتغير عند تعديل الحضور أو الدفع فقط.
-  const oldEnglishAssignment=selected.some(isEnglishSubject) &&
-    /^(?:مستر\s*|أ\/\s*)?(?:علي\s+عبد\s+الحميد|(?:ميس\s*)?فاطمة\s+ضياء)/.test(String(original.teacherName||''));
-  const selectedTeacherName=oldEnglishAssignment?original.teacherName:(availableScienceTeachers(selected).length ? attendanceEditForm.elements.scienceTeacher.value : teacherForSubject(selected));
+  const historicalTeacher=preservedEnglishTeacher(original,selected);
+  const selectedTeacherName=historicalTeacher || (availableScienceTeachers(selected).length
+    ? attendanceEditForm.elements.scienceTeacher.value : teacherForSubject(selected));
   const paid=attendanceEditForm.elements.paid.value==='true';
   if (Number(original.cashPaidPiastres||0)>0 && (student.id!==original.studentUid||Math.round(price*100)!==amountDue(original)||paid!==(original.paid===true))){error.textContent='هذه الحصة مرتبطة بتحويل معتمد. لا يمكن تغيير الطالب أو السعر أو حالة الدفع حتى لا تختل الحسابات. يمكنك تغيير التاريخ والمادة والملاحظات.';return;}
   const submit=attendanceEditForm.querySelector('button[type="submit"]');submit.disabled=true;
@@ -523,7 +527,7 @@ attendanceEditForm.addEventListener('submit',async event=>{
       date:attendanceEditForm.elements.date.value,
       subjects:selected,subject:selected.join('، '),
       teacherName:selectedTeacherName||'غير محدد',
-      teacherUid:teacherUidForName(selectedTeacherName),
+      teacherUid:(historicalTeacher && original.teacherUid) || teacherUidForName(selectedTeacherName),
       status:newStatus,
       price,...paymentChange,
       note:attendanceEditForm.elements.note.value.trim(),updatedAt:serverTimestamp()

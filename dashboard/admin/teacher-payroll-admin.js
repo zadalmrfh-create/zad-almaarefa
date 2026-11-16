@@ -1,6 +1,7 @@
 import {sharedAdminGetDocs,clearAdminReadCache} from './firestore-read-cache.js';
 const getDocs=(ref)=>sharedAdminGetDocs(ref,rawGetDocs,auth);
 /** إدارة مرتبات المعلمين — بيانات مستقلة عن ذمم الطلاب، للإدارة فقط. */
+import {ENGLISH_TEACHER_NAME, findEnglishTeacherAccount, isEnglishCurriculumTeacher} from '../../assets/english-teacher.js';
 import {auth,db} from '../../firebase-config.js';
 import {onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
 import {collection,doc,getDocs as rawGetDocs,setDoc,serverTimestamp,writeBatch,runTransaction} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
@@ -35,6 +36,11 @@ function teacherFor(r,adj){
   if(r.teacherUid){const t=teachers.find(x=>x.id===r.teacherUid);return {key:`uid:${r.teacherUid}`,name:t?teacherName(t):r.teacherName||'معلم'};}
   const raw=String(r.teacherName||'').trim();
   if(!raw||raw==='غير محدد'||raw==='الإدارة'||raw.includes('،'))return null;
+  if(isEnglishCurriculumTeacher(raw)){
+    const account=findEnglishTeacherAccount(teachers);
+    return account ? {key:`uid:${account.id}`,name:teacherName(account)}
+      : {key:`name:${ENGLISH_TEACHER_NAME}`,name:ENGLISH_TEACHER_NAME};
+  }
   const matches=teachers.filter(t=>[t.name,t.fullName,t.displayName,...(Array.isArray(t.attendanceAliases)?t.attendanceAliases:[])].some(a=>norm(a)===norm(raw)));
   if(!matches.length && (norm(raw).split(' ').length>=3 || norm(raw)==='سعد علاء')){
     const candidates=teachers.filter(t=>[t.name,t.fullName,t.displayName,...(Array.isArray(t.attendanceAliases)?t.attendanceAliases:[])].some(a=>norm(a).startsWith(norm(raw)+' ')));
@@ -59,6 +65,7 @@ function populateOptions(){
  const ids=new Map(teachers.map(t=>[`uid:${t.id}`,teacherName(t)]));
  if(!teachers.some(t=>norm(teacherName(t))==='سعد علاء'||norm(teacherName(t)).startsWith('سعد علاء ')))
   ids.set('name:سعد علاء','سعد علاء (حساب غير مربوط بعد)');
+ if(!findEnglishTeacherAccount(teachers))ids.set(`name:${ENGLISH_TEACHER_NAME}`, ENGLISH_TEACHER_NAME+' (بانتظار ربط الحساب)');
  const students=new Map();const subjects=new Set();
  for(const r of relevant){
   const t=teacherFor(r,adjustments.get(r.id));if(t)ids.set(t.key,t.name);
@@ -108,6 +115,8 @@ function render(){
  }
  if(!teachers.some(t=>norm(teacherName(t))==='سعد علاء'||norm(teacherName(t)).startsWith('سعد علاء ')) && ['all','name:سعد علاء'].includes($('salaryTeacher').value))
   sums.set('name:سعد علاء',{name:'سعد علاء (بانتظار ربط الحساب)',base:0,bonus:0,paid:0,count:0});
+ if(!findEnglishTeacherAccount(teachers) && ['all',`name:${ENGLISH_TEACHER_NAME}`].includes($('salaryTeacher').value))
+  sums.set(`name:${ENGLISH_TEACHER_NAME}`,{name:ENGLISH_TEACHER_NAME+' (بانتظار ربط الحساب)',base:0,bonus:0,paid:0,count:0});
  for(const r of matched){const t=r._teacher;const item=sums.get(t.key)||{name:t.name,base:0,bonus:0,paid:0,count:0};item.count++;item.base+=r._base;item.bonus+=r._bonus;item.paid+=paidFor(r);sums.set(t.key,item);}
  const groups=[...sums].sort((a,b)=>(b[1].base+b[1].bonus-b[1].paid)-(a[1].base+a[1].bonus-a[1].paid));
  $('salaryTeacherCards').innerHTML=groups.length?groups.map(([key,g])=>`<article class="salary-teacher-card"><strong>👨‍🏫 ${esc(g.name)}</strong><span>${g.count} حصة × حسب أجر كل حصة</span><div class="salary-subtotals"><span>الحصص: <b>${egp(g.base)}</b></span><span>الإضافي: <b>${egp(g.bonus)}</b></span></div><div class="salary-subtotals"><span>الإجمالي: <b>${egp(g.base+g.bonus)}</b></span><span>تم صرف: <b>${egp(g.paid)}</b></span></div><b class="salary-card-grand">المتبقي: ${egp(Math.max(0,g.base+g.bonus-g.paid))}</b></article>`).join(''):'<p class="salary-empty">لا توجد مستحقات للمعلمين خلال الفترة المحددة.</p>';
@@ -187,7 +196,7 @@ async function refresh(){
  try{
   const [att,profiles,extra]=await Promise.all([getDocs(collection(db,'lessonAttendance')),getDocs(collection(db,'users')),getDocs(collection(db,'teacherPayrollAdjustments'))]);
   attendance=att.docs.map(d=>({id:d.id,...d.data()}));
-  teachers=profiles.docs.map(d=>({id:d.id,...d.data()})).filter(x=>x.role==='teacher'&&x.status!=='banned');
+  teachers=profiles.docs.map(d=>({...d.data(),id:d.id})).filter(x=>x.role==='teacher'&&x.status!=='banned');
   adjustments=new Map(extra.docs.map(d=>[d.id,d.data()]));
   let syncWarning='';
   try{

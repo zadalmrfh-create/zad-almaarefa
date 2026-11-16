@@ -1,3 +1,5 @@
+import { ENGLISH_SUBJECT, ENGLISH_TEACHER_NAME } from '../assets/english-teacher.js';
+
 export const SUBJECTS = [
   'النحو',
   'الصرف',
@@ -12,15 +14,14 @@ export const SUBJECTS = [
   'الفلسفة والمنطق الحديث',
   'المنطق القديم',
   'اللغة العربية (عام)',
-  'اللغة الإنجليزية',
+  ENGLISH_SUBJECT,
   'العلوم',
   'الكيمياء',
   'الرياضيات',
   'البرمجة وتكنولوجيا المعلومات'
 ];
 
-// فاطمة ضياء تقدم كورسات فقط، ولا يوجد معلم مناهج إنجليزي معتمد محدد الآن.
-export const ENGLISH_TEACHERS = [];
+export const ENGLISH_TEACHERS = [ENGLISH_TEACHER_NAME];
 export const SCIENCE_TEACHERS = ['محمد خالد محمود', 'سعد علاء'];
 export const MATH_TEACHER = 'سعد علاء';
 export const isScientificSubject = name => ['العلوم','مادة العلوم','الكيمياء','مادة الكيمياء','الرياضيات','الرياضيات (عام)','رياضيات','math','mathematics'].includes(String(name||'').trim().toLowerCase());
@@ -31,7 +32,10 @@ export function availableScienceTeachers(subjects) {
 }
 
 export function isEnglishSubject(subject) {
-  return ['اللغة الإنجليزية', 'الانجليزي', 'الإنجليزي'].includes(String(subject || '').trim());
+  const key = String(subject ?? '').normalize('NFKC').trim().toLowerCase()
+    .replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه').replace(/[\u064B-\u065F\u0670\u0640]/g, '')
+    .replace(/\s+/g, ' ');
+  return ['اللغه الانجليزيه', 'الانجليزيه', 'انجليزيه', 'الانجليزي', 'انجليزي', 'english'].includes(key);
 }
 
 const DIYAA_SUBJECTS = new Set([
@@ -62,7 +66,7 @@ function teacherForSingleSubject(subject, englishTeacher = ENGLISH_TEACHERS[0]) 
   if (name === 'الرياضيات' || name === 'الرياضيات (عام)' || name === 'رياضيات') return MATH_TEACHER;
   if (name === 'الكيمياء' || name === 'مادة الكيمياء') return 'محمد خالد محمود';
   if (name === 'العلوم' || name === 'مادة العلوم') return 'محمد خالد محمود';
-  if (isEnglishSubject(name)) return ENGLISH_TEACHERS.includes(englishTeacher) ? englishTeacher : 'يحدد من الإدارة';
+  if (isEnglishSubject(name)) return ENGLISH_TEACHERS.includes(englishTeacher) ? englishTeacher : ENGLISH_TEACHER_NAME;
   if (name === 'البرمجة وتكنولوجيا المعلومات' || name === 'البرمجة') return 'مالك سامح';
   if (DIYAA_SUBJECTS.has(name)) return 'ضياء الدين نبيل';
   return 'ضياء الدين نبيل';

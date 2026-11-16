@@ -1,3 +1,4 @@
+import { ENGLISH_SUBJECT, ENGLISH_TEACHER_NAME, findEnglishTeacherAccount } from "../../assets/english-teacher.js";
 import { auth, db } from "../../firebase-config.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
 import { collection, getDocs, addDoc, serverTimestamp, query, where } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
@@ -5,15 +6,8 @@ import { collection, getDocs, addDoc, serverTimestamp, query, where } from "http
 let currentUser = null;
 let activeTeachers = [];
 let assignedTeacher = { uid: null, name: "ضياء الدين نبيل" };
-// ليس هناك معلم مناهج إنجليزي محدد حاليًا؛ يتم إسناد طلبات الإنجليزي الجديدة بعد مراجعة الإدارة.
-const selectedEnglishTeacherName = "يحدد من الإدارة";
+let bookingTeachersReady = Promise.resolve();
 const selectedScienceTeachers = { science: "محمد خالد محمود", chemistry: "محمد خالد محمود" };
-
-onAuthStateChanged(auth, async user => {
-  currentUser = user;
-  if (user) await loadBookingTeachers();
-  else updateAssignedTeacher();
-});
 
 function requireLogin(message) {
   if (currentUser) return true;
@@ -35,7 +29,7 @@ const teacherAutoHint = document.getElementById("teacherAutoHint");
 const BOOKING_SELECT_VALUES = Object.freeze({
   section: [
     "", "القرآن الكريم", "التزكية والتربية", "اللغة العربية",
-    "العلوم الشرعية", "التعليم الأزهري", "اللغة الإنجليزية",
+    "العلوم الشرعية", "التعليم الأزهري", ENGLISH_SUBJECT,
     "العلوم", "الرياضيات", "البرمجة وتكنولوجيا المعلومات"
   ],
   educationType: ["", "غير مرتبط بنظام تعليمي", "أزهري", "عام", "لغات"],
@@ -82,6 +76,8 @@ function detectTeacherAssignment() {
   const canonicalSection = canonicalBookingSelection("section");
   const combined = normalizeArabic(`${canonicalSection} ${subjectInput?.value || ""}`);
 
+  if (canonicalSection === ENGLISH_SUBJECT) return englishAssignment();
+
   if (combined.includes("برمج") || combined.includes("تكنولوجيا المعلومات")) {
     return {
       key: "programming",
@@ -90,13 +86,7 @@ function detectTeacherAssignment() {
     };
   }
 
-  if (combined.includes("انجليز") || combined.includes("english") || combined.includes("اللغه الانجليزيه") || combined.includes("اللغة الإنجليزية")) {
-    return {
-      key: "english",
-      targetName: selectedEnglishTeacherName,
-      hint: "سيتم تحديد معلم مناهج اللغة الإنجليزية من الإدارة بعد مراجعة الطلب. الكورسات منفصلة عن حجز المناهج."
-    };
-  }
+  if (/انجليز|english/.test(combined)) return englishAssignment();
 
   const requestedSubject = normalizeArabic(subjectInput?.value || "");
   // Maths is taught by Saad Alaa; science/chemistry may be taught by either teacher.
@@ -127,19 +117,28 @@ function detectTeacherAssignment() {
     hint: "تم اختيار ضياء الدين نبيل تلقائيًا لهذه المادة."
   };
 }
+function englishAssignment() {
+  return {
+    key: 'english',
+    targetName: ENGLISH_TEACHER_NAME,
+    hint: 'تم اختيار مستر بلال فرغلي تلقائيًا لحجز مناهج اللغة الإنجليزية.'
+  };
+}
+
 function matchesTeacherName(teacher, name) {
-  const n = normalizeArabic(teacher.name).replace(/^(الاستاذ|استاذ|مستر|ميس|ا) /, "");
+  const n = normalizeArabic(teacher.fullName || teacher.name || teacher.displayName || teacher.email).replace(/^(الاستاذ|استاذ|مستر|ميس|ا) /, "");
   const key = normalizeArabic(name);
   return n === key || n.startsWith(key + " ");
 }
 function resolveActiveTeacher(name) {
+  if (name === ENGLISH_TEACHER_NAME) return findEnglishTeacherAccount(activeTeachers);
   const candidates = activeTeachers.filter(t => matchesTeacherName(t, name));
   // Never bind to an ambiguous UID: teacher records are financial and private.
   return candidates.length === 1 ? candidates[0] : null;
 }
 function teacherChoicesFor(assignment) {
   if (assignment.key === 'english') return [
-    { name: 'يحدد من الإدارة', label: 'يُحدد المعلم من الإدارة بعد مراجعة الحجز' }
+    { name: ENGLISH_TEACHER_NAME, label: 'مستر ' + ENGLISH_TEACHER_NAME }
   ];
   if (assignment.key === 'science' || assignment.key === 'chemistry') return [
     { name: 'محمد خالد محمود', label: 'أ/ محمد خالد محمود' },
@@ -152,8 +151,7 @@ function updateAssignedTeacher() {
   const choices = teacherChoicesFor(assignment);
   const preferredFromLink = normalizeArabic(initialTeacher);
   const selectedFromLink = choices.find(x => preferredFromLink.includes(normalizeArabic(x.name)));
-  const stored = assignment.key === 'english' ? selectedEnglishTeacherName :
-    selectedScienceTeachers[assignment.key] || assignment.targetName;
+  const stored = selectedScienceTeachers[assignment.key] || assignment.targetName;
   // On the first selection, preserve the teacher chosen on the public profile card.
   const choice = choices.find(x=>x.name === (assignedTeacher._category === assignment.key ? assignedTeacher.name : ''))
     || selectedFromLink || choices.find(x=>x.name === stored) || choices[0];
@@ -180,7 +178,6 @@ teacherSelect?.addEventListener('change',()=>{
   if(!option?.dataset.teacherName)return;
   const name=option.dataset.teacherName;
   const category=detectTeacherAssignment().key;
-   // لا يسمح هذا النموذج بإسناد مناهج الإنجليزي لمدرب كورسات أو معلم محذوف.
   if(category==='science'||category==='chemistry')selectedScienceTeachers[category]=name;
   const found=resolveActiveTeacher(name);
   assignedTeacher={uid:found?.uid||null,name,_category:category};
@@ -189,22 +186,37 @@ teacherSelect?.addEventListener('change',()=>{
     : 'الاختيار محفوظ باسم المعلم، وتحتاج الإدارة لربطه بحسابه المعتمد.';
 });
 
-async function loadBookingTeachers() {
+async function loadBookingTeachers(user) {
   try {
     const snap = await getDocs(query(collection(db, "users"), where("role", "==", "teacher"), where("status", "==", "active")));
+    if (currentUser?.uid !== user.uid) return;
     activeTeachers = snap.docs.map(docSnap => {
-      const data = docSnap.data() || {};
-      return { uid: docSnap.id, name: data.fullName || data.name || data.displayName || data.email || "معلم" };
-    }).filter(t=>!/^علي\s+عبد\s+الحميد(?:\s|$)/.test(normalizeArabic(t.name)));
+      return { ...docSnap.data(), uid: docSnap.id };
+    }).filter(t=>!/^علي\s+عبد\s+الحميد(?:\s|$)/.test(normalizeArabic(t.fullName || t.name || t.displayName)));
   } catch (error) {
     console.warn("تعذر تحميل حسابات المعلمين، سيتم حفظ اسم المعلم المحدد تلقائيًا:", error);
+    if (currentUser?.uid !== user.uid) return;
     activeTeachers = [];
   }
   updateAssignedTeacher();
 }
 
+updateAssignedTeacher();
+onAuthStateChanged(auth, user => {
+  currentUser = user;
+  activeTeachers = [];
+  bookingTeachersReady = user ? loadBookingTeachers(user) : Promise.resolve();
+  updateAssignedTeacher();
+});
+
 sectionSelect?.addEventListener("change", () => {
-  if (canonicalBookingSelection("section") === "الرياضيات" && subjectInput && !subjectInput.value.trim()) {
+  const section = canonicalBookingSelection("section");
+  if (section === ENGLISH_SUBJECT && subjectInput) {
+    subjectInput.value = ENGLISH_SUBJECT;
+  } else if (assignedTeacher._category === 'english' && subjectInput?.value === ENGLISH_SUBJECT) {
+    subjectInput.value = '';
+  }
+  if (section === "الرياضيات" && subjectInput && !subjectInput.value.trim()) {
     subjectInput.value = "الرياضيات";
   }
   updateAssignedTeacher();
@@ -242,23 +254,29 @@ form.addEventListener("submit", async event => {
     return;
   }
 
-  const payload = {
-    ...data,
-    teacherUid: assignedTeacher.uid || null,
-    teacherName: assignedTeacher.name,
-    studentUid: currentUser?.uid || null,
-    status: "جديد",
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
-    source: "booking",
-    bookingVersion: 3,
-    autoAssignedTeacher: teacherSelect?.disabled !== false
-  };
-
+  const { name: teacherName, _category: category } = assignedTeacher;
+  const studentUid = currentUser.uid;
+  const autoAssignedTeacher = teacherSelect?.disabled !== false;
   bookingSubmitting = true;
   const submitButton = form.querySelector('[type="submit"]');
   if (submitButton) submitButton.disabled = true;
   try {
+    if (category === 'english') await bookingTeachersReady;
+    if (currentUser?.uid !== studentUid) {
+      throw new Error('تغيّر حساب الطالب. أعد إرسال الطلب من الحساب الصحيح.');
+    }
+    const payload = {
+      ...data,
+      teacherUid: resolveActiveTeacher(teacherName)?.uid || null,
+      teacherName,
+      studentUid,
+      status: "جديد",
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+      source: "booking",
+      bookingVersion: 3,
+      autoAssignedTeacher
+    };
     const bookingRef = await addDoc(collection(db, "bookings"), payload);
 
     // إنشاء الإشعار خطوة منفصلة حتى لا يظهر للطالب أن الحجز فشل
@@ -269,10 +287,10 @@ form.addEventListener("submit", async event => {
         targetRole: "admin",
         type: "booking",
         title: "📅 طلب حجز حصة جديد",
-        message: `الطالب ${data.fullName || "غير معروف"} أرسل طلب حجز في قسم ${data.section || "غير محدد"} لمادة ${data.subject || "غير محدد"}. المعلم المحدد تلقائيًا: ${assignedTeacher.name}.`,
+        message: `الطالب ${data.fullName || "غير معروف"} أرسل طلب حجز في قسم ${data.section || "غير محدد"} لمادة ${data.subject || "غير محدد"}. المعلم المحدد تلقائيًا: ${teacherName}.`,
         bookingId: bookingRef.id,
-        studentUid: currentUser?.uid || null,
-        createdBy: currentUser?.uid || null,
+        studentUid,
+        createdBy: studentUid,
         createdAt: serverTimestamp(),
         readBy: []
       });
@@ -280,7 +298,7 @@ form.addEventListener("submit", async event => {
       console.warn("تم حفظ الحجز، لكن تعذر إنشاء إشعار الإدارة:", notificationError);
     }
 
-    statusBox.innerHTML = `<strong>✅ تم استلام طلب الحجز</strong><br>الحالة: <b>في انتظار التأكيد وتحديد الموعد</b><br>المعلم المحدد: ${assignedTeacher.name}<br><small>يمكنك متابعة حالة الطلب من لوحة حسابك.</small>`;
+    statusBox.innerHTML = `<strong>✅ تم استلام طلب الحجز</strong><br>الحالة: <b>في انتظار التأكيد وتحديد الموعد</b><br>المعلم المحدد: ${teacherName}<br><small>يمكنك متابعة حالة الطلب من لوحة حسابك.</small>`;
     statusBox.className = "booking-status success";
     form.reset();
     if (initialSection && [...sectionSelect.options].some(o => o.value === initialSection)) sectionSelect.value = initialSection;
