@@ -3,14 +3,27 @@ import {db,auth} from '../firebase-config.js';
 import {onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
 import {doc,getDoc,getDocs,collection,query,where} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 import {lastFullWeek,lastFullMonth,reviewId,eligibleTeachers} from './weekly-shared.js';
+import {isStudentReviewer} from './review-account.js';
 const target=new URL('./weekly.html',import.meta.url);
-const current=new URL(location.href);
-if(current.pathname!==target.pathname){
+
+function redirectToReview(user,retry=false){
+ if(auth.currentUser?.uid!==user.uid)return;
+ const destination=new URL(target);
+ destination.searchParams.set('next',location.href);
+ if(retry)destination.searchParams.set('check','retry');
+ location.replace(destination.href);
+}
+
+if(location.pathname!==target.pathname){
  onAuthStateChanged(auth,async user=>{
   if(!user)return;
   try{
-   const account=await getDoc(doc(db,'users',user.uid));
-   if(account.data()?.role!=='student')return;
+   if(!await isStudentReviewer(user)||auth.currentUser?.uid!==user.uid)return;
+  }catch(error){
+   console.error('weekly-review-account',error);
+   return;
+  }
+  try{
    const week=lastFullWeek();
    const month=lastFullMonth();
    // General platform/administration feedback is required once per completed month.
@@ -24,14 +37,11 @@ if(current.pathname!==target.pathname){
     const available=eligibleTeachers(a.docs.map(d=>({id:d.id,...d.data()})),b.docs.map(d=>({id:d.id,...d.data()})),week);
     if(available.length){const done=await Promise.all(available.map(t=>getDoc(doc(db,'weeklyReviewPrivate',reviewId(user.uid,week.start,'teacher',t.uid)))));needed=done.some(s=>!s.exists())}
    }
-   if(needed){target.searchParams.set('next',current.href);location.replace(target.href)}
+   if(needed)redirectToReview(user);
   }catch(error){
    console.error('weekly-review-guard',error);
-   // A failed permission/network check cannot silently bypass the mandatory student survey.
-   target.searchParams.set('next',current.href);
-   target.searchParams.set('check','retry');
-   location.replace(target.href);
-
+   // Keep the retry path for accounts already confirmed to be students.
+   redirectToReview(user,true);
   }
  });
 }

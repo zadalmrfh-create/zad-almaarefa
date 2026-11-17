@@ -2,12 +2,13 @@ import {auth,db} from '../firebase-config.js';
 import {onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
 import {doc,collection,getDoc,getDocs,query,where,writeBatch,serverTimestamp} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 import {TEACHER_QUESTIONS,PLATFORM_QUESTIONS,ADMIN_QUESTIONS,lastFullWeek,lastFullMonth,reviewId,eligibleTeachers,htmlEscape} from './weekly-shared.js';
+import {isStudentReviewer} from './review-account.js';
 const $=id=>document.getElementById(id);
 const week=lastFullWeek();
 const month=lastFullMonth();
-const intended=(()=>{const next=new URLSearchParams(location.search).get('next');if(!next)return '../dashboard/student/index.html';try{const url=new URL(next,location.href);if(url.origin===location.origin&&url.pathname!==location.pathname)return url.href}catch(_){}return '../dashboard/student/index.html'})();
+const returnUrl=(()=>{const next=new URLSearchParams(location.search).get('next');if(!next)return null;try{const url=new URL(next,location.href);if(url.origin===location.origin&&url.pathname!==location.pathname)return url.href}catch(_){}return null})();
 $('weekLabel').textContent=`تقييم المعلمين: ${week.start} إلى ${week.end} (آخر أسبوع مكتمل) | تقييم المنصة والإدارة: ${month.start} إلى ${month.end} (آخر شهر مكتمل)`;
-$('weeklyContinue').href=intended;
+$('weeklyContinue').href=returnUrl||'../dashboard/student/index.html';
 let currentUser=null,forms=[];
 function render(){
  const target=$('evaluationItems');target.replaceChildren();
@@ -62,8 +63,10 @@ function render(){
 async function load(user){
  currentUser=user;$('weeklyMessage').textContent='';
  try{
-  const account=await getDoc(doc(db,'users',user.uid));
-  if(account.data()?.role!=='student'){$('evaluationItems').innerHTML='<div class="panel">هذه الصفحة مخصصة لتقييم الطلاب.</div>';return}
+  const needsReview=await isStudentReviewer(user);
+  if(auth.currentUser?.uid!==user.uid)return;
+  if(!needsReview){location.replace(returnUrl||'../index.html');return}
+  $('weeklyIntro').hidden=false;
   const [attendanceSnap,bookingSnap]=await Promise.all([
    getDocs(query(collection(db,'lessonAttendance'),where('studentUid','==',user.uid))),
    getDocs(query(collection(db,'bookings'),where('studentUid','==',user.uid)))
@@ -75,6 +78,7 @@ async function load(user){
   entries.push({kind:'platform',period:month,title:'التقييم الشهري لمنصة زاد المعرفة',questions:PLATFORM_QUESTIONS});
   entries.push({kind:'administration',period:month,title:'التقييم الشهري لإدارة الأكاديمية',questions:ADMIN_QUESTIONS});
   const docs=await Promise.all(entries.map(x=>getDoc(doc(db,'weeklyReviewPrivate',reviewId(user.uid,x.period.start,x.kind,x.teacherUid||'')))));
+  if(auth.currentUser?.uid!==user.uid)return;
   forms=entries.map((x,i)=>({...x,saved:docs[i].exists()}));
   render();
   if(!teacherOptions.length&&a.some(r=>r.status==='حاضر'&&r.date>=week.start&&r.date<=week.end&&!r.teacherUid)){

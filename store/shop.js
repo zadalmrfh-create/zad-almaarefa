@@ -17,7 +17,7 @@ let orders=[];
 let rights=[];
 let productById={};
 let coupon=null;
-let bookAccessKind=null;
+let staffAccessKind=null;
 let catalogLoaded=false;
 
 try{cart=JSON.parse(localStorage.getItem('zad-store-cart-v1')||'[]').filter(x=>typeof x==='string'&&!freeExamIds.has(x)).slice(0,80)}catch{}
@@ -46,15 +46,15 @@ function mergeProducts(overrides){
   return [...merged,...extras].map(p=>{const {directUrl,previewUrl,downloadUrl,videoUrl,storagePath,...safe}=p; return safe}).filter(x=>!x.deleted&&x.published!==false&&!isFreeElectronicExam(x)&&(x.type==='service'||x.deliveryReady===true)).sort(byNewest);
 }
 
-const paidDigitalTypes=new Set(['summary','exam','evaluation','book']);
+const digitalProductTypes=new Set(['summary','exam','evaluation','book']);
 function readyForCheckout(p){return Boolean(p&&!isFreeElectronicExam(p)&&p.published!==false&&p.deliveryReady===true)}
-function secureMedia(p){return paidDigitalTypes.has(p?.type)}
-function isFreeStaffBook(p){return Boolean(bookAccessKind&&p?.type==='book'&&!p.deleted&&readyForCheckout(p))}
-function canPurchase(p){return readyForCheckout(p)&&!isFreeStaffBook(p)}
-function displayedPrice(p){return isFreeStaffBook(p)?0:Number(p.price)}
-function priceLabel(p){return isFreeStaffBook(p)?'مجاني لحسابك':fmt(p.price)}
+function secureMedia(p){return digitalProductTypes.has(p?.type)}
+function isFreeStaffProduct(p){return Boolean(staffAccessKind&&secureMedia(p)&&!p.deleted&&readyForCheckout(p))}
+function canPurchase(p){return readyForCheckout(p)&&!isFreeStaffProduct(p)}
+function displayedPrice(p){return isFreeStaffProduct(p)?0:Number(p.price)}
+function priceLabel(p){return isFreeStaffProduct(p)?'مجاني لحسابك':fmt(p.price)}
 function purchaseControl(p){
-  if(isFreeStaffBook(p)) return `<button class="primary" data-download="${esc(p.id)}">فتح الكتاب مجانًا</button>`;
+  if(isFreeStaffProduct(p)) return `<button class="primary" data-download="${esc(p.id)}">فتح مجانًا</button>`;
   return canPurchase(p)?`<button class="primary" data-add="${esc(p.id)}">أضف إلى السلة</button>`:`<div class="notice pending-file">🔒 ${secureMedia(p)?'المحتوى تحت التجهيز والحماية — غير متاح للشراء الآن':'غير متاح للحجز الآن'}</div>`;
 }
 
@@ -62,7 +62,7 @@ function updateCatalog(){
   products=mergeProducts(rawStoreDocs);
   productById=Object.fromEntries(products.map(p=>[p.id,p]));
   catalogLoaded=true;
-  const payableCart=cart.filter(id=>!isFreeStaffBook(productById[id]));
+  const payableCart=cart.filter(id=>!isFreeStaffProduct(productById[id]));
   if(payableCart.length!==cart.length){cart=payableCart;saveCart()}
   renderHome();
   renderCatalog();
@@ -130,7 +130,7 @@ function productDetail(id){
   const p=productById[id];
   if(!p) return toast('المنتج غير متاح');
   const owned=rights.some(r=>r.productId===id&&r.active===true);
-  const freeBook=isFreeStaffBook(p);
+  const freeForStaff=isFreeStaffProduct(p);
   const ico=p.icon||emoji[p.type]||'📚';
   $('#view-product').innerHTML=`
     <button class="secondary" data-back="catalog">← عودة للمنتجات</button>
@@ -154,8 +154,8 @@ function productDetail(id){
       <div class="panel sidebox">
         <div class="cover">${p.coverUrl?.startsWith('https://')?`<img src="${esc(p.coverUrl)}" alt="الغلاف">`:ico}</div>
         <h2 class="price">${priceLabel(p)}</h2>
-        ${owned&&!freeBook?`<div class="notice ok">متاح في مشترياتك</div><button class="primary" data-download="${esc(p.id)}">فتح المنتج</button>`:purchaseControl(p)}
-        ${freeBook?'':'<p class="hint">بعد اعتماد الدفع يمكنك فتح الكتاب أو الملخص أو الامتحان مباشرة.</p>'}
+        ${owned&&!freeForStaff?`<div class="notice ok">متاح في مشترياتك</div><button class="primary" data-download="${esc(p.id)}">فتح المنتج</button>`:purchaseControl(p)}
+        ${freeForStaff?'':'<p class="hint">بعد اعتماد الدفع يمكنك فتح الكتاب أو الملخص أو الامتحان مباشرة.</p>'}
       </div>
     </div>`;
   show('product');
@@ -276,8 +276,8 @@ async function openProduct(id){
   const p=productById[id];
   if(!p)return toast('المنتج غير متاح');
   const entitlement=rights.find(r=>r.productId===id&&r.active===true&&r.studentUid===user.uid);
-  const freeBook=isFreeStaffBook(p);
-  if(!entitlement&&!freeBook)return toast('🔒 يجب اعتماد الدفع أولًا');
+  const freeForStaff=isFreeStaffProduct(p);
+  if(!entitlement&&!freeForStaff)return toast('🔒 يجب اعتماد الدفع أولًا');
   if(p.type==='course')return productDetail(id);
   if(p.type==='lesson')return toast('تواصل مع الإدارة لتأكيد موعد الحصة');
   if(!secureMedia(p))return toast('هذا المنتج ليس ملفًا رقميًا');
@@ -293,25 +293,25 @@ async function openProduct(id){
   const popup=window.open('about:blank','_blank');
   if(popup){try{popup.opener=null;popup.document.title='زاد المعرفة - جاري التحقق';popup.document.body.textContent='جارٍ التحقق من صلاحية فتح المنتج...'}catch{}}
   try{
-    if(freeBook&&!entitlement){
+    if(freeForStaff&&!entitlement){
       const product=(await getDocFromServer(doc(db,'storeProducts',id))).data();
-      if(!isFreeStaffBook(product)) throw Error('هذا الكتاب غير متاح حاليًا');
-      const bookPath=String(product.storagePath||'');
-      if(bookPath.startsWith(`storeProtected/${id}/`)){
+      if(!isFreeStaffProduct(product)) throw Error('هذا المنتج غير متاح حاليًا');
+      const productPath=String(product.storagePath||'');
+      if(productPath.startsWith(`storeProtected/${id}/`)){
         if(popup&&!popup.closed)popup.close();
-        if(bookAccessKind!=='admin-email'){
+        if(staffAccessKind!=='admin-email'){
           await setDoc(doc(db,'storeEntitlements',`${user.uid}_${id}`),{
             studentUid:user.uid,
             productId:id,
-            staffBookAccess:{storagePath:bookPath,kind:bookAccessKind,issuedAt:serverTimestamp()}
+            staffDigitalAccess:{storagePath:productPath,kind:staffAccessKind,issuedAt:serverTimestamp()}
           },{merge:true});
         }
-        await downloadPdf(p,bookPath);
+        await downloadPdf(p,productPath);
         return;
       }
     }
     const linkRef=doc(db,'storeProductLinks',id);
-    const snap=await (freeBook&&!entitlement?getDocFromServer(linkRef):getDoc(linkRef));
+    const snap=await (freeForStaff&&!entitlement?getDocFromServer(linkRef):getDoc(linkRef));
     const url=snap.data()?.url;
     if(typeof url!=='string'||!url.startsWith('https://'))throw Error('لا يوجد رابط تسليم صالح');
     const parsed=new URL(url);
@@ -382,7 +382,7 @@ function actions(e){
   if(a.dataset.add){
     const id=a.dataset.add;
     const product=productById[id];
-    if(isFreeStaffBook(product))return openProduct(id);
+    if(isFreeStaffProduct(product))return openProduct(id);
     if(!canPurchase(product))return toast('هذا المنتج غير جاهز للبيع بعد');
     if(!cart.includes(id)) cart.push(id);
     saveCart();
@@ -430,7 +430,7 @@ async function start(){
   document.body.classList.remove('store-auth-pending');
   $('#accountState').textContent=`أهلًا ${user.displayName||user.email||'بالطالب'}`;
   const {admin,kind}=await findAccountAccess(user);
-  bookAccessKind=kind;
+  staffAccessKind=kind;
   if(admin) $('#adminLink').classList.remove('hidden');
   onSnapshot(doc(db,'storeSettings','main'),s=>{
     const d={...defaultSettings,...(s.data()||{})};

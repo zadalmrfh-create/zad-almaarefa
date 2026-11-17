@@ -8,7 +8,7 @@ match /storeProtected/{productId}/{fileName} {
       || (profile.get('role', '') == 'teacher' && profile.get('status', '') == 'active');
   }
 
-  function hasStaffBookAccess(access, uid) {
+  function hasStaffDigitalAccess(access, uid) {
     return access is map
       && access.storagePath == 'storeProtected/' + productId + '/' + fileName
       && request.time < access.issuedAt + duration.value(5, 'm')
@@ -23,7 +23,7 @@ match /storeProtected/{productId}/{fileName} {
     let entitlement = firestore.get(/databases/(default)/documents/storeEntitlements/$(uid + '_' + productId)).data;
     return entitlement.get('active', false) == true
       || (entitlement.studentUid == uid && entitlement.productId == productId
-        && hasStaffBookAccess(entitlement.get('staffBookAccess', null), uid));
+        && hasStaffDigitalAccess(entitlement.get('staffDigitalAccess', null), uid));
   }
 
   allow get: if request.auth != null && (
