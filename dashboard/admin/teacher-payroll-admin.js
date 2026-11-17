@@ -196,7 +196,7 @@ async function refresh(){
  try{
   const [att,profiles,extra]=await Promise.all([getDocs(collection(db,'lessonAttendance')),getDocs(collection(db,'users')),getDocs(collection(db,'teacherPayrollAdjustments'))]);
   attendance=att.docs.map(d=>({id:d.id,...d.data()}));
-  teachers=profiles.docs.map(d=>({...d.data(),id:d.id})).filter(x=>x.role==='teacher'&&x.status==='active');
+  teachers=profiles.docs.map(d=>({...d.data(),id:d.id})).filter(x=>x.role==='teacher'&&x.status!=='banned');
   adjustments=new Map(extra.docs.map(d=>[d.id,d.data()]));
   let syncWarning='';
   try{
