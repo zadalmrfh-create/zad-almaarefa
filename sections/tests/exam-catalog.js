@@ -7,6 +7,8 @@ import { examAuthReady } from './exam-auth-gate.js';
 const $ = id => document.getElementById(id);
 const state={stage:'',track:'',grade:'',subject:'all',search:'',remoteLoaded:false,remoteLoading:false};
 const items=[
+ {id:'balagha-qasr-azhar-2',name:'البلاغة — الدرس الأول: القصر',subject:'البلاغة',stage:'secondary',track:'azhar',grade:2,minutes:75,questions:41,icon:'🎨',note:'الصف الثاني الثانوي الأزهري • مجاني • اختيار وصح أو خطأ وأكمل ومقالي',url:'zad-special-exam.html?id=balagha-qasr-azhar-2'},
+ {id:'balagha-qasr-types-azhar-2',name:'البلاغة — الدرس الثاني: أقسام القصر',subject:'البلاغة',stage:'secondary',track:'azhar',grade:2,minutes:45,questions:20,icon:'🎨',note:'الصف الثاني الثانوي الأزهري • مجاني • اختيار وصح أو خطأ وأكمل ومقالي',url:'zad-special-exam.html?id=balagha-qasr-types-azhar-2'},
  {id:'water-azhar-2026',name:'الماء وخصائصه الكيميائية — نموذج (2)',subject:'العلوم المتكاملة',stage:'secondary',track:'azhar',grade:1,minutes:30,questions:20,icon:'💧',note:'الصف الأول الثانوي الأزهري • اختيار وأكمل ومقالي ومسائل',url:'zad-special-exam.html?id=water-azhar-2026'},
  {id:'fiqh-khiyar-azhar-2026-v2',name:'الفقه الحنفي — خيار الشرط والرؤية والعيب',subject:'الفقه',stage:'secondary',track:'azhar',grade:0,minutes:60,questions:40,icon:'⚖️',note:'مراجعة للمرحلة الثانوية الأزهرية • 4 أقسام متنوعة',url:'zad-special-exam.html?id=fiqh-khiyar-azhar-2026-v2'},
  {id:'badi-2bac-2026',name:'البلاغة — علم البديع',subject:'البلاغة',stage:'secondary',track:'general',grade:2,minutes:60,questions:30,icon:'🎨',note:'الصف الثاني البكالوريا • اختيار ومقالي',url:'unit-one-exam.html?id=badi-2bac-2026'},

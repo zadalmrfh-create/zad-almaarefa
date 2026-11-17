@@ -1112,7 +1112,9 @@ service cloud.firestore {
         || (signedIn() && attemptId in [
           request.auth.uid + '_water-azhar-2026',
           request.auth.uid + '_fiqh-khiyar-azhar-2026',
-          request.auth.uid + '_fiqh-khiyar-azhar-2026-v2'
+          request.auth.uid + '_fiqh-khiyar-azhar-2026-v2',
+          request.auth.uid + '_balagha-qasr-azhar-2',
+          request.auth.uid + '_balagha-qasr-types-azhar-2'
         ]);
       allow list: if isCertificateAdmin() || teacherCanReadExamStudent(resource.data.studentUid);
       allow create: if signedIn()
@@ -1120,14 +1122,18 @@ service cloud.firestore {
           'studentUid','studentName','examId','answers','source','createdAt'
         ])
         && request.resource.data.studentUid == request.auth.uid
-        && request.resource.data.examId in ['water-azhar-2026','fiqh-khiyar-azhar-2026','fiqh-khiyar-azhar-2026-v2']
+        && request.resource.data.examId in [
+          'water-azhar-2026', 'fiqh-khiyar-azhar-2026', 'fiqh-khiyar-azhar-2026-v2',
+          'balagha-qasr-azhar-2', 'balagha-qasr-types-azhar-2'
+        ]
         && attemptId == request.auth.uid + '_' + request.resource.data.examId
         && request.resource.data.studentName is string
         && request.resource.data.studentName.size() >= 3
         && request.resource.data.studentName.size() <= 150
         && request.resource.data.answers is list
         && request.resource.data.answers.size() == (
-          request.resource.data.examId == 'water-azhar-2026' ? 20
+          request.resource.data.examId in ['water-azhar-2026', 'balagha-qasr-types-azhar-2'] ? 20
+          : request.resource.data.examId == 'balagha-qasr-azhar-2' ? 41
           : (request.resource.data.examId == 'fiqh-khiyar-azhar-2026-v2' ? 40 : 89)
         )
         && request.resource.data.source == 'zad-special-2026'
