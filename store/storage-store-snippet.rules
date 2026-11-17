@@ -2,12 +2,35 @@
 // service firebase.storage { match /b/{bucket}/o { ... } } block.
 // Do NOT replace unrelated academy Storage rules.
 match /storeProtected/{productId}/{fileName} {
+  function staffProfileCanRead(uid) {
+    let profile = firestore.get(/databases/(default)/documents/users/$(uid)).data;
+    return profile.get('role', '') == 'admin'
+      || (profile.get('role', '') == 'teacher' && profile.get('status', '') == 'active');
+  }
+
+  function hasStaffBookAccess(access, uid) {
+    return access is map
+      && access.storagePath == 'storeProtected/' + productId + '/' + fileName
+      && request.time < access.issuedAt + duration.value(5, 'm')
+      && (
+        (access.kind == 'profile' && staffProfileCanRead(uid))
+        || (access.kind == 'admin-record' && firestore.exists(/databases/(default)/documents/admins/$(uid)))
+      );
+  }
+
+  function canReadEntitledFile(uid) {
+    // A staff download uses at most two Firestore documents: entitlement and role.
+    let entitlement = firestore.get(/databases/(default)/documents/storeEntitlements/$(uid + '_' + productId)).data;
+    return entitlement.get('active', false) == true
+      || (entitlement.studentUid == uid && entitlement.productId == productId
+        && hasStaffBookAccess(entitlement.get('staffBookAccess', null), uid));
+  }
+
   allow get: if request.auth != null && (
     (request.auth.token.email == 'maleksameh121@gmail.com'
      && request.auth.token.email_verified == true)
     ||
-    (firestore.exists(/databases/(default)/documents/storeEntitlements/$(request.auth.uid + '_' + productId))
-      && firestore.get(/databases/(default)/documents/storeEntitlements/$(request.auth.uid + '_' + productId)).data.active == true)
+    canReadEntitledFile(request.auth.uid)
   );
   allow list: if false;
   allow create: if request.auth != null

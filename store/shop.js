@@ -1,5 +1,6 @@
-import {db,$,esc,fmt,types,emoji,toast,session,adminCheck,navActive,printReceipt,dateText} from './common.js';
-import {collection,doc,getDoc,getDocs,onSnapshot,query,where,setDoc,serverTimestamp} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
+import {db,$,esc,fmt,types,emoji,toast,session,navActive,printReceipt,dateText} from './common.js';
+import {ADMIN_EMAIL} from '../firebase-config.js';
+import {collection,doc,getDoc,getDocFromServer,getDocs,onSnapshot,query,where,setDoc,serverTimestamp} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 import {getStorage,ref,getBlob,uploadBytes} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-storage.js';
 import {baseProducts,featuredServiceProducts} from './catalog-data.js?v=20261104-services';
 
@@ -16,6 +17,8 @@ let orders=[];
 let rights=[];
 let productById={};
 let coupon=null;
+let bookAccessKind=null;
+let catalogLoaded=false;
 
 try{cart=JSON.parse(localStorage.getItem('zad-store-cart-v1')||'[]').filter(x=>typeof x==='string'&&!freeExamIds.has(x)).slice(0,80)}catch{}
 const saveCart=()=>{try{localStorage.setItem('zad-store-cart-v1',JSON.stringify(cart))}catch{} document.querySelectorAll('#cartCount,.cart-count').forEach(el=>el.textContent=cart.length)};
@@ -23,7 +26,7 @@ const saveCart=()=>{try{localStorage.setItem('zad-store-cart-v1',JSON.stringify(
 const typeTiles=[['summary','📝'],['exam','📝'],['evaluation','📋'],['book','📚'],['lesson','👨‍🏫'],['course','🎓']];
 const normalize=v=>String(v||'').toLowerCase().normalize('NFKC').replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/[َ-ْ]/g,'');
 const summary=items=>items.reduce((s,p)=>s+Number(p.price||0),0);
-const resolved=()=>cart.map(id=>productById[id]).filter(p=>readyForCheckout(p)&&!p.deleted&&Number(p.price)>=0);
+const resolved=()=>cart.map(id=>productById[id]).filter(p=>canPurchase(p)&&!p.deleted&&Number(p.price)>=0);
 const byNewest=(a,b)=>Number(b.createdAt||0)-Number(a.createdAt||0)||Number(b.baseOrder||0)-Number(a.baseOrder||0);
 
 function mergeProducts(overrides){
@@ -46,14 +49,26 @@ function mergeProducts(overrides){
 const paidDigitalTypes=new Set(['summary','exam','evaluation','book']);
 function readyForCheckout(p){return Boolean(p&&!isFreeElectronicExam(p)&&p.published!==false&&p.deliveryReady===true)}
 function secureMedia(p){return paidDigitalTypes.has(p?.type)}
-function purchaseControl(p){return readyForCheckout(p)?`<button class="primary" data-add="${esc(p.id)}">أضف إلى السلة</button>`:`<div class="notice pending-file">🔒 ${secureMedia(p)?'المحتوى تحت التجهيز والحماية — غير متاح للشراء الآن':'غير متاح للحجز الآن'}</div>`}
+function isFreeStaffBook(p){return Boolean(bookAccessKind&&p?.type==='book'&&!p.deleted&&readyForCheckout(p))}
+function canPurchase(p){return readyForCheckout(p)&&!isFreeStaffBook(p)}
+function displayedPrice(p){return isFreeStaffBook(p)?0:Number(p.price)}
+function priceLabel(p){return isFreeStaffBook(p)?'مجاني لحسابك':fmt(p.price)}
+function purchaseControl(p){
+  if(isFreeStaffBook(p)) return `<button class="primary" data-download="${esc(p.id)}">فتح الكتاب مجانًا</button>`;
+  return canPurchase(p)?`<button class="primary" data-add="${esc(p.id)}">أضف إلى السلة</button>`:`<div class="notice pending-file">🔒 ${secureMedia(p)?'المحتوى تحت التجهيز والحماية — غير متاح للشراء الآن':'غير متاح للحجز الآن'}</div>`;
+}
 
 function updateCatalog(){
   products=mergeProducts(rawStoreDocs);
   productById=Object.fromEntries(products.map(p=>[p.id,p]));
+  catalogLoaded=true;
+  const payableCart=cart.filter(id=>!isFreeStaffBook(productById[id]));
+  if(payableCart.length!==cart.length){cart=payableCart;saveCart()}
   renderHome();
   renderCatalog();
   renderMine();
+  if(location.hash==='#cart') renderCart();
+  if(location.hash==='#checkout') checkoutSummaryOnly();
 }
 
 function renderTypeTiles(){
@@ -75,7 +90,7 @@ function card(p){
     <div class="muted small product-subtitle">${esc(p.subject||'')} ${p.grade?`• ${esc(p.grade)}`:''}</div>
     <p class="muted small product-desc">${esc((p.description||'').slice(0,180))}</p>
     <div class="product-footer">
-      <div class="row product-price-row"><strong class="price">${fmt(p.price)}</strong><button class="secondary" data-detail="${esc(p.id)}">التفاصيل</button></div>
+      <div class="row product-price-row"><strong class="price">${priceLabel(p)}</strong><button class="secondary" data-detail="${esc(p.id)}">التفاصيل</button></div>
       ${purchaseControl(p)}
     </div>
   </article>`;
@@ -92,8 +107,8 @@ function renderHome(){
 function renderCatalog(){
   const s=normalize($('#search')?.value),ty=$('#typeFilter')?.value,st=$('#stageFilter')?.value,sort=$('#sortFilter')?.value||'popular';
   let out=products.filter(p=>(!ty||p.type===ty)&&(!st||p.stage===st)&&normalize([p.title,p.description,p.subject,p.teacherName,p.grade,p.stage].join(' ')).includes(s));
-  if(sort==='cheap') out.sort((a,b)=>Number(a.price)-Number(b.price));
-  else if(sort==='expensive') out.sort((a,b)=>Number(b.price)-Number(a.price));
+  if(sort==='cheap') out.sort((a,b)=>displayedPrice(a)-displayedPrice(b));
+  else if(sort==='expensive') out.sort((a,b)=>displayedPrice(b)-displayedPrice(a));
   else if(sort==='name') out.sort((a,b)=>String(a.title).localeCompare(String(b.title),'ar'));
   else if(sort==='new') out.sort(byNewest);
   else out.sort((a,b)=>Number(b.popular||0)-Number(a.popular||0)||byNewest(a,b));
@@ -105,7 +120,7 @@ function show(view){
   document.querySelectorAll('main>section').forEach(el=>el.classList.toggle('hidden',el.id!==`view-${view}`));
   navActive(view);
   if(view==='catalog') renderCatalog();
-  if(view==='cart') renderCart();
+  if(view==='cart'&&catalogLoaded) renderCart();
   if(view==='mine') renderMine();
   window.scrollTo({top:0,behavior:'instant'});
   location.hash=view;
@@ -115,6 +130,7 @@ function productDetail(id){
   const p=productById[id];
   if(!p) return toast('المنتج غير متاح');
   const owned=rights.some(r=>r.productId===id&&r.active===true);
+  const freeBook=isFreeStaffBook(p);
   const ico=p.icon||emoji[p.type]||'📚';
   $('#view-product').innerHTML=`
     <button class="secondary" data-back="catalog">← عودة للمنتجات</button>
@@ -137,9 +153,9 @@ function productDetail(id){
       </div>
       <div class="panel sidebox">
         <div class="cover">${p.coverUrl?.startsWith('https://')?`<img src="${esc(p.coverUrl)}" alt="الغلاف">`:ico}</div>
-        <h2 class="price">${fmt(p.price)}</h2>
-        ${owned?`<div class="notice ok">متاح في مشترياتك</div><button class="primary" data-download="${esc(p.id)}">فتح المنتج</button>`:purchaseControl(p)}
-        <p class="hint">بعد اعتماد الدفع يمكنك فتح الكتاب أو الملخص أو الامتحان مباشرة.</p>
+        <h2 class="price">${priceLabel(p)}</h2>
+        ${owned&&!freeBook?`<div class="notice ok">متاح في مشترياتك</div><button class="primary" data-download="${esc(p.id)}">فتح المنتج</button>`:purchaseControl(p)}
+        ${freeBook?'':'<p class="hint">بعد اعتماد الدفع يمكنك فتح الكتاب أو الملخص أو الامتحان مباشرة.</p>'}
       </div>
     </div>`;
   show('product');
@@ -162,7 +178,7 @@ async function loadCourseLessons(p,owned){
 
 function renderCart(){
   const items=resolved();
-  cart=cart.filter(id=>readyForCheckout(productById[id]));saveCart();
+  cart=cart.filter(id=>canPurchase(productById[id]));saveCart();
   $('#cartItems').innerHTML=items.length?items.map(p=>`<div class="item row"><div><b>${esc(p.title)}</b><div class="muted small">${esc(types[p.type])} • ${esc(p.grade||'')}</div></div><div><b>${fmt(p.price)}</b> <button class="secondary" data-remove="${esc(p.id)}">حذف</button></div></div>`).join(''):'<div class="empty">السلة فارغة.</div>';
   $('#cartSummary').innerHTML=`<h3>ملخص السلة</h3><p>عدد المنتجات: ${items.length}</p><h2 class="price">${fmt(summary(items))}</h2><button class="primary" id="checkoutBtn" ${!items.length?'disabled':''}>إتمام الطلب</button>`;
 }
@@ -260,51 +276,72 @@ async function openProduct(id){
   const p=productById[id];
   if(!p)return toast('المنتج غير متاح');
   const entitlement=rights.find(r=>r.productId===id&&r.active===true&&r.studentUid===user.uid);
-  if(!entitlement)return toast('🔒 يجب اعتماد الدفع أولًا');
+  const freeBook=isFreeStaffBook(p);
+  if(!entitlement&&!freeBook)return toast('🔒 يجب اعتماد الدفع أولًا');
   if(p.type==='course')return productDetail(id);
   if(p.type==='lesson')return toast('تواصل مع الإدارة لتأكيد موعد الحصة');
   if(!secureMedia(p))return toast('هذا المنتج ليس ملفًا رقميًا');
 
-  // User interaction opens a placeholder tab immediately; Firestore enforces the
-  // authorization separately, even if a user manipulates browser JavaScript.
-  const path=String(entitlement.storagePath||'');
+  const path=String(entitlement?.storagePath||'');
   if(path.startsWith(`storeProtected/${id}/`)){
     try{
-      toast('جاري تجهيز ملفك المحمي...');
-      const blob=await getBlob(ref(storage,path));
-      const url=URL.createObjectURL(blob);
-      const link=document.createElement('a');
-      link.href=url;
-      link.download=(p.title||'zad-product').replace(/[\\/:*?"<>|]/g,'_')+'.pdf';
-      document.body.append(link);link.click();link.remove();
-      setTimeout(()=>URL.revokeObjectURL(url),60000);
-    }catch(err){toast('تعذر فتح الملف، تحقق من اعتماد الطلب وقواعد Storage: '+(err.code||err.message))}
+      await downloadPdf(p,path);
+    }catch(err){toast('تعذر فتح الملف: '+(err.code||err.message))}
     return;
   }
 
   const popup=window.open('about:blank','_blank');
-  if(popup){try{popup.opener=null;popup.document.title='زاد المعرفة - جاري التحقق';popup.document.body.textContent='جارِ التحقق من اعتماد عملية الشراء...'}catch{}}
+  if(popup){try{popup.opener=null;popup.document.title='زاد المعرفة - جاري التحقق';popup.document.body.textContent='جارٍ التحقق من صلاحية فتح المنتج...'}catch{}}
   try{
-    // storeProductLinks/{id} is not listable by students. Firestore rules permit
-    // a direct get only when active storeEntitlements/{uid}_{id} exists.
-    const snap=await getDoc(doc(db,'storeProductLinks',id));
-    const url=String(snap.data()?.url||'');
+    if(freeBook&&!entitlement){
+      const product=(await getDocFromServer(doc(db,'storeProducts',id))).data();
+      if(!isFreeStaffBook(product)) throw Error('هذا الكتاب غير متاح حاليًا');
+      const bookPath=String(product.storagePath||'');
+      if(bookPath.startsWith(`storeProtected/${id}/`)){
+        if(popup&&!popup.closed)popup.close();
+        if(bookAccessKind!=='admin-email'){
+          await setDoc(doc(db,'storeEntitlements',`${user.uid}_${id}`),{
+            studentUid:user.uid,
+            productId:id,
+            staffBookAccess:{storagePath:bookPath,kind:bookAccessKind,issuedAt:serverTimestamp()}
+          },{merge:true});
+        }
+        await downloadPdf(p,bookPath);
+        return;
+      }
+    }
+    const linkRef=doc(db,'storeProductLinks',id);
+    const snap=await (freeBook&&!entitlement?getDocFromServer(linkRef):getDoc(linkRef));
+    const url=snap.data()?.url;
+    if(typeof url!=='string'||!url.startsWith('https://'))throw Error('لا يوجد رابط تسليم صالح');
     const parsed=new URL(url);
-    if(!snap.exists()||parsed.protocol!=='https:')throw Error('لا يوجد رابط تسليم صالح');
     if(popup&&!popup.closed){popup.location.replace(parsed.href)}
     else{
-      // Only rendered after a successful authenticated Firestore get.
+      productDetail(id);
       const el=$('#view-product');
       const a=document.createElement('a');
       a.href=parsed.href; a.target='_blank';a.rel='noopener noreferrer';a.className='primary';
-      a.textContent='اضغط هنا لفتح المنتج الذي تم اعتماده';
+      a.textContent='اضغط هنا لفتح المنتج';
       el.prepend(a);
-      toast('تم التحقق من الشراء؛ اضغط على الرابط الجديد');
+      toast('اضغط على رابط فتح المنتج');
     }
   }catch(err){
     if(popup&&!popup.closed)popup.close();
-    toast('لم يتم تسليم رابط المنتج. تأكد من نشر قواعد Firestore واعتماد الطلب: '+(err.code||err.message));
+    toast('تعذر فتح المنتج: '+(err.code||err.message));
   }
+}
+
+async function downloadPdf(product,path){
+  toast('جاري تجهيز ملفك المحمي...');
+  const blob=await getBlob(ref(storage,path));
+  const url=URL.createObjectURL(blob);
+  const link=document.createElement('a');
+  link.href=url;
+  link.download=(product.title||'zad-product').replace(/[\\/:*?"<>|]/g,'_')+'.pdf';
+  document.body.append(link);
+  link.click();
+  link.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),60000);
 }
 
 function syncUser(){
@@ -338,13 +375,15 @@ function actions(e){
   if(a.dataset.type){$('#typeFilter').value=a.dataset.type; return show('catalog')}
   if(a.dataset.orderService){
     const id=a.dataset.orderService;
-    if(!readyForCheckout(productById[id])) return toast('الخدمة غير متاحة حاليًا');
+    if(!canPurchase(productById[id])) return toast('الخدمة غير متاحة حاليًا');
     if(!cart.includes(id))cart.push(id);
     saveCart(); return checkout();
   }
   if(a.dataset.add){
     const id=a.dataset.add;
-    if(!readyForCheckout(productById[id]))return toast('هذا المنتج غير جاهز للبيع بعد');
+    const product=productById[id];
+    if(isFreeStaffBook(product))return openProduct(id);
+    if(!canPurchase(product))return toast('هذا المنتج غير جاهز للبيع بعد');
     if(!cart.includes(id)) cart.push(id);
     saveCart();
     return toast('تمت الإضافة للسلة');
@@ -364,6 +403,19 @@ document.addEventListener('click',actions);
 $('#checkoutForm').addEventListener('submit',placeOrder);
 saveCart();
 
+async function findAccountAccess(account){
+  if(account.emailVerified&&account.email===ADMIN_EMAIL)return {admin:true,kind:'admin-email'};
+  const [profile,admin]=await Promise.allSettled([
+    getDoc(doc(db,'users',account.uid)),
+    getDoc(doc(db,'admins',account.uid))
+  ]);
+  const data=profile.status==='fulfilled'?profile.value.data():undefined;
+  if(data?.role==='admin')return {admin:true,kind:'profile'};
+  if(admin.status==='fulfilled'&&admin.value.exists())return {admin:true,kind:'admin-record'};
+  if(data?.role==='teacher'&&data.status==='active')return {admin:false,kind:'profile'};
+  return {admin:false,kind:null};
+}
+
 async function start(){
   user=await session();
   if(!user){
@@ -377,7 +429,9 @@ async function start(){
   }
   document.body.classList.remove('store-auth-pending');
   $('#accountState').textContent=`أهلًا ${user.displayName||user.email||'بالطالب'}`;
-  if(await adminCheck(user)) $('#adminLink').classList.remove('hidden');
+  const {admin,kind}=await findAccountAccess(user);
+  bookAccessKind=kind;
+  if(admin) $('#adminLink').classList.remove('hidden');
   onSnapshot(doc(db,'storeSettings','main'),s=>{
     const d={...defaultSettings,...(s.data()||{})};
     const parts=[];

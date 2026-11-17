@@ -747,6 +747,26 @@ service cloud.firestore {
     }
 
     // ====== ZAD STORE: collections isolated from academy finances ======
+    function publishedStoreBook(product) {
+      return product.get('type', '') == 'book'
+        && product.get('published', true) == true
+        && product.get('deleted', false) == false
+        && product.get('deliveryReady', false) == true;
+    }
+
+    function isStoreBookStaff() {
+      return isCertificateAdmin() || isTeacher();
+    }
+
+    function isStoreBookAccessKind(kind) {
+      return signedIn() && (
+        (kind == 'profile' && userExists(request.auth.uid)
+          && (getUser(request.auth.uid).data.role == 'admin' || isTeacher()))
+        || (kind == 'admin-record'
+          && exists(/databases/$(database)/documents/admins/$(request.auth.uid)))
+      );
+    }
+
     match /storeSettings/{settingId} {
       allow get: if settingId == 'main' || isAdmin();
       allow list: if isAdmin();
@@ -757,6 +777,7 @@ service cloud.firestore {
       // The private product document can contain storagePath; public users must NEVER read it.
       allow get, list: if isAdmin()
         || (isTeacher() && resource.data.teacherUid == request.auth.uid);
+      allow get: if isStoreBookStaff() && publishedStoreBook(resource.data);
       allow create, update, delete: if isAdmin();
 
       match /lessons/{lessonId} {
@@ -794,6 +815,8 @@ service cloud.firestore {
           && get(/databases/$(database)/documents/storeEntitlements/$(request.auth.uid + '_' + productId)).data.active == true;
       }
       allow get: if isAdmin() || hasApprovedOrder();
+      allow get: if isStoreBookStaff()
+        && publishedStoreBook(get(/databases/$(database)/documents/storeProducts/$(productId)).data);
       allow list: if isAdmin();
       allow create, update: if isAdmin()
         && request.resource.data.keys().hasOnly(['url','source','updatedAt','updatedBy'])
@@ -846,9 +869,35 @@ service cloud.firestore {
     }
 
     match /storeEntitlements/{entitlementId} {
+      function matchesPublishedBookFile(productId, storagePath) {
+        let product = get(/databases/$(database)/documents/storeProducts/$(productId)).data;
+        return publishedStoreBook(product) && storagePath == product.storagePath;
+      }
+
+      function validStaffBookAccess(proposed) {
+        let access = proposed.staffBookAccess;
+        let productId = proposed.productId;
+        return proposed.studentUid == request.auth.uid
+          && productId is string
+          && entitlementId == request.auth.uid + '_' + productId
+          && access is map
+          && access.keys().hasOnly(['storagePath', 'kind', 'issuedAt'])
+          && isStoreBookAccessKind(access.kind)
+          && access.issuedAt == request.time
+          && access.storagePath is string
+          && access.storagePath.matches('^storeProtected/[^/]+/[^/]+$')
+          && matchesPublishedBookFile(productId, access.storagePath);
+      }
+
       allow get, list: if isAdmin()
         || (signedIn() && resource.data.studentUid == request.auth.uid);
       allow create, update, delete: if isAdmin();
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['studentUid', 'productId', 'staffBookAccess'])
+        && validStaffBookAccess(request.resource.data);
+      allow update: if signedIn()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['staffBookAccess'])
+        && validStaffBookAccess(request.resource.data);
     }
 
     match /storeTeacherDrafts/{draftId} {
