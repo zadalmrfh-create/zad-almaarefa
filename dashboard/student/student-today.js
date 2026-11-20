@@ -1,5 +1,6 @@
 import {chooseLesson, latestExam, pendingBookings} from './student-today-core.js?v=20261120-today1';
 import {money} from '../payment-utils.js';
+import {lessonPageUrl} from '../lesson-page-links.js?v=20261120-lesson1';
 
 const card = document.getElementById('studentToday');
 const status = document.getElementById('studentTodayStatus');
@@ -26,11 +27,9 @@ function focusSection(target) {
   target.scrollIntoView({block: 'start'});
 }
 function openLesson(id) {
-  selectTab('lessons');
-  requestAnimationFrame(() => {
-    const row = [...document.querySelectorAll('[data-student-lesson-id]')].find(node => node.dataset.studentLessonId === id);
-    focusSection(row || document.getElementById('liveLessonsCard'));
-  });
+  const href = lessonPageUrl(id);
+  if (href) location.href = href;
+  else selectTab('lessons');
 }
 function summaryCard(name, value, note, activate) {
   const box = document.querySelector('[data-today-summary="' + name + '"]');

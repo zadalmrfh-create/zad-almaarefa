@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>صفحة الحصة | زاد المعرفة</title>
+  <link rel="icon" href="../../images/logo.png">
+  <link rel="stylesheet" href="../dashboard.css">
+  <link rel="stylesheet" href="lesson-page.css?v=20261120-lesson1">
+</head>
+<body>
+  <main class="lesson-page">
+    <header class="lesson-page-bar">
+      <a class="lesson-brand" href="../../index.html"><img src="../../images/logo.png" alt="">زاد المعرفة</a>
+      <a class="btn" href="index.html" id="lessonBack">لوحة الطالب</a>
+    </header>
+
+    <section class="card" id="lessonStatus" role="status">جارٍ تحميل الحصة…</section>
+
+    <div id="lessonContent" hidden>
+      <section class="lesson-main" aria-labelledby="lessonTitle">
+        <span class="lesson-page-subject" id="lessonSubject"></span>
+        <h1 id="lessonTitle"></h1>
+        <p class="lesson-page-meta" id="lessonMeta"></p>
+        <div class="lesson-page-meet">
+          <p id="lessonMeetState" aria-live="polite"></p>
+          <button class="btn gold" id="lessonJoin" type="button" hidden>ادخل الحصة</button>
+        </div>
+      </section>
+
+      <div class="lesson-page-grid">
+        <section class="lesson-page-panel" aria-labelledby="lessonSummaryTitle">
+          <h2 id="lessonSummaryTitle">الملخص</h2>
+          <p id="lessonSummaryState" aria-live="polite">جارٍ التحميل…</p>
+          <a class="btn" id="lessonSummary" target="_blank" rel="noopener noreferrer" hidden>افتح الملخص</a>
+        </section>
+
+        <section class="lesson-page-panel" aria-labelledby="lessonExamTitle">
+          <h2 id="lessonExamTitle">امتحان الحصة</h2>
+          <p id="lessonExamState" aria-live="polite">جارٍ التحميل…</p>
+          <a class="btn gold" id="lessonExam" hidden>ابدأ الامتحان</a>
+        </section>
+
+        <section class="lesson-page-panel lesson-page-result" aria-labelledby="lessonResultTitle">
+          <h2 id="lessonResultTitle">نتيجتي في الامتحان</h2>
+          <p id="lessonResultScore" class="lesson-page-score" hidden></p>
+          <p class="lesson-page-result-state" id="lessonResultState" aria-live="polite">جارٍ التحميل…</p>
+        </section>
+      </div>
+    </div>
+  </main>
+  <script type="module" src="lesson-page.js?v=20261120-lesson1"></script>
+  <script type="module" src="../../reviews/weekly-review-guard.js?v=20261105-evals1"></script>
+</body>
+</html>

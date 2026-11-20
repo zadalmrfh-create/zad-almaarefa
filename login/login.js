@@ -111,6 +111,7 @@ async function redirectAfterLogin(user) {
     try {
       const original = new URL(target, window.location.origin);
       const isProtectedPage = /\/store\/index\.html$/i.test(original.pathname)
+        || /\/dashboard\/student\/lesson\.html$/i.test(original.pathname)
         || /\/sections\/(?:library|library-payment|book|book-access)\.html$/i.test(original.pathname)
         || /\/sections\/(?:Arabic|Azhar|Quran|Sharia|Tazkea|tests)\/[^/]+\.html$/i.test(original.pathname);
       if (target.startsWith('/') && !target.startsWith('//')

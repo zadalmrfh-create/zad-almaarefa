@@ -4,6 +4,7 @@ import {getPreviewContext} from '../admin-preview-core.js';
 import {onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
 import {doc,getDoc,getDocs,collection,query,where,limit} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 import {cairoDay,weekRange,eligibleLesson,scheduleDays,studentMetrics} from './stage4-core.js';
+import {lessonPageUrl} from '../lesson-page-links.js?v=20261120-lesson1';
 const $=id=>document.getElementById(id);
 const sched=$('zadStage4ScheduleList'),state=$('zadStage4ScheduleStatus'),weekLabel=$('zadStage4WeekLabel');
 const refresh=$('zadStage4Reload'),prev=$('zadStage4ThisWeek'),next=$('zadStage4NextWeek');
@@ -45,7 +46,9 @@ function renderSchedule(items,range){sched.replaceChildren();
     row.append(text('strong',lesson.title||lesson.name||'محاضرة جديدة'));
     const date=String(lesson.date||''),clock=(date.match(/T(\d{2}:\d{2})/)||[])[1];
     row.append(text('span',[clock?'🕒 '+clock:'الساعة غير محددة',lesson.subject||lesson.section||'',lesson.teacherName||lesson.teacher||''].filter(Boolean).join(' • ')));
-    const btn=text('button','🎥 فتح المحاضرات','btn');btn.type='button';btn.addEventListener('click',()=>openStudentTab('lessons'));row.append(btn);card.append(row);
+    const href=lessonPageUrl(lesson.id);
+    if(href){const link=text('a','صفحة الحصة','btn');link.href=href;row.append(link);}
+    card.append(row);
   }
   sched.append(card);
  }

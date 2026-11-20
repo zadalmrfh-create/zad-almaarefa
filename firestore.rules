@@ -317,6 +317,52 @@ service cloud.firestore {
       allow create, update, delete: if isAdmin();
     }
 
+    match /lessonResources/{lessonId} {
+      function parentLesson() {
+        return /databases/$(database)/documents/lessons/$(lessonId);
+      }
+
+      function profileGrade(profile) {
+        let grade = profile.get('grade', '');
+        let studyGrade = profile.get('studyGrade', '');
+        return grade is string && grade != '' ? grade
+          : studyGrade is string && studyGrade != '' ? studyGrade
+          : profile.get('className', '');
+      }
+
+      function canReadAsStudent() {
+        let lesson = get(parentLesson()).data;
+        let profile = getUser(request.auth.uid).data;
+        let grade = lesson.get('grade', '');
+        return profile.get('role', '') == 'student'
+          && lesson.get('deleted', false) != true
+          && lesson.get('published', true) != false
+          && !(lesson.get('status', '') in ['cancelled', 'canceled', 'ملغى', 'ملغي', 'مُلغى'])
+          && (grade == null || grade == '' || grade == profileGrade(profile))
+          && (lesson.get('audience', 'all') != 'selected'
+              || request.auth.uid in lesson.get('targetUids', []));
+      }
+
+      function validResource(data) {
+        return data.keys().hasOnly(['summaryUrl', 'exam', 'updatedAt'])
+          && data.updatedAt == request.time
+          && data.summaryUrl is string && data.summaryUrl.size() <= 2048
+          && (data.summaryUrl == '' || data.summaryUrl.matches('https?://[^ ]+'))
+          && (data.exam == null || (data.exam is map
+              && data.exam.keys().hasOnly(['source', 'id'])
+              && data.exam.source in ['code', 'unit', 'special']
+              && data.exam.id is string && data.exam.id.size() > 0 && data.exam.id.size() <= 150
+              && data.exam.id.matches('[^/]+')))
+          && (data.summaryUrl != '' || data.exam != null);
+      }
+
+      allow get: if isAdmin() || (signedIn() && userExists(request.auth.uid)
+        && exists(parentLesson()) && canReadAsStudent());
+      allow list: if isAdmin();
+      allow create, update: if isAdmin() && exists(parentLesson()) && validResource(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
 
     match /questionBank/{questionId} {
       allow read, create, update, delete: if isAdmin();

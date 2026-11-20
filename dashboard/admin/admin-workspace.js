@@ -14,7 +14,7 @@
     {id:'lectureRatings',label:'تقييمات المحاضرات',icon:'🌟',sections:['lectureReviewsAdminSection']},
     {id:'payroll',label:'مرتبات المعلمين',icon:'💼',sections:['teacherPayrollManagement']},
     {id:'payments',label:'المدفوعات',icon:'💳',sections:['zadVodafoneAdminPanel','manualPaymentLedger']},
-    {id:'content',label:'المحتوى',icon:'⚙️',sections:['contentManagement']},
+    {id:'content',label:'المحتوى',icon:'⚙️',sections:['lessonResourcesManagement','contentManagement']},
     {id:'logs',label:'سجلات وتقارير',icon:'📊',sections:['loginLogsManagement']},
     {id:'reviews',label:'التقييمات',icon:'⭐',sections:['weeklyReviewsAdmin']},
     {id:'other',label:'الإشعارات',icon:'🔔',sections:['zadActivityAlerts','adminNotificationsManagement']}

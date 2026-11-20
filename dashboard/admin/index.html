@@ -554,6 +554,28 @@ onAuthStateChanged(auth, async (user) => {
          CONTENT MANAGEMENT
     ====================================================== -->
 
+    <section class="card" id="lessonResourcesManagement">
+      <div class="actions" style="justify-content:space-between;align-items:start">
+        <div>
+          <h2>صفحات الحصص</h2>
+          <p>اربط الحصة المجدولة بملخص أو بامتحان إلكتروني.</p>
+        </div>
+        <button class="btn" type="button" id="loadLessonResources" disabled>عرض الحصص</button>
+      </div>
+      <form class="admin-form" id="lessonResourcesForm" hidden>
+        <div class="grid" style="margin-top:12px">
+          <label>الحصة<select id="lessonResourceId" required></select></label>
+          <label>رابط الملخص (اختياري)<input id="lessonResourceSummaryUrl" type="url" maxlength="2048" placeholder="https://"></label>
+          <label>رابط الامتحان (اختياري)
+            <input id="lessonResourceExamUrl" list="lessonResourceExamExamples" maxlength="2048" placeholder="اختار من الأمثلة أو الصق رابط الامتحان">
+            <datalist id="lessonResourceExamExamples"></datalist>
+          </label>
+        </div>
+        <button type="submit" id="saveLessonResources" class="btn gold" disabled>حفظ الروابط</button>
+      </form>
+      <p id="lessonResourceStatus" role="status"></p>
+    </section>
+
     <section
       class="card"
       id="contentManagement"
@@ -4059,7 +4081,8 @@ guard('admin', async () => {
 <!-- ملفات مستقلة كانت غير مُحمّلة بسبب انقطاع نهاية الصفحة -->
 <script type="module" src="admin-activity-alerts.js"></script>
 <script type="module" src="admin-enhancements.js"></script>
-<script type="module" src="admin-workspace.js?v=20261112-lecture-ratings1"></script>
+<script type="module" src="admin-workspace.js?v=20261120-lesson1"></script>
+<script type="module" src="lesson-resources-admin.js?v=20261120-lesson1"></script>
 <script type="module" src="attendance-admin.js?v=20261116-english"></script>
 <link rel="stylesheet" href="lecture-reviews-share.css?v=20261113-share2">
 <script type="module" src="lecture-reviews-admin.js?v=20261113-share2"></script>

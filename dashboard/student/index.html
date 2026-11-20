@@ -506,9 +506,11 @@ if(!container.children.length)container.textContent='لا توجد كتب محف
 <script type="module">
 
 import {getPreviewContext} from '../admin-preview-core.js';
-import { lessonRatingId, lessonOpenId, validLessonRating } from './lesson-interactions.js';
+import {lessonRatingId, validLessonRating} from './lesson-interactions.js';
+import {lessonPageUrl} from '../lesson-page-links.js?v=20261120-lesson1';
+import {openLessonMeet} from './lesson-meet.js?v=20261120-lesson1';
 import {lessonForStudent, lessonPhase, lessonStartMs, webUrl} from './student-today-core.js?v=20261120-today1';
-import './student-today.js?v=20261120-today1';
+import './student-today.js?v=20261120-lesson1';
 import {
     auth,
     db
@@ -666,9 +668,7 @@ function updateMeetControls() {
             : phase === 'past' ? 'انتهى وقت دخول المحاضرة'
             : phase === 'upcoming' ? 'الدخول متاح قبل الموعد بـ١٥ دقيقة' : '';
     });
-    liveLessonsList?.querySelectorAll('[data-practice-after]').forEach(link => {
-        link.hidden = lessonPhase(Number(link.dataset.practiceAfter), now) !== 'past';
-    });
+
 }
 setInterval(updateMeetControls, 1000);
 
@@ -740,31 +740,7 @@ async function openMeet(lesson, uid) {
     const phase = lessonPhase(lesson.startMs);
     if (currentStudentUid !== uid || phase === 'upcoming' || phase === 'past') return;
 
-    // A click is an opening event, NOT proof of attending the lesson.
-    // Open Meet immediately; Firestore must never hold the student on a blank tab.
-    const meetWindow = window.open('about:blank', '_blank');
-    const logVisit = (auth.currentUser?.uid === uid)
-        ? setDoc(doc(db, 'lessonOpenEvents', lessonOpenId(uid, lesson.id)), {
-            lessonId: lesson.id,
-            studentUid: uid,
-            lessonTitle: String(lesson.title || lesson.name || '').slice(0, 160),
-            action: 'meet_open',
-            openedAt: serverTimestamp()
-          }).catch(error => {
-            // Reopening the same lesson is intentionally not another event.
-            // A permissions error may also mean the new rules haven't been published.
-            console.warn('تعذر تسجيل محاولة فتح Google Meet (لا يؤثر على الدخول):', error.code || error.message);
-          })
-        : Promise.resolve();
-
-    if (meetWindow && !meetWindow.closed) {
-        meetWindow.opener = null;
-        meetWindow.location.replace(meetUrl);
-    } else {
-        // Fallback on browsers that block new windows: allow a short logging window.
-        await Promise.race([logVisit, new Promise(resolve => setTimeout(resolve, 900))]);
-        window.location.href = meetUrl;
-    }
+    await openLessonMeet(lesson, uid);
 }
 
 
@@ -933,8 +909,7 @@ async function loadLiveLessons(
 
                     </button>
 
-                    <a class="btn" href="../../sections/tests/code-exams.html"
-                       data-practice-after="${lesson.startMs}" hidden>حل امتحانًا إلكترونيًا</a>
+                    <a class="btn" href="${esc(lessonPageUrl(lesson.id))}">صفحة الحصة</a>
 
                 </div>
 
@@ -1525,6 +1500,6 @@ const box=document.getElementById('zad-my-questions');onAuthStateChanged(auth,as
   <button type="button" data-stage4-open="progress">📊 <span>تقدمي</span></button>
   <button type="button" data-stage4-open="notifications">🔔 <span>التنبيهات</span></button>
 </nav>
-<script type="module" src="stage4-student.js?v=20261120-today1"></script>
+<script type="module" src="stage4-student.js?v=20261120-lesson1"></script>
 </body>
 </html>

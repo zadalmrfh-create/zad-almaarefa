@@ -1,0 +1,74 @@
+.lesson-page {
+  width: min(100% - 32px, 930px);
+  margin: 0 auto;
+  padding: 22px 0 36px;
+}
+
+.lesson-page [hidden] { display: none !important; }
+
+.lesson-page-bar,
+.lesson-page-meet {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.lesson-page-bar { margin-bottom: 20px; }
+
+.lesson-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  color: #f8fafc;
+  text-decoration: none;
+  font-weight: 800;
+}
+
+.lesson-brand img { width: 39px; height: 39px; object-fit: contain; }
+
+.lesson-main {
+  padding: clamp(22px, 4vw, 40px);
+  border: 1px solid #3f5577;
+  border-inline-start: 4px solid #e5bd3d;
+  border-radius: 20px;
+  background: radial-gradient(ellipse at 0 0, #2a4165, transparent 58%), #12243d;
+}
+
+.lesson-main h1 {
+  margin: 5px 0 8px;
+  font-size: clamp(1.6rem, 4vw, 2.6rem);
+  line-height: 1.42;
+  overflow-wrap: anywhere;
+}
+.lesson-page-subject { color: #f5d76e; font-weight: 800; }
+.lesson-page-meta { color: #c4d1e3; margin: 0; overflow-wrap: anywhere; }
+.lesson-page-meet { margin-top: 24px; padding-top: 18px; border-top: 1px solid #3f5577; }
+.lesson-page-meet p { margin: 0; }
+
+.lesson-page-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 13px;
+  margin-top: 15px;
+}
+
+.lesson-page-panel {
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid #32465f;
+  border-radius: 15px;
+  background: #142238;
+}
+.lesson-page-panel h2 { font-size: 1.12rem; margin: 0 0 8px; }
+.lesson-page-panel p { color: #c4d1e3; margin: 0 0 12px; overflow-wrap: anywhere; }
+.lesson-page-panel p:last-child { margin-bottom: 0; }
+.lesson-page-result { grid-column: 1 / -1; }
+.lesson-page-panel .lesson-page-score { color: #f5d76e; font-size: 1.7rem; font-weight: 900; }
+.lesson-page .btn { min-height: 44px; }
+.lesson-page a:focus-visible, .lesson-page button:focus-visible { outline: 2px solid #f5d76e; outline-offset: 3px; }
+
+@media (max-width: 620px) {
+  .lesson-page-grid { grid-template-columns: 1fr; }
+  .lesson-page-meet { flex-wrap: wrap; align-items: flex-start; }
+}
