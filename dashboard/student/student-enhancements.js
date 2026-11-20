@@ -11,6 +11,7 @@ let profile = {};
 let attendance = [];
 let studentPayments = [];
 let paymentsLoaded = false;
+let bookingState = 'loading';
 let attendanceLoadError = '';
 let paymentsLoadError = '';
 let dashboardGeneration = 0;
@@ -78,6 +79,7 @@ async function loadDashboardData(){
   paymentsLoadError=payR.status==='rejected'?describeLoadError(payR.reason,'المدفوعات'):'';
   attendance=attR.status==='fulfilled'?attR.value.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>dateKey(b.createdAt||b.date||b.openedAt)-dateKey(a.createdAt||a.date||a.openedAt)):[];
   paymentsLoaded=payR.status==='fulfilled';
+  bookingState=bookR.status==='fulfilled'?'ready':'error';
   studentPayments=paymentsLoaded?payR.value.docs.map(d=>({id:d.id,...d.data()})):[];
   notes=notesR.status==='fulfilled'?notesR.value.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>dateKey(b.createdAt)-dateKey(a.createdAt)):[];
   bookings=bookR.status==='fulfilled'?bookR.value.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>dateKey(b.createdAt)-dateKey(a.createdAt)):[];
@@ -108,6 +110,9 @@ function renderDashboard(){
   const unread=notifications.filter(n=>!(Array.isArray(n.readBy)&&n.readBy.includes(uid))).length;
   const confirmed=bookings.filter(b=>['تم الحجز','مكتمل','مؤكد'].includes(b.status)).length;
   window.dispatchEvent(new CustomEvent('zad:stage4-dashboard-data',{detail:{
+    uid, bookingState,
+    financeState:paymentsLoaded&&!attendanceLoadError?'ready':'error',
+    due:paymentsLoaded&&!attendanceLoadError?credits.unpaidAfterPiastres:null,
     attendance:rows.map(x=>({status:x.status,date:x.date||'',deleted:x.deleted===true})),
     bookings:bookings.map(x=>({status:x.status,subject:x.subject||'',preferredDay1:x.preferredDay1||'',preferredDay2:x.preferredDay2||''})),
     unreadNotifications:unread,teacherNotes:notes.length,
@@ -231,7 +236,13 @@ $('zadCopyStudentUid')?.addEventListener('click',async()=>{
 window.addEventListener('zad:payments-updated',()=>{if(uid)loadDashboardData().catch(console.error);});
 window.addEventListener('zad:stage4-refresh-student',()=>{if(uid)loadDashboardData().catch(error=>console.warn('تعذر تحديث لوحة الطالب',error));});
 onAuthStateChanged(auth,async user=>{
-  if(!user)return;const pv=await getPreviewContext(user,'student');if(pv.denied)return;uid=pv.uid;
-  try{const snap=await getDoc(doc(db,'users',uid));if(snap.exists())fill(snap.data());else setStatus('لم يتم العثور على بيانات حسابك في قاعدة البيانات.');await loadDashboardData();}
+  dashboardGeneration++;
+  uid='';
+  if(!user)return;
+  const pv=await getPreviewContext(user,'student');
+  if(pv.denied||auth.currentUser?.uid!==user.uid)return;
+  uid=pv.uid;
+  try{const snap=await getDoc(doc(db,'users',pv.uid));if(auth.currentUser?.uid!==user.uid)return;if(snap.exists())fill(snap.data());else setStatus('لم يتم العثور على بيانات حسابك في قاعدة البيانات.');}
   catch(error){console.error('Student enhancements:',error);setStatus('تعذر تحميل بيانات الحساب.');}
+  if(auth.currentUser?.uid===user.uid&&uid===pv.uid)await loadDashboardData();
 });

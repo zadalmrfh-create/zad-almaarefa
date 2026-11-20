@@ -3,6 +3,7 @@ import {getPreviewContext} from '../admin-preview-core.js';
 import {auth,db} from '../../firebase-config.js';
 import {onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
 import {collection,query,where,onSnapshot} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
+import {dateMs} from './student-today-core.js?v=20261120-today1';
 const box=document.getElementById('zad-student-exam-results');const stats=document.getElementById('zad-results-stats');
 const node=(tag,cls,text)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(text!==undefined)e.textContent=text;return e;};
 const safeNumber=v=>Number.isFinite(Number(v))?Number(v):0;
@@ -48,4 +49,91 @@ function render(items){
   });
 }
 
-onAuthStateChanged(auth,async user=>{if(!user){stats.replaceChildren();box.replaceChildren(node('div','zad-results-empty','سجّل دخولك لعرض نتائج امتحاناتك.'));return;}onSnapshot(query(collection(db,'codeExamResults'),where('studentUid','==',(await getPreviewContext(user,'student')).uid)),snap=>render(snap.docs.map(d=>d.data())),e=>{box.replaceChildren(node('div','zad-results-empty','تعذر عرض النتائج: '+e.message));});});
+const number = new Intl.NumberFormat('ar-EG');
+const staticExams = [
+  {source:'unitOneExamAttempts', bank:'../../exams/unit1/bank.json', page:'unit-one-exam.html'},
+  {source:'zad_exam_submissions', bank:'../../exams/zad-special/bank.json', page:'zad-special-exam.html'}
+];
+const bankTitles = new Map();
+
+function getBankTitles(path) {
+  if (!bankTitles.has(path)) {
+    const titles = fetch(path).then(response => {
+      if (!response.ok) throw Error('تعذر تحميل أسماء الامتحانات');
+      return response.json();
+    }).then(bank => new Map((bank.exams || []).map(exam => [exam.id, exam.title || exam.name])))
+      .catch(() => { bankTitles.delete(path); return new Map(); });
+    bankTitles.set(path, titles);
+  }
+  return bankTitles.get(path);
+}
+
+function publishSummary(uid, source, state, items = []) {
+  window.dispatchEvent(new CustomEvent('zad:student-today-results', {detail:{uid, source, state, items}}));
+}
+
+function scoreLabel(score, total) {
+  if (!Number.isFinite(score) || !Number.isFinite(total) || total <= 0 || score < 0 || score > total) return '';
+  return number.format(score) + ' من ' + number.format(total);
+}
+
+function updatedAt(result) {
+  return dateMs(result.reviewedAt) || dateMs(result.verifiedAt) || dateMs(result.createdAt) || 0;
+}
+
+let generation = 0;
+let subscriptions = [];
+onAuthStateChanged(auth, async user => {
+  const request = ++generation;
+  for (const unsubscribe of subscriptions) unsubscribe();
+  subscriptions = [];
+  if (!user) {
+    stats.replaceChildren();
+    box.replaceChildren(node('div','zad-results-empty','سجّل دخولك لعرض نتائج امتحاناتك.'));
+    return;
+  }
+  const context = await getPreviewContext(user,'student');
+  if (context.denied || request !== generation || user.uid !== auth.currentUser?.uid) return;
+  const uid = context.uid;
+  const scoped = source => query(collection(db, source), where('studentUid', '==', uid));
+  const active = () => request === generation && user.uid === auth.currentUser?.uid;
+  box.textContent = 'جارٍ تحميل النتائج…';
+  stats.replaceChildren();
+
+  subscriptions.push(onSnapshot(scoped('codeExamResults'), snapshot => {
+    if (!active()) return;
+    const results = snapshot.docs.map(document => document.data());
+    render(results);
+    publishSummary(uid, 'codeExamResults', 'ready', results.map(result => {
+      const grade = codeExamProgress(result);
+      return {title:result.examTitle || 'امتحان إلكتروني', updated:updatedAt(result),
+        label:grade.pendingEssay ? 'بانتظار تصحيح المقالي' : scoreLabel(grade.score, grade.total) || 'تم التسليم'};
+    }));
+  }, error => {
+    if (!active()) return;
+    publishSummary(uid, 'codeExamResults', 'error');
+    box.replaceChildren(node('div','zad-results-empty','تعذر عرض النتائج: '+error.message));
+  }));
+
+  for (const {source, bank, page} of staticExams) {
+    let latestSnapshot = 0;
+    subscriptions.push(onSnapshot(scoped(source), async snapshot => {
+      const sequence = ++latestSnapshot;
+      if (!active()) return;
+      const titles = snapshot.empty ? new Map() : await getBankTitles(bank);
+      if (!active() || sequence !== latestSnapshot) return;
+      publishSummary(uid, source, 'ready', snapshot.docs.map(document => {
+        const result = document.data();
+        return {
+          title: titles.get(result.examId) || 'امتحان إلكتروني',
+          updated: updatedAt(result),
+          label: scoreLabel(result.finalScore, result.answers?.length) || 'بانتظار التصحيح',
+          href: context.active || !result.examId ? '' : '../../sections/tests/' + page + '?id=' + encodeURIComponent(result.examId)
+        };
+      }));
+    }, () => {
+      latestSnapshot++;
+      if (active()) publishSummary(uid, source, 'error');
+    }));
+  }
+});

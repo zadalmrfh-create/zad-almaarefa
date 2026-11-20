@@ -1,0 +1,109 @@
+.student-today {
+  margin-bottom: 22px;
+  display: grid;
+  gap: 10px;
+}
+
+.student-today-lead {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 24px;
+  padding: clamp(22px, 5vw, 46px);
+  min-height: 210px;
+  background: radial-gradient(ellipse at 0 0, #263d62 0%, transparent 58%),
+    linear-gradient(148deg, #192e4f, #102037 76%);
+  border: 1px solid #354e74;
+  border-radius: 22px;
+}
+
+.student-today-lead::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset-block: 0;
+  inset-inline-start: 0;
+  width: 4px;
+  background: var(--gold, #e5bd3d);
+}
+
+.student-today[data-phase="available"] .student-today-lead::before { background: #74dfb3; }
+.student-today[data-phase="available"] .student-today-status { color: #9aecd0; }
+
+.student-today-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--gold2, #f5d76e);
+  font-weight: 800;
+  font-size: .86rem;
+}
+
+.student-today-status::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.student-today-lead h2 {
+  margin: 10px 0 0;
+  font-size: clamp(1.4rem, 3.2vw, 2.15rem);
+  line-height: 1.5;
+  color: #f8fafc;
+  overflow-wrap: anywhere;
+}
+
+.student-today-lead p {
+  margin: 8px 0 0;
+  color: #c4d1e3;
+  line-height: 1.7;
+}
+
+.student-today-lead p:empty { display: none; }
+.student-today-lead .btn { flex: 0 0 auto; padding-inline: 18px; min-height: 48px; }
+.student-today-lead .btn:disabled { opacity: .62; cursor: default; }
+
+.student-today-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.student-today-summary button {
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+  padding: 14px 16px;
+  border: 1px solid #32465f;
+  border-radius: 14px;
+  background: #142238;
+  color: #d3dcea;
+  text-align: start;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.student-today-summary button:hover { border-color: #c6a348; }
+.student-today button:focus-visible { outline: 2px solid #f5d76e; outline-offset: 3px; }
+.student-today-summary span { font-size: .8rem; }
+.student-today-summary strong { color: #f8fafc; font-size: 1rem; }
+.student-today-summary small { font-size: .76rem; color: #b5c5d9; }
+.student-today-summary strong, .student-today-summary small { overflow-wrap: anywhere; }
+[data-student-lesson-id], #liveLessonsCard, #zad-results-heading { scroll-margin-top: 105px; }
+
+@media (max-width: 640px) {
+  .student-today-lead { flex-direction: column; align-items: stretch; gap: 17px; min-height: auto; }
+  .student-today-summary { gap: 6px; }
+  .student-today-summary button { padding: 10px 7px; }
+  .student-today-summary strong { font-size: .86rem; }
+  .student-today-summary small { font-size: .7rem; }
+}
+
+@media (max-width: 320px) {
+  .student-today-summary { grid-template-columns: 1fr; }
+}

@@ -73,6 +73,7 @@
     gap:8px;
     margin-top:14px
 }
+.lesson-actions [hidden]{display:none}
 @media(max-width:760px){
     .live-lessons-grid{
         grid-template-columns:1fr
@@ -104,6 +105,7 @@
 </style>
 <link rel="stylesheet" href="../vodafone-payment.css">
 <link rel="stylesheet" href="stage4-student.css?v=20261114-stage4a">
+<link rel="stylesheet" href="student-today.css?v=20261120-today1">
 </head>
 
 <body>
@@ -218,12 +220,22 @@
     </nav>
 
     <section class="student-panel active" data-student-panel="overview">
-<section class="card" style="margin-bottom:16px;background:linear-gradient(135deg,rgba(201,168,76,.16),rgba(124,111,205,.09))"><div class="actions" style="justify-content:space-between;align-items:center"><div><small style="color:var(--gold)">مركز التعلم</small><h2 id="smartStudentWelcome" style="margin:4px 0">أهلًا بك 👋</h2><p style="color:var(--muted);margin:0">أكمل من حيث توقفت وتابع نشاطك في مكان واحد.</p></div><a class="btn gold" href="../../sections/library.html">📚 افتح المكتبة</a></div><div style="margin-top:15px"><div style="display:flex;justify-content:space-between;font-size:12px"><span>تقدم نشاطك</span><b id="smartProgressText">0%</b></div><div style="height:9px;background:rgba(148,163,184,.16);border-radius:99px;overflow:hidden;margin-top:6px"><span id="smartProgressBar" style="display:block;height:100%;width:0;background:var(--gold);border-radius:99px"></span></div></div></section>
-
-    <section class="zad-stage4-next" id="zadStage4NextLesson" role="status" aria-live="polite">
-      <span>🗓️ جدول الحصص</span><strong>اضغط «جدول حصصي» لمتابعة مواعيدك الحقيقية.</strong>
-      <button class="btn" type="button" data-stage4-open="schedule">فتح الجدول</button>
+    <section class="student-today" id="studentToday" aria-labelledby="studentTodayTitle" data-phase="loading">
+      <div class="student-today-lead">
+        <div aria-live="polite" aria-atomic="true">
+          <span class="student-today-status" id="studentTodayStatus">جدول الحصص</span>
+          <h2 id="studentTodayTitle">بنحمّل مواعيد حصصك</h2>
+          <p id="studentTodayDetail"></p>
+        </div>
+        <button class="btn gold" type="button" id="studentTodayAction" disabled>افتح الجدول</button>
+      </div>
+      <div class="student-today-summary" role="group" aria-label="ملخص حساب الطالب">
+        <button type="button" data-today-summary="exam" disabled><span>آخر نتيجة امتحان</span><strong>جارٍ التحميل</strong><small>عرض سجل الامتحانات</small></button>
+        <button type="button" data-today-summary="bookings" disabled><span>الحجوزات</span><strong>جارٍ التحميل</strong><small>عرض طلبات الحجز</small></button>
+        <button type="button" data-today-summary="payments" disabled><span>المبلغ المستحق</span><strong>جارٍ التحميل</strong><small>عرض المدفوعات</small></button>
+      </div>
     </section>
+<section class="card" style="margin-bottom:16px;background:linear-gradient(135deg,rgba(201,168,76,.16),rgba(124,111,205,.09))"><div class="actions" style="justify-content:space-between;align-items:center"><div><small style="color:var(--gold)">مركز التعلم</small><h2 id="smartStudentWelcome" style="margin:4px 0">أهلًا بك 👋</h2><p style="color:var(--muted);margin:0">أكمل من حيث توقفت وتابع نشاطك في مكان واحد.</p></div><a class="btn gold" href="../../sections/library.html">📚 افتح المكتبة</a></div><div style="margin-top:15px"><div style="display:flex;justify-content:space-between;font-size:12px"><span>تقدم نشاطك</span><b id="smartProgressText">0%</b></div><div style="height:9px;background:rgba(148,163,184,.16);border-radius:99px;overflow:hidden;margin-top:6px"><span id="smartProgressBar" style="display:block;height:100%;width:0;background:var(--gold);border-radius:99px"></span></div></div></section>
 
     <section class="stats-grid">
         <div class="card stat-card"><span>✅</span><strong id="studentAttendanceCount">0</strong><small>سجلات حضوري</small></div>
@@ -435,7 +447,7 @@ if(!container.children.length)container.textContent='لا توجد كتب محف
         </div>
 
     </section>
-    <section class="card student-panel" data-student-panel="lessons" id="liveLessonsCard">
+    <section class="card student-panel" data-student-panel="lessons" id="liveLessonsCard" tabindex="-1">
 
         <div class="actions" style="justify-content:space-between">
 
@@ -491,13 +503,12 @@ if(!container.children.length)container.textContent='لا توجد كتب محف
 </div>
 
 
-<script>
-const tick=()=>{document.querySelectorAll('.lesson-countdown').forEach(el=>{const d=new Date(el.dataset.lessonDate||'');if(Number.isNaN(d.getTime()))return;const diff=d.getTime()-Date.now();if(diff>0){const s=Math.floor(diff/1000),h=Math.floor(s/3600),m=Math.floor(s%3600/60),sec=s%60;el.textContent=`⏳ تبدأ خلال ${h?String(h).padStart(2,'0')+':':''}${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;}else if(diff>-3600000){el.textContent='🟢 المحاضرة جارية الآن';}else{el.textContent='⚪ انتهت المحاضرة';}});document.querySelectorAll('.meet-btn[data-start]').forEach(btn=>{const d=new Date(btn.dataset.start||'');if(Number.isNaN(d.getTime()))return;const diff=d.getTime()-Date.now();const allowed=diff<=15*60000&&diff>-60*60000;btn.disabled=!allowed;if(!allowed){btn.title=diff>0?'سيظهر زر الدخول قبل الموعد بـ15 دقيقة':'انتهى وقت الدخول لهذه المحاضرة';}})};setInterval(tick,1000);tick();
-</script>
 <script type="module">
 
 import {getPreviewContext} from '../admin-preview-core.js';
 import { lessonRatingId, lessonOpenId, validLessonRating } from './lesson-interactions.js';
+import {lessonForStudent, lessonPhase, lessonStartMs, webUrl} from './student-today-core.js?v=20261120-today1';
+import './student-today.js?v=20261120-today1';
 import {
     auth,
     db
@@ -529,6 +540,7 @@ import {
 
 /* معرّف الطالب الحالي: لازم يتعرّف قبل استعماله داخل JavaScript module */
 let currentStudentUid = null;
+let lessonLoadGeneration = 0;
 
 /* أي طلب Firestore بطيء لا يترك الواجهة في حالة تحميل بلا نهاية */
 function studentRequest(promise, label, ms = 10000) {
@@ -632,8 +644,33 @@ async function loadMyBookings(uid) {
    LIVE GOOGLE MEET
 ========================================================= */
 
-const liveLessonsList =
-    document.getElementById('liveLessonsList');
+const liveLessonsList = document.getElementById('liveLessonsList');
+
+function updateMeetControls() {
+    const now = Date.now();
+    liveLessonsList?.querySelectorAll('[data-lesson-date]').forEach(label => {
+        const start = Number(label.dataset.lessonDate);
+        const phase = lessonPhase(start, now);
+        const seconds = Math.max(0, Math.floor((start - now) / 1000));
+        const minutes = Math.floor(seconds / 60);
+        const time = [Math.floor(minutes / 60), minutes % 60, seconds % 60].map(value => String(value).padStart(2, '0')).join(':');
+        label.textContent = phase === 'unknown' ? 'الموعد غير محدد'
+            : phase === 'past' ? 'انتهت المحاضرة'
+            : now < start ? 'تبدأ خلال ' + time : 'المحاضرة جارية الآن';
+    });
+    liveLessonsList?.querySelectorAll('.meet-btn[data-start]').forEach(button => {
+        const phase = lessonPhase(Number(button.dataset.start), now);
+        const hasLink = button.dataset.canJoin === 'true';
+        button.disabled = !hasLink || phase === 'upcoming' || phase === 'past';
+        button.title = !hasLink ? 'رابط الحصة غير متاح' : phase === 'unknown' ? 'الموعد غير محدد'
+            : phase === 'past' ? 'انتهى وقت دخول المحاضرة'
+            : phase === 'upcoming' ? 'الدخول متاح قبل الموعد بـ١٥ دقيقة' : '';
+    });
+    liveLessonsList?.querySelectorAll('[data-practice-after]').forEach(link => {
+        link.hidden = lessonPhase(Number(link.dataset.practiceAfter), now) !== 'past';
+    });
+}
+setInterval(updateMeetControls, 1000);
 
 /* =========================================================
    حماية النصوص
@@ -677,6 +714,7 @@ function lessonDate(value) {
             : d.toLocaleString(
                 'ar-EG',
                 {
+                    timeZone:'Africa/Cairo',
                     dateStyle:'medium',
                     timeStyle:'short'
                 }
@@ -697,8 +735,10 @@ function lessonDate(value) {
 ========================================================= */
 
 async function openMeet(lesson, uid) {
-    const meetUrl = lesson.meetUrl || lesson.meetLink || lesson.googleMeetUrl || lesson.googleMeet;
+    const meetUrl = lesson.joinUrl;
     if (!meetUrl) { alert('رابط Google Meet غير موجود لهذه المحاضرة.'); return; }
+    const phase = lessonPhase(lesson.startMs);
+    if (currentStudentUid !== uid || phase === 'upcoming' || phase === 'past') return;
 
     // A click is an opening event, NOT proof of attending the lesson.
     // Open Meet immediately; Firestore must never hold the student on a blank tab.
@@ -718,6 +758,7 @@ async function openMeet(lesson, uid) {
         : Promise.resolve();
 
     if (meetWindow && !meetWindow.closed) {
+        meetWindow.opener = null;
         meetWindow.location.replace(meetUrl);
     } else {
         // Fallback on browsers that block new windows: allow a short logging window.
@@ -737,6 +778,7 @@ async function loadLiveLessons(
 ) {
 
     if (!liveLessonsList) return;
+    const generation = ++lessonLoadGeneration;
 
 
     liveLessonsList.innerHTML =
@@ -753,6 +795,7 @@ async function loadLiveLessons(
             : Promise.resolve(null);
         const snap = await studentRequest(getDocs(collection(db, 'lessons')), 'المحاضرات');
         const oldRatings = await oldRatingsPromise;
+        if (currentStudentUid !== uid || generation !== lessonLoadGeneration) return;
         const ratedLessonIds = new Set(oldRatings ? oldRatings.docs.map(d => String(d.data().lessonId || '')) : []);
 
 
@@ -767,20 +810,12 @@ async function loadLiveLessons(
             };
 
 
-            /*
-               لو المحاضرة محددة لصف معين،
-               نظهرها لهذا الصف فقط.
-            */
-
-            const targeted = x.audience === 'selected'
-                ? Array.isArray(x.targetUids) && x.targetUids.includes(uid)
-                : true;
-
-            if (
-                targeted &&
-                (!x.grade || !grade || String(x.grade).trim() === String(grade).trim())
-            ) {
-                lessons.push(x);
+            if (lessonForStudent(x, uid, grade)) {
+                lessons.push({
+                    ...x,
+                    startMs: lessonStartMs(x.date),
+                    joinUrl: webUrl(x.meetUrl || x.meetLink || x.googleMeetUrl || x.googleMeet)
+                });
             }
 
         });
@@ -794,6 +829,17 @@ async function loadLiveLessons(
                     )
         );
 
+
+        window.dispatchEvent(new CustomEvent('zad:student-today-lessons', {detail: {
+            uid, state: 'ready', lessons: lessons.map(lesson => ({
+                id: lesson.id,
+                start: lesson.startMs,
+                title: lesson.title || lesson.name || lesson.subject || 'محاضرة مباشرة',
+                teacher: lesson.teacherName || lesson.teacher || '',
+                canJoin: Boolean(lesson.joinUrl),
+                join: () => openMeet(lesson, uid)
+            }))
+        }}));
 
         if (!lessons.length) {
 
@@ -820,6 +866,8 @@ async function loadLiveLessons(
 
             card.className =
                 'card live-lesson';
+            card.dataset.studentLessonId = lesson.id;
+            card.tabIndex = -1;
 
 
             const title =
@@ -837,14 +885,6 @@ async function loadLiveLessons(
             const teacher =
                 lesson.teacherName ||
                 lesson.teacher ||
-                '';
-
-
-            const meetUrl =
-                lesson.meetUrl ||
-                lesson.meetLink ||
-                lesson.googleMeetUrl ||
-                lesson.googleMeet ||
                 '';
 
 
@@ -866,14 +906,14 @@ async function loadLiveLessons(
                     </span>
 
                     <span>
-                        📅 ${lessonDate(lesson.date)}
+                        📅 ${Number.isFinite(lesson.startMs) ? lessonDate(lesson.startMs) : 'الموعد غير محدد'}
                     </span>
 
                 </div>
                 <p>يمكنك دخول المحاضرة في موعدها من زر Google Meet.</p>
 
 
-                <div class="lesson-countdown" data-lesson-date="${esc(lesson.date||'')}">⏳ حساب الوقت…</div>
+                <div class="lesson-countdown" data-lesson-date="${lesson.startMs}">⏳ حساب الوقت…</div>
 
                 <div class="lesson-actions">
 
@@ -883,18 +923,18 @@ async function loadLiveLessons(
                     <button
                         class="btn meet-btn"
                         type="button"
-                        data-start="${esc(lesson.date||'')}"
-                        ${
-                            !meetUrl
-                                ? 'disabled'
-                                : ''
-                        }
+                        data-start="${lesson.startMs}"
+                        data-can-join="${Boolean(lesson.joinUrl)}"
+                        ${!lesson.joinUrl ? 'disabled' : ''}
                     >
 
                         🎥
                         دخول Google Meet
 
                     </button>
+
+                    <a class="btn" href="../../sections/tests/code-exams.html"
+                       data-practice-after="${lesson.startMs}" hidden>حل امتحانًا إلكترونيًا</a>
 
                 </div>
 
@@ -982,9 +1022,11 @@ async function loadLiveLessons(
             );
 
         }
-
+        updateMeetControls();
 
     } catch (e) {
+        if (currentStudentUid !== uid || generation !== lessonLoadGeneration) return;
+        window.dispatchEvent(new CustomEvent('zad:student-today-lessons', {detail: {uid, state: 'error', lessons: []}}));
 
         console.error(e);
 
@@ -1074,6 +1116,8 @@ onAuthStateChanged(
 
 
         if (!user) {
+            currentStudentUid = null;
+            window.dispatchEvent(new CustomEvent('zad:student-today-account', {detail: {uid: ''}}));
 
             window.location.href =
                 '../../login/index.html';
@@ -1085,19 +1129,21 @@ onAuthStateChanged(
 
         // يستعمل الأدمن نفس جلسة تسجيل الدخول لمعاينة حساب طالب، للقراءة فقط.
         const preview = await getPreviewContext(user,'student');
+        if (auth.currentUser?.uid !== user.uid) return;
         if(preview.denied){location.replace('../admin/index.html');return;}
         const displayUid = preview.active ? preview.uid : user.uid;
         // الاسم والبريد يُعرضان أولًا حتى لو فشلت قراءة الملف الشخصي.
         currentStudentUid = displayUid;
+        window.currentStudentGrade = '';
+        window.dispatchEvent(new CustomEvent('zad:student-today-account', {detail: {uid: displayUid}}));
         if (nameElem) nameElem.textContent = (preview.active ? (preview.profile.fullName || preview.profile.name) : user.displayName) || (user.email ? user.email.split('@')[0] : 'الطالب');
         if (emailElem) emailElem.textContent = preview.active ? (preview.profile.email || '') : (user.email || '');
         if (loadingElem) loadingElem.style.display = 'none';
-        // تحميل الحجوزات والمحاضرات مباشرة، دون انتظار ملف المستخدم.
         void loadMyBookings(displayUid).catch(error => console.warn('Bookings unavailable:', error));
-        void loadLiveLessons(displayUid, '').catch(error => console.warn('Lessons unavailable:', error));
         try {
 
             const snap = await studentRequest(getDoc(doc(db, 'users', displayUid)), 'ملف الطالب');
+            if (auth.currentUser?.uid !== user.uid || currentStudentUid !== displayUid) return;
 
 
             const profile =
@@ -1111,7 +1157,7 @@ onAuthStateChanged(
 
 
             window.currentStudentGrade =
-                profile.grade || '';
+                profile.grade || profile.studyGrade || profile.className || '';
 
 
             if (snap.exists() && (profile.fullName || profile.name || profile.displayName)) {
@@ -1148,13 +1194,6 @@ onAuthStateChanged(
             }
 
 
-            // تحميل كل قسم مستقل حتى لا يُعلق الترحيب بسبب طلب شبكة بطيء.
-            // المحاضرات أعيد تحميلها بعد معرفة صف الطالب لتطبيق فلتر الصف.
-            if (window.currentStudentGrade) {
-                void loadLiveLessons(displayUid, window.currentStudentGrade).catch(console.warn);
-            }
-
-
         } catch (err) {
 
             console.error('تعذر تحميل بيانات حساب الطالب:', err);
@@ -1162,6 +1201,10 @@ onAuthStateChanged(
             if (loadingElem) {
                 loadingElem.style.display = 'block';
                 loadingElem.textContent = 'تعذر تحديث بيانات الملف الشخصي: ' + (err.code || err.message) + '. الحجوزات والمحاضرات يتم تحميلها بشكل مستقل.';
+            }
+        } finally {
+            if (auth.currentUser?.uid === user.uid && currentStudentUid === displayUid) {
+                void loadLiveLessons(displayUid, window.currentStudentGrade);
             }
         }
 
@@ -1423,7 +1466,7 @@ document
     src="../../notifications.js"
 ></script>
 
-<script type="module" src="../student/student-enhancements.js"></script>
+<script type="module" src="student-enhancements.js?v=20261120-today1"></script>
 <script type="module" src="../student/lecture-reviews-student.js?v=20261112-latest1"></script>
 <script type="module" src="access-diagnostics.js"></script>
 <script>document.addEventListener('DOMContentLoaded',()=>{try{const recent=JSON.parse(localStorage.getItem('zadRecentBooks')||'[]');const fav=JSON.parse(localStorage.getItem('zadFavorites')||'[]');const reads=JSON.parse(localStorage.getItem('zadReadBooks')||'[]');const score=Math.min(100,(recent.length*8)+(fav.length*5)+(reads.length*12));const bar=document.getElementById('smartProgressBar'),txt=document.getElementById('smartProgressText');if(bar)bar.style.width=score+'%';if(txt)txt.textContent=score+'%';}catch(e){}});</script>
@@ -1434,12 +1477,12 @@ import {auth,db} from '../../firebase-config.js';import {onAuthStateChanged} fro
 const box=document.getElementById('zad-my-questions');onAuthStateChanged(auth,async user=>{if(!user){box.textContent='سجل دخولك لمتابعة الأسئلة.';return}const pv=await getPreviewContext(user,'student');if(pv.denied)return;onSnapshot(query(collection(db,'studyQuestions'),where('studentUid','==',pv.uid)),snap=>{box.replaceChildren();if(snap.empty){box.textContent='لم ترسل أسئلة بعد.';return}snap.docs.sort((a,b)=>(b.data().createdAt?.seconds||0)-(a.data().createdAt?.seconds||0)).forEach(it=>{let x=it.data(),p=document.createElement('div');p.style.cssText='padding:12px;border-bottom:1px solid #76663f';const q=document.createElement('strong');q.textContent=x.question||'';p.appendChild(q);const answer=document.createElement('p');answer.textContent=x.status==='answered'?'رد الإدارة: '+(x.reply||''):'⏳ بانتظار رد الإدارة';p.appendChild(answer);box.appendChild(p)})},e=>box.textContent='تعذر عرض الأسئلة: '+e.message)});
 </script>
 <section dir="rtl" class="zad-student-exam-section" aria-labelledby="zad-results-heading">
- <div class="zad-results-header"><div><span class="zad-results-eyebrow">سجل الإنجاز الدراسي</span><h2 id="zad-results-heading">نتائج امتحاناتي</h2><p>تابع نتائج امتحاناتك واطبع تقارير إجاباتك. إصدار شهادات التقدير وعرضها وتنزيلها من اختصاص الإدارة فقط.</p></div><span class="zad-results-header-icon" aria-hidden="true">📊</span></div>
+ <div class="zad-results-header"><div><span class="zad-results-eyebrow">سجل الإنجاز الدراسي</span><h2 id="zad-results-heading" tabindex="-1">نتائج امتحاناتي</h2><p>تابع نتائج امتحاناتك واطبع تقارير إجاباتك. إصدار شهادات التقدير وعرضها وتنزيلها من اختصاص الإدارة فقط.</p></div><span class="zad-results-header-icon" aria-hidden="true">📊</span></div>
  <div class="zad-results-stats" id="zad-results-stats" aria-label="ملخص النتائج"></div>
  <div class="zad-results-toolbar"><h3>سجل الامتحانات</h3><span>أحدث الامتحانات أولاً</span></div>
  <div id="zad-student-exam-results" class="zad-results-grid" aria-live="polite">جارٍ تحميل النتائج...</div>
  <p class="zad-results-disclaimer">النتائج آلية، ولا تتيح لوحة الطالب إصدار شهادات أو استلامها أو عرضها أو طباعتها. إصدار الشهادات وحفظها لدى الإدارة فقط.</p>
-</section><link rel="stylesheet" href="exam-results-student.css"><script type="module" src="exam-results-student.js?v=20261114-stage4a"></script><script type="module" src="vodafone-payment-student.js?v=20261103-sync1"></script>
+</section><link rel="stylesheet" href="exam-results-student.css"><script type="module" src="exam-results-student.js?v=20261120-today1"></script><script type="module" src="vodafone-payment-student.js?v=20261103-sync1"></script>
 <script type="module" src="../admin-switcher.js"></script>
 
 <!-- متجر زاد المعرفة: إضافة مستقلة لا تمس وظائف الأكاديمية -->
@@ -1482,6 +1525,6 @@ const box=document.getElementById('zad-my-questions');onAuthStateChanged(auth,as
   <button type="button" data-stage4-open="progress">📊 <span>تقدمي</span></button>
   <button type="button" data-stage4-open="notifications">🔔 <span>التنبيهات</span></button>
 </nav>
-<script type="module" src="stage4-student.js?v=20261114-stage4a"></script>
+<script type="module" src="stage4-student.js?v=20261120-today1"></script>
 </body>
 </html>

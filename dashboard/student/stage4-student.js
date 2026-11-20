@@ -3,7 +3,7 @@ import {auth,db} from '../../firebase-config.js';
 import {getPreviewContext} from '../admin-preview-core.js';
 import {onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
 import {doc,getDoc,getDocs,collection,query,where,limit} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
-import {cairoDay,daysAfter,weekRange,eligibleLesson,scheduleDays,studentMetrics,nextLessonLabel} from './stage4-core.js';
+import {cairoDay,weekRange,eligibleLesson,scheduleDays,studentMetrics} from './stage4-core.js';
 const $=id=>document.getElementById(id);
 const sched=$('zadStage4ScheduleList'),state=$('zadStage4ScheduleStatus'),weekLabel=$('zadStage4WeekLabel');
 const refresh=$('zadStage4Reload'),prev=$('zadStage4ThisWeek'),next=$('zadStage4NextWeek');
@@ -36,14 +36,6 @@ function showProgress(){const target=$('zadStage4ProgressCards');if(!target)retu
   ['بانتظار تصحيح المقالي',String(data.pendingEssay)]];
  for(const [label,val] of cards){const item=text('div','', 'zad-stage4-metric');item.append(text('strong',val),text('span',label));target.append(item);}
 }
-function updateBanner(lessons=[]){const box=$('zadStage4NextLesson');if(!box)return;
- const start=Date.now(),upcoming=lessons.filter(x=>{const ms=new Date(String(x.date||'')).getTime();return !Number.isNaN(ms)&&ms>start-15*60000;}).sort((a,b)=>String(a.date).localeCompare(String(b.date)));
- const title=box.querySelector('strong');if(!title)return;
- if(upcoming.length){const next=upcoming[0],d=new Date(String(next.date||'')),isToday=String(next.date).slice(0,10)===cairoDay();
-   const soon=!Number.isNaN(+d)&&d.getTime()-start<2*60*60*1000;
-   title.textContent=`${soon?'⏰ الحصة اقتربت: ':isToday?'📅 حصة اليوم: ':'📚 الحصة القادمة: '}${nextLessonLabel(next)}`;
- }else title.textContent='لا توجد محاضرات مجدولة قادمة ضمن المواعيد المحمّلة.';
-}
 function renderSchedule(items,range){sched.replaceChildren();
  let count=0;
  for(const day of scheduleDays(items,range)){
@@ -70,7 +62,6 @@ async function loadSchedule(){
   const snap=await getDocs(q);if(generation!==authGeneration)return;
   const rows=snap.docs.map(d=>({id:d.id,...d.data()})).filter(x=>eligibleLesson(x,uid,grade,range));
   renderSchedule(rows,range);
-  if(offset===0)updateBanner(rows);
   if(snap.size===160)setStatus('⚠️ تم تحميل أول 160 محاضرة فقط؛ لو جدولك أكبر من كده راجع صفحة المحاضرات أو الإدارة.');
  }catch(err){sched.replaceChildren(text('p','تعذر تحميل الجدول: '+(err.code||err.message)));setStatus('فشل التحميل؛ جرّب زر التحديث.');}
  finally{loading=false;refresh.disabled=false;prev.disabled=false;next.disabled=false;}

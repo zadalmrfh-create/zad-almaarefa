@@ -719,8 +719,9 @@ service cloud.firestore {
       // get works for missing documents too (first attempt).
       allow get: if isAdmin() || isOwnUnitOneAttempt(attemptId)
         || teacherCanReadExamStudent(resource.data.studentUid);
-      // Teacher queries must be scoped to their explicitly linked student UIDs.
-      allow list: if isAdmin() || teacherCanReadExamStudent(resource.data.studentUid);
+      allow list: if isAdmin()
+        || (signedIn() && resource.data.studentUid == request.auth.uid)
+        || teacherCanReadExamStudent(resource.data.studentUid);
       allow create: if signedIn()
         && attemptId == request.auth.uid + '_' + request.resource.data.examId
         && request.resource.data.keys().hasOnly([
@@ -1116,7 +1117,9 @@ service cloud.firestore {
           request.auth.uid + '_balagha-qasr-azhar-2',
           request.auth.uid + '_balagha-qasr-types-azhar-2'
         ]);
-      allow list: if isCertificateAdmin() || teacherCanReadExamStudent(resource.data.studentUid);
+      allow list: if isCertificateAdmin()
+        || (signedIn() && resource.data.studentUid == request.auth.uid)
+        || teacherCanReadExamStudent(resource.data.studentUid);
       allow create: if signedIn()
         && request.resource.data.keys().hasOnly([
           'studentUid','studentName','examId','answers','source','createdAt'
