@@ -1,3 +1,5 @@
+import {mountMistakeReview} from './mistake-review.js?v=20261122-step3';
+import {reviewBankAttempt} from './mistake-review-core.js?v=20261122-step3';
 import {auth,db} from '../../firebase-config.js';
 import {doc,getDoc,setDoc,serverTimestamp} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 import {examAuthReady} from './exam-auth-gate.js';
@@ -37,6 +39,7 @@ function showResult(data,score,previous){$('resultPanel').hidden=false;const el=
  const p=document.createElement('p');p.textContent='الطالب: '+(data.studentName||'—')+' • الامتحان: '+exam.title;el.append(p);
  const info=document.createElement('p');info.className='auto-note';info.textContent=Number.isFinite(data.finalScore)?`الدرجة المعتمدة من الإدارة: ${data.finalScore} من ${exam.total}`:`التصحيح الموضوعي المبدئي: ${score} من ${exam.autoCount}. الدرجة النهائية من ${exam.total} تُعتمد بعد مراجعة الإدارة.`;el.append(info);
  const note=document.createElement('p');note.className='small-note';note.textContent='تُعرض درجات الاختياري والصح والخطأ مبدئيًا، وباقي الإجابات والمفاتيح التي تحتاج مراجعة تُصحّحها الإدارة.';el.append(note);
+ mountMistakeReview(el, reviewBankAttempt(exam, data.answers, 'special'));
  setStatus(previous?'تم العثور على محاولة سابقة لهذا الامتحان.':'تم تسليم الامتحان إلى الإدارة.');
 }
 $('startBtn').addEventListener('click',()=>{const name=$('studentName').value.trim().replace(/\s+/g,' ');if(name.length<3){setStatus('اكتب اسم الطالب (3 أحرف على الأقل) قبل البدء.',true);$('studentName').focus();return}if(!exam||!user||started)return;started=true;$('studentName').value=name;$('intro').hidden=true;$('examPanel').hidden=false;deadline=Date.now()+exam.minutes*60000;ticker=setInterval(tick,1000);tick();setStatus('تم بدء الامتحان. بالتوفيق.');});

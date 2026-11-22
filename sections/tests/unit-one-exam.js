@@ -1,3 +1,5 @@
+import {mountMistakeReview} from './mistake-review.js?v=20261122-step3';
+import {normalizePracticeAnswer as norm, reviewBankAttempt} from './mistake-review-core.js?v=20261122-step3';
 import { auth, db } from '../../firebase-config.js';
 import { examAuthReady } from './exam-auth-gate.js';
 import { doc, getDoc, setDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
@@ -5,7 +7,6 @@ import { printUnitExamAnswers } from '../../dashboard/admin/exam-answer-report.j
 const BADI_ID = 'badi-2bac-2026';
 const $ = id => document.getElementById(id);
 const esc = v => String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const norm = t => String(t??'').trim().toLowerCase().replace(/[\u064b-\u065f\u0670]/g,'').replace(/[أإآ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه').replace(/\s+/g,' ');
 const state={exam:null,user:null,studentName:'',ends:0,tick:null,busy:false,submitted:false,attempt:null};
 const isBadi=()=>state.exam?.id===BADI_ID;
 const say = msg => $('ue-message').textContent=msg;
@@ -45,6 +46,7 @@ function renderResult(auto){
     ${score.graded?`<p>✅ الدرجة النهائية المعتمدة بعد تصحيح المقالي: <b>${score.final} من ${state.exam.questions.length}</b></p>`:`<p>الأسئلة المقالية ${essayCount} <strong>بانتظار تصحيح الإدارة</strong>، ولن تُعتمد النتيجة النهائية قبل مراجعتها.</p>`}
     ${isBadi()?badiActions():''}
     <p><a href="code-exams.html" style="color:#f8d370">العودة لقائمة الامتحانات</a></p>`;
+  mountMistakeReview($('ue-result'), reviewBankAttempt(state.exam, state.attempt?.answers, 'unit'));
   say('تم حفظ المحاولة في حساب الطالب وإتاحتها للإدارة.');
 }
 function studentPrintResult(){
@@ -102,6 +104,7 @@ if(user){try{
      $('ue-result').hidden=false;
      const past=old.data();const final=Number.isFinite(past.finalScore)?`تم اعتماد النتيجة النهائية: <b>${past.finalScore} من 30</b>.`:'الإجابات المقالية ما زالت قيد المراجعة الإدارية.';
      $('ue-result').innerHTML='<h2>سبق لك تسليم هذا الامتحان.</h2><p>'+final+'</p><p>مسموح بمحاولة واحدة لكل طالب.</p><a href="code-exams.html" style="color:#f8d370">العودة للامتحانات</a>';
+     mountMistakeReview($('ue-result'), reviewBankAttempt(state.exam, state.attempt?.answers, 'unit'));
      say('هذه المحاولة مسجلة في حسابك.');
    }
  }
@@ -118,7 +121,6 @@ if(user){try{
      $('ue-form').hidden=false;$('ue-meta').hidden=false;
      state.ends=Date.now()+exam.timeMinutes*60000;state.tick=setInterval(tick,1000);tick();
    }
- }
  }
  }
 }catch(e){

@@ -1,3 +1,5 @@
+import {mountMistakeReview} from '../../sections/tests/mistake-review.js?v=20261122-step3';
+import {reviewCodeAttempt} from '../../sections/tests/mistake-review-core.js?v=20261122-step3';
 import { codeExamProgress } from '../admin/exam-result-verification.js';
 import {getPreviewContext} from '../admin-preview-core.js';
 import {auth,db} from '../../firebase-config.js';
@@ -24,7 +26,7 @@ function renderStats(items){
   const values=[['الامتحانات المسلّمة',items.length],['أعلى نتيجة مكتملة',done.length?Math.max(...done.map(g=>g.percent))+'%':'—'],['بانتظار تصحيح المقالي',items.filter(x=>codeExamProgress(x).pendingEssay).length]];
   values.forEach(([lab,val])=>{const el=node('div','zad-stat');el.append(node('span','',lab),node('strong','',String(val)));stats.append(el);});
 }
-function render(items){
+function render(items, reviews){
   box.replaceChildren();renderStats(items);
   window.dispatchEvent(new CustomEvent('zad:stage4-exam-data',{detail:{
     items:items.map(x=>{const g=codeExamProgress(x);return {pendingEssay:g.pendingEssay,
@@ -45,7 +47,9 @@ function render(items){
     if(g.percent!==null){const bar=node('div','zad-score-track'),fill=node('span');fill.style.width=Math.min(100,Math.max(0,g.percent))+'%';bar.append(fill);row.append(bar);}
     if(g.pendingEssay)row.append(node('p','zad-student-pending-essay','⏳ في انتظار نتيجة الأسئلة المقالية — الدرجة النهائية ستظهر تلقائيًا بعد تصحيح الإدارة للمقالي.'));
     else if(g.source==='client-reported' && !g.approved)row.append(node('p','zad-result-disclaimer','النتيجة آلية من كود الامتحان، وليست درجة تحقّق منها الخادم.'));
-    const actions=node('div','zad-result-actions'),print=node('button','','🖨️ طباعة إجاباتي');print.type='button';print.onclick=()=>printReport(x);actions.append(print);row.append(actions);box.append(row);
+    const actions=node('div','zad-result-actions'),print=node('button','','🖨️ طباعة إجاباتي');print.type='button';print.onclick=()=>printReport(x);actions.append(print);row.append(actions);
+    if (reviews.has(x)) mountMistakeReview(row, reviewCodeAttempt(x));
+    box.append(row);
   });
 }
 
@@ -100,10 +104,15 @@ onAuthStateChanged(auth, async user => {
   box.textContent = 'جارٍ تحميل النتائج…';
   stats.replaceChildren();
 
-  subscriptions.push(onSnapshot(scoped('codeExamResults'), snapshot => {
+  subscriptions.push(onSnapshot(scoped('codeExamResults'), {includeMetadataChanges: true}, snapshot => {
     if (!active()) return;
-    const results = snapshot.docs.map(document => document.data());
-    render(results);
+    const reviews = new Set();
+    const results = snapshot.docs.map(document => {
+      const result = document.data();
+      if (!context.active && !document.metadata.hasPendingWrites) reviews.add(result);
+      return result;
+    });
+    render(results, reviews);
     publishSummary(uid, 'codeExamResults', 'ready', results.map(result => {
       const grade = codeExamProgress(result);
       return {title:result.examTitle || 'امتحان إلكتروني', updated:updatedAt(result),

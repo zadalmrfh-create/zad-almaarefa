@@ -1,3 +1,5 @@
+import {mountMistakeReview} from './mistake-review.js?v=20261122-step3';
+import {reviewCodeAttempt} from './mistake-review-core.js?v=20261122-step3';
 import { codeExamProgress } from '../../dashboard/admin/exam-result-verification.js';
 import {auth,db} from '../../firebase-config.js';
 import {examAuthReady} from './exam-auth-gate.js';
@@ -32,11 +34,18 @@ async function saveExamResult(){
     submitted=true;
   }catch(error){
     // A successful first write can occasionally lose its acknowledgement: do not create a duplicate.
-    try{const saved=await getDoc(target);if(saved.exists()&&saved.data().studentUid===user.uid)submitted=true;}catch{}
+    try {
+      const saved = await getDoc(target);
+      if (saved.exists() && saved.data().studentUid === user.uid) {
+        receipt = saved.data();
+        submitted = true;
+      }
+    } catch {}
     if(!submitted){status.textContent='تعذر حفظ النتيجة في Firebase: '+(error.code||error.message)+' — اضغط إعادة المحاولة حتى تظهر رسالة نجاح الحفظ.';retry.hidden=false;return}
   }
   retry.hidden=true;
   status.textContent='✅ تم حفظ النتيجة وإرسالها إلى لوحتي الطالب والإدارة.'+(codeExamProgress(receipt).pendingEssay?' ⏳ في انتظار نتيجة الأسئلة المقالية؛ ستظهر الدرجة النهائية بعد تصحيحها.':' ✅ ظهرت درجة الأسئلة الموضوعية تلقائيًا.');
+  mountMistakeReview($('resultPanel'), reviewCodeAttempt(receipt));
 }
 try{user=await withTimeout(examAuthReady,15000,'انتهت مهلة تسجيل الدخول؛ أعد فتح الصفحة.')}catch(e){$('status').textContent=e.message;$('title').textContent='تعذر تحميل الامتحان'}
 function printAnswersReport(){ if(receipt)printCodeExamAnswers(receipt); }

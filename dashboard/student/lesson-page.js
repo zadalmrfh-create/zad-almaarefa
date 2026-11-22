@@ -1,3 +1,5 @@
+import {mountMistakeReview} from '../../sections/tests/mistake-review.js?v=20261122-step3';
+import {reviewBankAttempt, reviewCodeAttempt} from '../../sections/tests/mistake-review-core.js?v=20261122-step3';
 import {auth, db} from '../../firebase-config.js';
 import {getPreviewContext} from '../admin-preview-core.js';
 import {codeExamProgress} from '../admin/exam-result-verification.js';
@@ -61,8 +63,32 @@ function resultDisplay(message, score, total, submitted = false) {
   $('lessonExam').textContent = submitted ? 'افتح الامتحان' : 'ابدأ الامتحان';
 }
 
+const reviewBanks = new Map();
+
+function loadReviewBank(source) {
+  if (!reviewBanks.has(source)) {
+    const folder = source === 'special' ? 'zad-special' : 'unit1';
+    const bank = fetch('../../exams/' + folder + '/bank.json', {cache:'no-cache'})
+      .then(response => {
+        if (!response.ok) throw Error('تعذر تحميل بنك الأسئلة');
+        return response.json();
+      })
+      .then(data => Array.isArray(data.exams) ? data.exams : [])
+      .catch(error => {
+        reviewBanks.delete(source);
+        throw error;
+      });
+    reviewBanks.set(source, bank);
+  }
+  return reviewBanks.get(source);
+}
+
 function observeResult(exam, uid) {
   const request = ++resultGeneration;
+  let sequence = 0;
+  const reviewHost = $('lessonMistakes');
+  const canReview = () => request === resultGeneration && !viewer?.active && auth.currentUser?.uid === uid;
+  reviewHost.replaceChildren();
   stopResult?.();
   stopResult = undefined;
   if (!exam) {
@@ -72,25 +98,42 @@ function observeResult(exam, uid) {
 
   resultDisplay('جارٍ تحميل النتيجة…');
   const error = () => {
-    if (request === resultGeneration) resultDisplay('تعذر تحميل نتيجة الامتحان. جرّب تحديث الصفحة.');
+    if (request !== resultGeneration) return;
+    sequence++;
+    reviewHost.replaceChildren();
+    resultDisplay('تعذر تحميل نتيجة الامتحان. جرّب تحديث الصفحة.');
   };
   if (exam.source === 'code') {
     const scope = query(collection(db, 'codeExamResults'), where('studentUid', '==', uid), where('examId', '==', exam.id));
-    stopResult = onSnapshot(scope, snapshot => {
+    stopResult = onSnapshot(scope, {includeMetadataChanges: true}, snapshot => {
       if (request !== resultGeneration) return;
       const latest = snapshot.docs.map(entry => entry.data())
         .sort((a, b) => (dateMs(b.createdAt) || 0) - (dateMs(a.createdAt) || 0))[0];
-      if (!latest) { resultDisplay('الامتحان لسه ما اتسلّمش.'); return; }
+      if (!latest) {
+        reviewHost.replaceChildren();
+        resultDisplay('الامتحان لسه ما اتسلّمش.');
+        return;
+      }
       const grade = codeExamProgress(latest);
       resultDisplay(grade.label, grade.score, grade.total, true);
+      if (canReview() && !snapshot.metadata.hasPendingWrites) {
+        mountMistakeReview(reviewHost, reviewCodeAttempt(latest));
+      } else {
+        reviewHost.replaceChildren();
+      }
     }, error);
     return;
   }
 
   const source = exam.source === 'special' ? 'zad_exam_submissions' : 'unitOneExamAttempts';
-  stopResult = onSnapshot(doc(db, source, uid + '_' + exam.id), snapshot => {
+  stopResult = onSnapshot(doc(db, source, uid + '_' + exam.id), {includeMetadataChanges: true}, async snapshot => {
     if (request !== resultGeneration) return;
-    if (!snapshot.exists()) { resultDisplay('الامتحان لسه ما اتسلّمش.'); return; }
+    const current = ++sequence;
+    if (!snapshot.exists()) {
+      reviewHost.replaceChildren();
+      resultDisplay('الامتحان لسه ما اتسلّمش.');
+      return;
+    }
     const result = snapshot.data();
     const total = result.answers?.length;
     if (Number.isFinite(result.finalScore) && result.finalScore >= 0 && result.finalScore <= total) {
@@ -98,6 +141,22 @@ function observeResult(exam, uid) {
     } else {
       resultDisplay('تم تسليم الامتحان. النتيجة النهائية مستنية التصحيح.', null, null, true);
     }
+    if (!canReview() || result.studentUid !== uid || snapshot.metadata.hasPendingWrites) {
+      reviewHost.replaceChildren();
+      return;
+    }
+
+    let review = null;
+    try {
+      if (Array.isArray(result.answers)) {
+        const bank = await loadReviewBank(exam.source);
+        const questions = bank.find(item => item.id === exam.id);
+        review = reviewBankAttempt(questions, result.answers, exam.source);
+      }
+    } catch (error) {
+      console.info('تعذر تحميل مراجعة أخطاء امتحان الحصة.', error);
+    }
+    if (canReview() && current === sequence) mountMistakeReview(reviewHost, review);
   }, error);
 }
 
@@ -132,6 +191,7 @@ function stopLessonDetails() {
   stopResult?.();
   stopResult = undefined;
   resultGeneration++;
+  $('lessonMistakes').replaceChildren();
   lesson = undefined;
 }
 
