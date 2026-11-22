@@ -85,7 +85,7 @@ body.zad-teachers {
   display: block;
   width: 100%;
   aspect-ratio: 1 / 1;
-  background: #0a1426;
+  background: #0a1426 url("../images/teacher-thumbs/logo.webp") center / 34% no-repeat;
   border: 1px solid #5b6d89;
   border-radius: .7rem;
   overflow: hidden;

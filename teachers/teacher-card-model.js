@@ -49,3 +49,30 @@ export function teacherPhoto(value, base) {
     return '';
   }
 }
+
+const portraitThumbnails = new Map([
+  ['arabic-teacher.png','diaa-arabic.webp'],
+  ['arabic-calligraphy.png','diaa-calligraphy.webp'],
+  ['quran-title.png','diaa-quran.webp'],
+  ['saad-alaa-portrait.webp','saad.webp'],
+  ['bilal-farghaly.webp','bilal.webp'],
+  ['fatima-diaa.jpeg','fatima.webp'],
+  ['mohamed-khaled-mahmoud.webp','khaled.webp'],
+  ['teacher-malek.webp','malek.webp'],
+  ['logo.png','logo.webp'],
+]);
+
+export const teacherPlaceholder = '../images/teacher-thumbs/logo.webp';
+
+export function teacherThumbnail(source, base) {
+  if (!source) return '';
+  try {
+    const url = new URL(source,base);
+    const images = new URL('../images/',base);
+    if (url.origin !== images.origin || !url.pathname.startsWith(images.pathname)) return '';
+    const file = portraitThumbnails.get(decodeURIComponent(url.pathname.slice(images.pathname.length)));
+    return file ? '../images/teacher-thumbs/' + file : '';
+  } catch {
+    return '';
+  }
+}

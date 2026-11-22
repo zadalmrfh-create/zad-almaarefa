@@ -8,12 +8,12 @@
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../style.css"><link rel="stylesheet" href="../assets/translation.css?v=20261016-globe2">
 <meta name="theme-color" content="#0b1629">
-<link rel="stylesheet" href="teacher-cards.css?v=20261122-step6">
+<link rel="stylesheet" href="teacher-cards.css?v=20261122-thumbs">
 </head>
 <body class="dark zad-teachers">
 <header class="teacher-page-header">
   <div class="teacher-page-bar">
-    <a href="../index.html" class="teacher-page-brand"><img src="../images/logo.png" alt="">زاد المعرفة</a>
+    <a href="../index.html" class="teacher-page-brand"><img src="../images/teacher-thumbs/logo.webp" alt="" width="40" height="40">زاد المعرفة</a>
     <a href="../index.html" class="teacher-page-back">الصفحة الرئيسية</a>
   </div>
 </header>
@@ -27,7 +27,7 @@
     <article class="teacher-card">
       <div class="teacher-card-header">
         <a class="teacher-card-photo" href="../images/saad-alaa-poster.png?v=20261110-3" target="_blank" rel="noopener noreferrer" aria-label="عرض صورة الأستاذ سعد علاء">
-          <img src="../images/saad-alaa-portrait.webp" alt="" loading="lazy" width="100" height="100">
+          <img src="../images/teacher-thumbs/saad.webp" alt="" loading="eager" decoding="async" width="100" height="100">
         </a>
         <div><h2 class="teacher-card-name">الأستاذ سعد علاء</h2><p class="teacher-card-role">مدرس الرياضيات والعلوم والكيمياء</p></div>
       </div>
@@ -40,7 +40,7 @@
     <article class="teacher-card">
       <div class="teacher-card-header">
         <a class="teacher-card-photo" href="../images/bilal-farghaly.webp" target="_blank" rel="noopener noreferrer" aria-label="عرض صورة مستر بلال فرغلي">
-          <img src="../images/bilal-farghaly.webp" alt="" loading="lazy" width="100" height="100">
+          <img src="../images/teacher-thumbs/bilal.webp" alt="" loading="eager" decoding="async" width="100" height="100">
         </a>
         <div><h2 class="teacher-card-name">مستر بلال فرغلي</h2><p class="teacher-card-role">مدرس مناهج اللغة الإنجليزية</p></div>
       </div>
@@ -53,7 +53,7 @@
   </div>
 </main>
 <script type="module">
-import {teacherCardMetadata, teacherBookingLink, teacherPhoto} from './teacher-card-model.js?v=20261122-step6';
+import {teacherCardMetadata, teacherBookingLink, teacherPhoto, teacherThumbnail, teacherPlaceholder} from './teacher-card-model.js?v=20261122-thumbs';
 import {ENGLISH_TEACHER_PROFILE, isEnglishTeacherProfile} from '../assets/english-teacher.js';
 import {db} from '../firebase-config.js';
 import {collection,getDocs} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
@@ -71,7 +71,7 @@ const LEGACY_TEACHERS = [
  { legacyKey:'zad-mohamed-khaled-mahmoud', name:'الأستاذ محمد خالد محمود', subject:'الكيمياء, العلوم', stages:'المرحلة الثانوية', specialties:1, experience:3, studentsCount:50, role:'مدرس الكيمياء والعلوم للمرحلة الثانوية', image:'../images/mohamed-khaled-mahmoud.webp', bookingSection:'العلوم', bookingSubject:'الكيمياء', bio:'شرح مبسط وتدريبات ومتابعة للمرحلة الثانوية بجميع الشعب. حصص أونلاين وبرايفت.' }
 ];
 
-function render(t) {
+function render(t, index) {
   if (isEnglishTeacherProfile(t)) {
     t={...t,experience:null,bookingSection:ENGLISH_TEACHER_PROFILE.bookingSection,bookingSubject:ENGLISH_TEACHER_PROFILE.bookingSubject};
   }
@@ -84,9 +84,15 @@ function render(t) {
     khaled ? '../images/mohamed-khaled-mahmoud.webp' : t.image;
   const original=saad ? '../images/saad-alaa-poster.png?v=20261110-3' :
     coursesOnly ? '../images/fatima-diaa-courses.png?v=20261112' : source;
-  const image=teacherPhoto(source,document.baseURI) || '../images/logo.png';
+  const photo=teacherPhoto(source,document.baseURI);
+  const image=teacherThumbnail(photo,document.baseURI)
+    || teacherPhoto(t.thumbnailUrl,document.baseURI)
+    || photo
+    || teacherPlaceholder;
   const poster=teacherPhoto(original,document.baseURI);
-  const visual=`<img loading="lazy" src="${esc(image)}" alt="" width="100" height="100">`;
+  const loading=index<3?'eager':'lazy';
+  const priority=index===0?' fetchpriority="high"':'';
+  const visual=`<img loading="${loading}"${priority} decoding="async" src="${esc(image)}" alt="" width="100" height="100">`;
   const portrait=poster
     ? `<a class="teacher-card-photo" href="${esc(poster)}" target="_blank" rel="noopener noreferrer" aria-label="عرض صورة ${esc(name)}">${visual}</a>`
     : `<span class="teacher-card-photo">${visual}</span>`;
@@ -120,13 +126,7 @@ grid.addEventListener('error',event=>{
   const image=event.target;
   if(image.tagName!=='IMG' || image.dataset.fallback)return;
   image.dataset.fallback='true';
-  if(image.parentElement?.tagName==='A'){
-    const placeholder=document.createElement('span');
-    placeholder.className=image.parentElement.className;
-    image.parentElement.replaceWith(placeholder);
-    placeholder.append(image);
-  }
-  image.src='../images/logo.png';
+  image.src=teacherPlaceholder;
 },true);
 
 function isRemovedTeacher(t){
