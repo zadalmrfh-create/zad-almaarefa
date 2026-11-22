@@ -51,6 +51,8 @@
     href="style.css"
   />
 
+  <link rel="stylesheet" href="assets/home-hero.css?v=20261122-step6">
+
   <!-- Google Fonts -->
   <link
     rel="preconnect"
@@ -90,7 +92,12 @@
     "address":{"@type":"PostalAddress","addressLocality":"Cairo","addressCountry":"EG"}
   }</script>
 <style>.why-card,.faq-item{background:rgba(16,29,51,.75);border:1px solid rgba(212,168,67,.22);border-radius:18px;padding:24px;color:inherit}.why-card h3{font-weight:800;margin-bottom:8px}.why-card p,.faq-item p{opacity:.78;line-height:1.9}.faq-item{padding:0}.faq-item summary{cursor:pointer;padding:18px;font-weight:800;list-style:none}.faq-item summary::-webkit-details-marker{display:none}.faq-item p{padding:0 18px 18px;margin:0}</style></head>
-  <body>
+  <body class="dark">
+<script>
+  try {
+    if (localStorage.getItem('theme') === 'light') document.body.classList.remove('dark');
+  } catch {}
+</script>
 
 <!-- ═══════════ NAVBAR ═══════════ -->
 <nav id="navbar">
@@ -227,29 +234,25 @@
 </div>
 
     <!-- ═══════════ HERO ═══════════ -->
-    <section id="hero">
-      <div class="hero-overlay"></div>
-      <div class="hero-container">
-        <div class="hero-text">
-          <span class="hero-badge">تعلم أوضح • وصول أسرع • متابعة أفضل</span>
-          <h1 class="hero-title">زاد المعرفة</h1>
-          <p class="hero-desc">
-            منصة تعليمية تجمع لك القرآن الكريم والعلوم الشرعية واللغة العربية والتعليم الأزهري في تجربة واحدة بسيطة ومنظمة.
+    <section id="hero" class="zad-home-hero" aria-labelledby="zadHomeTitle">
+      <div class="zad-home-hero__inner">
+        <div class="zad-home-hero__copy">
+          <h1 class="zad-home-hero__title" id="zadHomeTitle">زاد <span>المعرفة</span></h1>
+          <p class="zad-home-hero__description">
+            حصص أونلاين في القرآن الكريم والعلوم الشرعية واللغة العربية ومناهج التعليم الأزهري.
           </p>
-          <div class="hero-actions">
-            <a class="btn-primary" href="login/index.html">تسجيل الدخول</a>
-            <a class="btn-nav" href="sections/booking/index.html">احجز حصتك</a>
+          <div class="zad-home-hero__actions">
+            <a class="zad-home-hero__booking" href="sections/booking/index.html">احجز حصتك</a>
+            <a class="zad-home-hero__exam" href="sections/tests/code-exams.html">جرّب امتحان مجاني</a>
           </div>
-          <div class="hero-stats">
-            <div class="student-counter-card" aria-live="polite" aria-label="إجمالي الطلاب المسجلين">
-              <span class="counter-icon" aria-hidden="true">👨‍🎓</span>
-              <span class="num" id="studentCount">—</span>
-              <span class="label">إجمالي الطلاب المسجلين</span>
-            </div>
-          </div>
+          <a class="zad-home-hero__account account-dashboard-link" href="login/index.html">تسجيل الدخول</a>
+          <p class="zad-home-hero__stats" aria-live="polite">
+            <strong id="studentCount">—</strong>
+            <span>طالب مسجّل على المنصة</span>
+          </p>
         </div>
-        <div class="hero-image">
-          <img src="images/hero-student.webp" alt="" />
+        <div class="zad-home-hero__image">
+          <img src="images/hero-student.webp" alt="" width="1024" height="1024" fetchpriority="high">
         </div>
       </div>
     </section>
@@ -971,24 +974,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (!themeToggle) return;
 
-    const savedTheme = localStorage.getItem("theme");
-
-    if (savedTheme === "dark") {
-        document.body.classList.add("dark");
-        themeToggle.checked = true;
-    } else {
-        document.body.classList.remove("dark");
-        themeToggle.checked = false;
-    }
-
+    themeToggle.checked = document.body.classList.contains("dark");
     themeToggle.addEventListener("change", function () {
-        if (this.checked) {
-            document.body.classList.add("dark");
-            localStorage.setItem("theme", "dark");
-        } else {
-            document.body.classList.remove("dark");
-            localStorage.setItem("theme", "light");
-        }
+        document.body.classList.toggle("dark", this.checked);
+        try {
+            localStorage.setItem("theme", this.checked ? "dark" : "light");
+        } catch {}
     });
 });
 </script>
@@ -1170,9 +1161,11 @@ watchStudentCount('studentCount');
 import { auth, db, FIREBASE_READY } from './firebase-config.js';
 import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
 import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
-const buttons=document.querySelectorAll('.login-nav-btn,.login-mobile-btn');const dashLinks=document.querySelectorAll('.account-dashboard-link');const ADMIN_EMAIL='maleksameh121@gmail.com';
+const buttons=document.querySelectorAll('.login-nav-btn,.login-mobile-btn');const dashLinks=document.querySelectorAll('.account-dashboard-link');
+const heroAccount=document.querySelector('.zad-home-hero__account');
+const ADMIN_EMAIL='maleksameh121@gmail.com';
 function pathFor(role,status){if(role==='admin')return './dashboard/admin/index.html';if(role==='teacher'&&status==='active')return './dashboard/teacher/index.html';return './dashboard/student/index.html'}
-if(FIREBASE_READY){onAuthStateChanged(auth,async user=>{if(!user){dashLinks.forEach(a=>{a.href='./login/index.html'});buttons.forEach(b=>{b.href='./login/index.html';if(b.classList.contains('login-nav-btn'))b.innerHTML='<i class="fa-solid fa-right-to-bracket"></i> تسجيل الدخول'});return}let d={},role=user.email?.toLowerCase()===ADMIN_EMAIL?'admin':'student';try{const s=await getDoc(doc(db,'users',user.uid));if(s.exists()){d=s.data();role=user.email?.toLowerCase()===ADMIN_EMAIL?'admin':(d.role||role)}}catch(e){}try{const a=await getDoc(doc(db,'admins',user.uid));if(a.exists())role='admin'}catch(e){}const dashboard=pathFor(role,d.status),name=d.fullName||user.displayName||user.email?.split('@')[0]||'حسابي',shortName=((d.fullName||user.displayName||'').trim().length>14?((d.fullName||user.displayName||'').trim().split(/\s+/)[0]||name):name);dashLinks.forEach(a=>a.href=dashboard);buttons.forEach(btn=>{if(btn.classList.contains('login-mobile-btn')){btn.href=dashboard;return}const safeText=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));const first=(name.trim()[0]||'ح').toUpperCase();const wrap=document.createElement('div');wrap.className='smart-account-wrap';wrap.innerHTML=`<button type="button" class="smart-account-trigger"><span class="account-avatar">${safeText(first)}</span><span class="account-name">${safeText(shortName)}</span><span class="account-caret">⌄</span></button><div class="smart-account-menu"><a href="${dashboard}">🏠 لوحتي</a><a href="${dashboard}#profileCard">👤 الملف الشخصي</a><a href="${dashboard}?tab=notifications">🔔 الإشعارات</a><button type="button" class="smart-logout">↪ تسجيل الخروج</button></div>`;btn.replaceWith(wrap);wrap.querySelector('.smart-account-trigger').onclick=()=>wrap.classList.toggle('open');wrap.querySelector('.smart-logout').onclick=async()=>{await signOut(auth);location.href='./index.html'}})})}
+if(FIREBASE_READY){onAuthStateChanged(auth,async user=>{if(!user){if(heroAccount)heroAccount.textContent='تسجيل الدخول';dashLinks.forEach(a=>{a.href='./login/index.html'});buttons.forEach(b=>{b.href='./login/index.html';if(b.classList.contains('login-nav-btn'))b.innerHTML='<i class="fa-solid fa-right-to-bracket"></i> تسجيل الدخول'});return}let d={},role=user.email?.toLowerCase()===ADMIN_EMAIL?'admin':'student';try{const s=await getDoc(doc(db,'users',user.uid));if(s.exists()){d=s.data();role=user.email?.toLowerCase()===ADMIN_EMAIL?'admin':(d.role||role)}}catch(e){}try{const a=await getDoc(doc(db,'admins',user.uid));if(a.exists())role='admin'}catch(e){}const dashboard=pathFor(role,d.status),name=d.fullName||user.displayName||user.email?.split('@')[0]||'حسابي',shortName=((d.fullName||user.displayName||'').trim().length>14?((d.fullName||user.displayName||'').trim().split(/\s+/)[0]||name):name);if(heroAccount)heroAccount.textContent='افتح حسابي';dashLinks.forEach(a=>a.href=dashboard);buttons.forEach(btn=>{if(btn.classList.contains('login-mobile-btn')){btn.href=dashboard;return}const safeText=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));const first=(name.trim()[0]||'ح').toUpperCase();const wrap=document.createElement('div');wrap.className='smart-account-wrap';wrap.innerHTML=`<button type="button" class="smart-account-trigger"><span class="account-avatar">${safeText(first)}</span><span class="account-name">${safeText(shortName)}</span><span class="account-caret">⌄</span></button><div class="smart-account-menu"><a href="${dashboard}">🏠 لوحتي</a><a href="${dashboard}#profileCard">👤 الملف الشخصي</a><a href="${dashboard}?tab=notifications">🔔 الإشعارات</a><button type="button" class="smart-logout">↪ تسجيل الخروج</button></div>`;btn.replaceWith(wrap);wrap.querySelector('.smart-account-trigger').onclick=()=>wrap.classList.toggle('open');wrap.querySelector('.smart-logout').onclick=async()=>{await signOut(auth);location.href='./index.html'}})})}
 export function redirectAfterLogin(userData){window.location.href=pathFor(userData?.role,userData?.status)}
 
 </script>

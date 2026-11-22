@@ -23,11 +23,51 @@
  .student-panel.card,.student-panel .card{max-width:100%;min-width:0}
  .student-panel .table-wrap{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
  .zad-stage4-next{padding:12px}.zad-stage4-week-controls .btn,.zad-stage4-head .btn{min-height:44px}
- .zad-stage4-bottom-nav{position:fixed;bottom:0;left:0;right:0;display:flex;direction:rtl;justify-content:space-around;align-items:stretch;gap:2px;padding:5px 6px calc(6px + env(safe-area-inset-bottom,0px));background:#0f1b2edc;border-top:1px solid #b69750;backdrop-filter:blur(12px);z-index:5000}
- .zad-stage4-bottom-nav button,.zad-stage4-bottom-nav a{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:7px 2px;color:#f7ebd6;background:transparent;border:0;border-radius:10px;text-align:center;font:800 18px Cairo,Tajawal,sans-serif;text-decoration:none;cursor:pointer}
- .zad-stage4-bottom-nav span{font-size:10px;white-space:nowrap}.zad-stage4-bottom-nav .active,.zad-stage4-bottom-nav button:hover{background:#d9af42;color:#0e1a2e}
- body{padding-bottom:calc(90px + env(safe-area-inset-bottom,0px))!important}
- body .zad-store-access{bottom:calc(105px + env(safe-area-inset-bottom,0px))!important}
+ .student-panel{scroll-margin-block-start:75px}
+ .zad-stage4-bottom-nav{
+   position:fixed;
+   inset-inline:clamp(.5rem,2.5vw,1rem);
+   inset-block-end:calc(.45rem + env(safe-area-inset-bottom,0px));
+   display:grid;
+   grid-template-columns:repeat(4,minmax(0,1fr));
+   direction:inherit;
+   gap:3px;
+   padding:.3rem;
+   background:#101e33;
+   border:1px solid #7b6c50;
+   border-radius:1rem;
+   box-shadow:0 8px 28px #0008;
+   z-index:5000
+ }
+ .zad-stage4-bottom-nav button,.zad-stage4-bottom-nav a{
+   display:flex;
+   flex-direction:column;
+   align-items:center;
+   justify-content:center;
+   gap:2px;
+   min-inline-size:0;
+   min-block-size:52px;
+   padding:.3rem .1rem;
+   background:transparent;
+   border:1px solid transparent;
+   border-radius:.7rem;
+   color:#e2ebfa;
+   text-align:center;
+   font-family:inherit;
+   font-weight:800;
+   text-decoration:none;
+   cursor:pointer
+ }
+ .zad-stage4-bottom-nav .zad-bottom-label{font-size:clamp(.68rem,2.8vw,.84rem);white-space:nowrap}
+ .zad-stage4-bottom-nav .zad-bottom-icon{display:block;min-width:20px;min-height:20px;font-size:1.26rem;line-height:20px}
+ .zad-bottom-icon--profile{position:relative}
+ .zad-bottom-icon--profile::before,.zad-bottom-icon--profile::after{content:"";position:absolute;left:50%;transform:translateX(-50%);border:1.5px solid currentColor}
+ .zad-bottom-icon--profile::before{top:2px;width:7px;height:7px;border-radius:50%}
+ .zad-bottom-icon--profile::after{bottom:1px;width:15px;height:8px;border-radius:8px 8px 2px 2px}
+ .zad-stage4-bottom-nav .active{color:#17223a;background:#f0cc76;border-color:#f4d587}
+ .zad-stage4-bottom-nav :focus-visible{outline:2px solid #f0cc76;outline-offset:2px}
+ body{padding-top:env(safe-area-inset-top,0px);padding-bottom:calc(90px + env(safe-area-inset-bottom,0px))!important}
+ body .zad-store-access{bottom:calc(95px + env(safe-area-inset-bottom,0px))!important}
 }
-@media(max-width:370px){.zad-stage4-bottom-nav span{font-size:9px}.zad-stage4-week-controls strong{width:100%}}
+@media(max-width:370px){.zad-stage4-week-controls strong{width:100%}}
 @media(prefers-reduced-motion:reduce){.student-tab,.zad-stage4-bottom-nav *{scroll-behavior:auto!important;transition:none!important}}

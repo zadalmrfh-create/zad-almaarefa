@@ -17,11 +17,36 @@ function setWeekButtons(){
  prev?.classList.toggle('gold',offset===0);next?.classList.toggle('gold',offset===1);
  if(weekLabel){const x=weekRange(cairoDay(),offset);weekLabel.textContent=`من ${x.start} إلى ${x.end} (بتوقيت القاهرة)`;}
 }
-function openStudentTab(id){const el=document.querySelector(`.student-tabs [data-student-tab="${id}"]`);if(el)el.click();}
-document.querySelectorAll('[data-stage4-open]').forEach(btn=>btn.addEventListener('click',()=>{openStudentTab(btn.dataset.stage4Open);updateMobileActive(btn.dataset.stage4Open)}));
-function updateMobileActive(id){document.querySelectorAll('.zad-stage4-bottom-nav [data-stage4-open]').forEach(btn=>{const active=btn.dataset.stage4Open===id;btn.classList.toggle('active',active);if(active)btn.setAttribute('aria-current','page');else btn.removeAttribute('aria-current');});}
-document.querySelector('.student-tabs')?.addEventListener('click',event=>{const id=event.target.closest('[data-student-tab]')?.dataset.studentTab;if(id)updateMobileActive(id)});
-updateMobileActive('overview');
+const mobileActions=[...document.querySelectorAll('.zad-stage4-bottom-nav [data-stage4-open]')];
+
+function updateMobileActive(id) {
+  for (const button of mobileActions) {
+    const active=button.dataset.stage4Open===id;
+    button.classList.toggle('active',active);
+    if(active)button.setAttribute('aria-current','page');
+    else button.removeAttribute('aria-current');
+  }
+}
+
+for (const button of mobileActions) {
+  button.addEventListener('click', () => {
+    const id=button.dataset.stage4Open;
+    const tab=document.querySelector(`.student-tabs [data-student-tab="${id}"]`);
+    if(!tab)return;
+    tab.click();
+    const panel=document.querySelector(`[data-student-panel="${id}"].active`);
+    if(!panel)return;
+    if(id==='overview') window.scrollTo({top:0,behavior:'auto'});
+    else panel.scrollIntoView({block:'start',behavior:'auto'});
+  });
+}
+
+document.querySelector('.student-tabs')?.addEventListener('click',event => {
+  const id=event.target.closest('[data-student-tab]')?.dataset.studentTab;
+  if(id)updateMobileActive(id);
+});
+updateMobileActive(document.querySelector('.student-tabs [data-student-tab].active')?.dataset.studentTab || 'overview');
+
 function putBookingPrefs(){const el=$('zadStage4BookingPrefs');if(!el)return;el.replaceChildren();
  if(!board.bookings.length){el.append(text('p','لا توجد حجوزات مسجلة حاليًا.'));return;}
  for(const x of board.bookings.slice(0,30)){

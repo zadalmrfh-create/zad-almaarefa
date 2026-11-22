@@ -1,0 +1,150 @@
+body.zad-teachers {
+  margin: 0;
+  background: #0b1629;
+  color: #f7f4ed;
+  font-family: Cairo, sans-serif;
+  line-height: 1.65;
+}
+.zad-teachers .teacher-page-header {
+  border-bottom: 1px solid #324461;
+  background: #101e34;
+}
+.zad-teachers .teacher-page-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem 1rem;
+  max-width: 72rem;
+  margin-inline: auto;
+  padding: .65rem clamp(1rem, 4vw, 2rem);
+}
+.zad-teachers .teacher-page-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: .65rem;
+  color: #f0cc76;
+  font-size: .94rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+.zad-teachers .teacher-page-brand img {
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 1px solid #c9a84c;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.zad-teachers .teacher-page-back {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: #dde7f5;
+  font-size: .88rem;
+  font-weight: 700;
+  text-underline-offset: .23em;
+}
+.zad-teachers main {
+  max-width: 72rem;
+  margin-inline: auto;
+  padding: clamp(1.75rem, 5vw, 4rem) clamp(1rem, 4vw, 2rem) 4rem;
+}
+.zad-teachers .teacher-page-intro { margin-block-end: 1.45rem; }
+.zad-teachers .teacher-page-intro h1 {
+  margin: 0;
+  color: #f7f4ed;
+  font-size: clamp(1.85rem, 5vw, 3rem);
+  font-weight: 900;
+}
+.zad-teachers .teacher-page-intro p,.zad-teachers .teacher-directory-status {
+  margin: .35rem 0 .9rem;
+  color: #becde3;
+}
+.zad-teachers .teachers-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 19rem), 1fr));
+  gap: .9rem;
+}
+.zad-teachers .teacher-card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: clamp(.85rem, 2.5vw, 1.25rem);
+  gap: .78rem;
+  background: #14243d;
+  border: 1px solid #465a77;
+  border-radius: 1rem;
+  color: #f7f4ed;
+}
+.zad-teachers .teacher-card-header {
+  display: grid;
+  grid-template-columns: 5rem minmax(0, 1fr);
+  align-items: center;
+  gap: .8rem;
+}
+.zad-teachers .teacher-card-photo {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background: #0a1426;
+  border: 1px solid #5b6d89;
+  border-radius: .7rem;
+  overflow: hidden;
+}
+.zad-teachers .teacher-card-photo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.zad-teachers .teacher-card-name {
+  margin: 0;
+  font-size: clamp(.98rem, 2vw, 1.17rem);
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+.zad-teachers .teacher-card-role,.zad-teachers .teacher-card-bio {
+  margin: .15rem 0 0;
+  color: #c6d3e6;
+  font-size: .86rem;
+  overflow-wrap: anywhere;
+}
+.zad-teachers .teacher-card-data {
+  display: grid;
+  gap: .55rem;
+  margin: 0;
+}
+.zad-teachers .teacher-card-data > div {
+  padding: .55rem .7rem;
+  border: 1px solid #344966;
+  border-radius: .6rem;
+  background: #101e35;
+}
+.zad-teachers .teacher-card-data dt { color: #f0cc76; font-size: .77rem; font-weight: 800; }
+.zad-teachers .teacher-card-data dd {
+  margin: .14rem 0 0;
+  color: #ecf2fb;
+  font-size: .87rem;
+  overflow-wrap: anywhere;
+}
+.zad-teachers .teacher-card-stats { display: flex; flex-wrap: wrap; gap: .25rem .75rem; color: #c6d3e6; font-size: .78rem; }
+.zad-teachers .teacher-card-stats b { color: #f0cc76; }
+.zad-teachers .teacher-card-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  margin-block-start: auto;
+  padding: .45rem .75rem;
+  border: 1px solid #f4d587;
+  border-radius: .65rem;
+  background: #f0cc76;
+  color: #132039;
+  text-align: center;
+  font-weight: 800;
+  text-decoration: none;
+}
+.zad-teachers .teacher-card-cta:hover { background: #ffe2a0; }
+.zad-teachers .teacher-card-course-note { margin: auto 0 0; color: #efd387; font-size: .85rem; }
+@media (max-width: 400px) {
+  .zad-teachers .teacher-card-header { grid-template-columns: 4.25rem minmax(0, 1fr); }
+}
