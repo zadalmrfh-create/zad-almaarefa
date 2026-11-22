@@ -1031,13 +1031,13 @@ onAuthStateChanged(auth, async (user) => {
 
       <div class="booking-tab-panel active" id="bookingTabRequests" data-booking-panel="requests">
         <div class="booking-panel-title">
-          <div><h3>طلبات الحجز</h3><p>غيّر الحالة أو افتح تقرير الحجز أو تقرير الطالب من نفس الصف.</p></div>
+          <div><h3>طلبات الحجز</h3><p>حدّد الموعد بتوقيت القاهرة، وبلّغ الطالب بالسعر المتفق عليه قبل اختيار «تم الحجز».</p></div>
         </div>
       <div class="table-wrap" style="margin-top:20px">
         <table class="table">
           <thead>
             <tr>
-              <th>الطالب</th><th>التواصل</th><th>المرحلة/الصف</th><th>المادة</th><th>اليومان</th><th>المعلم</th><th>الحالة</th><th>إجراء</th>
+              <th>الطالب</th><th>التواصل</th><th>المرحلة/الصف</th><th>المادة</th><th>الموعد والسعر</th><th>المعلم</th><th>الحالة</th><th>إجراء</th>
             </tr>
           </thead>
           <tbody id="bookingRows"><tr><td colspan="8">جارٍ التحميل...</td></tr></tbody>
@@ -1472,6 +1472,10 @@ onAuthStateChanged(auth, async (user) => {
 .report-section-title{margin:22px 0 10px;color:var(--gold2)}.report-history{display:flex;flex-direction:column;gap:9px}.report-history-item{border-right:3px solid var(--gold);padding:8px 12px;background:#111c2d;border-radius:8px}.report-history-item small{display:block;color:var(--muted)}
 .report-note-area{margin-top:16px;padding:14px;border:1px solid #314056;border-radius:12px;background:#111c2d}.report-note-area label{display:block;font-weight:800;margin-bottom:8px}.report-note-area .actions{margin-top:9px}
 .status-pill{display:inline-block;padding:4px 9px;border-radius:999px;background:#26364f;font-size:12px;font-weight:800}.status-pill[data-status="مكتمل"],.status-pill[data-status="تم الحجز"]{background:#12351f;color:#9cf5ba}.status-pill[data-status="ملغي"]{background:#4a2025;color:#fecaca}.status-pill[data-status="جديد"]{background:#24334c;color:#bfdbfe}
+.booking-admin-schedule{min-inline-size:15rem;display:grid;gap:.35rem}
+.booking-admin-schedule label{display:grid;gap:.15rem;font-size:.8rem}
+.booking-admin-schedule input{width:100%;min-width:0;padding:.28rem .45rem;font:inherit;border:1px solid #637594;border-radius:.35rem}
+.booking-admin-schedule small{display:block;color:var(--muted);font-size:.77rem}
 .booking-row-actions{display:flex;gap:6px;flex-wrap:wrap}.booking-row-actions .btn{padding:7px 9px;font-size:12px;white-space:nowrap}
 @media(max-width:900px){.report-filters{grid-template-columns:repeat(2,minmax(0,1fr))}.report-stats,.booking-report-stats{grid-template-columns:repeat(3,minmax(0,1fr))}.report-charts.two-cols{grid-template-columns:1fr}.report-info-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:560px){.report-filters{grid-template-columns:1fr}.report-stats,.booking-report-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.report-info-grid{grid-template-columns:1fr}.report-bar-row{grid-template-columns:90px 1fr auto}}
@@ -1508,6 +1512,8 @@ onAuthStateChanged(auth, async (user) => {
 import { guard } from '../dashboard.js';
 import { ENGLISH_TEACHER_NAME, ENGLISH_TEACHER_PROFILE, isEnglishTeacherProfile } from '../../assets/english-teacher.js';
 import { isEnglishSubject } from '../attendance-subjects.js';
+import { asBookingPrice, cairoNowSlot, formatBookingPrice, formatBookingSlot, validBookingSlot }
+  from '../../sections/booking/booking-core.js?v=20261122-step4';
 
 import {
   auth,
@@ -1532,7 +1538,8 @@ import {
   query,
   orderBy,
   limit,
-  where
+  where,
+  runTransaction
 } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 
 
@@ -3887,6 +3894,24 @@ async function ensureLegacyTeachers() {
 const bookingRows = $('bookingRows');
 const bookingStatuses = ['جديد', 'قيد المراجعة', 'تم التواصل', 'تم الحجز', 'مكتمل', 'ملغي'];
 let bookingsCache = new Map();
+
+function adminBookingSchedule(item) {
+  const requestSlot = formatBookingSlot(item.requestedSlot);
+  const preferences = [item.preferredDay1, item.preferredDay2, item.preferredPeriod].filter(Boolean).join(' · ');
+  const confirmedSlot = validBookingSlot(item.confirmedSlot) ? item.confirmedSlot : '';
+  const quote = asBookingPrice(item.quotedPrice);
+  const confirmedPrice = asBookingPrice(item.confirmedPrice);
+  const isNewRequest = item.bookingVersion >= 4;
+  const amount = confirmedPrice ?? (isNewRequest ? quote : null);
+  return `<div class="booking-admin-schedule">
+    <small>المقترح: ${escapeHtml(requestSlot || preferences || '—')}</small>
+    ${requestSlot && preferences ? `<small>بدائل: ${escapeHtml(preferences)}</small>` : ''}
+    ${quote !== null ? `<small>المعروض وقت الطلب: ${escapeHtml(formatBookingPrice(quote))}</small>` : ''}
+    <label>الموعد النهائي · القاهرة<input class="booking-confirmed-slot" type="datetime-local" step="60" value="${escapeHtml(confirmedSlot)}"></label>
+    <label>السعر المتفق عليه (جنيه)<input class="booking-confirmed-price" type="number" min="0" step="0.01" inputmode="decimal" value="${amount ?? ''}"></label>
+  </div>`;
+}
+
 async function loadBookings() {
   if (!bookingRows) return;
   bookingRows.innerHTML = '<tr><td colspan="8">جارٍ تحميل الحجوزات…</td></tr>';
@@ -3901,7 +3926,7 @@ async function loadBookings() {
         <td>${escapeHtml(item.phone || '—')}<br>${escapeHtml(item.email || '—')}</td>
         <td>${escapeHtml([item.educationType, item.stage, item.grade].filter(Boolean).join(' — ') || '—')}</td>
         <td>${escapeHtml(item.subject || '—')}</td>
-        <td>${escapeHtml([item.preferredDay1, item.preferredDay2].filter(Boolean).join(' / ') || '—')}</td>
+        <td>${adminBookingSchedule(item)}</td>
         <td>${escapeHtml(item.teacherName || '—')}</td>
         <td><select class="booking-status-select" data-id="${escapeHtml(item.id)}" aria-label="حالة الحجز">${bookingStatuses.map(status => `<option value="${status}" ${status === (item.status || 'جديد') ? 'selected' : ''}>${status}</option>`).join('')}</select></td>
         <td><button type="button" class="btn gold booking-save-btn" data-id="${escapeHtml(item.id)}">حفظ</button> <button type="button" class="btn booking-report-btn" data-booking-report-id="${escapeHtml(item.id)}">تقرير</button></td>
@@ -3916,23 +3941,69 @@ bookingRows?.addEventListener('click', async event => {
   const button = event.target.closest('.booking-save-btn');
   if (!button) return;
   const booking = bookingsCache.get(button.dataset.id);
-  const status = button.closest('tr')?.querySelector('.booking-status-select')?.value;
-  if (!booking || !bookingStatuses.includes(status)) return;
+  const row = button.closest('tr');
+  const status = row?.querySelector('.booking-status-select')?.value;
+  if (!booking || !bookingStatuses.includes(status) || button.disabled) return;
+  const dateInput = row.querySelector('.booking-confirmed-slot');
+  const priceInput = row.querySelector('.booking-confirmed-price');
+  const slot = dateInput.value;
+  const price = priceInput.value === '' ? null : asBookingPrice(priceInput.valueAsNumber);
   const previous = booking.status || 'جديد';
-  if (previous === status) return;
+  const priorSlot = booking.confirmedSlot || '';
+  const priorPrice = asBookingPrice(booking.confirmedPrice);
+  if (!dateInput.reportValidity() || !priceInput.reportValidity()) return;
+  if (slot && !validBookingSlot(slot)) {
+    alert('اختر تاريخًا ووقتًا صحيحين بتوقيت القاهرة.');
+    dateInput.focus();
+    return;
+  }
+  const confirming = status === 'تم الحجز' && (previous !== status || priorSlot !== slot || priorPrice !== price);
+  if (confirming && !slot) {
+    alert('حدّد الموعد النهائي بتوقيت القاهرة قبل تأكيد الحجز.');
+    dateInput.focus();
+    return;
+  }
+  if (confirming && slot !== priorSlot && slot <= cairoNowSlot()) {
+    alert('اختر موعدًا قادمًا بتوقيت القاهرة.');
+    dateInput.focus();
+    return;
+  }
+  if (confirming && booking.bookingVersion >= 4 && price === null) {
+    alert('اكتب السعر المتفق عليه قبل تأكيد الحجز.');
+    priceInput.focus();
+    return;
+  }
+  if (previous === status && priorSlot === slot && priorPrice === price) return;
   button.disabled = true;
   try {
-    await updateDoc(doc(db, 'bookings', booking.id), { status, updatedAt: serverTimestamp() });
-    try {
-      await addDoc(collection(db, 'bookingStatusHistory'), {
-        bookingId: booking.id, oldStatus: previous, newStatus: status, status,
-        changedBy: auth.currentUser?.uid || null, createdAt: serverTimestamp()
-      });
-    } catch (historyError) { console.warn('تعذر تسجيل تاريخ تغيير الحجز:', historyError); }
+    const target = doc(db, 'bookings', booking.id);
+    const editor = auth.currentUser?.uid;
+    await runTransaction(db, async transaction => {
+      const snap = await transaction.get(target);
+      if (!snap.exists()) throw Error('طلب الحجز غير موجود.');
+      const live = snap.data();
+      if ((live.status || 'جديد') !== previous || (live.confirmedSlot || '') !== priorSlot ||
+          asBookingPrice(live.confirmedPrice) !== priorPrice) {
+        throw Error('اتغيّرت بيانات الطلب. حدّث القائمة وراجع أحدث موعد وسعر قبل الحفظ.');
+      }
+      if (!editor || auth.currentUser?.uid !== editor) throw Error('تغيّر حساب الإدارة.');
+      const changes = {status, updatedAt: serverTimestamp()};
+      if (slot !== priorSlot) changes.confirmedSlot = slot || null;
+      if (price !== priorPrice) changes.confirmedPrice = price;
+      transaction.update(target, changes);
+    });
+    if (previous !== status) {
+      try {
+        await addDoc(collection(db, 'bookingStatusHistory'), {
+          bookingId: booking.id, oldStatus: previous, newStatus: status, status,
+          changedBy: editor, createdAt: serverTimestamp()
+        });
+      } catch (historyError) { console.warn('تعذر تسجيل تاريخ تغيير الحجز:', historyError); }
+    }
     await loadBookings();
   } catch (error) {
     console.error('تعذر تحديث حالة الحجز:', error);
-    alert('تعذر حفظ الحجز: ' + (error.code || error.message));
+    alert('تعذر حفظ الحجز: ' + (error.message || error.code));
     button.disabled = false;
   }
 });

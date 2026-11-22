@@ -58,6 +58,7 @@ body{margin:0;font-family:Cairo,Arial,sans-serif;background:linear-gradient(135d
 
 </style>
 
+<link rel="stylesheet" href="./booking-flow.css?v=20261122-step4">
 <link rel="stylesheet" href="../../assets/translation.css?v=20261016-globe2">
 <script src="../../assets/translation.js?v=20261016-globe2"></script>
 <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
@@ -71,16 +72,44 @@ body{margin:0;font-family:Cairo,Arial,sans-serif;background:linear-gradient(135d
         <img src="../../images/logo.png" alt="زاد المعرفة">
         <div>
           <h1>احجز حصتك الآن</h1>
-          <p>اختر القسم والمادة التي تريد الدراسة فيها، ثم أرسل طلبك. للعلوم والكيمياء يمكنك اختيار المعلم، والرياضيات مع أ/ سعد علاء.</p>
+          <p>حدّد المادة والموعد اللي يناسبك. راجع التفاصيل والسعر قبل إرسال الطلب.</p>
         </div>
       </div>
 
-      <div style="padding:16px 18px;margin:0 0 20px;border-radius:15px;background:linear-gradient(120deg,#102b4c,#183c60);border:1px solid #c9a84c;color:#fff;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap" id="saadBookingShortcut">
-        <div><strong style="display:block;font-size:17px">📐 أ/ سعد علاء — الرياضيات والعلوم والكيمياء</strong><small style="display:block;color:#d8e4f2">اختار أ/ سعد مباشرة للحجز، ولو علوم أو كيمياء تقدر تختار بينه وبين أ/ محمد خالد.</small></div>
-        <a style="display:inline-flex;padding:11px 19px;border-radius:11px;background:#f2d27d;color:#172133;font-weight:800;text-decoration:none" href="?section=%D8%A7%D9%84%D8%B1%D9%8A%D8%A7%D8%B6%D9%8A%D8%A7%D8%AA&amp;subject=%D8%A7%D9%84%D8%B1%D9%8A%D8%A7%D8%B6%D9%8A%D8%A7%D8%AA&amp;teacher=%D8%B3%D8%B9%D8%AF%20%D8%B9%D9%84%D8%A7%D8%A1">احجز مع أ/ سعد علاء</a>
+      <div class="booking-account" aria-live="polite">
+        <span id="bookingAccountStatus">جارٍ التحقق من حسابك…</span>
+        <a href="../../login/index.html" id="bookingLogin" hidden>سجّل دخولك</a>
+        <a href="#my-bookings">متابعة حجوزاتي</a>
       </div>
+      <p id="bookingProgress" class="booking-progress" aria-live="polite"></p>
       <form id="bookingForm" class="booking-form">
-        <div class="booking-two">
+        <fieldset class="booking-step" id="bookingStepClass">
+          <legend tabindex="-1">صفك الدراسي</legend>
+          <div class="booking-two">
+            <label>الصف الدراسي / المستوى
+              <input name="grade" required maxlength="100" list="bookingGrades" placeholder="مثال: تانية ثانوي أزهري أو مستوى غير دراسي">
+            </label>
+            <label>نظام التعليم <span style="color:#b91c1c">*</span>
+            <select name="educationType" id="bookingEducationType" required aria-required="true">
+              <option value="" selected disabled>اختر نظام التعليم</option>
+              <option value="غير مرتبط بنظام تعليمي">غير مرتبط بنظام تعليمي</option>
+              <option value="أزهري">أزهري</option>
+              <option value="عام">عام</option>
+              <option value="لغات">لغات</option>
+            </select>
+          </label>
+          </div>
+          <label>المرحلة (اختياري)
+            <input name="stage" maxlength="100" placeholder="مثال: إعدادي، ثانوي، طالب علم">
+          </label>
+          <datalist id="bookingGrades">
+            <option value="أولى إعدادي"></option><option value="تانية إعدادي"></option><option value="تالتة إعدادي"></option>
+            <option value="أولى ثانوي"></option><option value="تانية ثانوي"></option><option value="تالتة ثانوي"></option>
+            <option value="تانية ثانوي أزهري"></option><option value="تانية بكالوريا"></option><option value="مستوى غير دراسي"></option>
+          </datalist>
+        </fieldset>
+        <fieldset class="booking-step" id="bookingStepSubject" hidden>
+          <legend tabindex="-1">المادة والمعلم</legend>
           <label>القسم المطلوب
             <select name="section" id="bookingSection" required>
               <option value="">اختر القسم</option>
@@ -95,41 +124,7 @@ body{margin:0;font-family:Cairo,Arial,sans-serif;background:linear-gradient(135d
               <option value="البرمجة وتكنولوجيا المعلومات">البرمجة وتكنولوجيا المعلومات</option>
             </select>
           </label>
-
-          <label>نظام التعليم <span style="color:#b91c1c">*</span>
-            <select name="educationType" id="bookingEducationType" required aria-required="true">
-              <option value="" selected disabled>اختر نظام التعليم</option>
-              <option value="غير مرتبط بنظام تعليمي">غير مرتبط بنظام تعليمي</option>
-              <option value="أزهري">أزهري</option>
-              <option value="عام">عام</option>
-              <option value="لغات">لغات</option>
-            </select>
-          </label>
-        </div>
-
-        <label>الاسم بالكامل
-          <input name="fullName" required maxlength="100" autocomplete="name">
-        </label>
-
-        <div class="booking-two">
-          <label>رقم الهاتف / واتساب
-            <input name="phone" required inputmode="tel" autocomplete="tel">
-          </label>
-          <label>البريد الإلكتروني
-            <input name="email" type="email" required autocomplete="email">
-          </label>
-        </div>
-
-        <div class="booking-two">
-          <label>المرحلة / المستوى (اختياري)
-            <input name="stage" placeholder="مثال: إعدادي، ثانوي، طالب علم">
-          </label>
-          <label>الصف الدراسي (اختياري)
-            <input name="grade" placeholder="مثال: أولى ثانوي أزهري">
-          </label>
-        </div>
-
-        <label>المادة المطلوبة
+          <label>المادة المطلوبة
           <input name="subject" required maxlength="150"
                  placeholder="مثال: الرياضيات، الكيمياء، العلوم، الفقه، اللغة الإنجليزية..." list="zadBookingSubjects">
         </label>
@@ -154,10 +149,18 @@ body{margin:0;font-family:Cairo,Arial,sans-serif;background:linear-gradient(135d
             <small id="teacherAutoHint" class="auto-teacher-hint">المعلم يتحدد تلقائيًا، ويمكن الاختيار عند وجود أكثر من مدرس للمادة.</small>
           </label>
         </div>
-
-        <div class="booking-two">
+          <p class="booking-price" id="bookingPrice"></p>
+        </fieldset>
+        <fieldset class="booking-step" id="bookingStepTime" hidden>
+          <legend tabindex="-1">الموعد وبيانات التواصل</legend>
+          <p class="booking-note">اختار تاريخ وساعة مقترحين، أو سيب موعدك مفتوح واختار يومين وفترة مناسبة.</p>
+          <label>تاريخ وساعة مقترحان
+            <input name="requestedSlot" type="datetime-local" step="60" aria-describedby="bookingSlotHint">
+            <small id="bookingSlotHint">بتوقيت القاهرة.</small>
+          </label>
+          <div class="booking-two">
           <label>اليوم الأول المناسب
-            <select name="preferredDay1" required>
+            <select name="preferredDay1">
               <option value="">اختر اليوم</option>
               <option value="السبت">السبت</option><option value="الأحد">الأحد</option><option value="الإثنين">الإثنين</option>
               <option value="الثلاثاء">الثلاثاء</option><option value="الأربعاء">الأربعاء</option><option value="الخميس">الخميس</option>
@@ -165,7 +168,7 @@ body{margin:0;font-family:Cairo,Arial,sans-serif;background:linear-gradient(135d
             </select>
           </label>
           <label>اليوم الثاني المناسب
-            <select name="preferredDay2" required>
+            <select name="preferredDay2">
               <option value="">اختر اليوم</option>
               <option value="السبت">السبت</option><option value="الأحد">الأحد</option><option value="الإثنين">الإثنين</option>
               <option value="الثلاثاء">الثلاثاء</option><option value="الأربعاء">الأربعاء</option><option value="الخميس">الخميس</option>
@@ -191,14 +194,38 @@ body{margin:0;font-family:Cairo,Arial,sans-serif;background:linear-gradient(135d
           <textarea name="notes" rows="4" maxlength="500"
                     placeholder="اكتب أي تفاصيل تساعدنا على ترشيح الحصة والمعلم المناسبين."></textarea>
         </label>
+          <label>الاسم بالكامل
+          <input name="fullName" required maxlength="100" autocomplete="name">
+        </label>
 
-        <p style="font-size:.9rem;opacity:.85">الأيام والفترة الزمنية تفضيلات للطلب فقط، ولا يصبح الموعد مؤكدًا إلا بعد مراجعة الإدارة لتجنب تعارض الحجوزات.</p>
-        <button class="submit-btn" type="submit">إرسال طلب الحجز</button>
-        <div id="bookingStatus" class="booking-status" aria-live="polite"></div>
+        <div class="booking-two">
+          <label>رقم الهاتف / واتساب
+            <input name="phone" required inputmode="tel" autocomplete="tel">
+          </label>
+          <label>البريد الإلكتروني
+            <input name="email" type="email" required autocomplete="email">
+          </label>
+        </div>
+        </fieldset>
+        <fieldset class="booking-step" id="bookingStepReview" hidden>
+          <legend tabindex="-1">راجع طلبك قبل الإرسال</legend>
+          <dl id="bookingSummary" class="booking-summary"></dl>
+          <p class="booking-note">المواعيد اللي اخترتها تفضيلات. الموعد النهائي هيظهر في «حجوزاتي» بعد ما الإدارة تؤكده.</p>
+        </fieldset>
+        <div class="booking-actions">
+          <button class="submit-btn" id="bookingNext" type="submit" disabled>التالي</button>
+          <button class="booking-secondary" id="bookingBack" type="button" hidden>السابق</button>
+        </div>
+        <div id="bookingStatus" class="booking-status" role="status"></div>
       </form>
+      <section id="my-bookings" class="booking-tracker" aria-labelledby="bookingTrackerTitle">
+        <h2 id="bookingTrackerTitle">حجوزاتي</h2>
+        <p id="bookingTrackStatus" role="status">جارٍ التحقق من حسابك…</p>
+        <div id="bookingTrackResults" class="booking-tracker-list"></div>
+      </section>
     </div>
   </main>
-  <script type="module" src="./booking.js?v=20261116-english"></script>
+  <script type="module" src="./booking.js?v=20261122-step4"></script>
 <script type="module" src="../../reviews/weekly-review-guard.js?v=20261105-evals1"></script>
 </body>
 </html>

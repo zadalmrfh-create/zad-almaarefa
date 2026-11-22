@@ -1,0 +1,97 @@
+.booking-box [hidden] { display: none !important; }
+.booking-account {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem 1rem;
+  padding: .9rem 1rem;
+  border: 1px solid #d8e2ee;
+  border-radius: .85rem;
+  background: #eef4fb;
+  color: #203b5b;
+  font-size: .92rem;
+}
+.booking-account a,.booking-status a { color: #204771; font-weight: 800; text-underline-offset: .2em; }
+.booking-account a:last-child { margin-inline-start: auto; }
+.booking-progress {
+  margin: 1.3rem 0 .7rem;
+  color: #60552f;
+  font-size: .9rem;
+  font-weight: 800;
+}
+.booking-step {
+  min-inline-size: 0;
+  margin: 0;
+  padding: clamp(.85rem, 2.5vw, 1.3rem);
+  display: grid;
+  gap: 1rem;
+  border: 1px solid #d9dee8;
+  border-radius: .9rem;
+}
+.booking-step legend {
+  padding-inline: .6rem;
+  font-weight: 800;
+  color: #193757;
+}
+.booking-step small,.booking-note { color: #4f5e73; font-weight: 600; }
+.booking-step .auto-teacher-hint { margin: 0; }
+.booking-price {
+  margin: 0;
+  padding: .7rem .85rem;
+  background: #f9f1dc;
+  color: #5b4316;
+  border-radius: .6rem;
+  font-weight: 800;
+}
+.booking-actions { display: flex; flex-wrap: wrap; gap: .65rem; }
+.booking-actions .submit-btn { background: #183c60; color: white; }
+.booking-actions .submit-btn:hover { background: #102b49; }
+.booking-actions .submit-btn:disabled { opacity: .65; cursor: wait; transform: none; }
+.booking-secondary {
+  border: 1px solid #b6c2d1;
+  border-radius: .7rem;
+  padding: .55rem 1rem;
+  color: #233953;
+  background: #fff;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+.booking-summary {
+  margin: 0;
+  display: grid;
+  gap: .5rem;
+  grid-template-columns: repeat(auto-fit,minmax(min(100%,14rem),1fr));
+}
+.booking-summary > div { min-width: 0; background: #f4f6f9; padding: .55rem .75rem; border-radius: .55rem; }
+.booking-summary dt { font-size: .8rem; color: #52617a; }
+.booking-summary dd { margin: 0; overflow-wrap: anywhere; font-weight: 800; }
+.booking-note { margin: 0; font-size: .87rem; }
+.booking-status { text-align: start; min-height: 0; }
+.booking-status:empty { display: none; }
+.booking-tracker {
+  margin-block-start: 1.8rem;
+  padding-block-start: 1.2rem;
+  border-top: 1px solid #d9dee8;
+  scroll-margin-block-start: 1rem;
+}
+.booking-tracker h2 { margin: 0 0 .6rem; color: #193757; }
+.booking-tracker-list { display: grid; gap: .75rem; }
+.booking-track-card { border: 1px solid #d9dee8; border-radius: .8rem; padding: .75rem; }
+.booking-track-card h3 { margin: 0; overflow-wrap: anywhere; }
+.booking-track-badge {
+  display: inline-block;
+  margin-block: .35rem .65rem;
+  padding: .12rem .65rem;
+  border-radius: 1rem;
+  color: #2b4466;
+  background: #e7eef7;
+  font-size: .83rem;
+}
+.booking-track-badge[data-status="تم الحجز"],.booking-track-badge[data-status="مكتمل"] { color: #145737; background: #def2e5; }
+.booking-track-badge[data-status="ملغي"] { color: #a02f33; background: #fae9e7; }
+.booking-box :focus-visible { outline: 2px solid #1b5283; outline-offset: 2px; }
+@media (max-width: 470px) {
+  .booking-actions > button { flex: 1; }
+  .booking-account a:last-child { margin-inline-start: 0; }
+}
