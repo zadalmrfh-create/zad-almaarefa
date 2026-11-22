@@ -65,23 +65,8 @@
     crossorigin
   />
 
-  <link
-    href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=Tajawal:wght@300;400;500;700;800;900&display=swap"
-    rel="stylesheet"
-  />
-
-  <!-- Font Awesome 6.7.2 -->
-  <link
-    rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
-  />
-
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-
 <link rel="stylesheet" href="assets/translation.css?v=20261016-globe2">
-<script src="assets/translation.js?v=20261016-globe2"></script>
-<script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+<script src="assets/translation.js?v=20261122-loading" data-zad-load-on-demand defer></script>
 <script src="content-protection.js" defer></script>
 <script type="application/ld+json">{
     "@context":"https://schema.org",
@@ -91,7 +76,9 @@
     "email":"zadalmarfah@gmail.com",
     "address":{"@type":"PostalAddress","addressLocality":"Cairo","addressCountry":"EG"}
   }</script>
-<style>.why-card,.faq-item{background:rgba(16,29,51,.75);border:1px solid rgba(212,168,67,.22);border-radius:18px;padding:24px;color:inherit}.why-card h3{font-weight:800;margin-bottom:8px}.why-card p,.faq-item p{opacity:.78;line-height:1.9}.faq-item{padding:0}.faq-item summary{cursor:pointer;padding:18px;font-weight:800;list-style:none}.faq-item summary::-webkit-details-marker{display:none}.faq-item p{padding:0 18px 18px;margin:0}</style></head>
+<style>.why-card,.faq-item{background:rgba(16,29,51,.75);border:1px solid rgba(212,168,67,.22);border-radius:18px;padding:24px;color:inherit}.why-card h3{font-weight:800;margin-bottom:8px}.why-card p,.faq-item p{opacity:.78;line-height:1.9}.faq-item{padding:0}.faq-item summary{cursor:pointer;padding:18px;font-weight:800;list-style:none}.faq-item summary::-webkit-details-marker{display:none}.faq-item p{padding:0 18px 18px;margin:0}</style>
+<link rel="stylesheet" href="assets/home-layout.css?v=20261122-loading">
+</head>
   <body class="dark">
 <script>
   try {
@@ -738,7 +725,8 @@
       function renderCats() {
         document.getElementById("cats-grid").innerHTML = CATS.map(
           (c, i) => `
-             <div class="cat-card sr sr-delay-${(i % 3) + 1}" onclick="window.location.href='${c.link}'" style="background-image:url('${c.image}')">
+             <div class="cat-card sr sr-delay-${(i % 3) + 1}" onclick="window.location.href='${c.link}'">
+                <img class="cat-cover" src="${c.image}" alt="" loading="lazy" decoding="async">
                 <div class="cat-num">${String(i + 1).padStart(2, "0")}</div>
                 <div class="cat-icon" style="background:${c.iconBg}">${c.icon}</div>
                 <div class="cat-name">${c.name}</div>
@@ -1111,119 +1099,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
 </script>
 
-<script type="module">
-import { db, FIREBASE_READY } from './firebase-config.js';
-import {
-  doc,
-  onSnapshot
-} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
-
-/**
- * عرض العدد العام للطلاب دون كشف أي بيانات شخصية.
- * يعتمد على publicStats/students ويتم تحديثه لحظيًا.
- */
-export function watchStudentCount(elementOrId) {
-  const element = typeof elementOrId === 'string'
-    ? document.getElementById(elementOrId)
-    : elementOrId;
-
-  if (!element) return () => {};
-
-  element.textContent = '—';
-
-  if (!FIREBASE_READY || !db) {
-    return () => {};
-  }
-
-  const counterRef = doc(db, 'publicStats', 'students');
-
-  return onSnapshot(
-    counterRef,
-    (snapshot) => {
-      const rawTotal = snapshot.exists() ? snapshot.data()?.total : undefined;
-      const total = Number(rawTotal);
-      element.textContent = rawTotal !== undefined && rawTotal !== null && Number.isFinite(total) && total >= 0
-        ? Math.floor(total).toLocaleString('ar-EG')
-        : '—';
-    },
-    (error) => {
-      console.warn('تعذر تحميل عداد الطلاب:', error);
-      if (!element.textContent || element.textContent === '—') {
-        element.textContent = '—';
-      }
-    }
-  );
-}
-
-watchStudentCount('studentCount');
-</script>
-<script type="module">
-import { auth, db, FIREBASE_READY } from './firebase-config.js';
-import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
-import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
-const buttons=document.querySelectorAll('.login-nav-btn,.login-mobile-btn');const dashLinks=document.querySelectorAll('.account-dashboard-link');
-const heroAccount=document.querySelector('.zad-home-hero__account');
-const ADMIN_EMAIL='maleksameh121@gmail.com';
-function pathFor(role,status){if(role==='admin')return './dashboard/admin/index.html';if(role==='teacher'&&status==='active')return './dashboard/teacher/index.html';return './dashboard/student/index.html'}
-if(FIREBASE_READY){onAuthStateChanged(auth,async user=>{if(!user){if(heroAccount)heroAccount.textContent='تسجيل الدخول';dashLinks.forEach(a=>{a.href='./login/index.html'});buttons.forEach(b=>{b.href='./login/index.html';if(b.classList.contains('login-nav-btn'))b.innerHTML='<i class="fa-solid fa-right-to-bracket"></i> تسجيل الدخول'});return}let d={},role=user.email?.toLowerCase()===ADMIN_EMAIL?'admin':'student';try{const s=await getDoc(doc(db,'users',user.uid));if(s.exists()){d=s.data();role=user.email?.toLowerCase()===ADMIN_EMAIL?'admin':(d.role||role)}}catch(e){}try{const a=await getDoc(doc(db,'admins',user.uid));if(a.exists())role='admin'}catch(e){}const dashboard=pathFor(role,d.status),name=d.fullName||user.displayName||user.email?.split('@')[0]||'حسابي',shortName=((d.fullName||user.displayName||'').trim().length>14?((d.fullName||user.displayName||'').trim().split(/\s+/)[0]||name):name);if(heroAccount)heroAccount.textContent='افتح حسابي';dashLinks.forEach(a=>a.href=dashboard);buttons.forEach(btn=>{if(btn.classList.contains('login-mobile-btn')){btn.href=dashboard;return}const safeText=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));const first=(name.trim()[0]||'ح').toUpperCase();const wrap=document.createElement('div');wrap.className='smart-account-wrap';wrap.innerHTML=`<button type="button" class="smart-account-trigger"><span class="account-avatar">${safeText(first)}</span><span class="account-name">${safeText(shortName)}</span><span class="account-caret">⌄</span></button><div class="smart-account-menu"><a href="${dashboard}">🏠 لوحتي</a><a href="${dashboard}#profileCard">👤 الملف الشخصي</a><a href="${dashboard}?tab=notifications">🔔 الإشعارات</a><button type="button" class="smart-logout">↪ تسجيل الخروج</button></div>`;btn.replaceWith(wrap);wrap.querySelector('.smart-account-trigger').onclick=()=>wrap.classList.toggle('open');wrap.querySelector('.smart-logout').onclick=async()=>{await signOut(auth);location.href='./index.html'}})})}
-export function redirectAfterLogin(userData){window.location.href=pathFor(userData?.role,userData?.status)}
-
-</script>
-<script type="module" src="notifications.js"></script>
 
 
-<script type="module">
-import {db} from './firebase-config.js';
-import {collection,getDocs,onSnapshot,query,orderBy,limit} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
-const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-async function loadHomeExtras(){
-  const sg=document.getElementById('homeStatsGrid');
-  if(!sg)return;
-  let st={};
-  sg.innerHTML=Array.from({length:4},()=>'<div class="home-stat-skeleton"></div>').join('');
-  const cards=[['students','👨‍🎓','الطلاب'],['books','📚','كتب المكتبة'],['teachers','👨‍🏫','المعلمون'],['categories','📚','الأقسام']];
-  const draw=()=>{sg.innerHTML=cards.map(x=>`<div class="card text-center p-6"><div class="text-3xl">${x[1]}</div><div class="text-3xl font-black mt-2">${(st[x[0]]===undefined?'—':Number(st[x[0]]).toLocaleString('ar-EG'))}</div><div>${x[2]}</div></div>`).join('');};
-  draw();
-  // حساب عدد الأقسام من بطاقات الأقسام المعروضة فعلًا.
-  const categoryGrid=document.getElementById('cats-grid');
-  if(categoryGrid){
-    const updateCategories=()=>{const total=categoryGrid.querySelectorAll('.cat-card').length;if(total){st.categories=total;draw();}};
-    updateCategories();
-    new MutationObserver(updateCategories).observe(categoryGrid,{childList:true});
-  }
-  // محتويات المكتبة القديمة انتقلت إلى كتالوج المتجر؛ لا تعتمد على صفحة المكتبة المحذوفة.
-  try {
-    const {baseProducts}=await import('./store/catalog-data.js?v=20261103-home-stats');
-    const baseBooks=baseProducts.filter(p=>p.type==='book'&&p.deleted!==true&&p.published!==false).length;
-    st.books=baseBooks;
-    draw();
-    onSnapshot(collection(db,'storeProducts'),snapshot=>{
-      const overrides=new Map(snapshot.docs.map(d=>[d.id,d.data()]));
-      const ids=new Set(baseProducts.map(p=>p.id));
-      const existing=baseProducts.filter(p=>{
-        const x={...p,...(overrides.get(p.id)||{})};
-        return x.type==='book'&&!x.deleted&&x.published!==false;
-      }).length;
-      const extra=snapshot.docs.filter(d=>!ids.has(d.id)&&d.data().type==='book'&&!d.data().deleted&&d.data().published!==false).length;
-      st.books=existing+extra;draw();
-    },error=>console.info('تعذر تحديث عدد كتب المتجر لحظيًا',error));
-  }catch(error){console.warn('تعذر قراءة كتالوج المتجر',error);}
-  // بقية الإحصائيات تُقرأ بصورة مستقلة، ولا تستطيع استبدال عداد الكتب.
-  // قراءة عدّاد الطلاب والمعلمين كمستندين معروفين، ومتابعة تغيّرهما دون إعادة فتح الصفحة.
-  // لو المستند غير موجود أو تعذرت القراءة نعرض «—» بدل قيمة غير مؤكدة.
-  const {doc}=await import('https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js');
-  for(const id of ['students','teachers']){
-    onSnapshot(doc(db,'publicStats',id),snap=>{
-      if(!snap.exists()){delete st[id];draw();return;}
-      const raw=snap.data().total??snap.data().count;
-      if(Number.isFinite(Number(raw))&&Number(raw)>=0)st[id]=Number(raw);
-      else delete st[id];
-      draw();
-    },error=>{delete st[id];draw();console.info('تعذر تحميل إحصائية '+id,error);});
-  }
-}
-document.addEventListener('DOMContentLoaded',loadHomeExtras);
-</script>
+
+
+
+
 
 <div id="globalSearchModal" class="global-search-modal" role="dialog" aria-modal="true" aria-label="البحث في المنصة" hidden>
   <div class="global-search-panel">
@@ -1233,21 +1114,17 @@ document.addEventListener('DOMContentLoaded',loadHomeExtras);
     <div id="globalSearchResults" class="global-search-results"></div>
   </div>
 </div>
-<script type="module">
-
-import { auth, db } from './firebase-config.js';
-import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
-import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
+<script>
+(() => {
 const modal=document.getElementById('globalSearchModal'),input=document.getElementById('globalSearchInput'),results=document.getElementById('globalSearchResults');
 const items=[
 ['المكتبة والكتب','sections/library.html','كتب مذكرات تحميل'],['أسئلة المكتبة','sections/library.html','أسئلة نحو توحيد مراجعة'],['حجز حصة','sections/booking/index.html','حجز موعد حصة'],['التعليم الأزهري','sections/Azhar/azhar.html','ازهر أزهري'],['القرآن الكريم','sections/Quran/quran.html','قرآن تجويد حفظ'],['اللغة العربية','sections/Arabic/arabic.html','عربي نحو صرف بلاغة'],['العلوم الشرعية','sections/Sharia/sharia.html','شرعي فقه عقيدة'],['التزكية والتربية','sections/Tazkea/tazkea.html','تزكية تربية'],['طاقم التدريس','teachers/index.html','معلم مدرس'],['أحداث المنصة','events/events.html','أحداث اخبار'],['الخدمات','sections/services/services.html','خدمات'],['الطلاب المتميزون','students/students.html','شهادات تكريم'],['آراء الطلاب','reviews/index.html','آراء تقييمات'],['سياسة المدفوعات','sections/payment-policy.html','الدفع الحصص محاسبة الطلاب المعلمين']];
 function norm(x=''){return x.toLowerCase().replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي')}
 function draw(){const q=norm(input?.value||'');const arr=!q?items.slice(0,7):items.filter(x=>norm(x.join(' ')).includes(q));results.innerHTML=arr.map(x=>`<a href="${x[1]}"><strong>${x[0]}</strong><br><small>${x[2]}</small></a>`).join('')||'<p>لا توجد نتائج مطابقة.</p>'}
 document.getElementById('globalSearchBtn')?.addEventListener('click',()=>{modal.hidden=false;draw();setTimeout(()=>input.focus(),30)});document.getElementById('closeGlobalSearch')?.addEventListener('click',()=>modal.hidden=true);modal?.addEventListener('click',e=>{if(e.target===modal)modal.hidden=true});input?.addEventListener('input',draw);
-onAuthStateChanged(auth,async user=>{const box=document.getElementById('personalHome');if(!box)return;if(!user){box.hidden=true;return}box.hidden=false;let name=user.displayName||user.email?.split('@')[0]||'طالبنا';try{const snap=await getDoc(doc(db,'users',user.uid));if(snap.exists())name=snap.data().fullName||name}catch(e){}document.getElementById('personalWelcome').textContent=`مرحبًا ${name}، ماذا تريد أن تكمل اليوم؟`;});
 
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&modal&&!modal.hidden){modal.hidden=true;}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();if(modal){modal.hidden=false;draw();input?.focus();}}});
-
+})();
 </script>
 
 <script>
@@ -1355,6 +1232,28 @@ bubble('bot','السلام عليكم! 👋 أنا مساعد خدمات زاد 
   .zad-store-access{left:12px!important;right:auto!important;bottom:84px!important;padding:9px 12px;font-size:12px}
 }
 </style>
-<script type="module" src="reviews/weekly-review-guard.js?v=20261105-evals1"></script>
+<script>
+  window.addEventListener('load', () => {
+    const appearanceStyles = [
+      'https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=Tajawal:wght@300;400;500;700;800;900&display=swap',
+      'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css'
+    ];
+    for (const href of appearanceStyles) {
+      const stylesheet = document.createElement('link');
+      stylesheet.rel = 'stylesheet';
+      stylesheet.href = href;
+      document.head.appendChild(stylesheet);
+    }
+
+    const modules = [
+      './notifications.js',
+      './home-data.js?v=20261122-loading',
+      './reviews/weekly-review-guard.js?v=20261105-evals1'
+    ];
+    for (const module of modules) {
+      import(module).catch(error => console.warn('تعذر بدء جزء من خدمات الرئيسية:', module, error));
+    }
+  }, { once: true });
+</script>
 </body>
 </html>

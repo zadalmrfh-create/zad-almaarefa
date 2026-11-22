@@ -1,6 +1,7 @@
 /* Zad Al-Maarefa — four-language site selector (Google Translate). */
 (function () {
   'use strict';
+  const loadOnDemand = document.currentScript?.hasAttribute('data-zad-load-on-demand');
   const KEY = 'zad_language';
   const choices = { ar: 'العربية', en: 'English', ru: 'Русский', fr: 'Français' };
   const available = Object.keys(choices);
@@ -102,7 +103,21 @@
       }
     } catch (error) { console.warn('Zad translation unavailable:', error); }
   };
-  function boot() { updateDocument(current); ensureUI(); }
+  function loadGoogleTranslate() {
+    const script = document.createElement('script');
+    script.src = 'https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
+    script.async = true;
+    script.addEventListener('error', () => updateDocument('ar'), { once: true });
+    document.head.appendChild(script);
+  }
+
+  function boot() {
+    updateDocument(current);
+    ensureUI();
+    if (!loadOnDemand || current === 'ar') return;
+    if (document.readyState === 'complete') loadGoogleTranslate();
+    else window.addEventListener('load', loadGoogleTranslate, { once: true });
+  }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
   else boot();
 })();
