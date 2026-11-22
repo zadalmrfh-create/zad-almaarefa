@@ -1,0 +1,49 @@
+#zadAdminToday[hidden] { display: none !important; }
+.zad-today-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .65rem;
+  margin-block-end: .9rem;
+}
+.zad-today-heading h2,.zad-today-heading h3 { margin: 0; }
+.zad-today-heading time { color: var(--muted,#b8c5da); font-size: .9rem; }
+.zad-today-tasks {
+  display: grid;
+  grid-template-columns: repeat(auto-fit,minmax(min(100%, 11rem),1fr));
+  gap: .75rem;
+}
+.zad-today-task {
+  display: grid;
+  gap: .35rem;
+  padding: .9rem;
+  min-inline-size: 0;
+  color: #f7f4e9;
+  background: #1a2b44;
+  border: 1px solid #5b708a;
+  border-radius: .8rem;
+  text-align: start;
+  font: inherit;
+  cursor: pointer;
+}
+.zad-today-task:hover,.zad-today-task:focus-visible { border-color: #e6c373; }
+.zad-today-task:focus-visible { outline: 2px solid #e6c373; outline-offset: 2px; }
+.zad-today-task strong { color: #f7d887; font-size: 1.45rem; line-height: 1.25; }
+.zad-today-task small,.zad-today-list small { display: block; color: var(--muted,#c2cee2); }
+.zad-today-list { margin: 0; padding: 0; list-style: none; display: grid; gap: .5rem; }
+.zad-today-list li {
+  display: flex;
+  gap: .45rem .9rem;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  padding: .65rem .75rem;
+  border: 1px solid #586a86;
+  border-radius: .55rem;
+  overflow-wrap: anywhere;
+}
+.zad-today-lesson { margin-block-start: .75rem; padding: .85rem; border: 1px solid #60708a; border-radius: .75rem; }
+.zad-today-lesson h4 { margin: 0 0 .35rem; }
+.zad-today-lesson > p { margin: .35rem 0 .65rem; color: var(--muted,#c5d0e0); }
+.zad-today-filter { display: inline-flex; align-items: center; flex-wrap: wrap; gap: .5rem; margin-block: .65rem; }

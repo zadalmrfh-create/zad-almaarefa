@@ -10,7 +10,9 @@
   <script src="../../assets/translation.js?v=20261016-globe2"></script>
   <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
   <script src="../../content-protection.js" defer></script>
-<style>.zwr-item{padding:17px;margin:15px 0;border:1px solid #50627d;border-radius:15px;background:#15273e}.zwr-item strong{color:#ecc56c}.zwr-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin:13px 0}.zwr-grid>div{padding:10px;border:1px solid #53637c;border-radius:11px;background:#0b1d30}.zwr-grid small{display:block;color:#c5d0e0;font-size:12px}.zwr-grid b{font-size:16px;color:#edca7e}.zwr-comment{padding:10px;border-right:3px solid #eac366;background:#172f4e;color:white;white-space:pre-wrap;overflow-wrap:anywhere}</style></head>
+<style>.zwr-item{padding:17px;margin:15px 0;border:1px solid #50627d;border-radius:15px;background:#15273e}.zwr-item strong{color:#ecc56c}.zwr-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin:13px 0}.zwr-grid>div{padding:10px;border:1px solid #53637c;border-radius:11px;background:#0b1d30}.zwr-grid small{display:block;color:#c5d0e0;font-size:12px}.zwr-grid b{font-size:16px;color:#edca7e}.zwr-comment{padding:10px;border-right:3px solid #eac366;background:#172f4e;color:white;white-space:pre-wrap;overflow-wrap:anywhere}</style>
+  <link rel="stylesheet" href="../today-tasks.css?v=20261122-step5">
+</head>
 <body class="teacher-dashboard-page">
   <div class="wrap teacher-wrap">
     <header class="top teacher-topbar">
@@ -58,6 +60,14 @@
     <div style="margin-bottom:12px"><button type="button" class="btn" id="refreshTeacherData">🔄 تحديث بياناتي</button></div>
     <main class="teacher-workspace">
       <section class="teacher-panel active" data-panel="overview">
+        <section class="card" aria-labelledby="teacherScheduleTodayTitle">
+          <div class="zad-today-heading">
+            <h3 id="teacherScheduleTodayTitle">حصصي النهارده</h3>
+            <time id="teacherScheduleDay"></time>
+          </div>
+          <p id="teacherScheduleStatus" role="status">جارٍ تحميل حصص اليوم…</p>
+          <div id="teacherScheduleLessons"></div>
+        </section>
         <div class="enh-grid teacher-stats-grid">
           <div class="enh-stat"><span>👥 طلابي</span><b id="teacherStudentsCount">0</b><small>طلاب مرتبطون بك</small></div>
           <div class="enh-stat"><span>✅ الحضور</span><b id="teacherAttendanceCount">0</b><small>سجلات الحضور</small></div>
@@ -402,7 +412,7 @@
     }
   </style>
   <section id="teacherPrintDocument" aria-label="مستند الطباعة"></section>
-  <script type="module" src="teacher-enhancements.js?v=20261106-salary1"></script>
+  <script type="module" src="teacher-enhancements.js?v=20261122-step5"></script>
   <link rel="stylesheet" href="teacher-exam-results.css?v=20261108-1">
   <script type="module" src="teacher-exam-results.js?v=20261114-essay-auto1"></script>
   <script type="module" src="teacher-payroll-view.js?v=20261106-salary1"></script>

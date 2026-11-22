@@ -1,4 +1,6 @@
 import {isAdminAccount,getPreviewContext} from '../admin-preview-core.js';
+import {cairoLessonDay, lessonsForTeacher, offsetDay, renderTeacherLessons} from './today-lessons.js?v=20261122-step5';
+import {lessonStartMs} from '../student/student-today-core.js?v=20261120-today1';
 import {amountDue,amountPaid,money} from '../payment-utils.js';
 import { auth, db } from '../../firebase-config.js';
 import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
@@ -14,6 +16,7 @@ import {
   serverTimestamp,
   updateDoc,
   onSnapshot,
+  Timestamp,
   where
 } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 
@@ -36,16 +39,25 @@ function showIssues(){
  if(state.attendance.some(x=>!Object.hasOwn(x,'teacherAdvanceAppliedPiastres'))){el.hidden=false;el.textContent='ℹ️ بعض سجلات الحصص لم تكتمل تسويتها المالية؛ راجع لوحة الأدمن لتحديث الأرصدة قبل اعتماد الإجمالي.';return;}
  el.hidden=true;el.textContent='';
 }
-function upsertStudent(entry){
+function upsertStudent(entry, fromBooking=false){
  const uid=text(entry.studentUid);
  if(!uid)return;
  const prev=state.studentMap.get(uid)||{id:uid};
  const name=text(entry.fullName||entry.studentName||entry.name);
+ const lessonSubjects=new Set(prev.lessonSubjects||[]);
+ const status=text(entry.status).toLowerCase();
+ const scheduled=fromBooking
+   ? ['تم الحجز','مكتمل','تم التأكيد','confirmed','completed'].includes(status)
+   : !['ملغي','ملغى','cancelled','canceled'].includes(status);
+ if(scheduled && text(entry.subject)) {
+   lessonSubjects.add(text(entry.subject));
+ }
  state.studentMap.set(uid,{...prev,
   fullName:prev.fullName||name,name:prev.name||name,
   email:prev.email||text(entry.email||entry.studentEmail),
   phone:prev.phone||text(entry.phone||entry.studentPhone),
   grade:prev.grade||text(entry.grade||entry.studyGrade),
+  lessonSubjects,
  });
 }
 
@@ -67,7 +79,8 @@ function esc(value){
 }
 function text(value){ return String(value ?? '').trim(); }
 function phoneDigits(value){
-  const digits = text(value).replace(/\D/g, '');
+  const digits = text(value).replace(/[٠-٩۰-۹]/g, numeral=>'٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹'.indexOf(numeral)%10)
+    .replace(/\D/g, '').replace(/^00/, '');
   if (!digits) return '';
   if (digits.startsWith('20')) return digits;
   if (digits.startsWith('0')) return '20' + digits.slice(1);
@@ -113,7 +126,7 @@ function openTab(name){
 async function loadTeacherStudents(uid){
  try{
   const snap=await getDocs(query(collection(db,'bookings'),where('teacherUid','==',uid)));
-  for(const d of snap.docs)upsertStudent(d.data());
+  for(const d of snap.docs)upsertStudent(d.data(),true);
  }catch(err){addIssue('الحجوزات',err);}
 }
 async function loadAttendance(uid){
@@ -123,6 +136,36 @@ async function loadAttendance(uid){
    .sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')));
   for(const x of state.attendance)upsertStudent(x);
  }catch(err){addIssue('الحضور والمدفوعات',err);state.attendance=[];}
+}
+async function loadTeacherToday(user, uid, profile, preview, studentsReady) {
+  const day=cairoLessonDay();
+  const overnight=offsetDay(day,1);
+  // Cairo's spring-forward can skip midnight. The first available hour starts that day.
+  const dayStart=date=>lessonStartMs(date+'T00:00') || lessonStartMs(date+'T01:00');
+  const lessonCollection=collection(db,'lessons');
+  const queries=[
+    query(lessonCollection,where('date','>=',offsetDay(day,-1)),where('date','<',offsetDay(day,2))),
+    query(lessonCollection,where('date','>=',Timestamp.fromMillis(dayStart(day))),
+      where('date','<',Timestamp.fromMillis(dayStart(overnight))))
+  ];
+  const reads=await Promise.allSettled(queries.map(request=>getDocs(request)));
+  await studentsReady;
+  if(auth.currentUser?.uid!==user.uid || state.user?.uid!==uid)return;
+
+  const unique=new Map();
+  for(const read of reads){
+    if(read.status==='fulfilled'){
+      for(const docSnap of read.value.docs)unique.set(docSnap.id,{...docSnap.data(),id:docSnap.id});
+    }else console.warn('تعذر تحميل بعض حصص المعلم',read.reason);
+  }
+  const lessons=lessonsForTeacher([...unique.values()],uid,[profile.fullName,profile.name,profile.displayName,
+    preview ? '' : user.displayName],day);
+  renderTeacherLessons({
+    status:$('teacherScheduleStatus'),date:$('teacherScheduleDay'),container:$('teacherScheduleLessons'),
+    lessons,students:state.students,phoneDigits,preview,
+    error:reads.some(read=>read.status==='rejected'),
+    incomplete:state.failedSources.has('الحجوزات')||state.failedSources.has('الحضور والمدفوعات')
+  });
 }
 function finalizeStudents(){
  state.students=[...state.studentMap.values()].sort((a,b)=>text(a.fullName||a.name).localeCompare(text(b.fullName||b.name),'ar'));
@@ -559,8 +602,14 @@ async function boot(user){
   setToday();initTabs();bindForms();
   if($('attendanceDate'))$('attendanceDate').value=new Date().toISOString().slice(0,10);
   // Each independent query reports errors instead of turning permission failures into silent zeroes.
-  await Promise.all([loadTeacherStudents(effectiveUid),loadAttendance(effectiveUid),loadNotes(effectiveUid),loadTeacherNotifications(effectiveUid)]);
-  finalizeStudents();fillStudentSelects();
+  const studentsReady=Promise.all([loadTeacherStudents(effectiveUid),loadAttendance(effectiveUid)]).then(()=>{
+    finalizeStudents();fillStudentSelects();
+  });
+  void loadTeacherToday(user,effectiveUid,p,preview.active,studentsReady).catch(error=>{
+    if(auth.currentUser?.uid===user.uid)$('teacherScheduleStatus').textContent='تعذر تحميل حصص اليوم.';
+    console.warn('تعذر تحميل جدول اليوم',error);
+  });
+  await Promise.all([studentsReady,loadNotes(effectiveUid),loadTeacherNotifications(effectiveUid)]);
   if(preview.active){
     if($('markAllTeacherNotifications'))$('markAllTeacherNotifications').disabled=true;
     $('teacherProfileForm')?.querySelectorAll('input,textarea,button').forEach(el=>el.disabled=true);

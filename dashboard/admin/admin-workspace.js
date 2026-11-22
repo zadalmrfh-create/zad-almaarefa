@@ -2,13 +2,14 @@
 (() => {
   const main = document.querySelector('main');
   const quickNav = document.querySelector('#adminQuickNav');
+  const todayCard = document.getElementById('zadAdminToday');
   if (!main || !quickNav) return;
 
   const groups = [
     {id:'home',label:'نظرة عامة',icon:'🏠',sections:['zadDailyOpsSection','platformAnalytics','studentCounterManagement']},
     {id:'users',label:'المستخدمون',icon:'👥',sections:['usersManagement','saadAlaaAdminPanel','teacherExamAccessAdmin']},
     {id:'bookings',label:'الحجوزات',icon:'📅',sections:['bookingsManagement']},
-    {id:'exams',label:'الامتحانات',icon:'📝',sections:['codeExamsManagement','adminCertificatesSection','codeExamResultsSection','zadSpecialExamResults','unitOneExamsAdmin']},
+    {id:'exams',label:'الامتحانات',icon:'📝',sections:['codeExamsManagement','adminCertificatesSection','zadAdminEssayQueue','codeExamResultsSection','zadSpecialExamResults','unitOneExamsAdmin']},
     {id:'library',label:'المكتبة',icon:'📚',sections:['librarySubscriptionsAdminPanel','libraryDownloadTracking']},
     {id:'lessons',label:'الحضور والغياب',icon:'✅',sections:['attendanceManagement']},
     {id:'lectureRatings',label:'تقييمات المحاضرات',icon:'🌟',sections:['lectureReviewsAdminSection']},
@@ -38,7 +39,7 @@
     for (const id of group.sections) mapped.set(id,group);
   }
   // Move every existing top-level management section without cloning elements/listeners.
-  const managed = [...main.children].filter(el=> el.matches('section') && el !== quickNav && !el.classList.contains('hero'));
+  const managed = [...main.children].filter(el=> el.matches('section') && el !== quickNav && el !== todayCard && !el.classList.contains('hero'));
   for(const el of managed){
     if(el.id==='liveLessonsManagement' || el.id==='lessonFollowUpManagement'){el.hidden=true;el.style.display='none';}
     let group=mapped.get(el.id);
@@ -229,6 +230,7 @@
 
   function activate(id,updateHash=true){
     const target=groups.some(g=>g.id===id)?id:'home';
+    if(todayCard)todayCard.hidden=target!=='home';
     for(const g of groups){
       const active=g.id===target;
       g.panel.hidden=!active;

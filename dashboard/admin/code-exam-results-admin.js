@@ -1,3 +1,4 @@
+import {essayTask, publishTodayQueue} from './today-queues.js?v=20261122-step5';
 import {loadOriginalExamHtml,recoverExamQuestionLabels,recoverExamAutomaticAnswerKey,downloadExamSource} from './code-exam-source-import.js';
 import { printableExamResult } from './certificates-admin.js';
 import { printUnitExamAnswers, printCodeExamAnswers, parseCodeAnswers } from './exam-answer-report.js';
@@ -350,11 +351,31 @@ function render(){
   }
   for(const entry of all)box.append(entry.kind==='unit'?renderUnit(entry):renderCode(entry));
 }
-function watch(user){
-  for(const u of unsubs)u();unsubs=[];state.code=[];state.units=[];state.codeError='';state.unitError='';render();
-  unsubs.push(onSnapshot(collection(db,'codeExamResults'),s=>{state.code=s.docs.map(d=>({id:d.id,data:d.data()}));state.codeError='';render()},e=>{state.codeError=e.code||e.message;render()}));
-  unsubs.push(onSnapshot(collection(db,'unitOneExamAttempts'),s=>{state.units=s.docs.map(d=>({id:d.id,data:d.data()}));state.unitError='';render()},e=>{state.unitError=e.code||e.message;render()}));
+function watch(user, bankError) {
+  state.code=[];state.units=[];state.codeError='';state.unitError=bankError;render();
+  const uid = user.uid;
+  for (const [source, name, key] of [['code','codeExamResults','code'],['unit','unitOneExamAttempts','units']]) {
+    const errorKey = source === 'code' ? 'codeError' : 'unitError';
+    unsubs.push(onSnapshot(collection(db,name), snapshot => {
+      if (auth.currentUser?.uid !== uid) return;
+      state[key] = snapshot.docs.map(d=>({id:d.id,data:d.data()}));
+      state[errorKey] = source === 'unit' ? bankError : '';
+      const items = state[key].map(entry=>essayTask(source,entry,state.bank.get(entry.data.examId))).filter(Boolean);
+      const error = source === 'unit' && Boolean(bankError || state[key].some(entry=>!state.bank.has(entry.data.examId)));
+      publishTodayQueue(source, uid, {items, error});
+      render();
+    }, error => {
+      if (auth.currentUser?.uid !== uid) return;
+      state[errorKey]=error.code||error.message;
+      publishTodayQueue(source, uid, {error:true});
+      render();
+    }));
+  }
 }
+window.addEventListener('zad:today-code-essay', event => {
+  const entry = state.code.find(item=>item.id===event.detail?.attemptId);
+  if (entry && codeExamProgress(entry.data).pendingEssay) reviewCodeEssay(entry.id,entry.data);
+});
 async function authorized(u){
   if(u.email?.toLowerCase()==='maleksameh121@gmail.com')return true;
   try{if((await getDoc(doc(db,'admins',u.uid))).exists())return true}catch{}
@@ -362,10 +383,21 @@ async function authorized(u){
   return false;
 }
 onAuthStateChanged(auth,async user=>{
-  for(const u of unsubs)u();unsubs=[];
+  for(const u of unsubs)u();unsubs=[];state.code=[];state.units=[];
   if(!user){if(box)box.textContent='سجّل دخولك كمشرف.';return;}
-  if(!await authorized(user)){if(box)box.textContent='يتطلب صلاحية الأدمن.';return;}
-  try{const res=await fetch('../../exams/unit1/bank.json',{cache:'no-store'});if(!res.ok)throw Error('HTTP '+res.status);const data=await res.json();state.bank=new Map([...data.exams,...(data.legacyExams||[])].map(e=>[e.id,e]));}
-  catch(e){state.bank=new Map();state.unitError='تعذر قراءة أسئلة الامتحانات: '+e.message;}
-  watch(user);
+  const uid=user.uid;
+  if(!await authorized(user)){
+    if(auth.currentUser?.uid===uid && box)box.textContent='يتطلب صلاحية الأدمن.';
+    return;
+  }
+  let bank=new Map(),bankError='';
+  try {
+    const res=await fetch('../../exams/unit1/bank.json',{cache:'no-store'});
+    if(!res.ok)throw Error('HTTP '+res.status);
+    const data=await res.json();
+    bank=new Map([...(data.exams||[]),...(data.legacyExams||[])].map(e=>[e.id,e]));
+  } catch(e){bankError='تعذر قراءة أسئلة الامتحانات: '+e.message;}
+  if(auth.currentUser?.uid!==uid)return;
+  state.bank=bank;
+  watch(user,bankError);
 });
