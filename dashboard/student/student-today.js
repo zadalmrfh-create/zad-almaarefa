@@ -1,6 +1,6 @@
 import {chooseLesson, latestExam, pendingBookings} from './student-today-core.js?v=20261120-today1';
 import {money} from '../payment-utils.js';
-import {lessonPageUrl} from '../lesson-page-links.js?v=20261120-lesson1';
+import {lessonPageUrl} from '../lesson-page-links.js?v=20261122-schedule';
 
 const card = document.getElementById('studentToday');
 const status = document.getElementById('studentTodayStatus');
@@ -26,8 +26,8 @@ function focusSection(target) {
   target.focus({preventScroll: true});
   target.scrollIntoView({block: 'start'});
 }
-function openLesson(id) {
-  const href = lessonPageUrl(id);
+function openLesson(lesson) {
+  const href = lessonPageUrl(lesson.id, location.href, lesson.privateSchedule);
   if (href) location.href = href;
   else selectTab('lessons');
 }
@@ -60,11 +60,11 @@ function renderLesson() {
       setCard(phase, started ? 'الحصة جارية الآن' : 'الدخول متاح الآن', lesson.title,
         caption, 'ادخل الحصة', () => lesson.join());
     } else if (phase === 'past') {
-      setCard(phase, 'آخر حصة مجدولة', lesson.title, caption, 'راجع تفاصيل الحصة', () => openLesson(lesson.id));
+      setCard(phase, 'آخر حصة مجدولة', lesson.title, caption, 'راجع تفاصيل الحصة', () => openLesson(lesson));
     } else if (phase === 'details') {
-      setCard(phase, 'موعد الحصة بدأ', lesson.title, caption, 'راجع تفاصيل الحصة', () => openLesson(lesson.id));
+      setCard(phase, 'موعد الحصة بدأ', lesson.title, caption, 'راجع تفاصيل الحصة', () => openLesson(lesson));
     } else {
-      setCard(phase, 'حصتك الجاية', lesson.title, caption, 'عرض موعد الحصة', () => openLesson(lesson.id));
+      setCard(phase, 'حصتك الجاية', lesson.title, caption, 'عرض موعد الحصة', () => openLesson(lesson));
     }
     return;
   }

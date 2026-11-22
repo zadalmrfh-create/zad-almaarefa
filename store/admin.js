@@ -515,7 +515,12 @@ async function boot(){
   unsubscribe.push(onSnapshot(collection(db,'storeCoupons'),s=>{coupons=s.docs.map(d=>({id:d.id,...d.data()})); renderCoupons()},e=>toast('تعذر جلب الكوبونات: '+e.code)));
   unsubscribe.push(onSnapshot(collection(db,'storeTeacherDrafts'),s=>{drafts=s.docs.map(d=>({id:d.id,...d.data()})); renderDrafts()},e=>toast('خطأ تحميل مسودات المعلمين: '+e.code)));
   unsubscribe.push(onSnapshot(collection(db,'storeOrders'),s=>{orders=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0)); renderOrders(); renderStats(); renderReports()},e=>toast('خطأ تحميل الطلبات: '+e.code)));
-  tab('overview');
+  const params = new URLSearchParams(location.search);
+  const filter = params.get('status');
+  if (params.get('tab') === 'orders') {
+    if (['pending','approved','rejected'].includes(filter)) $('#orderStatus').value = filter;
+    tab('orders');
+  } else tab('overview');
 }
 
 boot();

@@ -5,7 +5,7 @@ import {lessonOpenId} from './lesson-interactions.js';
 // An open attempt is recorded separately from official attendance.
 export async function openLessonMeet(lesson, studentUid) {
   const room = window.open('about:blank', '_blank');
-  const logVisit = auth.currentUser?.uid === studentUid
+  const logVisit = !lesson.privateSchedule && auth.currentUser?.uid === studentUid
     ? setDoc(doc(db, 'lessonOpenEvents', lessonOpenId(studentUid, lesson.id)), {
       lessonId: lesson.id,
       studentUid,

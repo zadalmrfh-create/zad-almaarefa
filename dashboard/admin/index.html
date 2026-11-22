@@ -163,6 +163,12 @@ onAuthStateChanged(auth, async (user) => {
        MAIN
   ====================================================== -->
 
+  <style>
+  #personalScheduleManagement [hidden]{display:none!important}
+  #personalScheduleManagement .admin-form{margin:1rem 0}
+  #zadAdminToday .zad-today-task{text-decoration:none}
+  #zadDailyOpsSection{margin-top:1rem}
+  </style>
   <main>
     <section id="zadAdminToday" class="card" aria-labelledby="zadAdminTodayTitle">
       <div class="zad-today-heading"><h2 id="zadAdminTodayTitle">المطلوب النهارده</h2></div>
@@ -170,7 +176,24 @@ onAuthStateChanged(auth, async (user) => {
         <button class="zad-today-task" type="button" data-today-open="bookings"><strong data-today-count="bookings">…</strong><span>طلبات حجز محتاجة متابعة</span></button>
         <button class="zad-today-task" type="button" data-today-open="payments"><strong data-today-count="payments">…</strong><span>تحويلات بانتظار المراجعة</span></button>
         <button class="zad-today-task" type="button" data-today-open="essays"><strong data-today-count="essays">…</strong><span>أسئلة مقالية بانتظار التصحيح</span></button>
+        <a class="zad-today-task" href="../../store/admin.html?tab=orders&amp;status=pending"><strong data-today-count="store">…</strong><span>طلبات المتجر بانتظار المراجعة</span></a>
       </div>
+      <details id="zadDailyOpsSection" class="zad-admin-merged-detail">
+        <summary>مواعيد الحصص والتقارير</summary>
+        <div class="zad-ops-actions">
+          <label for="zadOpsDate">تاريخ الحصص <input id="zadOpsDate" type="date"></label>
+          <button id="zadOpsRefresh" type="button" class="btn gold" disabled>عرض الحصص</button>
+          <button id="zadOpsCSV" type="button" class="btn" disabled>تصدير CSV</button>
+          <button id="zadOpsPrint" type="button" class="btn" disabled>طباعة الجدول</button>
+        </div>
+        <div class="zad-ops-shortcuts">
+          <button type="button" class="btn" data-zad-ops-shortcut="student">تقارير الطلاب الشاملة</button>
+          <button type="button" class="btn" data-zad-ops-shortcut="attendance">تقارير الحضور والغياب</button>
+          <button type="button" class="btn" data-zad-ops-shortcut="teachers">صلاحيات نتائج المعلمين</button>
+        </div>
+        <p id="zadOpsStatus" role="status">اعرض مواعيد المحاضرات من السجل العام حسب التاريخ.</p>
+        <ul id="zadOpsSummary" class="zad-today-list"></ul>
+      </details>
     </section>
     <section id="zadActivityAlerts" class="card zad-activity-alerts" dir="rtl">
       <div class="zad-activity-heading"><div><h2>🔔 إشعارات نشاط المنصة <span id="zadActivityUnread" class="zad-activity-counter" hidden>0</span></h2><p>التسجيلات الجديدة، حجوزات الحصص، وتنزيلات الكتب.</p></div><button id="zadActivityReadAll" type="button" class="btn">تحديد الكل كمقروء</button></div>
@@ -215,6 +238,7 @@ onAuthStateChanged(auth, async (user) => {
         <a class="admin-quick-link" href="#platformAnalytics"><span>📊</span><strong>الإحصائيات</strong><small>أرقام المنصة</small></a>
         <a class="admin-quick-link" href="#usersManagement"><span>👥</span><strong>المستخدمون</strong><small>إدارة الحسابات</small></a>
         <a class="admin-quick-link" href="#zadVodafoneAdminPanel"><span>💳</span><strong>المدفوعات</strong><small>كشف الطالب ومراجعة التحويلات</small></a>
+        <a class="admin-quick-link" href="#personalScheduleManagement"><span>📅</span><strong>جداول الطلاب</strong><small>إضافة حصص خاصة</small></a>
         <a class="admin-quick-link" href="#bookingsManagement"><span>📅</span><strong>الحجوزات</strong><small>طلبات وتقارير</small></a>
         <a class="admin-quick-link" href="#codeExamsManagement"><span>🧑‍💻</span><strong>امتحانات بالكود</strong><small>إضافة ونشر</small></a>
         <a class="admin-quick-link" href="#codeExamResultsSection"><span>📘</span><strong>نتائج الامتحانات</strong><small>درجات وتقارير</small></a>
@@ -350,24 +374,7 @@ onAuthStateChanged(auth, async (user) => {
     <!-- =====================================================
          PLATFORM ANALYTICS
     ====================================================== -->
-    <section class="card" id="zadDailyOpsSection" dir="rtl">
-  <div class="zad-ops-head"><div><h2>📋 مركز المتابعة اليومية</h2><p>الحجوزات والتحويلات وتصحيح المقالي والحصص في مكان واحد — قراءة فقط.</p></div></div>
-  <div class="zad-ops-actions">
-    <label for="zadOpsDate">تاريخ الحصص <input id="zadOpsDate" type="date" aria-label="تاريخ الحصص"></label>
-    <button id="zadOpsRefresh" type="button" class="btn gold">🔄 تحميل متابعة اليوم</button>
-    <button id="zadOpsCSV" type="button" class="btn" disabled>📥 تصدير CSV</button>
-    <button id="zadOpsPrint" type="button" class="btn" disabled>🖨️ طباعة ملخص</button>
-  </div>
-  <div class="zad-ops-shortcuts" aria-label="اختصارات التقارير">
-    <button type="button" class="btn" data-zad-ops-shortcut="student">👤 تقارير الطلاب الشاملة</button>
-    <button type="button" class="btn" data-zad-ops-shortcut="attendance">📋 تقارير الحضور والغياب</button>
-    <button type="button" class="btn" data-zad-ops-shortcut="teachers">🔗 مراجعة صلاحيات نتائج المعلمين</button>
-  </div>
-  <p style="font-size:12px;color:#b8c5da;margin:6px 0">لتقرير طالب معيّن: افتح «تقارير الطلاب الشاملة»، واختر الطالب من قائمة المستخدمين ثم اضغط تقريره. مزامنة المعلمين تظل بموافقة الإدارة.</p>
-  <p id="zadOpsStatus" class="zad-ops-status" role="status" aria-live="polite">اضغط تحميل متابعة اليوم لاستعراض البيانات.</p>
-  <div id="zadOpsSummary" aria-live="polite"></div>
-  <p style="color:#afbed2;font-size:12px;line-height:1.7">الأعداد مبنية على قراءات محدودة لتقليل استهلاك Firebase؛ قد تكون جزئية إذا تجاوز عدد السجلات الحد الموضح. التقارير لا تعدّل المدفوعات أو نتائج الطلاب.</p>
-</section>
+
     <section class="card" id="platformAnalytics">
       <div class="actions" style="justify-content:space-between;align-items:center">
         <div><h2 style="margin:0">📊 إحصائيات المنصة</h2><p id="enhDataStatus" style="margin:6px 0;color:var(--muted)">بيانات مباشرة من Firebase.</p></div>
@@ -589,6 +596,28 @@ onAuthStateChanged(auth, async (user) => {
       <p id="lessonResourceStatus" role="status"></p>
     </section>
 
+    <section class="card" id="personalScheduleManagement" aria-labelledby="personalScheduleTitle">
+      <div class="zad-today-heading"><h2 id="personalScheduleTitle">جدول الحصص الخاصة</h2></div>
+      <div class="admin-form">
+        <label>الطالب <select id="personalScheduleStudent" disabled><option value="">جارٍ تحميل الحسابات…</option></select></label>
+      </div>
+      <form id="personalScheduleForm" class="admin-form" hidden>
+        <div class="grid">
+          <label>عنوان الحصة <input name="title" required maxlength="150"></label>
+          <label>المادة <input name="subject" required maxlength="100"></label>
+          <label>اسم المعلم (اختياري) <input name="teacherName" maxlength="100"></label>
+          <label>الموعد بتوقيت القاهرة <input name="date" type="datetime-local" required></label>
+          <label>رابط الحصة (اختياري) <input name="meetUrl" type="url" maxlength="1000" placeholder="https://meet.google.com/..."></label>
+        </div>
+        <div class="actions">
+          <button id="personalScheduleSave" class="btn gold" type="submit">أضف الحصة</button>
+          <button id="personalScheduleCancel" class="btn" type="button" hidden>إلغاء التعديل</button>
+        </div>
+      </form>
+      <p id="personalScheduleStatus" role="status">اختار حساب طالب لعرض جدوله.</p>
+      <div id="personalScheduleList"></div>
+    </section>
+
     <section
       class="card"
       id="contentManagement"
@@ -601,7 +630,7 @@ onAuthStateChanged(auth, async (user) => {
 
       <p>
         إضافة وتعديل وحذف وإظهار أو إخفاء الأحداث وطاقم التدريس والطلاب المتميزين،
-        وإدارة كتب المكتبة العامة ومكتبة التعليم الأزهري.
+        من مكان واحد.
       </p>
 
 
@@ -639,24 +668,6 @@ onAuthStateChanged(auth, async (user) => {
           type="button"
         >
           الطلاب المتميزون
-        </button>
-
-
-        <button
-          class="btn"
-          data-content-tab="libraryBooks"
-          type="button"
-        >
-          المكتبة العامة
-        </button>
-
-
-        <button
-          class="btn"
-          data-content-tab="azharBooks"
-          type="button"
-        >
-          مكتبة التعليم الأزهري
         </button>
 
       </div>
@@ -3488,11 +3499,7 @@ const contentTypes = {
   featuredStudents:
     'الطلاب المتميزون',
 
-  libraryBooks:
-    'المكتبة العامة',
 
-  azharBooks:
-    'مكتبة التعليم الأزهري'
 
 };
 
@@ -3618,30 +3625,8 @@ const fieldSets = {
   ],
 
 
-  libraryBooks: [
-
-    ['title', 'اسم الكتاب', 'text'],
-    ['grade', 'الصف / المرحلة', 'text'],
-    ['subject', 'المادة', 'text'],
-    ['category', 'التصنيف', 'text'],
-    ['icon', 'الأيقونة', 'text'],
-    ['description', 'وصف الكتاب', 'textarea'],
-    ['url', 'رابط الكتاب', 'text']
-
-  ],
 
 
-  azharBooks: [
-
-    ['title', 'اسم الكتاب', 'text'],
-    ['grade', 'الصف / المرحلة', 'text'],
-    ['subject', 'المادة', 'text'],
-    ['category', 'التصنيف', 'text'],
-    ['icon', 'الأيقونة', 'text'],
-    ['description', 'وصف الكتاب', 'textarea'],
-    ['url', 'رابط الكتاب', 'text']
-
-  ],
 
 
   featuredStudents: [
@@ -4191,7 +4176,7 @@ guard('admin', async () => {
 <!-- ملفات مستقلة كانت غير مُحمّلة بسبب انقطاع نهاية الصفحة -->
 <script type="module" src="admin-activity-alerts.js"></script>
 <script type="module" src="admin-enhancements.js"></script>
-<script type="module" src="admin-workspace.js?v=20261122-step5"></script>
+<script type="module" src="admin-workspace.js?v=20261122-admin-fix"></script>
 <script type="module" src="lesson-resources-admin.js?v=20261120-lesson1"></script>
 <script type="module" src="attendance-admin.js?v=20261116-english"></script>
 <link rel="stylesheet" href="lecture-reviews-share.css?v=20261113-share2">
@@ -4205,8 +4190,9 @@ guard('admin', async () => {
 <script type="module" src="quiz-center-admin.js"></script>
 <script type="module" src="reports-admin.js"></script>
 <script type="module" src="student-comprehensive-report.js"></script>
-<script type="module" src="daily-ops-admin.js?v=20261114-stage3"></script>
-<script type="module" src="today-admin.js?v=20261122-step5"></script>
+<script type="module" src="daily-ops-admin.js?v=20261122-admin-fix"></script>
+<script type="module" src="today-admin.js?v=20261122-admin-fix"></script>
+<script type="module" src="personal-schedule-admin.js?v=20261122-schedule"></script>
 <script type="module" src="exam-answer-report.js"></script>
 <script type="module" src="vodafone-payments-admin.js?v=20261122-step5"></script>
 <script type="module" src="library-subscriptions-admin.js"></script>

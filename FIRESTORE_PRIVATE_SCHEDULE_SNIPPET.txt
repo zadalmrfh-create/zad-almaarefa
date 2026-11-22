@@ -1,0 +1,5 @@
+// أضف هذه الكتلة داخل match /databases/{database}/documents في قواعد Cloud Firestore المنشورة.
+match /studentSchedules/{studentUid}/lessons/{lessonId} {
+  allow read: if request.auth != null && (request.auth.uid == studentUid || isAdmin());
+  allow create, update, delete: if isAdmin();
+}

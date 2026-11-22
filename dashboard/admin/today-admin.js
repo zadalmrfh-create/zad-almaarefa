@@ -1,4 +1,5 @@
-import {auth} from '../../firebase-config.js';
+import {auth,db} from '../../firebase-config.js';
+import {collection,where,query,onSnapshot} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 import {onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
 import {todayQueue, todayQueues} from './today-queues.js?v=20261122-step5';
 
@@ -10,6 +11,7 @@ const sources = ['code', 'unit', 'special'];
 const labels = {'code':'امتحان بالكود', 'unit':'امتحان الوحدة الأولى', 'special':'امتحان من بنك المنصة'};
 let opened = false;
 let owner = '';
+let stopStore = () => {};
 
 function item(tag, value) {
   const node = document.createElement(tag);
@@ -116,6 +118,21 @@ onAuthStateChanged(auth, user => {
     opened = false;
     queue?.replaceChildren();
   }
+  stopStore();
   owner = user?.uid || '';
+  const store = home?.querySelector('[data-today-count="store"]');
+  if (store) {
+    store.textContent='…';
+    store.title='';
+    const uid=owner;
+    if (uid) stopStore=onSnapshot(query(collection(db,'storeOrders'),where('status','==','pending')),snapshot=>{
+      if(owner===uid)store.textContent=count.format(snapshot.size);
+    },error=>{
+      if(owner!==uid)return;
+      store.textContent='—';
+      store.title='تعذر تحميل عدد طلبات المتجر';
+      console.warn('تعذر تحميل طلبات المتجر',error);
+    });
+  }
   render();
 });

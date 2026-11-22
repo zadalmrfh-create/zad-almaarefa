@@ -507,10 +507,11 @@ if(!container.children.length)container.textContent='لا توجد كتب محف
 
 import {getPreviewContext} from '../admin-preview-core.js';
 import {lessonRatingId, validLessonRating} from './lesson-interactions.js';
-import {lessonPageUrl} from '../lesson-page-links.js?v=20261120-lesson1';
-import {openLessonMeet} from './lesson-meet.js?v=20261120-lesson1';
+import {lessonPageUrl} from '../lesson-page-links.js?v=20261122-schedule';
+import {openLessonMeet} from './lesson-meet.js?v=20261122-schedule';
 import {lessonForStudent, lessonPhase, lessonStartMs, webUrl} from './student-today-core.js?v=20261120-today1';
-import './student-today.js?v=20261120-lesson1';
+import './student-today.js?v=20261122-schedule';
+import {personalLessonCollection, personalLesson} from '../student-schedule-core.js?v=20261122-schedule';
 import {
     auth,
     db
@@ -769,7 +770,16 @@ async function loadLiveLessons(
             ? studentRequest(getDocs(query(collection(db, 'lessonRatings'), where('studentUid', '==', uid))), 'التقييمات السابقة', 8000)
                 .catch(error => { console.warn('تعذر تحميل التقييمات السابقة:', error.code || error.message); return null; })
             : Promise.resolve(null);
-        const snap = await studentRequest(getDocs(collection(db, 'lessons')), 'المحاضرات');
+        const [general, personal] = await Promise.allSettled([
+            studentRequest(getDocs(collection(db, 'lessons')), 'المحاضرات'),
+            studentRequest(getDocs(collection(db, ...personalLessonCollection(uid))), 'الحصص الخاصة')
+        ]);
+        if (general.status === 'rejected' && personal.status === 'rejected') throw general.reason;
+        const partial = [general, personal].some(source => source.status === 'rejected');
+        const records = [
+            ...(general.value?.docs || []).map(d => ({...d.data(),id:d.id,privateSchedule:false})),
+            ...(personal.value?.docs || []).map(d => personalLesson(d,uid))
+        ];
         const oldRatings = await oldRatingsPromise;
         if (currentStudentUid !== uid || generation !== lessonLoadGeneration) return;
         const ratedLessonIds = new Set(oldRatings ? oldRatings.docs.map(d => String(d.data().lessonId || '')) : []);
@@ -778,13 +788,7 @@ async function loadLiveLessons(
         const lessons = [];
 
 
-        snap.forEach(d => {
-
-            const x = {
-                id: d.id,
-                ...d.data()
-            };
-
+        records.forEach(x => {
 
             if (lessonForStudent(x, uid, grade)) {
                 lessons.push({
@@ -807,8 +811,9 @@ async function loadLiveLessons(
 
 
         window.dispatchEvent(new CustomEvent('zad:student-today-lessons', {detail: {
-            uid, state: 'ready', lessons: lessons.map(lesson => ({
+            uid, state: partial ? 'error' : 'ready', lessons: lessons.map(lesson => ({
                 id: lesson.id,
+                privateSchedule: lesson.privateSchedule,
                 start: lesson.startMs,
                 title: lesson.title || lesson.name || lesson.subject || 'محاضرة مباشرة',
                 teacher: lesson.teacherName || lesson.teacher || '',
@@ -820,14 +825,15 @@ async function loadLiveLessons(
         if (!lessons.length) {
 
             liveLessonsList.innerHTML =
-                '<div class="card"><p>لا توجد محاضرات مباشرة متاحة لصفك حاليًا.</p></div>';
+                partial ? '<div class="card"><p>تعذر تحميل جزء من الجدول. جرّب تحديث الصفحة.</p></div>'
+                        : '<div class="card"><p>لا توجد محاضرات مباشرة متاحة لك حاليًا.</p></div>';
 
             return;
 
         }
 
 
-        liveLessonsList.innerHTML = '';
+        liveLessonsList.innerHTML = partial ? '<p class="notice">بعض مواعيد الحصص تعذر تحميلها.</p>' : '';
 
 
         for (
@@ -886,7 +892,7 @@ async function loadLiveLessons(
                     </span>
 
                 </div>
-                <p>يمكنك دخول المحاضرة في موعدها من زر Google Meet.</p>
+                <p>${lesson.privateSchedule ? 'حصة خاصة ضمن جدولك.' : 'يمكنك دخول المحاضرة في موعدها من زر Google Meet.'}</p>
 
 
                 <div class="lesson-countdown" data-lesson-date="${lesson.startMs}">⏳ حساب الوقت…</div>
@@ -894,7 +900,7 @@ async function loadLiveLessons(
                 <div class="lesson-actions">
 
 
-                    <button class="btn rate-lesson-btn" type="button">⭐ تقييم المحاضرة</button>
+                    ${lesson.privateSchedule ? '' : '<button class="btn rate-lesson-btn" type="button">⭐ تقييم المحاضرة</button>'}
 
                     <button
                         class="btn meet-btn"
@@ -909,7 +915,7 @@ async function loadLiveLessons(
 
                     </button>
 
-                    <a class="btn" href="${esc(lessonPageUrl(lesson.id))}">صفحة الحصة</a>
+                    <a class="btn" href="${esc(lessonPageUrl(lesson.id, location.href, lesson.privateSchedule))}">صفحة الحصة</a>
 
                 </div>
 
@@ -1499,6 +1505,6 @@ const box=document.getElementById('zad-my-questions');onAuthStateChanged(auth,as
   <a href="../../sections/tests/code-exams.html"><span class="zad-bottom-icon" aria-hidden="true">✎</span><span class="zad-bottom-label">الامتحانات</span></a>
   <button type="button" data-stage4-open="profile" aria-controls="profileCard"><span class="zad-bottom-icon zad-bottom-icon--profile" aria-hidden="true"></span><span class="zad-bottom-label">حسابي</span></button>
 </nav>
-<script type="module" src="stage4-student.js?v=20261122-step6"></script>
+<script type="module" src="stage4-student.js?v=20261122-schedule"></script>
 </body>
 </html>

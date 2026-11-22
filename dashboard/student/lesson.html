@@ -7,6 +7,7 @@
   <link rel="icon" href="../../images/logo.png">
   <link rel="stylesheet" href="../dashboard.css">
   <link rel="stylesheet" href="lesson-page.css?v=20261120-lesson1">
+<style>#lessonResourceGrid[hidden]{display:none!important}</style>
 </head>
 <body>
   <main class="lesson-page">
@@ -28,7 +29,7 @@
         </div>
       </section>
 
-      <div class="lesson-page-grid">
+      <div class="lesson-page-grid" id="lessonResourceGrid">
         <section class="lesson-page-panel" aria-labelledby="lessonSummaryTitle">
           <h2 id="lessonSummaryTitle">الملخص</h2>
           <p id="lessonSummaryState" aria-live="polite">جارٍ التحميل…</p>
@@ -50,7 +51,7 @@
       </div>
     </div>
   </main>
-  <script type="module" src="lesson-page.js?v=20261122-step3"></script>
+  <script type="module" src="lesson-page.js?v=20261122-schedule"></script>
   <script type="module" src="../../reviews/weekly-review-guard.js?v=20261105-evals1"></script>
 </body>
 </html>

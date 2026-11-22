@@ -7,10 +7,13 @@ import {onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/12.18.0/fir
 import {collection, doc, getDoc, onSnapshot, query, where} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 import {dateMs, lessonForStudent, lessonPhase, lessonStartMs, webUrl} from './student-today-core.js?v=20261120-today1';
 import {examPageUrl, summaryLink, validDocumentId} from '../lesson-page-links.js?v=20261120-lesson1';
-import {openLessonMeet} from './lesson-meet.js?v=20261120-lesson1';
+import {openLessonMeet} from './lesson-meet.js?v=20261122-schedule';
+import {personalLessonCollection, personalLesson} from '../student-schedule-core.js?v=20261122-schedule';
 
 const $ = id => document.getElementById(id);
 const params = new URLSearchParams(location.search);
+const isPersonal = params.get('private') === '1';
+$('lessonResourceGrid').hidden = isPersonal;
 const lessonId = params.get('id');
 const number = new Intl.NumberFormat('ar-EG');
 const clock = new Intl.DateTimeFormat('ar-EG', {
@@ -227,9 +230,10 @@ onAuthStateChanged(auth, async user => {
       $('lessonBack').href = 'index.html';
     }
 
-    stopLesson = onSnapshot(doc(db, 'lessons', lessonId), snapshot => {
+    const reference = isPersonal ? doc(db, ...personalLessonCollection(viewer.uid), lessonId) : doc(db, 'lessons', lessonId);
+    stopLesson = onSnapshot(reference, snapshot => {
       if (request !== generation) return;
-      const data = snapshot.data();
+      const data = snapshot.exists() && (isPersonal ? personalLesson(snapshot,viewer.uid) : snapshot.data());
       if (!data || !lessonForStudent(data, viewer.uid, grade)) {
         stopLessonDetails();
         showError('الحصة غير متاحة لحسابك. ارجع لجدول حصصك.');
@@ -248,7 +252,7 @@ onAuthStateChanged(auth, async user => {
       updateMeet();
       $('lessonStatus').hidden = true;
       $('lessonContent').hidden = false;
-      if (!stopResources) watchResources(request);
+      if (!isPersonal && !stopResources) watchResources(request);
     }, () => {
       if (request !== generation) return;
       stopLessonDetails();

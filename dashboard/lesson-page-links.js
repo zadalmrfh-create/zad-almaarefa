@@ -10,10 +10,11 @@ export function validDocumentId(value) {
     && value !== '.' && value !== '..' && !/[\/\u0000-\u001f\u007f]/.test(value);
 }
 
-export function lessonPageUrl(id, from = location.href) {
+export function lessonPageUrl(id, from = location.href, isPersonal = false) {
   if (!validDocumentId(id)) return '';
   const url = new URL('dashboard/student/lesson.html', root);
   url.searchParams.set('id', id);
+  if (isPersonal) url.searchParams.set('private', '1');
   const query = new URL(from).searchParams;
   if (query.get('previewRole') === 'student' && validDocumentId(query.get('previewUid'))) {
     url.searchParams.set('previewRole', 'student');

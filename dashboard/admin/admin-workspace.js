@@ -6,8 +6,9 @@
   if (!main || !quickNav) return;
 
   const groups = [
-    {id:'home',label:'نظرة عامة',icon:'🏠',sections:['zadDailyOpsSection','platformAnalytics','studentCounterManagement']},
+    {id:'home',label:'نظرة عامة',icon:'🏠',sections:['platformAnalytics','studentCounterManagement']},
     {id:'users',label:'المستخدمون',icon:'👥',sections:['usersManagement','saadAlaaAdminPanel','teacherExamAccessAdmin']},
+    {id:'studentSchedule',label:'جداول الطلاب',icon:'📅',sections:['personalScheduleManagement']},
     {id:'bookings',label:'الحجوزات',icon:'📅',sections:['bookingsManagement']},
     {id:'exams',label:'الامتحانات',icon:'📝',sections:['codeExamsManagement','adminCertificatesSection','zadAdminEssayQueue','codeExamResultsSection','zadSpecialExamResults','unitOneExamsAdmin']},
     {id:'library',label:'المكتبة',icon:'📚',sections:['librarySubscriptionsAdminPanel','libraryDownloadTracking']},
