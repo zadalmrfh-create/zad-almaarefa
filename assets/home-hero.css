@@ -117,24 +117,125 @@
   .zad-home-hero__image img { aspect-ratio: 16 / 9; object-position: center 34%; }
 }
 
-/* Restore original Zad Al-Maarefa library photo as homepage hero background. */
-#hero.zad-home-hero{
-  background-image:linear-gradient(90deg,rgba(7,18,34,.88),rgba(9,24,43,.73) 55%,rgba(9,24,43,.80)),url('../images/hero-bg.webp');
-  background-position:center center;
-  background-size:cover;
-  background-repeat:no-repeat;
-  background-color:#0c2038;
-  min-height:clamp(570px,72vh,800px);
-  display:flex;
-  align-items:center;
+/* Zad homepage hero — library background with student photo and live total.
+   Scoped to #hero; the site's navbar/header styles are not changed. */
+#hero.zad-home-hero {
+  --hero-fg: #fffaf2;
+  --hero-gold: #dfb750;
+  --hero-muted: #f0f2f5;
+  background-color: #101824;
+  background-image: linear-gradient(90deg, rgba(15, 21, 32, .66), rgba(15, 22, 33, .64)),
+    url('../images/hero-bg.webp');
+  background-size: cover;
+  background-position: center 42%;
+  background-repeat: no-repeat;
+  min-height: clamp(645px, 92vh, 840px);
+  box-sizing: border-box;
+  padding: clamp(7.8rem, 12vh, 9rem) clamp(1.1rem, 3.2vw, 3.6rem) clamp(2.2rem, 4vw, 3.6rem);
+  display: flex;
+  align-items: center;
 }
-#hero.zad-home-hero .zad-home-hero__inner{
-  width:100%;grid-template-columns:minmax(0,1fr);
-  max-width:75rem;
+#hero.zad-home-hero .zad-home-hero__inner {
+  width: 100%;
+  max-width: 82rem;
+  grid-template-columns: minmax(0, 1.02fr) minmax(0, .98fr);
+  gap: clamp(1.6rem, 4vw, 4rem);
+  align-items: center;
 }
-#hero.zad-home-hero .zad-home-hero__copy{max-width:47rem;margin-inline-start:auto;position:relative;z-index:1}
-#hero.zad-home-hero .zad-home-hero__image{display:none}
-@media(max-width:720px){
-  #hero.zad-home-hero{min-height:570px;background-position:center;background-image:linear-gradient(90deg,rgba(7,18,34,.83),rgba(7,18,34,.77)),url('../images/hero-bg.webp')}
-  #hero.zad-home-hero .zad-home-hero__copy{max-width:100%}
+#hero.zad-home-hero .zad-home-hero__copy {
+  max-width: 38rem;
+  margin-inline: 0;
+  text-align: right;
+  position: relative;
+  z-index: 1;
+}
+#hero.zad-home-hero .zad-home-hero__title {
+  color: var(--hero-gold);
+  font-size: clamp(3.5rem, 6vw, 5.4rem);
+  line-height: 1.18;
+  text-shadow: 0 3px 12px rgba(0,0,0,.3);
+}
+#hero.zad-home-hero .zad-home-hero__title span { color: var(--hero-gold); }
+#hero.zad-home-hero .zad-home-hero__description {
+  color: #f5f5f5;
+  font-size: clamp(1rem, 1.3vw, 1.18rem);
+  line-height: 2;
+  text-shadow: 0 2px 5px rgba(0,0,0,.45);
+}
+#hero.zad-home-hero .zad-home-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: .8rem;
+}
+#hero.zad-home-hero .zad-home-hero__actions a {
+  background: rgba(43, 37, 25, .56);
+  border: 1px solid rgba(223, 183, 80, .7);
+  color: #fff;
+  border-radius: .72rem;
+  min-height: 3.1rem;
+  padding: .6rem 1.3rem;
+}
+#hero.zad-home-hero .zad-home-hero__actions .zad-home-hero__booking {
+  background: #bb942f;
+  color: #fff;
+  border-color: #e4c766;
+}
+#hero.zad-home-hero .zad-home-hero__actions .zad-home-hero__booking:hover { background: #d0a841; }
+#hero.zad-home-hero .zad-home-hero__account { color: #fff; }
+#hero.zad-home-hero .zad-home-hero__stats {
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  gap: .35rem .65rem;
+  color: #fff;
+  padding: .6rem .9rem;
+  margin-block-start: .75rem;
+  width: max-content;
+  max-width: 100%;
+  background: rgba(6, 17, 29, .54);
+  border: 1px solid rgba(223, 183, 80, .45);
+  border-radius: .7rem;
+}
+#hero.zad-home-hero .zad-home-hero__stats strong { color: #f4d475; font-size: 1.5rem; }
+#hero.zad-home-hero .zad-home-hero__image {
+  display: block;
+  min-width: 0;
+  border-radius: 1.8rem;
+  border: 0;
+  background: #d7e0e7;
+  box-shadow: 0 18px 40px rgba(0,0,0,.2);
+  overflow: hidden;
+}
+#hero.zad-home-hero .zad-home-hero__image img {
+  display: block;
+  width: 100%;
+  height: clamp(425px, 65vh, 610px);
+  aspect-ratio: auto;
+  object-fit: cover;
+  object-position: center 31%;
+}
+@media (max-width: 720px) {
+  body #hero.zad-home-hero {
+    padding: 6.6rem 1rem 2.1rem;
+    min-height: 0;
+    background-position: center center;
+    background-image: linear-gradient(180deg,rgba(13,20,29,.78),rgba(10,18,29,.65)),url('../images/hero-bg.webp');
+  }
+  #hero.zad-home-hero .zad-home-hero__inner { grid-template-columns: minmax(0,1fr); gap: 1.25rem; }
+  #hero.zad-home-hero .zad-home-hero__copy { max-width: none; }
+  #hero.zad-home-hero .zad-home-hero__title { font-size: clamp(2.65rem, 11vw, 4rem); }
+  #hero.zad-home-hero .zad-home-hero__actions { display: grid; grid-template-columns: 1fr 1fr; }
+  #hero.zad-home-hero .zad-home-hero__actions a { padding-inline: .55rem; }
+  #hero.zad-home-hero .zad-home-hero__stats { display: flex; }
+  #hero.zad-home-hero .zad-home-hero__image img {
+    height: auto;
+    aspect-ratio: 1.13 / 1;
+    object-fit: cover;
+    object-position: center 29%;
+  }
+}
+@media (max-width: 380px) {
+  #hero.zad-home-hero .zad-home-hero__actions { grid-template-columns: 1fr; }
 }
