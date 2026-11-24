@@ -42,31 +42,34 @@ function normalizeArabic(value = "") {
     .toLowerCase();
 }
 function isProgrammingChoice() {
-  const combined = normalizeArabic(`${sectionSelect?.value || ""} ${subjectInput?.value || ""}`);
-  return combined.includes("برمج");
+  return normalizeArabic(`${sectionSelect?.value || ''} ${subjectInput?.value || ''}`).includes('برمج');
 }
-function matchesTeacher(teacher, programming) {
-  const n = normalizeArabic(teacher.name);
-  return programming ? (n.includes("مالك") && n.includes("سامح")) : (n.includes("ضياء") && n.includes("نبيل"));
+function isEnglishChoice() {
+  return /انجليز|english/.test(normalizeArabic(`${sectionSelect?.value || ''} ${subjectInput?.value || ''}`));
+}
+function isRetiredTeacher(t) {
+  return /بلال\s+فرغلي|bilal[\s_-]*farghaly/i.test(t.name || '');
+}
+function matchesTeacher(teacher,targetName) {
+  const name=normalizeArabic(teacher.name).replace(/^(?:الاستاذ|استاذ|مستر|ا)\s+/,'');
+  const target=normalizeArabic(targetName);
+  return name===target || name.startsWith(target+' ') || target.startsWith(name+' ');
 }
 function updateAssignedTeacher() {
-  const programming = isProgrammingChoice();
-  const targetName = programming ? "مالك سامح" : "ضياء الدين نبيل";
-  const found = activeTeachers.find(t => matchesTeacher(t, programming));
-  assignedTeacher = { uid: found?.uid || null, name: targetName };
-
-  if (teacherSelect) {
-    teacherSelect.innerHTML = "";
-    const option = document.createElement("option");
-    option.value = assignedTeacher.uid || "";
-    option.textContent = assignedTeacher.name;
-    option.selected = true;
-    teacherSelect.appendChild(option);
+  const programming=isProgrammingChoice();
+  const english=!programming&&isEnglishChoice();
+  const targetName=programming?'مالك سامح':english?'محمد طلعت عبدالله':'ضياء الدين نبيل';
+  const matches=activeTeachers.filter(t=>matchesTeacher(t,targetName));
+  const found=matches.length===1?matches[0]:null;
+  assignedTeacher={uid:found?.uid||null,name:targetName};
+  if(teacherSelect){
+    teacherSelect.replaceChildren(new Option(english?'الأستاذ '+targetName:targetName,found?.uid||''));
+    teacherSelect.disabled=true;
   }
-  if (teacherAutoHint) {
-    teacherAutoHint.textContent = programming
-      ? "تم اختيار مالك سامح تلقائيًا لأن المادة/القسم برمجة."
-      : "تم اختيار ضياء الدين نبيل تلقائيًا لهذه المادة.";
+  if(teacherAutoHint){
+    teacherAutoHint.textContent=english
+      ?'اللغة الإنجليزية مع الأستاذ محمد طلعت عبدالله.'
+      :programming?'تم اختيار مالك سامح للبرمجة تلقائيًا.':'تم اختيار ضياء الدين نبيل تلقائيًا لهذه المادة.';
   }
 }
 
@@ -76,7 +79,7 @@ async function loadBookingTeachers() {
     activeTeachers = snap.docs.map(docSnap => {
       const data = docSnap.data() || {};
       return { uid: docSnap.id, name: data.fullName || data.name || data.displayName || data.email || "معلم" };
-    });
+    }).filter(t=>!isRetiredTeacher(t));
   } catch (error) {
     console.warn("تعذر تحميل حسابات المعلمين، سيتم حفظ اسم المعلم المحدد تلقائيًا:", error);
     activeTeachers = [];

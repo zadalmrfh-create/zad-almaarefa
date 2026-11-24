@@ -542,7 +542,7 @@
           <label>عنوان المحاضرة<input id="lessonTitle" required placeholder="مثال: النحو — المحاضرة الأولى"></label>
           <label>المادة<input id="lessonSubject" required placeholder="النحو"></label>
           <label>الصف الدراسي<input id="lessonGrade" required placeholder="أولى ثانوي"></label>
-          <label>اسم المعلم<input id="lessonTeacher" placeholder="اسم المعلم"></label>
+          <label>اسم المعلم<input id="lessonTeacher" placeholder="اسم المعلم" list="zadLessonTeachers"><datalist id="zadLessonTeachers"><option value="محمد طلعت عبدالله"></option></datalist></label>
           <label>موعد المحاضرة<input id="lessonDate" type="datetime-local" required></label>
           <label>رابط Google Meet<input id="lessonMeetUrl" type="url" required placeholder="https://meet.google.com/..."></label>
           <div style="grid-column:1/-1;border:1px solid rgba(212,168,67,.25);border-radius:14px;padding:14px">
@@ -3653,9 +3653,32 @@ function setContentStatus(
 
 
 
+// اقتراح المعلم الجديد عند اختيار اللغة الإنجليزية؛ لا يغيّر الحصص القديمة.
+$('lessonSubject')?.addEventListener('input', () => {
+  const subject=String($('lessonSubject')?.value||'').toLowerCase();
+  const english=/إنجليز|انجليز|english/.test(subject);
+  const field=$('lessonTeacher');
+  if(!field)return;
+  if(english&&!field.value.trim()){
+    field.value='محمد طلعت عبدالله';
+    field.dataset.zadAutoTalaat='true';
+  }else if(!english&&field.dataset.zadAutoTalaat==='true'){
+    field.value='';delete field.dataset.zadAutoTalaat;
+  }
+});
+
 /* مزامنة المعلمين القدامى مرة واحدة بدون استبدال أي بيانات موجودة */
 async function ensureLegacyTeachers() {
   const legacyTeachers = [
+    {
+      legacyKey: 'zad-mohamed-talaat',
+      name: 'الأستاذ محمد طلعت عبدالله',
+      subject: 'اللغة الإنجليزية',
+      role: 'مدرس اللغة الإنجليزية للتعليم الأزهري والعام',
+      image: '../images/mohamed-talaat-poster.png',
+      bio: 'شرح وتأسيس اللغة الإنجليزية للابتدائية والإعدادية والثانوية مع تدريبات ومراجعات.',
+      visible: true
+    },
     {
       legacyKey: 'legacy-dhia-quran',
       name: 'الأستاذ ضياء نبيل',
@@ -3693,7 +3716,11 @@ async function ensureLegacyTeachers() {
   );
 
   await Promise.all(legacyTeachers.map(t => {
-    const existingDoc = existingDocs.get(t.legacyKey);
+    const existingDoc = existingDocs.get(t.legacyKey) || (
+      t.legacyKey === 'zad-mohamed-talaat'
+        ? snap.docs.find(d => /محمد\s+طلعت/.test(String(d.data()?.name || d.data()?.fullName || '')))
+        : null
+    );
     const { legacyKey, ...data } = t;
     return setDoc(doc(db, 'teachers', existingDoc?.id || legacyKey), {
       ...data,

@@ -55,7 +55,6 @@ const portraitThumbnails = new Map([
   ['arabic-calligraphy.png','diaa-calligraphy.webp'],
   ['quran-title.png','diaa-quran.webp'],
   ['saad-alaa-portrait.webp','saad.webp'],
-  ['bilal-farghaly.webp','bilal.webp'],
   ['fatima-diaa.jpeg','fatima.webp'],
   ['mohamed-khaled-mahmoud.webp','khaled.webp'],
   ['teacher-malek.webp','malek.webp'],
