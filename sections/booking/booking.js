@@ -1,315 +1,288 @@
-import { ENGLISH_SUBJECT, ENGLISH_TEACHER_NAME, findEnglishTeacherAccount, isRetiredTeacherProfile } from "../../assets/english-teacher.js";
-import { auth, db } from "../../firebase-config.js";
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
-import { collection, getDocs, addDoc, serverTimestamp, query, where } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+/** Zad Al-Maarefa booking flow -- compatible with booking/index.html Step 4 (2026-11-24).
+ * Keeps data ownership restricted to auth.uid. No Firestore rules changes needed.
+ */
+import { ENGLISH_SUBJECT, ENGLISH_TEACHER_NAME, findEnglishTeacherAccount, isRetiredTeacherProfile } from '../../assets/english-teacher.js';
+import { auth, db } from '../../firebase-config.js';
+import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
+import { collection, doc, getDoc, getDocs, setDoc, addDoc, query, where, onSnapshot, serverTimestamp } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
+import { asBookingPrice, bookingPrice, bookingProfile, bookingStatusLabel, cairoNowSlot, formatBookingPrice, formatBookingSlot, normalizeArabic, validBookingSlot } from './booking-core.js?v=20261124-fixed';
 
-let currentUser = null;
-let activeTeachers = [];
-let assignedTeacher = { uid: null, name: "ضياء الدين نبيل" };
-let bookingTeachersReady = Promise.resolve();
-const selectedScienceTeachers = { science: "محمد خالد محمود", chemistry: "محمد خالد محمود" };
-
-function requireLogin(message) {
-  if (currentUser) return true;
-  alert(message || "يجب تسجيل الدخول أولاً لحجز حصتك.");
-  window.location.href = "../../login/index.html";
-  return false;
-}
-
-const form = document.getElementById("bookingForm");
-const statusBox = document.getElementById("bookingStatus");
-const teacherSelect = document.getElementById("bookingTeacher");
-const sectionSelect = document.getElementById("bookingSection");
-const subjectInput = form?.elements?.subject;
-const teacherAutoHint = document.getElementById("teacherAutoHint");
-
-// Google Translate (or the browser translator) changes visible <option> text.
-// Never use translated text as a stored Firestore enum value. The selected
-// position stays stable across Arabic, English, French, and Russian.
-const BOOKING_SELECT_VALUES = Object.freeze({
-  section: [
-    "", "القرآن الكريم", "التزكية والتربية", "اللغة العربية",
-    "العلوم الشرعية", "التعليم الأزهري", ENGLISH_SUBJECT,
-    "العلوم", "الرياضيات", "البرمجة وتكنولوجيا المعلومات"
-  ],
-  educationType: ["", "غير مرتبط بنظام تعليمي", "أزهري", "عام", "لغات"],
-  lessonType: [
-    "حصة فردية", "مراجعة", "حل تدريبات / امتحانات",
-    "تأسيس", "متابعة", "تحفيظ"
-  ],
-  preferredDay1: ["", "السبت", "الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة"],
-  preferredDay2: ["", "السبت", "الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة"],
-  preferredPeriod: ["صباحًا", "ظهرًا", "مساءً"],
-  lessonMode: ["أونلاين", "حضوري"]
-});
-
-function canonicalBookingSelection(name) {
-  const select = form?.elements?.namedItem?.(name) || form?.elements?.[name];
-  const choices = BOOKING_SELECT_VALUES[name];
-  if (!select || !choices || !Array.isArray(choices)) return "";
-  const index = select.selectedIndex;
-  return Number.isInteger(index) && index >= 0 && index < choices.length
-    ? choices[index]
-    : "";
-}
-
-
-const params = new URLSearchParams(window.location.search);
-const initialSection = params.get("section");
-if (initialSection && [...sectionSelect.options].some(o => o.value === initialSection)) sectionSelect.value = initialSection;
+const $ = id => document.getElementById(id);
+const form = $('bookingForm');
+const account = $('bookingAccountStatus');
+const login = $('bookingLogin');
+const next = $('bookingNext');
+const back = $('bookingBack');
+const progress = $('bookingProgress');
+const status = $('bookingStatus');
+const tracker = $('bookingTrackResults');
+const trackerStatus = $('bookingTrackStatus');
+const summary = $('bookingSummary');
+const subject = form.elements.subject;
+const section = $('bookingSection');
+const teacherSelect = $('bookingTeacher');
+const teacherHint = $('teacherAutoHint');
+const priceLabel = $('bookingPrice');
+const steps = Array.from(form.querySelectorAll('.booking-step'));
+// Step-specific validation: browser native form validation cannot focus hidden required fields.
+form.noValidate = true;
+const params = new URLSearchParams(location.search);
 const initialTeacher = params.get('teacher') || '';
-const initialSubject = params.get('subject');
-if (initialSubject && subjectInput) subjectInput.value = initialSubject;
-
-function normalizeArabic(value = "") {
-  return String(value)
-    .normalize("NFKD")
-    .replace(/[\u064B-\u065F\u0670]/g, "")
-    .replace(/[أإآ]/g, "ا")
-    .replace(/ة/g, "ه")
-    .replace(/ى/g, "ي")
-    .replace(/[^\u0600-\u06FFa-zA-Z0-9]+/g, " ")
-    .trim()
-    .toLowerCase();
+let user = null, profile = {}, activeTeachers = [], step = 0, submitting = false, generation = 0;
+let activeTeacher = {uid:null,name:'ضياء الدين نبيل',category:'default'};
+let stopTracking = null;
+const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, x => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[x]));
+const field = name => form.elements.namedItem(name);
+const canonicalValues = Object.freeze({
+  section:['','القرآن الكريم','التزكية والتربية','اللغة العربية','العلوم الشرعية','التعليم الأزهري',ENGLISH_SUBJECT,'العلوم','الرياضيات','البرمجة وتكنولوجيا المعلومات'],
+  educationType:['','غير مرتبط بنظام تعليمي','أزهري','عام','لغات'],
+  lessonType:['حصة فردية','مراجعة','حل تدريبات / امتحانات','تأسيس','متابعة','تحفيظ'],
+  preferredDay1:['','السبت','الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة'],
+  preferredDay2:['','السبت','الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة'],
+  preferredPeriod:['صباحًا','ظهرًا','مساءً'],lessonMode:['أونلاين','حضوري']
+});
+function canonical(name) {
+  const el = field(name), values = canonicalValues[name];
+  return el && values && el.selectedIndex >= 0 ? values[el.selectedIndex] || '' : '';
 }
-function detectTeacherAssignment() {
-  const canonicalSection = canonicalBookingSelection("section");
-  const combined = normalizeArabic(`${canonicalSection} ${subjectInput?.value || ""}`);
-
-  if (canonicalSection === ENGLISH_SUBJECT) return englishAssignment();
-
-  if (combined.includes("برمج") || combined.includes("تكنولوجيا المعلومات")) {
-    return {
-      key: "programming",
-      targetName: "مالك سامح",
-      hint: "تم اختيار مالك سامح تلقائيًا لأن المادة/القسم برمجة أو تكنولوجيا معلومات."
-    };
+function chooseSection(value) { if (canonicalValues.section.includes(value)) section.selectedIndex=canonicalValues.section.indexOf(value); }
+function chooseEducation(value) { if(canonicalValues.educationType.includes(value))field('educationType').selectedIndex=canonicalValues.educationType.indexOf(value); }
+function selectedData() {
+  const data=Object.fromEntries(new FormData(form));
+  for (const name of Object.keys(canonicalValues)) data[name]=canonical(name);
+  data.grade=String(field('grade').value||'').trim();
+  data.stage=String(field('stage').value||'').trim();
+  data.subject=String(field('subject').value||'').trim();
+  data.requestedSlot=String(field('requestedSlot').value||'').trim();
+  data.fullName=String(field('fullName').value||'').trim();
+  data.phone=String(field('phone').value||'').trim();
+  data.email=String(field('email').value||'').trim();
+  data.notes=String(field('notes').value||'').trim();
+  return data;
+}
+function setMessage(message, kind='') {status.textContent=message;status.className='booking-status'+(kind?' '+kind:'');}
+function accountError(err) {
+  console.error('[Zad booking] Auth error:',err);
+  account.textContent='تعذر التحقق من الحساب. حدّث الصفحة أو سجّل دخولك مرة أخرى.';
+  trackerStatus.textContent='تعذر تحميل حجوزاتك: '+(err?.code||err?.message||'خطأ اتصال');
+  login.hidden=false;next.disabled=true;
+}
+function showStep(index, focus=false) {
+  step=Math.max(0,Math.min(steps.length-1,index));
+  steps.forEach((el,i)=>{el.hidden=i!==step;});
+  back.hidden=step===0;
+  next.textContent=step===steps.length-1?'تأكيد وإرسال الحجز':'التالي';
+  next.disabled=!user||submitting;
+  progress.textContent=`الخطوة ${step+1} من ${steps.length}`;
+  if(focus) steps[step].querySelector('legend')?.focus();
+}
+function teacherCandidates(category) {
+  if(category==='english')return [{name:ENGLISH_TEACHER_NAME,label:'مستر '+ENGLISH_TEACHER_NAME}];
+  if(category==='science'||category==='chemistry')return [{name:'محمد خالد محمود',label:'أ/ محمد خالد محمود'},{name:'سعد علاء',label:'أ/ سعد علاء'}];
+  const name=({math:'سعد علاء',programming:'مالك سامح'})[category]||'ضياء الدين نبيل';
+  return [{name,label:'أ/ '+name}];
+}
+function categoryFor() {
+  const chosen=canonical('section'), value=normalizeArabic(chosen+' '+subject.value);
+  if(value.includes('برمج')||value.includes('تكنولوجيا المعلومات'))return 'programming';
+  if(value.includes('انجليز')||value.includes('english'))return 'english';
+  if(value.includes('رياضيات')||value.includes('رياضه')||value.includes('math'))return 'math';
+  if(value.includes('كيمياء')||value.includes('chemistry'))return 'chemistry';
+  if(value.includes('علوم')||value.includes('science'))return 'science';
+  return 'default';
+}
+function resolvedTeacher(name) {
+  if(normalizeArabic(name)===normalizeArabic(ENGLISH_TEACHER_NAME)){
+    const t=findEnglishTeacherAccount(activeTeachers); return t ? {uid:t.uid,name} : {uid:null,name};
   }
-
-  if (/انجليز|english/.test(combined)) return englishAssignment();
-
-  const requestedSubject = normalizeArabic(subjectInput?.value || "");
-  // Maths is taught by Saad Alaa; science/chemistry may be taught by either teacher.
-  if (normalizeArabic(canonicalSection) === "الرياضيات" || requestedSubject.includes("رياضيات") || requestedSubject.includes("رياضه") || requestedSubject.includes("math")) {
-    return { key:"math", targetName:"سعد علاء", hint:"الرياضيات مع الأستاذ سعد علاء." };
-  }
-  // Preserve the previous science teacher; allow choosing Saad Alaa as well.
-  if (normalizeArabic(subjectInput?.value || "").includes("كيمياء")
-      || normalizeArabic(subjectInput?.value || "").includes("chemistry")) {
-    return {
-      key: "chemistry",
-      targetName: "محمد خالد محمود",
-      hint: "تم اختيار الأستاذ محمد خالد محمود تلقائيًا لمادة الكيمياء (المرحلة الثانوية)."
-    };
-  }
-
-  if (requestedSubject.includes("علوم") || requestedSubject.includes("science") || normalizeArabic(canonicalSection) === normalizeArabic("العلوم")) {
-    return {
-      key: "science",
-      targetName: "محمد خالد محمود",
-      hint: "تم اختيار الأستاذ محمد خالد محمود تلقائيًا لمادة العلوم."
-    };
-  }
-
-  return {
-    key: "default",
-    targetName: "ضياء الدين نبيل",
-    hint: "تم اختيار ضياء الدين نبيل تلقائيًا لهذه المادة."
+  const key=normalizeArabic(name).replace(/^(الاستاذ|استاذ|مستر|ا) /,'');
+  const matches=activeTeachers.filter(t=>[t.fullName,t.name,t.displayName,...(Array.isArray(t.attendanceAliases)?t.attendanceAliases:[])].some(x=>{
+    const y=normalizeArabic(x).replace(/^(الاستاذ|استاذ|مستر|ا) /,'');
+    return y===key || (key.split(' ').length>=2 && y.startsWith(key+' '));
+  }));
+  return {uid:matches.length===1?matches[0].uid:null,name};
+}
+function updateTeacher(){
+  const category=categoryFor(), options=teacherCandidates(category);
+  const previous=activeTeacher.category===category?activeTeacher.name:'';
+  const requested=options.find(x=>normalizeArabic(initialTeacher).includes(normalizeArabic(x.name)))?.name;
+  const selected=options.find(x=>x.name===previous)||options.find(x=>x.name===requested)||options[0];
+  teacherSelect.replaceChildren(...options.map(t=>{const o=new Option(t.label,t.name);o.dataset.teacherName=t.name;return o;}));
+  teacherSelect.value=selected.name;
+  teacherSelect.disabled=options.length===1;
+  activeTeacher={...resolvedTeacher(selected.name),category};
+  teacherHint.textContent=options.length>1?'اختر المعلم المناسب للحصة.':`تم اختيار ${selected.label} تلقائيًا.`;
+  renderPrice();
+}
+function renderPrice() {
+  const amount=bookingPrice({section:canonical('section'),subject:subject.value,lessonType:canonical('lessonType')},activeTeacher.category);
+  priceLabel.textContent=amount===null?'السعر: تحدده الإدارة عند تأكيد الحجز.':'السعر المقترح للحصة: '+formatBookingPrice(amount);
+}
+function renderSubjects() {
+  const items={
+    'اللغة العربية':['اللغة العربية','النحو','الصرف','البلاغة','الأدب والنصوص','العروض والقافية'],
+    'العلوم الشرعية':['الفقه','التفسير','الحديث','التوحيد'],
+    'التعليم الأزهري':['النحو','الصرف','البلاغة','الفقه','التفسير','الحديث','التوحيد'],
+    'العلوم':['العلوم','الكيمياء'],'الرياضيات':['الرياضيات'],
+    'اللغة الإنجليزية':[ENGLISH_SUBJECT], 'القرآن الكريم':['القرآن الكريم','التجويد','التحفيظ'],
+    'التزكية والتربية':['التزكية والتربية'], 'البرمجة وتكنولوجيا المعلومات':['البرمجة','تكنولوجيا المعلومات']
   };
+  const choices=items[canonical('section')]||[];
+  $('zadBookingSubjects')?.replaceChildren(...choices.map(value=>{const x=document.createElement('option');x.value=value;return x;}));
 }
-function englishAssignment() {
-  return {
-    key: 'english',
-    targetName: ENGLISH_TEACHER_NAME,
-    hint: 'تم اختيار الأستاذ محمد طلعت عبدالله لحجز اللغة الإنجليزية للتعليم الأزهري والعام.'
-  };
-}
-
-function matchesTeacherName(teacher, name) {
-  const n = normalizeArabic(teacher.fullName || teacher.name || teacher.displayName || teacher.email).replace(/^(الاستاذ|استاذ|مستر|ميس|ا) /, "");
-  const key = normalizeArabic(name);
-  return n === key || n.startsWith(key + " ");
-}
-function resolveActiveTeacher(name) {
-  if (name === ENGLISH_TEACHER_NAME) return findEnglishTeacherAccount(activeTeachers);
-  const candidates = activeTeachers.filter(t => matchesTeacherName(t, name));
-  // Never bind to an ambiguous UID: teacher records are financial and private.
-  return candidates.length === 1 ? candidates[0] : null;
-}
-function teacherChoicesFor(assignment) {
-  if (assignment.key === 'english') return [
-    { name: ENGLISH_TEACHER_NAME, label: 'مستر ' + ENGLISH_TEACHER_NAME }
-  ];
-  if (assignment.key === 'science' || assignment.key === 'chemistry') return [
-    { name: 'محمد خالد محمود', label: 'أ/ محمد خالد محمود' },
-    { name: 'سعد علاء', label: 'أ/ سعد علاء' }
-  ];
-  return [{name:assignment.targetName,label:'أ/ '+assignment.targetName}];
-}
-function updateAssignedTeacher() {
-  const assignment = detectTeacherAssignment();
-  const choices = teacherChoicesFor(assignment);
-  const preferredFromLink = normalizeArabic(initialTeacher);
-  const selectedFromLink = choices.find(x => preferredFromLink.includes(normalizeArabic(x.name)));
-  const stored = selectedScienceTeachers[assignment.key] || assignment.targetName;
-  // On the first selection, preserve the teacher chosen on the public profile card.
-  const choice = choices.find(x=>x.name === (assignedTeacher._category === assignment.key ? assignedTeacher.name : ''))
-    || selectedFromLink || choices.find(x=>x.name === stored) || choices[0];
-  if (teacherSelect) {
-    teacherSelect.replaceChildren(...choices.map(item=>{
-      const found=resolveActiveTeacher(item.name);
-      const option=new Option(item.label,found?.uid||'');
-      option.dataset.teacherName=item.name;
-      return option;
-    }));
-    const wanted=[...teacherSelect.options].find(x=>x.dataset.teacherName===choice.name);
-    if(wanted) wanted.selected=true;
-    teacherSelect.disabled=choices.length===1;
-    teacherSelect.setAttribute('aria-disabled', String(choices.length===1));
+function validation(index,data){
+  for(const input of steps[index].querySelectorAll('input, select, textarea')){
+    if(!input.disabled && !input.checkValidity())return {control:input,message:'أكمل البيانات المطلوبة في الخطوة دي.'};
   }
-  const found=resolveActiveTeacher(choice.name);
-  assignedTeacher={uid:found?.uid||null,name:choice.name,_category:assignment.key};
-  if(teacherAutoHint)teacherAutoHint.textContent=choices.length>1
-    ? 'اختر المدرس المناسب. '+(!found?'قد يحتاج ربط الحساب من الإدارة.':'')
-    : assignment.hint;
+  if(index===0 && !data.educationType)return {control:field('educationType'),message:'اختر نظام التعليم.'};
+  if(index===1 && (!data.section || !data.subject))return {control:field('section'),message:'اختر القسم والمادة.'};
+  if(index===2){
+    if(!data.requestedSlot && !(data.preferredDay1 && data.preferredDay2))return {control:field('preferredDay1'),message:'حدد تاريخ وساعة، أو اختار يومين مناسبين.'};
+    if(data.preferredDay1 && data.preferredDay2 && data.preferredDay1===data.preferredDay2)return {control:field('preferredDay2'),message:'اختار يومين مختلفين.'};
+    if(data.requestedSlot && (!validBookingSlot(data.requestedSlot)||data.requestedSlot<=cairoNowSlot()))return {control:field('requestedSlot'),message:'اختار موعدًا في المستقبل بتوقيت القاهرة.'};
+  }
+  return null;
 }
-teacherSelect?.addEventListener('change',()=>{
-  const option=teacherSelect.selectedOptions[0];
-  if(!option?.dataset.teacherName)return;
-  const name=option.dataset.teacherName;
-  const category=detectTeacherAssignment().key;
-  if(category==='science'||category==='chemistry')selectedScienceTeachers[category]=name;
-  const found=resolveActiveTeacher(name);
-  assignedTeacher={uid:found?.uid||null,name,_category:category};
-  if(teacherAutoHint)teacherAutoHint.textContent=found
-    ? 'تم ربط الحجز بحساب المعلم المسجل.'
-    : 'الاختيار محفوظ باسم المعلم، وتحتاج الإدارة لربطه بحسابه المعتمد.';
+function renderSummary(data){
+  const price=asBookingPrice(bookingPrice(data,activeTeacher.category));
+  const fields=[['الاسم',data.fullName],['الصف',data.grade],['نظام التعليم',data.educationType],['القسم',data.section],['المادة',data.subject],['المعلم',activeTeacher.name],['نوع الحصة',data.lessonType],['الوقت المقترح',data.requestedSlot?formatBookingSlot(data.requestedSlot):[data.preferredDay1,data.preferredDay2,data.preferredPeriod].filter(Boolean).join('، ')],['طريقة الحصة',data.lessonMode],['السعر المقترح',price===null?'تحدده الإدارة':formatBookingPrice(price)],['رقم الهاتف',data.phone]];
+  summary.innerHTML=fields.map(([label,value])=>`<div><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value||'—')}</dd></div>`).join('');
+}
+function safeDate(value){if(!value)return '—';if(typeof value?.toDate==='function')return value.toDate().toLocaleDateString('ar-EG');return String(value).slice(0,16)}
+function renderBookings(docs){
+  tracker.replaceChildren();
+  if(!docs.length){trackerStatus.textContent='مفيش حجوزات سابقة على الحساب ده.';return;}
+  trackerStatus.textContent=`عندك ${docs.length} طلب حجز.`;
+  docs.sort((a,b)=>Number(b.createdAt?.seconds||0)-Number(a.createdAt?.seconds||0));
+  for(const data of docs){
+    const card=document.createElement('article');card.className='booking-tracker-item';
+    const confirmed=data.confirmedSlot||data.finalSlot||data.scheduledSlot||'';
+    const finalSlot=typeof confirmed==='string' && validBookingSlot(confirmed)?formatBookingSlot(confirmed):'';
+    const confirmedPrice=asBookingPrice(data.confirmedPrice??data.agreedPrice??data.finalPrice);
+    card.innerHTML=`<strong>${escapeHtml(data.subject||data.section||'حجز حصة')}</strong><p>المعلم: ${escapeHtml(data.teacherName||'تحدده الإدارة')}</p><p>الحالة: <b>${escapeHtml(bookingStatusLabel(data.status))}</b></p>${finalSlot?`<p>الموعد: ${escapeHtml(finalSlot)}</p>`:''}${confirmedPrice!==null?`<p>السعر: ${escapeHtml(formatBookingPrice(confirmedPrice))}</p>`:''}<small>${escapeHtml(safeDate(data.createdAt))}</small>`;
+    tracker.append(card);
+  }
+}
+function trackBookings(current,token){
+  if(stopTracking){stopTracking();stopTracking=null;}
+  trackerStatus.textContent='جارٍ تحميل حجوزاتك…';
+  const q=query(collection(db,'bookings'),where('studentUid','==',current.uid));
+  stopTracking=onSnapshot(q,snap=>{
+    if(token!==generation)return;
+    renderBookings(snap.docs.map(x=>({id:x.id,...x.data()})));
+  },error=>{
+    if(token!==generation)return;
+    console.error('[Zad booking] Tracking error:',error);
+    trackerStatus.textContent='تعذر عرض الحجوزات: '+(error.code||error.message);
+  });
+}
+function fillProfile(current,record={}){
+  const p=bookingProfile(current,record);
+  for(const name of ['fullName','phone','email','grade','stage']){
+    const el=field(name);
+    if(el && !el.value.trim() && p[name])el.value=p[name];
+  }
+  if(!canonical('educationType') && p.educationType)chooseEducation(p.educationType);
+}
+async function loadProfile(current,token){
+  try{
+    const snap=await getDoc(doc(db,'users',current.uid));
+    if(token!==generation)return;
+    if(snap.exists()){
+      profile=snap.data(); fillProfile(current,profile);
+    }
+  }catch(e){console.warn('[Zad booking] Profile read:',e);}
+}
+async function loadTeachers(current,token){
+  try{
+    const snap=await getDocs(query(collection(db,'users'),where('role','==','teacher'),where('status','==','active')));
+    if(token!==generation)return;
+    activeTeachers=snap.docs.map(d=>({uid:d.id,...d.data()})).filter(t=>!isRetiredTeacherProfile(t));
+    updateTeacher();
+  }catch(e){console.warn('[Zad booking] Teacher lookup:',e);}
+}
+function signedOut(){
+  user=null;profile={};activeTeachers=[];login.hidden=false;
+  account.textContent='سجّل دخولك علشان تكمل الحجز.';
+  trackerStatus.textContent='سجّل دخولك علشان تشوف حجوزاتك.';
+  tracker.replaceChildren();
+  showStep(0);
+}
+onAuthStateChanged(auth, current=>{
+  const token=++generation;
+  if(stopTracking){stopTracking();stopTracking=null;}
+  if(!current){signedOut();return;}
+  user=current;
+  login.hidden=true;
+  account.textContent='تم التحقق من حسابك. تقدر تكمل الحجز.';
+  next.disabled=false;
+  fillProfile(current);
+  showStep(step);
+  loadProfile(current,token);
+  loadTeachers(current,token);
+  trackBookings(current,token);
+},accountError);
+
+// A failed CDN/auth initialization should never leave the screen as endless 'checking'.
+setTimeout(()=>{if(!user && account.textContent.includes('جارٍ التحقق')){
+  account.textContent='التحقق بياخد وقت أطول من المتوقع؛ افحص اتصالك أو أعد تحميل الصفحة.';
+  login.hidden=false;
+}},12000);
+
+section.addEventListener('change',()=>{
+  const s=canonical('section');
+  if(s===ENGLISH_SUBJECT)subject.value=ENGLISH_SUBJECT;
+  else if(subject.value===ENGLISH_SUBJECT)subject.value='';
+  else if(s==='الرياضيات'&&!subject.value)subject.value='الرياضيات';
+  renderSubjects();updateTeacher();
 });
-
-async function loadBookingTeachers(user) {
-  try {
-    const snap = await getDocs(query(collection(db, "users"), where("role", "==", "teacher"), where("status", "==", "active")));
-    if (currentUser?.uid !== user.uid) return;
-    activeTeachers = snap.docs.map(docSnap => {
-      return { ...docSnap.data(), uid: docSnap.id };
-    }).filter(t=>!isRetiredTeacherProfile(t) && !/^علي\s+عبد\s+الحميد(?:\s|$)/.test(normalizeArabic(t.fullName || t.name || t.displayName)));
-  } catch (error) {
-    console.warn("تعذر تحميل حسابات المعلمين، سيتم حفظ اسم المعلم المحدد تلقائيًا:", error);
-    if (currentUser?.uid !== user.uid) return;
-    activeTeachers = [];
-  }
-  updateAssignedTeacher();
-}
-
-updateAssignedTeacher();
-onAuthStateChanged(auth, user => {
-  currentUser = user;
-  activeTeachers = [];
-  bookingTeachersReady = user ? loadBookingTeachers(user) : Promise.resolve();
-  updateAssignedTeacher();
-});
-
-sectionSelect?.addEventListener("change", () => {
-  const section = canonicalBookingSelection("section");
-  if (section === ENGLISH_SUBJECT && subjectInput) {
-    subjectInput.value = ENGLISH_SUBJECT;
-  } else if (assignedTeacher._category === 'english' && subjectInput?.value === ENGLISH_SUBJECT) {
-    subjectInput.value = '';
-  }
-  if (section === "الرياضيات" && subjectInput && !subjectInput.value.trim()) {
-    subjectInput.value = "الرياضيات";
-  }
-  updateAssignedTeacher();
-});
-subjectInput?.addEventListener("input", updateAssignedTeacher);
-
-let bookingSubmitting = false;
-form.addEventListener("submit", async event => {
-  if (bookingSubmitting) { event.preventDefault(); return; }
+subject.addEventListener('input',updateTeacher);
+field('lessonType').addEventListener('change',renderPrice);
+teacherSelect.addEventListener('change',()=>{activeTeacher={...resolvedTeacher(teacherSelect.value),category:categoryFor()};renderPrice();});
+back.addEventListener('click',()=>{if(submitting)return;setMessage('');showStep(step-1,true);});
+form.addEventListener('submit',async event=>{
   event.preventDefault();
-  if (!requireLogin()) return;
-
-  updateAssignedTeacher();
-  const data = Object.fromEntries(new FormData(form).entries());
-  // Normalize every dropdown to the Arabic database value before validation
-  // and before writing to Firestore, regardless of interface language.
-  for (const name of Object.keys(BOOKING_SELECT_VALUES)) {
-    data[name] = canonicalBookingSelection(name);
+  if(submitting)return;
+  if(!user){setMessage('سجّل الدخول أولًا علشان تكمل الحجز.','error');login.hidden=false;return;}
+  const data=selectedData();
+  const error=validation(step,data);
+  if(error){setMessage(error.message,'error');error.control?.focus();error.control?.reportValidity?.();return;}
+  if(step<steps.length-1){
+    if(step===steps.length-2)renderSummary(data);
+    setMessage('');showStep(step+1,true);return;
   }
-  if (Object.keys(BOOKING_SELECT_VALUES).some(name => !data[name])) {
-    statusBox.textContent = "من فضلك أكمل اختيارات الحجز قبل الإرسال.";
-    statusBox.className = "booking-status error";
-    return;
+  // Final validation includes all previous steps, not just the review panel.
+  for(let i=0;i<steps.length-1;i++){
+    const problem=validation(i,data);
+    if(problem){showStep(i);setMessage(problem.message,'error');problem.control?.focus();return;}
   }
-  if (!data.educationType || !["غير مرتبط بنظام تعليمي", "أزهري", "عام", "لغات"].includes(data.educationType)) {
-    statusBox.textContent = "من فضلك اختر نظام التعليم أولًا.";
-    statusBox.className = "booking-status error";
-    form.elements.educationType?.focus();
-    return;
-  }
-
-  if (data.preferredDay1 === data.preferredDay2) {
-    statusBox.textContent = "اختر يومين مختلفين للحصة.";
-    statusBox.className = "booking-status error";
-    return;
-  }
-
-  const { name: teacherName, _category: category } = assignedTeacher;
-  const studentUid = currentUser.uid;
-  const autoAssignedTeacher = teacherSelect?.disabled !== false;
-  bookingSubmitting = true;
-  const submitButton = form.querySelector('[type="submit"]');
-  if (submitButton) submitButton.disabled = true;
-  try {
-    if (category === 'english') await bookingTeachersReady;
-    if (currentUser?.uid !== studentUid) {
-      throw new Error('تغيّر حساب الطالب. أعد إرسال الطلب من الحساب الصحيح.');
-    }
-    const payload = {
-      ...data,
-      teacherUid: resolveActiveTeacher(teacherName)?.uid || null,
-      teacherName,
-      studentUid,
-      status: "جديد",
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
-      source: "booking",
-      bookingVersion: 3,
-      autoAssignedTeacher
-    };
-    const bookingRef = await addDoc(collection(db, "bookings"), payload);
-
-    // إنشاء الإشعار خطوة منفصلة حتى لا يظهر للطالب أن الحجز فشل
-    // إذا تعطل الإشعار لأي سبب بعد نجاح حفظ الحجز نفسه.
-    try {
-      await addDoc(collection(db, "notifications"), {
-        audience: "admin",
-        targetRole: "admin",
-        type: "booking",
-        title: "📅 طلب حجز حصة جديد",
-        message: `الطالب ${data.fullName || "غير معروف"} أرسل طلب حجز في قسم ${data.section || "غير محدد"} لمادة ${data.subject || "غير محدد"}. المعلم المحدد تلقائيًا: ${teacherName}.`,
-        bookingId: bookingRef.id,
-        studentUid,
-        createdBy: studentUid,
-        createdAt: serverTimestamp(),
-        readBy: []
-      });
-    } catch (notificationError) {
-      console.warn("تم حفظ الحجز، لكن تعذر إنشاء إشعار الإدارة:", notificationError);
-    }
-
-    statusBox.innerHTML = `<strong>✅ تم استلام طلب الحجز</strong><br>الحالة: <b>في انتظار التأكيد وتحديد الموعد</b><br>المعلم المحدد: ${teacherName}<br><small>يمكنك متابعة حالة الطلب من لوحة حسابك.</small>`;
-    statusBox.className = "booking-status success";
+  submitting=true;next.disabled=true;back.disabled=true;
+  setMessage('جارٍ إرسال طلب الحجز…');
+  const current=user,token=generation;
+  const quotedPrice=asBookingPrice(bookingPrice(data,activeTeacher.category));
+  const record={...data,teacherUid:activeTeacher.uid||null,teacherName:activeTeacher.name,
+    studentUid:current.uid,status:'جديد',source:'booking',bookingVersion:4,
+    autoAssignedTeacher:teacherSelect.disabled,quotedPrice,createdAt:serverTimestamp(),updatedAt:serverTimestamp()};
+  try{
+    const ref=doc(collection(db,'bookings'));
+    if(token!==generation)throw new Error('تغيّر الحساب قبل إرسال الطلب.');
+    await setDoc(ref,record);
+    setMessage('✅ تم إرسال الحجز بنجاح. تقدر تتابع حالته من «حجوزاتي».','success');
+    // Notification must never cause a successfully saved booking to be treated as a failure.
+    addDoc(collection(db,'notifications'),{audience:'admin',targetRole:'admin',type:'booking',
+      title:'📅 طلب حجز جديد',message:`الطالب ${data.fullName} حجز ${data.subject} مع ${activeTeacher.name}.`,
+      bookingId:ref.id,studentUid:current.uid,createdBy:current.uid,createdAt:serverTimestamp(),readBy:[]
+    }).catch(error=>console.warn('[Zad booking] Notification failed:',error));
     form.reset();
-    if (initialSection && [...sectionSelect.options].some(o => o.value === initialSection)) sectionSelect.value = initialSection;
-    if (initialSubject && subjectInput) subjectInput.value = initialSubject;
-    updateAssignedTeacher();
-  } catch (error) {
-    console.error(error);
-    statusBox.textContent = "تعذر إرسال الطلب: " + (error.code || error.message);
-    statusBox.className = "booking-status error";
-  } finally {
-    bookingSubmitting = false;
-    if (submitButton) submitButton.disabled = false;
-  }
+    const initialSection=params.get('section');if(initialSection)chooseSection(initialSection);
+    const initialSubject=params.get('subject');if(initialSubject)subject.value=initialSubject;
+    updateTeacher();fillProfile(current,profile);renderSubjects();showStep(0);
+  }catch(error){console.error('[Zad booking] Save failed:',error);setMessage('تعذر إرسال الحجز: '+(error.code||error.message),'error');}
+  finally{submitting=false;back.disabled=false;next.disabled=!user;}
 });
+
+// Preserve incoming booking links from the teacher directory.
+const initialSection=params.get('section');
+if(initialSection)chooseSection(initialSection);
+if(params.get('subject'))subject.value=params.get('subject').slice(0,150);
+renderSubjects();updateTeacher();showStep(0);
