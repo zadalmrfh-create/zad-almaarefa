@@ -1,6 +1,7 @@
 import {sharedAdminGetDocs,clearAdminReadCache} from './firestore-read-cache.js';
 const getDocs=(ref)=>sharedAdminGetDocs(ref,rawGetDocs,auth);
 import {auth,db} from '../../firebase-config.js';
+import {isRetiredTeacherProfile,isRetiredTeacherName} from '../../assets/english-teacher.js';
 import {onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
 import {collection,doc,getDoc,getDocs as rawGetDocs,updateDoc,writeBatch,serverTimestamp,arrayUnion} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 import {advanceSnapshot} from '../advance-credit.js';
@@ -20,14 +21,14 @@ async function retrieve(){
   const [u,a,b,p]=await Promise.all([
    getDocs(collection(db,'users')),getDocs(collection(db,'lessonAttendance')),getDocs(collection(db,'bookings')),getDocs(collection(db,'vodafonePayments'))
   ]);
-  current.teachers=u.docs.map(d=>({id:d.id,...d.data()})).filter(x=>x.role==='teacher'&&x.status==='active');
+  current.teachers=u.docs.map(d=>({id:d.id,...d.data()})).filter(x=>x.role==='teacher'&&x.status==='active'&&!isRetiredTeacherProfile(x));
   current.attendance=a.docs.map(d=>({id:d.id,...d.data()}));
   current.bookings=b.docs.map(d=>({id:d.id,...d.data()}));
   current.payments=p.docs.map(d=>({id:d.id,...d.data()}));
   const t=$('zadLinkTeacher'),prev=t.value;
   t.innerHTML='<option value="">اختر المعلم المعتمد</option>'+current.teachers.map(x=>`<option value="${esc(x.id)}">${esc(x.fullName||x.name||x.email||x.id)}</option>`).join('');
   if(current.teachers.some(x=>x.id===prev))t.value=prev;
-  const aliases=[...new Set([...current.attendance,...current.bookings].map(x=>String(x.teacherName||'').trim()).filter(x=>x&&!['غير محدد','الإدارة','لم يُعيّن'].includes(x)))].sort((a,b)=>a.localeCompare(b,'ar'));
+  const aliases=[...new Set([...current.attendance,...current.bookings].map(x=>String(x.teacherName||'').trim()).filter(x=>x&&!isRetiredTeacherName(x)&&!['غير محدد','الإدارة','لم يُعيّن'].includes(x)))].sort((a,b)=>a.localeCompare(b,'ar'));
   const d=$('zadLinkAlias'),old=d.value;
   d.innerHTML='<option value="">اختر الاسم من سجلات الإدارة</option><option value="__SYNC_ONLY__">مزامنة الأرصدة فقط للحصص المرتبطة بالفعل</option>'+aliases.map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join('');
   if(aliases.includes(old)||old==='__SYNC_ONLY__')d.value=old;

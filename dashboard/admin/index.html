@@ -75,7 +75,6 @@ onAuthStateChanged(auth, async (user) => {
 </script>
 <link rel="stylesheet" href="admin-workspace.css?v=20261105-finance2">
 <link rel="stylesheet" href="daily-ops.css?v=20261114-stage3">
-<link rel="stylesheet" href="../today-tasks.css?v=20261122-step5">
 <link rel="stylesheet" href="teacher-payroll-admin.css?v=20261105-1">
 <style>
 .zad-subject-picker{position:relative;width:100%;min-width:0;color:#f7e5aa}
@@ -163,38 +162,7 @@ onAuthStateChanged(auth, async (user) => {
        MAIN
   ====================================================== -->
 
-  <style>
-  #personalScheduleManagement [hidden]{display:none!important}
-  #personalScheduleManagement .admin-form{margin:1rem 0}
-  #zadAdminToday .zad-today-task{text-decoration:none}
-  #zadDailyOpsSection{margin-top:1rem}
-  </style>
   <main>
-    <section id="zadAdminToday" class="card" aria-labelledby="zadAdminTodayTitle">
-      <div class="zad-today-heading"><h2 id="zadAdminTodayTitle">المطلوب النهارده</h2></div>
-      <div class="zad-today-tasks" aria-live="polite">
-        <button class="zad-today-task" type="button" data-today-open="bookings"><strong data-today-count="bookings">…</strong><span>طلبات حجز محتاجة متابعة</span></button>
-        <button class="zad-today-task" type="button" data-today-open="payments"><strong data-today-count="payments">…</strong><span>تحويلات بانتظار المراجعة</span></button>
-        <button class="zad-today-task" type="button" data-today-open="essays"><strong data-today-count="essays">…</strong><span>أسئلة مقالية بانتظار التصحيح</span></button>
-        <a class="zad-today-task" href="../../store/admin.html?tab=orders&amp;status=pending"><strong data-today-count="store">…</strong><span>طلبات المتجر بانتظار المراجعة</span></a>
-      </div>
-      <details id="zadDailyOpsSection" class="zad-admin-merged-detail">
-        <summary>مواعيد الحصص والتقارير</summary>
-        <div class="zad-ops-actions">
-          <label for="zadOpsDate">تاريخ الحصص <input id="zadOpsDate" type="date"></label>
-          <button id="zadOpsRefresh" type="button" class="btn gold" disabled>عرض الحصص</button>
-          <button id="zadOpsCSV" type="button" class="btn" disabled>تصدير CSV</button>
-          <button id="zadOpsPrint" type="button" class="btn" disabled>طباعة الجدول</button>
-        </div>
-        <div class="zad-ops-shortcuts">
-          <button type="button" class="btn" data-zad-ops-shortcut="student">تقارير الطلاب الشاملة</button>
-          <button type="button" class="btn" data-zad-ops-shortcut="attendance">تقارير الحضور والغياب</button>
-          <button type="button" class="btn" data-zad-ops-shortcut="teachers">صلاحيات نتائج المعلمين</button>
-        </div>
-        <p id="zadOpsStatus" role="status">اعرض مواعيد المحاضرات من السجل العام حسب التاريخ.</p>
-        <ul id="zadOpsSummary" class="zad-today-list"></ul>
-      </details>
-    </section>
     <section id="zadActivityAlerts" class="card zad-activity-alerts" dir="rtl">
       <div class="zad-activity-heading"><div><h2>🔔 إشعارات نشاط المنصة <span id="zadActivityUnread" class="zad-activity-counter" hidden>0</span></h2><p>التسجيلات الجديدة، حجوزات الحصص، وتنزيلات الكتب.</p></div><button id="zadActivityReadAll" type="button" class="btn">تحديد الكل كمقروء</button></div>
       <div id="zadActivityList" class="zad-activity-list" aria-live="polite">جارٍ تحميل الإشعارات…</div>
@@ -238,7 +206,6 @@ onAuthStateChanged(auth, async (user) => {
         <a class="admin-quick-link" href="#platformAnalytics"><span>📊</span><strong>الإحصائيات</strong><small>أرقام المنصة</small></a>
         <a class="admin-quick-link" href="#usersManagement"><span>👥</span><strong>المستخدمون</strong><small>إدارة الحسابات</small></a>
         <a class="admin-quick-link" href="#zadVodafoneAdminPanel"><span>💳</span><strong>المدفوعات</strong><small>كشف الطالب ومراجعة التحويلات</small></a>
-        <a class="admin-quick-link" href="#personalScheduleManagement"><span>📅</span><strong>جداول الطلاب</strong><small>إضافة حصص خاصة</small></a>
         <a class="admin-quick-link" href="#bookingsManagement"><span>📅</span><strong>الحجوزات</strong><small>طلبات وتقارير</small></a>
         <a class="admin-quick-link" href="#codeExamsManagement"><span>🧑‍💻</span><strong>امتحانات بالكود</strong><small>إضافة ونشر</small></a>
         <a class="admin-quick-link" href="#codeExamResultsSection"><span>📘</span><strong>نتائج الامتحانات</strong><small>درجات وتقارير</small></a>
@@ -319,10 +286,6 @@ onAuthStateChanged(auth, async (user) => {
   <div id="ceList">جاري تحميل الامتحانات...</div>
 </section>
 <section class="card" dir="rtl" id="adminCertificatesSection"><h2>🏅 شهادات التقدير — للإدارة فقط</h2><p>إصدار شهادة للطالب بعد مراجعة النتيجة. يمكن تعديل الشهادة أو طباعتها أو حذفها من هنا فقط. انسخ معرّف حساب الطالب UID من بياناته في Firebase.</p><form id="certificateAdminForm" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin:18px 0"><label style="display:grid;gap:6px">معرّف حساب الطالب (UID)<input name="studentUid" value="" required style="width:100%;padding:10px;border-radius:9px;color:#17233b;background:#fff;border:1px solid #64748b;font:inherit"></label><label style="display:grid;gap:6px">اسم الطالب<input name="studentName" value="" required style="width:100%;padding:10px;border-radius:9px;color:#17233b;background:#fff;border:1px solid #64748b;font:inherit"></label><label style="display:grid;gap:6px">سبب التكريم أو اسم الامتحان<input name="title" value="" required style="width:100%;padding:10px;border-radius:9px;color:#17233b;background:#fff;border:1px solid #64748b;font:inherit"></label><label style="display:grid;gap:6px">التقدير<input name="grade" value="ممتاز"  style="width:100%;padding:10px;border-radius:9px;color:#17233b;background:#fff;border:1px solid #64748b;font:inherit"></label><label style="display:grid;gap:6px">عبارة الشهادة<input name="description" value=""  style="width:100%;padding:10px;border-radius:9px;color:#17233b;background:#fff;border:1px solid #64748b;font:inherit"></label><label style="display:grid;gap:6px">تاريخ الإصدار<input name="issueDate" value=""  style="width:100%;padding:10px;border-radius:9px;color:#17233b;background:#fff;border:1px solid #64748b;font:inherit"></label><div style="display:grid;gap:6px;align-content:center;padding:12px;border:1px solid #b9821a;border-radius:10px;background:#101d31;color:#f1d17b"><strong>🏅 ختم زاد المعرفة</strong><span style="font-size:13px;line-height:1.6">يظهر الختم الرسمي تلقائيًا على الشهادة بدلًا من إمضاء المعلم.</span></div><div style="display:flex;align-items:end;gap:8px"><button type="submit" class="btn gold" id="certificateSubmit">إصدار الشهادة</button><button type="button" class="btn" id="certificatePrintPreview">🖨️ معاينة وطباعة الشهادة بالختم الرسمي</button><button type="button" class="btn" id="certificateCancel" hidden>إلغاء التعديل</button></div></form><p id="certificateAdminStatus" aria-live="polite"></p><div id="certificateAdminList"></div></section><script type="module" src="certificates-admin.js"></script>
-<section class="card" id="zadAdminEssayQueue" aria-labelledby="zadAdminEssayTitle">
-  <div class="zad-today-heading"><h2 id="zadAdminEssayTitle">الأسئلة المقالية بانتظار التصحيح</h2></div>
-  <div id="zadAdminEssayList"><p>افتح قائمة التصحيح من «المطلوب النهارده».</p></div>
-</section>
 <section class="card" dir="rtl" id="codeExamResultsSection"><h2>📊 نتائج الامتحانات الإلكترونية</h2><p>الامتحانات التي تنشرها من الأعلى تظهر تلقائيًا هنا، حتى لو لم يسلم أي طالب بعد. تظهر النتائج المسجلة لحظة وصولها إلى Firebase، بدون إعداد يدوي جديد.</p><p>تظهر هنا نتائج <strong>كل الامتحانات بالكود وامتحانات الوحدة الأولى بالإضافة إلى امتحان علم البديع (تانية بكالوريا)</strong> حسب تاريخ التسليم. تظهر نتائج الأسئلة الموضوعية مباشرة بلا اعتماد يدوي، وتظل درجة المقالي في انتظار تصحيح الإدارة فقط. نتائج الوحدة الأولى لها قسم تصحيح المقالي الخاص بها أسفل النتائج. استخدم زر «طباعة تقرير الإجابات» بجانب كل نتيجة لطباعة إجابات الطالب والإجابات الصحيحة المتاحة، أو حفظها PDF.</p><div id="codeExamResultsList">جارٍ تحميل النتائج...</div></section>
 <section class="card" dir="rtl" id="saadAlaaAdminPanel" style="border:1px solid #c6a251">
  <h2>📐 إعداد مدرس الرياضيات والعلوم والكيمياء — أ/ سعد علاء</h2>
@@ -351,15 +314,15 @@ onAuthStateChanged(auth, async (user) => {
 <section class="card" dir="rtl" id="zadSpecialExamResults" style="border:2px solid #bd9841">
 <h2>📘 امتحانا العلوم المتكاملة والفقه — مراجعة الإجابات</h2>
 <p>استلام إجابات الطلاب من الامتحانين الجديدين، وتصحيح الاختياري والصح والخطأ مبدئيًا، ومراجعة المقالية والإكمال، واعتماد الدرجة وطباعة تقرير الإجابات كاملًا.</p>
-<p>تظهر أحدث المحاولات عند فتح اللوحة. اضغط تحميل إجابات الطلاب لتحديثها.</p>
+<p>يُجرى تحميل النتائج عند الضغط على الزر فقط لتقليل قراءات Firebase.</p>
 <button type="button" class="btn gold" id="zadSpecialReload">🔄 تحميل إجابات الطلاب</button>
 <p id="zadSpecialAdminStatus" role="status">جارٍ تجهيز لوحة النتائج...</p>
 <div id="zadSpecialAdminList"></div><div id="zadSpecialReview" hidden></div>
 </section>
 <link rel="stylesheet" href="zad-special-results-admin.css">
-<script type="module" src="zad-special-results-admin.js?v=20261122-step5"></script>
+<script type="module" src="zad-special-results-admin.js"></script>
 <link rel="stylesheet" href="code-exams-admin.css?v=20261114-stage4-essay2">
-<script type="module" src="code-exam-results-admin.js?v=20261122-step5"></script>
+<script type="module" src="code-exam-results-admin.js?v=20261114-stage4-essay2"></script>
 <section class="card" dir="rtl" id="unitOneExamsAdmin" style="border:1px solid #bb983c">
 <h2>📚 امتحانات الوحدة الأولى — الصف الثاني الثانوي والبكالوريا</h2>
 <p>امتحانات الوحدة الأولى وامتحان علم البديع (تانية بكالوريا)، 30 سؤالًا في كل امتحان. إجابات الاختيار والصح والخطأ والإكمال تُصحَّح آليًا كدرجة أولية؛ تُراجع الإدارة الأسئلة المقالية الأربعة وتثبت الدرجة النهائية.</p>
@@ -374,7 +337,24 @@ onAuthStateChanged(auth, async (user) => {
     <!-- =====================================================
          PLATFORM ANALYTICS
     ====================================================== -->
-
+    <section class="card" id="zadDailyOpsSection" dir="rtl">
+  <div class="zad-ops-head"><div><h2>📋 مركز المتابعة اليومية</h2><p>الحجوزات والتحويلات وتصحيح المقالي والحصص في مكان واحد — قراءة فقط.</p></div></div>
+  <div class="zad-ops-actions">
+    <label for="zadOpsDate">تاريخ الحصص <input id="zadOpsDate" type="date" aria-label="تاريخ الحصص"></label>
+    <button id="zadOpsRefresh" type="button" class="btn gold">🔄 تحميل متابعة اليوم</button>
+    <button id="zadOpsCSV" type="button" class="btn" disabled>📥 تصدير CSV</button>
+    <button id="zadOpsPrint" type="button" class="btn" disabled>🖨️ طباعة ملخص</button>
+  </div>
+  <div class="zad-ops-shortcuts" aria-label="اختصارات التقارير">
+    <button type="button" class="btn" data-zad-ops-shortcut="student">👤 تقارير الطلاب الشاملة</button>
+    <button type="button" class="btn" data-zad-ops-shortcut="attendance">📋 تقارير الحضور والغياب</button>
+    <button type="button" class="btn" data-zad-ops-shortcut="teachers">🔗 مراجعة صلاحيات نتائج المعلمين</button>
+  </div>
+  <p style="font-size:12px;color:#b8c5da;margin:6px 0">لتقرير طالب معيّن: افتح «تقارير الطلاب الشاملة»، واختر الطالب من قائمة المستخدمين ثم اضغط تقريره. مزامنة المعلمين تظل بموافقة الإدارة.</p>
+  <p id="zadOpsStatus" class="zad-ops-status" role="status" aria-live="polite">اضغط تحميل متابعة اليوم لاستعراض البيانات.</p>
+  <div id="zadOpsSummary" aria-live="polite"></div>
+  <p style="color:#afbed2;font-size:12px;line-height:1.7">الأعداد مبنية على قراءات محدودة لتقليل استهلاك Firebase؛ قد تكون جزئية إذا تجاوز عدد السجلات الحد الموضح. التقارير لا تعدّل المدفوعات أو نتائج الطلاب.</p>
+</section>
     <section class="card" id="platformAnalytics">
       <div class="actions" style="justify-content:space-between;align-items:center">
         <div><h2 style="margin:0">📊 إحصائيات المنصة</h2><p id="enhDataStatus" style="margin:6px 0;color:var(--muted)">بيانات مباشرة من Firebase.</p></div>
@@ -574,50 +554,6 @@ onAuthStateChanged(auth, async (user) => {
          CONTENT MANAGEMENT
     ====================================================== -->
 
-    <section class="card" id="lessonResourcesManagement">
-      <div class="actions" style="justify-content:space-between;align-items:start">
-        <div>
-          <h2>صفحات الحصص</h2>
-          <p>اربط الحصة المجدولة بملخص أو بامتحان إلكتروني.</p>
-        </div>
-        <button class="btn" type="button" id="loadLessonResources" disabled>عرض الحصص</button>
-      </div>
-      <form class="admin-form" id="lessonResourcesForm" hidden>
-        <div class="grid" style="margin-top:12px">
-          <label>الحصة<select id="lessonResourceId" required></select></label>
-          <label>رابط الملخص (اختياري)<input id="lessonResourceSummaryUrl" type="url" maxlength="2048" placeholder="https://"></label>
-          <label>رابط الامتحان (اختياري)
-            <input id="lessonResourceExamUrl" list="lessonResourceExamExamples" maxlength="2048" placeholder="اختار من الأمثلة أو الصق رابط الامتحان">
-            <datalist id="lessonResourceExamExamples"></datalist>
-          </label>
-        </div>
-        <button type="submit" id="saveLessonResources" class="btn gold" disabled>حفظ الروابط</button>
-      </form>
-      <p id="lessonResourceStatus" role="status"></p>
-    </section>
-
-    <section class="card" id="personalScheduleManagement" aria-labelledby="personalScheduleTitle">
-      <div class="zad-today-heading"><h2 id="personalScheduleTitle">جدول الحصص الخاصة</h2></div>
-      <div class="admin-form">
-        <label>الطالب <select id="personalScheduleStudent" disabled><option value="">جارٍ تحميل الحسابات…</option></select></label>
-      </div>
-      <form id="personalScheduleForm" class="admin-form" hidden>
-        <div class="grid">
-          <label>عنوان الحصة <input name="title" required maxlength="150"></label>
-          <label>المادة <input name="subject" required maxlength="100"></label>
-          <label>اسم المعلم (اختياري) <input name="teacherName" maxlength="100"></label>
-          <label>الموعد بتوقيت القاهرة <input name="date" type="datetime-local" required></label>
-          <label>رابط الحصة (اختياري) <input name="meetUrl" type="url" maxlength="1000" placeholder="https://meet.google.com/..."></label>
-        </div>
-        <div class="actions">
-          <button id="personalScheduleSave" class="btn gold" type="submit">أضف الحصة</button>
-          <button id="personalScheduleCancel" class="btn" type="button" hidden>إلغاء التعديل</button>
-        </div>
-      </form>
-      <p id="personalScheduleStatus" role="status">اختار حساب طالب لعرض جدوله.</p>
-      <div id="personalScheduleList"></div>
-    </section>
-
     <section
       class="card"
       id="contentManagement"
@@ -630,7 +566,7 @@ onAuthStateChanged(auth, async (user) => {
 
       <p>
         إضافة وتعديل وحذف وإظهار أو إخفاء الأحداث وطاقم التدريس والطلاب المتميزين،
-        من مكان واحد.
+        وإدارة كتب المكتبة العامة ومكتبة التعليم الأزهري.
       </p>
 
 
@@ -668,6 +604,24 @@ onAuthStateChanged(auth, async (user) => {
           type="button"
         >
           الطلاب المتميزون
+        </button>
+
+
+        <button
+          class="btn"
+          data-content-tab="libraryBooks"
+          type="button"
+        >
+          المكتبة العامة
+        </button>
+
+
+        <button
+          class="btn"
+          data-content-tab="azharBooks"
+          type="button"
+        >
+          مكتبة التعليم الأزهري
         </button>
 
       </div>
@@ -740,7 +694,7 @@ onAuthStateChanged(auth, async (user) => {
 
       </form>
 
-      <button type="button" id="addEnglishTeacherProfile" class="btn gold" hidden>إضافة بطاقة مستر بلال للإدارة</button>
+      <button type="button" id="addEnglishTeacherProfile" class="btn gold" hidden>إضافة بطاقة الأستاذ محمد طلعت للإدارة</button>
 
       <div class="table-wrap">
 
@@ -1055,17 +1009,13 @@ onAuthStateChanged(auth, async (user) => {
 
       <div class="booking-tab-panel active" id="bookingTabRequests" data-booking-panel="requests">
         <div class="booking-panel-title">
-          <div><h3>طلبات الحجز</h3><p>حدّد الموعد بتوقيت القاهرة، وبلّغ الطالب بالسعر المتفق عليه قبل اختيار «تم الحجز».</p></div>
+          <div><h3>طلبات الحجز</h3><p>غيّر الحالة أو افتح تقرير الحجز أو تقرير الطالب من نفس الصف.</p></div>
         </div>
-      <label class="zad-today-filter" for="zadBookingQueueFilter">
-        عرض الطلبات
-        <select id="zadBookingQueueFilter"><option value="all">كل الطلبات</option><option value="pending">تحتاج متابعة</option></select>
-      </label>
       <div class="table-wrap" style="margin-top:20px">
         <table class="table">
           <thead>
             <tr>
-              <th>الطالب</th><th>التواصل</th><th>المرحلة/الصف</th><th>المادة</th><th>الموعد والسعر</th><th>المعلم</th><th>الحالة</th><th>إجراء</th>
+              <th>الطالب</th><th>التواصل</th><th>المرحلة/الصف</th><th>المادة</th><th>اليومان</th><th>المعلم</th><th>الحالة</th><th>إجراء</th>
             </tr>
           </thead>
           <tbody id="bookingRows"><tr><td colspan="8">جارٍ التحميل...</td></tr></tbody>
@@ -1500,10 +1450,6 @@ onAuthStateChanged(auth, async (user) => {
 .report-section-title{margin:22px 0 10px;color:var(--gold2)}.report-history{display:flex;flex-direction:column;gap:9px}.report-history-item{border-right:3px solid var(--gold);padding:8px 12px;background:#111c2d;border-radius:8px}.report-history-item small{display:block;color:var(--muted)}
 .report-note-area{margin-top:16px;padding:14px;border:1px solid #314056;border-radius:12px;background:#111c2d}.report-note-area label{display:block;font-weight:800;margin-bottom:8px}.report-note-area .actions{margin-top:9px}
 .status-pill{display:inline-block;padding:4px 9px;border-radius:999px;background:#26364f;font-size:12px;font-weight:800}.status-pill[data-status="مكتمل"],.status-pill[data-status="تم الحجز"]{background:#12351f;color:#9cf5ba}.status-pill[data-status="ملغي"]{background:#4a2025;color:#fecaca}.status-pill[data-status="جديد"]{background:#24334c;color:#bfdbfe}
-.booking-admin-schedule{min-inline-size:15rem;display:grid;gap:.35rem}
-.booking-admin-schedule label{display:grid;gap:.15rem;font-size:.8rem}
-.booking-admin-schedule input{width:100%;min-width:0;padding:.28rem .45rem;font:inherit;border:1px solid #637594;border-radius:.35rem}
-.booking-admin-schedule small{display:block;color:var(--muted);font-size:.77rem}
 .booking-row-actions{display:flex;gap:6px;flex-wrap:wrap}.booking-row-actions .btn{padding:7px 9px;font-size:12px;white-space:nowrap}
 @media(max-width:900px){.report-filters{grid-template-columns:repeat(2,minmax(0,1fr))}.report-stats,.booking-report-stats{grid-template-columns:repeat(3,minmax(0,1fr))}.report-charts.two-cols{grid-template-columns:1fr}.report-info-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:560px){.report-filters{grid-template-columns:1fr}.report-stats,.booking-report-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.report-info-grid{grid-template-columns:1fr}.report-bar-row{grid-template-columns:90px 1fr auto}}
@@ -1538,12 +1484,8 @@ onAuthStateChanged(auth, async (user) => {
 ===================================================== */
 
 import { guard } from '../dashboard.js';
-import { ENGLISH_TEACHER_NAME, ENGLISH_TEACHER_PROFILE, isEnglishTeacherProfile } from '../../assets/english-teacher.js';
+import { ENGLISH_TEACHER_NAME, ENGLISH_TEACHER_PROFILE, isEnglishTeacherProfile, isRetiredTeacherProfile } from '../../assets/english-teacher.js';
 import { isEnglishSubject } from '../attendance-subjects.js';
-import { pendingBookings } from '../student/student-today-core.js?v=20261120-today1';
-import { publishTodayQueue } from './today-queues.js?v=20261122-step5';
-import { asBookingPrice, cairoNowSlot, formatBookingPrice, formatBookingSlot, validBookingSlot }
-  from '../../sections/booking/booking-core.js?v=20261122-step4';
 
 import {
   auth,
@@ -1568,8 +1510,7 @@ import {
   query,
   orderBy,
   limit,
-  where,
-  runTransaction
+  where
 } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 
 
@@ -3499,7 +3440,11 @@ const contentTypes = {
   featuredStudents:
     'الطلاب المتميزون',
 
+  libraryBooks:
+    'المكتبة العامة',
 
+  azharBooks:
+    'مكتبة التعليم الأزهري'
 
 };
 
@@ -3625,8 +3570,30 @@ const fieldSets = {
   ],
 
 
+  libraryBooks: [
+
+    ['title', 'اسم الكتاب', 'text'],
+    ['grade', 'الصف / المرحلة', 'text'],
+    ['subject', 'المادة', 'text'],
+    ['category', 'التصنيف', 'text'],
+    ['icon', 'الأيقونة', 'text'],
+    ['description', 'وصف الكتاب', 'textarea'],
+    ['url', 'رابط الكتاب', 'text']
+
+  ],
 
 
+  azharBooks: [
+
+    ['title', 'اسم الكتاب', 'text'],
+    ['grade', 'الصف / المرحلة', 'text'],
+    ['subject', 'المادة', 'text'],
+    ['category', 'التصنيف', 'text'],
+    ['icon', 'الأيقونة', 'text'],
+    ['description', 'وصف الكتاب', 'textarea'],
+    ['url', 'رابط الكتاب', 'text']
+
+  ],
 
 
   featuredStudents: [
@@ -3898,66 +3865,28 @@ async function ensureLegacyTeachers() {
 const bookingRows = $('bookingRows');
 const bookingStatuses = ['جديد', 'قيد المراجعة', 'تم التواصل', 'تم الحجز', 'مكتمل', 'ملغي'];
 let bookingsCache = new Map();
-const bookingQueueFilter = $('zadBookingQueueFilter');
-let bookingsLoaded = false;
-let bookingRead = 0;
-bookingQueueFilter?.addEventListener('change', renderBookingRows);
-
-function adminBookingSchedule(item) {
-  const requestSlot = formatBookingSlot(item.requestedSlot);
-  const preferences = [item.preferredDay1, item.preferredDay2, item.preferredPeriod].filter(Boolean).join(' · ');
-  const confirmedSlot = validBookingSlot(item.confirmedSlot) ? item.confirmedSlot : '';
-  const quote = asBookingPrice(item.quotedPrice);
-  const confirmedPrice = asBookingPrice(item.confirmedPrice);
-  const isNewRequest = item.bookingVersion >= 4;
-  const amount = confirmedPrice ?? (isNewRequest ? quote : null);
-  return `<div class="booking-admin-schedule">
-    <small>المقترح: ${escapeHtml(requestSlot || preferences || '—')}</small>
-    ${requestSlot && preferences ? `<small>بدائل: ${escapeHtml(preferences)}</small>` : ''}
-    ${quote !== null ? `<small>المعروض وقت الطلب: ${escapeHtml(formatBookingPrice(quote))}</small>` : ''}
-    <label>الموعد النهائي · القاهرة<input class="booking-confirmed-slot" type="datetime-local" step="60" value="${escapeHtml(confirmedSlot)}"></label>
-    <label>السعر المتفق عليه (جنيه)<input class="booking-confirmed-price" type="number" min="0" step="0.01" inputmode="decimal" value="${amount ?? ''}"></label>
-  </div>`;
-}
-
-function renderBookingRows() {
-  if (!bookingRows || !bookingsLoaded) return;
-  const pendingOnly = bookingQueueFilter?.value === 'pending';
-  const list = [...bookingsCache.values()];
-  const rows = pendingOnly ? pendingBookings(list) : list;
-  bookingRows.innerHTML = rows.length ? rows.map(item => `
-    <tr>
-      <td>${escapeHtml(item.fullName || item.studentName || 'طالب')}<br><small>${escapeHtml(formatDate(item.createdAt))}</small></td>
-      <td>${escapeHtml(item.phone || '—')}<br>${escapeHtml(item.email || '—')}</td>
-      <td>${escapeHtml([item.educationType, item.stage, item.grade].filter(Boolean).join(' — ') || '—')}</td>
-      <td>${escapeHtml(item.subject || '—')}</td>
-      <td>${adminBookingSchedule(item)}</td>
-      <td>${escapeHtml(item.teacherName || '—')}</td>
-      <td><select class="booking-status-select" data-id="${escapeHtml(item.id)}" aria-label="حالة الحجز">${bookingStatuses.map(status => `<option value="${status}" ${status === (item.status || 'جديد') ? 'selected' : ''}>${status}</option>`).join('')}</select></td>
-      <td><button type="button" class="btn gold booking-save-btn" data-id="${escapeHtml(item.id)}">حفظ</button> <button type="button" class="btn booking-report-btn" data-booking-report-id="${escapeHtml(item.id)}">تقرير</button></td>
-    </tr>
-  `).join('') : `<tr><td colspan="8">${pendingOnly ? 'لا توجد حجوزات تحتاج متابعة.' : 'لا توجد طلبات حجز حتى الآن.'}</td></tr>`;
-}
-
 async function loadBookings() {
   if (!bookingRows) return;
-  const request = ++bookingRead;
-  const user = auth.currentUser?.uid;
-  bookingsLoaded = false;
   bookingRows.innerHTML = '<tr><td colspan="8">جارٍ تحميل الحجوزات…</td></tr>';
   try {
     const snap = await getDocsWithTimeout(collection(db, 'bookings'));
-    if (request !== bookingRead || user !== auth.currentUser?.uid) return;
-    const rows = snap.docs.map(d => ({...d.data(), id:d.id}));
+    const rows = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     rows.sort((a, b) => (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0));
     bookingsCache = new Map(rows.map(row => [row.id, row]));
-    bookingsLoaded = true;
-    renderBookingRows();
-    publishTodayQueue('bookings', user, {count:pendingBookings(rows).length});
+    bookingRows.innerHTML = rows.length ? rows.map(item => `
+      <tr>
+        <td>${escapeHtml(item.fullName || item.studentName || 'طالب')}<br><small>${escapeHtml(formatDate(item.createdAt))}</small></td>
+        <td>${escapeHtml(item.phone || '—')}<br>${escapeHtml(item.email || '—')}</td>
+        <td>${escapeHtml([item.educationType, item.stage, item.grade].filter(Boolean).join(' — ') || '—')}</td>
+        <td>${escapeHtml(item.subject || '—')}</td>
+        <td>${escapeHtml([item.preferredDay1, item.preferredDay2].filter(Boolean).join(' / ') || '—')}</td>
+        <td>${escapeHtml(item.teacherName || '—')}</td>
+        <td><select class="booking-status-select" data-id="${escapeHtml(item.id)}" aria-label="حالة الحجز">${bookingStatuses.map(status => `<option value="${status}" ${status === (item.status || 'جديد') ? 'selected' : ''}>${status}</option>`).join('')}</select></td>
+        <td><button type="button" class="btn gold booking-save-btn" data-id="${escapeHtml(item.id)}">حفظ</button> <button type="button" class="btn booking-report-btn" data-booking-report-id="${escapeHtml(item.id)}">تقرير</button></td>
+      </tr>
+    `).join('') : '<tr><td colspan="8">لا توجد طلبات حجز حتى الآن.</td></tr>';
   } catch (error) {
-    if (request !== bookingRead || user !== auth.currentUser?.uid) return;
     console.error('تعذر تحميل طلبات الحجز:', error);
-    publishTodayQueue('bookings', user, {error:true});
     bookingRows.innerHTML = `<tr><td colspan="8">تعذر تحميل الحجوزات: ${escapeHtml(error.code || error.message)}</td></tr>`;
   }
 }
@@ -3965,69 +3894,23 @@ bookingRows?.addEventListener('click', async event => {
   const button = event.target.closest('.booking-save-btn');
   if (!button) return;
   const booking = bookingsCache.get(button.dataset.id);
-  const row = button.closest('tr');
-  const status = row?.querySelector('.booking-status-select')?.value;
-  if (!booking || !bookingStatuses.includes(status) || button.disabled) return;
-  const dateInput = row.querySelector('.booking-confirmed-slot');
-  const priceInput = row.querySelector('.booking-confirmed-price');
-  const slot = dateInput.value;
-  const price = priceInput.value === '' ? null : asBookingPrice(priceInput.valueAsNumber);
+  const status = button.closest('tr')?.querySelector('.booking-status-select')?.value;
+  if (!booking || !bookingStatuses.includes(status)) return;
   const previous = booking.status || 'جديد';
-  const priorSlot = booking.confirmedSlot || '';
-  const priorPrice = asBookingPrice(booking.confirmedPrice);
-  if (!dateInput.reportValidity() || !priceInput.reportValidity()) return;
-  if (slot && !validBookingSlot(slot)) {
-    alert('اختر تاريخًا ووقتًا صحيحين بتوقيت القاهرة.');
-    dateInput.focus();
-    return;
-  }
-  const confirming = status === 'تم الحجز' && (previous !== status || priorSlot !== slot || priorPrice !== price);
-  if (confirming && !slot) {
-    alert('حدّد الموعد النهائي بتوقيت القاهرة قبل تأكيد الحجز.');
-    dateInput.focus();
-    return;
-  }
-  if (confirming && slot !== priorSlot && slot <= cairoNowSlot()) {
-    alert('اختر موعدًا قادمًا بتوقيت القاهرة.');
-    dateInput.focus();
-    return;
-  }
-  if (confirming && booking.bookingVersion >= 4 && price === null) {
-    alert('اكتب السعر المتفق عليه قبل تأكيد الحجز.');
-    priceInput.focus();
-    return;
-  }
-  if (previous === status && priorSlot === slot && priorPrice === price) return;
+  if (previous === status) return;
   button.disabled = true;
   try {
-    const target = doc(db, 'bookings', booking.id);
-    const editor = auth.currentUser?.uid;
-    await runTransaction(db, async transaction => {
-      const snap = await transaction.get(target);
-      if (!snap.exists()) throw Error('طلب الحجز غير موجود.');
-      const live = snap.data();
-      if ((live.status || 'جديد') !== previous || (live.confirmedSlot || '') !== priorSlot ||
-          asBookingPrice(live.confirmedPrice) !== priorPrice) {
-        throw Error('اتغيّرت بيانات الطلب. حدّث القائمة وراجع أحدث موعد وسعر قبل الحفظ.');
-      }
-      if (!editor || auth.currentUser?.uid !== editor) throw Error('تغيّر حساب الإدارة.');
-      const changes = {status, updatedAt: serverTimestamp()};
-      if (slot !== priorSlot) changes.confirmedSlot = slot || null;
-      if (price !== priorPrice) changes.confirmedPrice = price;
-      transaction.update(target, changes);
-    });
-    if (previous !== status) {
-      try {
-        await addDoc(collection(db, 'bookingStatusHistory'), {
-          bookingId: booking.id, oldStatus: previous, newStatus: status, status,
-          changedBy: editor, createdAt: serverTimestamp()
-        });
-      } catch (historyError) { console.warn('تعذر تسجيل تاريخ تغيير الحجز:', historyError); }
-    }
+    await updateDoc(doc(db, 'bookings', booking.id), { status, updatedAt: serverTimestamp() });
+    try {
+      await addDoc(collection(db, 'bookingStatusHistory'), {
+        bookingId: booking.id, oldStatus: previous, newStatus: status, status,
+        changedBy: auth.currentUser?.uid || null, createdAt: serverTimestamp()
+      });
+    } catch (historyError) { console.warn('تعذر تسجيل تاريخ تغيير الحجز:', historyError); }
     await loadBookings();
   } catch (error) {
     console.error('تعذر تحديث حالة الحجز:', error);
-    alert('تعذر حفظ الحجز: ' + (error.message || error.code));
+    alert('تعذر حفظ الحجز: ' + (error.code || error.message));
     button.disabled = false;
   }
 });
@@ -4062,7 +3945,7 @@ async function loadContent() {
     const type = activeContentType;
     const snap = await getDocsWithTimeout(collection(db, type));
     if (type !== activeContentType) return;
-    const items = snap.docs.map(d => ({ ...d.data(), id: d.id }));
+    const items = snap.docs.map(d => ({ ...d.data(), id: d.id })).filter(t => type !== 'teachers' || !isRetiredTeacherProfile(t));
     if (englishProfileButton) englishProfileButton.hidden = type !== 'teachers' || items.some(isEnglishTeacherProfile);
     contentRows.innerHTML = items.length ? items.map(item => `
       <tr>
@@ -4102,7 +3985,7 @@ englishProfileButton?.addEventListener('click', async () => {
       const saved = await getDoc(ref);
       if (!saved.exists()) await setDoc(ref, {...ENGLISH_TEACHER_PROFILE, visible: true, createdAt: serverTimestamp()});
     }
-    setContentStatus('بطاقة مستر بلال مسجلة في إدارة طاقم التدريس.');
+    setContentStatus('بطاقة الأستاذ محمد طلعت مسجلة في إدارة طاقم التدريس.');
     if (activeContentType === 'teachers') await loadContent();
   } catch (error) {
     setContentStatus('تعذر حفظ البطاقة: ' + (error.code || error.message), true);
@@ -4176,8 +4059,7 @@ guard('admin', async () => {
 <!-- ملفات مستقلة كانت غير مُحمّلة بسبب انقطاع نهاية الصفحة -->
 <script type="module" src="admin-activity-alerts.js"></script>
 <script type="module" src="admin-enhancements.js"></script>
-<script type="module" src="admin-workspace.js?v=20261122-admin-fix"></script>
-<script type="module" src="lesson-resources-admin.js?v=20261120-lesson1"></script>
+<script type="module" src="admin-workspace.js?v=20261112-lecture-ratings1"></script>
 <script type="module" src="attendance-admin.js?v=20261116-english"></script>
 <link rel="stylesheet" href="lecture-reviews-share.css?v=20261113-share2">
 <script type="module" src="lecture-reviews-admin.js?v=20261113-share2"></script>
@@ -4190,11 +4072,9 @@ guard('admin', async () => {
 <script type="module" src="quiz-center-admin.js"></script>
 <script type="module" src="reports-admin.js"></script>
 <script type="module" src="student-comprehensive-report.js"></script>
-<script type="module" src="daily-ops-admin.js?v=20261122-admin-fix"></script>
-<script type="module" src="today-admin.js?v=20261122-admin-fix"></script>
-<script type="module" src="personal-schedule-admin.js?v=20261122-schedule"></script>
+<script type="module" src="daily-ops-admin.js?v=20261114-stage3"></script>
 <script type="module" src="exam-answer-report.js"></script>
-<script type="module" src="vodafone-payments-admin.js?v=20261122-step5"></script>
+<script type="module" src="vodafone-payments-admin.js?v=20261105-finance2"></script>
 <script type="module" src="library-subscriptions-admin.js"></script>
 <script type="module" src="../admin-switcher.js"></script>
 

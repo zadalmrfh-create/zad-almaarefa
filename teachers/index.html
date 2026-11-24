@@ -7,60 +7,34 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../style.css"><link rel="stylesheet" href="../assets/translation.css?v=20261016-globe2">
-<meta name="theme-color" content="#0b1629">
-<link rel="stylesheet" href="teacher-cards.css?v=20261122-thumbs">
-</head>
-<body class="dark zad-teachers">
-<header class="teacher-page-header">
-  <div class="teacher-page-bar">
-    <a href="../index.html" class="teacher-page-brand"><img src="../images/teacher-thumbs/logo.webp" alt="" width="40" height="40">زاد المعرفة</a>
-    <a href="../index.html" class="teacher-page-back">الصفحة الرئيسية</a>
-  </div>
-</header>
-<main>
-  <div class="teacher-page-intro">
-    <h1>طاقم التدريس</h1>
-    <p>شوف المواد والصفوف واختر المعلم المناسب لحصتك.</p>
-  </div>
-  <p id="status" class="teacher-directory-status" role="status">جارٍ تحميل طاقم التدريس…</p>
-  <div id="teachersGrid" class="teachers-grid">
-    <article class="teacher-card">
-      <div class="teacher-card-header">
-        <a class="teacher-card-photo" href="../images/saad-alaa-poster.png?v=20261110-3" target="_blank" rel="noopener noreferrer" aria-label="عرض صورة الأستاذ سعد علاء">
-          <img src="../images/teacher-thumbs/saad.webp" alt="" loading="eager" decoding="async" width="100" height="100">
-        </a>
-        <div><h2 class="teacher-card-name">الأستاذ سعد علاء</h2><p class="teacher-card-role">مدرس الرياضيات والعلوم والكيمياء</p></div>
-      </div>
-      <dl class="teacher-card-data">
-        <div><dt>المادة</dt><dd>الرياضيات، العلوم، الكيمياء</dd></div>
-        <div><dt>الصفوف والمراحل</dt><dd>غير محددة</dd></div>
-      </dl>
-      <a class="teacher-card-cta" href="../sections/booking/index.html?teacher=%D8%A7%D9%84%D8%A3%D8%B3%D8%AA%D8%A7%D8%B0+%D8%B3%D8%B9%D8%AF+%D8%B9%D9%84%D8%A7%D8%A1&amp;section=%D8%A7%D9%84%D8%B1%D9%8A%D8%A7%D8%B6%D9%8A%D8%A7%D8%AA&amp;subject=%D8%A7%D9%84%D8%B1%D9%8A%D8%A7%D8%B6%D9%8A%D8%A7%D8%AA" aria-label="احجز حصة مع الأستاذ سعد علاء">احجز حصة</a>
-    </article>
-    <article class="teacher-card">
-      <div class="teacher-card-header">
-        <a class="teacher-card-photo" href="../images/bilal-farghaly.webp" target="_blank" rel="noopener noreferrer" aria-label="عرض صورة مستر بلال فرغلي">
-          <img src="../images/teacher-thumbs/bilal.webp" alt="" loading="eager" decoding="async" width="100" height="100">
-        </a>
-        <div><h2 class="teacher-card-name">مستر بلال فرغلي</h2><p class="teacher-card-role">مدرس مناهج اللغة الإنجليزية</p></div>
-      </div>
-      <dl class="teacher-card-data">
-        <div><dt>المادة</dt><dd>اللغة الإنجليزية</dd></div>
-        <div><dt>الصفوف والمراحل</dt><dd>المرحلة الثانوية — عام وبكالوريا</dd></div>
-      </dl>
-      <a class="teacher-card-cta" href="../sections/booking/index.html?teacher=%D9%85%D8%B3%D8%AA%D8%B1+%D8%A8%D9%84%D8%A7%D9%84+%D9%81%D8%B1%D8%BA%D9%84%D9%8A&amp;section=%D8%A7%D9%84%D9%84%D8%BA%D8%A9+%D8%A7%D9%84%D8%A5%D9%86%D8%AC%D9%84%D9%8A%D8%B2%D9%8A%D8%A9&amp;subject=%D8%A7%D9%84%D9%84%D8%BA%D8%A9+%D8%A7%D9%84%D8%A5%D9%86%D8%AC%D9%84%D9%8A%D8%B2%D9%8A%D8%A9" aria-label="احجز حصة مع مستر بلال فرغلي">احجز حصة</a>
-    </article>
-  </div>
-</main>
+<style>
+*{box-sizing:border-box;margin:0;padding:0} :root{--gold:#c9a84c;--gold-light:#f5ecd4;--gold-hover:#b8923e;--white:#fff;--gray-50:#f9fafb;--gray-200:#e5e7eb;--gray-400:#9ca3af;--gray-600:#4b5563;--gray-800:#1f2937}
+body{font-family:Cairo,sans-serif;background:var(--gray-50);color:var(--gray-800);direction:rtl}.page-header{background:var(--white);border-bottom:1px solid var(--gray-200);padding:18px 32px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:50}.header-icon{width:42px;height:42px;background:var(--gold-light);border-radius:10px;display:flex;align-items:center;justify-content:center;overflow:hidden}.logo-img{width:42px;height:42px;object-fit:cover;border-radius:50%}.header-title{font-size:19px;font-weight:700}.header-sub{font-size:12px;color:var(--gray-400);margin-top:1px}.back-link{margin-right:auto;display:inline-flex;align-items:center;justify-content:center;min-width:135px;min-height:46px;padding:10px 18px;background:#0a1628;color:#fff;border:2px solid #d4a843;border-radius:12px;font-weight:800;text-decoration:none;box-shadow:0 4px 14px rgba(0,0,0,.2)}
+main{max-width:1060px;margin:0 auto;padding:48px 24px 100px}.hero{text-align:center;margin-bottom:52px}.hero-badge{display:inline-block;background:var(--gold-light);color:var(--gold-hover);font-size:12px;font-weight:700;border-radius:999px;padding:5px 18px;margin-bottom:14px}.hero h1{font-size:30px;font-weight:800;margin-bottom:10px}.hero p{font-size:14px;color:var(--gray-600);line-height:1.7}.teachers-status{text-align:center;padding:30px;color:var(--gray-600)}.teachers-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,285px),1fr));gap:24px}.card{background:var(--white);border:1px solid var(--gray-200);border-radius:18px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.06);display:flex;flex-direction:column;transition:.22s}.card:hover{transform:translateY(-5px);box-shadow:0 14px 36px rgba(0,0,0,.12);border-color:var(--gold)}.photo-link{display:block}.card-photo,.card-no-photo{width:100%;height:440px;object-fit:contain;object-position:center top;display:block;background:linear-gradient(145deg,#091a33,#172f50);padding:8px}.card-no-photo{background:linear-gradient(150deg,var(--gold-light),#fffbef);display:flex;align-items:center;justify-content:center;font-size:72px}.card-body{min-height:330px;padding:20px 20px 14px;flex:1;display:flex;flex-direction:column;gap:12px}.teacher-name{font-size:17px;font-weight:800}.teacher-role{font-size:12.5px;font-weight:600;color:var(--gold-hover);margin-top:-6px}.subjects{display:flex;flex-wrap:wrap;gap:6px}.subject{background:var(--gold-light);color:var(--gold-hover);font-size:11px;font-weight:700;border-radius:999px;padding:4px 11px}.stages{display:flex;flex-wrap:wrap;gap:6px}.stage{background:#eef3fa;color:#193457;border-radius:999px;padding:4px 11px;font-size:11px;font-weight:700}.bio{font-size:13px;color:var(--gray-600);line-height:1.75}.stats{display:flex;border-top:1px solid var(--gray-200);padding-top:12px;margin-top:auto}.stat{flex:1;text-align:center;border-left:1px solid var(--gray-200);padding:0 6px}.stat:last-child{border-left:none}.stat-val{font-size:17px;font-weight:800;color:var(--gold)}.stat-lbl{font-size:10.5px;color:var(--gray-400);margin-top:1px}.book-teacher{display:block;margin-top:12px;text-align:center;padding:10px 12px;border-radius:12px;background:var(--gold);color:#fff;text-decoration:none;font-size:12px;font-weight:800}.book-teacher:hover{filter:brightness(.95)}.free-lesson{display:inline-flex;align-self:flex-start;background:#0d503c;color:#fff3bd;border:1px solid #c9a84c;border-radius:999px;padding:6px 12px;font-size:12px;font-weight:800}.empty{background:#fff;border:1px solid var(--gray-200);border-radius:18px;padding:35px;text-align:center;color:var(--gray-600)}
+@media(max-width:680px){main{padding:28px 14px 70px}.page-header{padding:14px 16px;flex-wrap:wrap}.teachers-grid{grid-template-columns:1fr}.header-title{font-size:17px}.header-sub{font-size:10px}.back-link{order:5;width:100%}}
+.teacher-neutral-art{height:440px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:radial-gradient(circle at 50% 22%,#254d78,#0b1930 68%);color:#f5d780;text-align:center;padding:22px;border-bottom:3px solid #c9a84c}.teacher-neutral-mark{font-size:88px}.teacher-neutral-title{color:#fff;font-size:23px;font-weight:900}.teacher-neutral-desc{color:#f0d898;font-size:13px}
+</style></head>
+<body>
+<header class="page-header"><div class="header-icon"><img src="../images/logo.png" alt="زاد المعرفة" class="logo-img"></div><div><div class="header-title">طاقم التدريس</div><div class="header-sub">نخبة من المعلمين المتميزين لخدمة العلم والمعرفة</div></div><a href="../index.html" class="back-link">← الرئيسية</a></header>
+<main><div class="hero"><div class="hero-badge">فريق التدريس</div><h1>طاقم التدريس</h1><p>نخبة من المعلمين المتميزين لخدمة العلم والمعرفة</p></div><div style="text-align:center;color:#7b8794;font-size:11px;margin:-35px 0 22px">تحديث المعلمين — 13 نوفمبر 2026 • إصدار 5</div><div id="status" class="teachers-status">جارٍ تحميل طاقم التدريس...</div><div id="teachersGrid" class="teachers-grid"><article class="card" data-static-saad="true"><a class="photo-link" href="../images/saad-alaa-poster.png?v=20261110-3" target="_blank" rel="noopener"><img class="card-photo" src="../images/saad-alaa-poster.png?v=20261110-3" alt="إعلان الأستاذ سعد علاء مدرس الرياضيات والعلوم والكيمياء"></a><div class="card-body"><strong class="teacher-name">الأستاذ سعد علاء</strong><div class="teacher-role">مدرس الرياضيات والعلوم والكيمياء</div><div class="subjects"><span class="subject">الرياضيات</span><span class="subject">العلوم</span><span class="subject">الكيمياء</span></div><p class="bio">طالب بكلية التربية – جامعة الأزهر بالقاهرة.</p><a class="book-teacher" href="../sections/booking/index.html?section=%D8%A7%D9%84%D8%B1%D9%8A%D8%A7%D8%B6%D9%8A%D8%A7%D8%AA&amp;subject=%D8%A7%D9%84%D8%B1%D9%8A%D8%A7%D8%B6%D9%8A%D8%A7%D8%AA&amp;teacher=%D8%B3%D8%B9%D8%AF%20%D8%B9%D9%84%D8%A7%D8%A1">📅 احجز مع أ/ سعد علاء</a></div></article><article class="card" data-static-talaat><a class="photo-link" href="../images/mohamed-talaat-poster.png" target="_blank" rel="noopener"><img class="card-photo" src="../images/teacher-thumbs/mohamed-talaat.webp" alt="إعلان الأستاذ محمد طلعت عبدالله مدرس اللغة الإنجليزية"></a><div class="card-body"><strong class="teacher-name">الأستاذ محمد طلعت عبدالله</strong><div class="teacher-role">مدرس اللغة الإنجليزية للتعليم الأزهري والعام</div><div class="subjects"><span class="subject">اللغة الإنجليزية</span></div><p class="bio">تأسيس وشرح المناهج للابتدائية والإعدادية والثانوية، مع تدريبات ومتابعة.</p><a class="book-teacher" href="../sections/booking/index.html?teacher=%D9%85%D8%AD%D9%85%D8%AF+%D8%B7%D9%84%D8%B9%D8%AA+%D8%B9%D8%A8%D8%AF%D8%A7%D9%84%D9%84%D9%87&amp;section=%D8%A7%D9%84%D9%84%D8%BA%D8%A9+%D8%A7%D9%84%D8%A5%D9%86%D8%AC%D9%84%D9%8A%D8%B2%D9%8A%D8%A9&amp;subject=%D8%A7%D9%84%D9%84%D8%BA%D8%A9+%D8%A7%D9%84%D8%A5%D9%86%D8%AC%D9%84%D9%8A%D8%B2%D9%8A%D8%A9">📅 احجز مع الأستاذ محمد طلعت</a></div></article></div></main>
 <script type="module">
-import {teacherCardMetadata, teacherBookingLink, teacherPhoto, teacherThumbnail, teacherPlaceholder} from './teacher-card-model.js?v=20261122-thumbs';
-import {ENGLISH_TEACHER_PROFILE, isEnglishTeacherProfile} from '../assets/english-teacher.js';
+import {ENGLISH_TEACHER_PROFILE, isEnglishTeacherProfile, isRetiredTeacherProfile} from '../assets/english-teacher.js';
 import {db} from '../firebase-config.js';
 import {collection,getDocs} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 const grid=document.getElementById('teachersGrid'),status=document.getElementById('status');
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const text=v=>String(v??'').trim();
 const num=v=>{const n=Number(String(v??'').replace(/[^0-9.]/g,''));return Number.isFinite(n)&&n>0?n:''};
+function photo(v){
+ const x=text(v);
+ if(!x) return '../images/teacher-malek.webp';
+ if(/^(https?:|data:|blob:)/i.test(x)) return x;
+ // Firestore may store root-relative image paths such as /images/fatima-diaa.jpeg.
+ // Make them relative to this page so they work when the project is inside a subfolder on Live Server.
+ if(x.startsWith('/images/')) return '..' + x;
+ if(x.startsWith('images/')) return '../' + x;
+ return x;
+}
 const LEGACY_TEACHERS = [
  ENGLISH_TEACHER_PROFILE,
  { legacyKey:'legacy-dhia-quran', name:'الأستاذ ضياء نبيل', subject:'القرآن الكريم, التجويد, حفظ القرآن', role:'معلم القرآن الكريم وعلوم التجويد', image:'../images/quran-title.png', bio:'معلم متخصص في تحفيظ القرآن الكريم وتعليم أحكام التجويد، مع تبسيط التلاوة وتدريب الطلاب على القراءة الصحيحة بأسلوب سهل ومبسط.' },
@@ -71,63 +45,32 @@ const LEGACY_TEACHERS = [
  { legacyKey:'zad-mohamed-khaled-mahmoud', name:'الأستاذ محمد خالد محمود', subject:'الكيمياء, العلوم', stages:'المرحلة الثانوية', specialties:1, experience:3, studentsCount:50, role:'مدرس الكيمياء والعلوم للمرحلة الثانوية', image:'../images/mohamed-khaled-mahmoud.webp', bookingSection:'العلوم', bookingSubject:'الكيمياء', bio:'شرح مبسط وتدريبات ومتابعة للمرحلة الثانوية بجميع الشعب. حصص أونلاين وبرايفت.' }
 ];
 
-function render(t, index) {
-  if (isEnglishTeacherProfile(t)) {
-    t={...t,experience:null,bookingSection:ENGLISH_TEACHER_PROFILE.bookingSection,bookingSubject:ENGLISH_TEACHER_PROFILE.bookingSubject};
-  }
-  const name=text(t.name||t.fullName)||'المعلم';
-  const saad=/سعد\s+علاء/.test(name);
+function render(t){
+ if (isEnglishTeacherProfile(t)) t={...t,experience:null,bookingSection:ENGLISH_TEACHER_PROFILE.bookingSection,bookingSubject:ENGLISH_TEACHER_PROFILE.bookingSubject};
+ const name=text(t.name)||'المعلم';
+ const image=photo(/سعد\s+علاء/.test(name)?'../images/saad-alaa-poster.png?v=20261110-3':/فاطمة\s+ضياء/.test(name)?'../images/fatima-diaa-courses.png?v=20261112':/محمد\s+خالد/.test(name)?'../images/mohamed-khaled-mahmoud.webp':isEnglishTeacherProfile(t)?'../images/teacher-thumbs/mohamed-talaat.webp':t.image);
+ const fullPhoto=isEnglishTeacherProfile(t)?'../images/mohamed-talaat-poster.png':/سعد\s+علاء/.test(name)?'../images/saad-alaa-poster.png?v=20261110-3':image;
+ // صور الإعلانات القديمة تحتوي عبارة الحصة المجانية داخل الصورة نفسها.
+ const neutralPoster=false;
   const coursesOnly=/فاطمة\s+ضياء/.test(name);
-  const khaled=/محمد\s+خالد/.test(name);
-  const source=saad ? '../images/saad-alaa-portrait.webp' :
-    coursesOnly ? '../images/fatima-diaa.jpeg' :
-    khaled ? '../images/mohamed-khaled-mahmoud.webp' : t.image;
-  const original=saad ? '../images/saad-alaa-poster.png?v=20261110-3' :
-    coursesOnly ? '../images/fatima-diaa-courses.png?v=20261112' : source;
-  const photo=teacherPhoto(source,document.baseURI);
-  const image=teacherThumbnail(photo,document.baseURI)
-    || teacherPhoto(t.thumbnailUrl,document.baseURI)
-    || photo
-    || teacherPlaceholder;
-  const poster=teacherPhoto(original,document.baseURI);
-  const loading=index<3?'eager':'lazy';
-  const priority=index===0?' fetchpriority="high"':'';
-  const visual=`<img loading="${loading}"${priority} decoding="async" src="${esc(image)}" alt="" width="100" height="100">`;
-  const portrait=poster
-    ? `<a class="teacher-card-photo" href="${esc(poster)}" target="_blank" rel="noopener noreferrer" aria-label="عرض صورة ${esc(name)}">${visual}</a>`
-    : `<span class="teacher-card-photo">${visual}</span>`;
-  const {subjects,grades}=teacherCardMetadata(t,coursesOnly);
+  // ميس فاطمة: كورسات فقط، ولا نعرض بيانات مناهج أو مراحل دراسية مخزنة سابقًا.
+  const subjects=coursesOnly?['كورسات اللغة الإنجليزية فقط']:text(t.subject).split(',').map(x=>x.trim()).filter(Boolean);
+ const stages=coursesOnly?[]:text(t.stages).split(',').map(x=>x.trim()).filter(Boolean);
+ const bio=coursesOnly?'تقدم كورسات مستقلة في اللغة الإنجليزية، وليست حصص مناهج الابتدائي أو الإعدادي أو الثانوي.':text(t.bio);
   const role=coursesOnly?'مدربة كورسات اللغة الإنجليزية':text(t.role);
-  const bio=coursesOnly?'كورسات مستقلة في اللغة الإنجليزية.':text(t.bio);
-  const values=coursesOnly?[]:[
-    [khaled?3:num(t.experience),'سنوات الخبرة'],
-    [khaled?1:num(t.specialties)||subjects.length,'تخصصات'],
-    [khaled?50:num(t.studentsCount),'طلاب']
-  ].filter(([value])=>value);
-  const stats=values.length?`<div class="teacher-card-stats">${values.map(([value,label])=>`<span><b>${value}</b> ${label}</span>`).join('')}</div>`:'';
-  const booking=coursesOnly
-    ? '<p class="teacher-card-course-note">للاستفسار عن الكورسات، تواصل مع إدارة المنصة.</p>'
-    : `<a class="teacher-card-cta" href="${esc(teacherBookingLink(t,name,subjects))}" aria-label="احجز حصة مع ${esc(name)}">احجز حصة</a>`;
-  return `<article class="teacher-card">
-    <div class="teacher-card-header">${portrait}<div>
-      <h2 class="teacher-card-name">${esc(name)}</h2>
-      ${role?`<p class="teacher-card-role">${esc(role)}</p>`:''}
-    </div></div>
-    <dl class="teacher-card-data">
-      <div><dt>المادة</dt><dd>${esc(subjects.join('، ')||'تُحدَّد عند الحجز')}</dd></div>
-      ${coursesOnly?'':`<div><dt>الصفوف والمراحل</dt><dd>${esc(grades.join('، ')||'غير محددة')}</dd></div>`}
-    </dl>
-    ${bio?`<p class="teacher-card-bio">${esc(bio)}</p>`:''}
-    ${stats}${booking}
-  </article>`;
+ const isHighlightedTeacher=/محمد\s+خالد/.test(name);
+ const experience=isHighlightedTeacher?3:num(t.experience); const specialties=isHighlightedTeacher?1:(num(t.specialties)||subjects.length);
+ const studentsCount=isHighlightedTeacher?50:num(t.studentsCount);
+ const subjectHtml=subjects.length?subjects.map(s=>`<span class="subject">📚 ${esc(s)}</span>`).join(''):'';
+ const stageHtml=stages.length?`<div class="stages">${stages.map(stage=>`<span class="stage">🎓 ${esc(stage)}</span>`).join('')}</div>`:'';
+ // Avoid showing an invented zero for experience or students when the value is unknown.
+ const stats=coursesOnly?[]:[['سنوات الخبرة',experience],['التخصصات',specialties],['عدد الطلاب',studentsCount]].filter(x=>x[1]!==''&&x[1]!=null);
+ const bookingSection=text(t.bookingSection)||subjects[0]||'';
+ const bookingSubject=text(t.bookingSubject)||subjects[0]||'';
+ const params=new URLSearchParams({teacher:name,section:bookingSection,subject:bookingSubject});
+ const bookingUrl='../sections/booking/index.html?'+params.toString();
+ return `<article class="card"><a class="photo-link" href="${esc(fullPhoto)}" target="_blank" rel="noopener"><img loading="lazy" class="card-photo" src="${esc(image)}" alt="المعلم ${esc(name)}" onerror="this.onerror=null;this.src='../images/image-not-available.svg'"></a><div class="card-body"><div><div class="teacher-name">${esc(name)}</div>${role?`<div class="teacher-role">${esc(role)}</div>`:''}</div>${subjectHtml?`<div class="subjects">${subjectHtml}</div>`:''}${stageHtml}${bio?`<p class="bio">${esc(bio)}</p>`:''}${stats.length?`<div class="stats">${stats.map(([label,value])=>`<div class="stat"><div class="stat-val">${esc(value)}</div><div class="stat-lbl">${esc(label)}</div></div>`).join('')}</div>`:''}${coursesOnly?'<p class="bio" style="font-weight:700;color:#7d641d">للاستفسار عن الكورسات، تواصل مع إدارة المنصة. لا يتوفر حجز مناهج لهذه المعلمة.</p>':`<a class="book-teacher" href="${esc(bookingUrl)}">📅 احجز مع المعلم</a>`}</div></article>`;
 }
-
-grid.addEventListener('error',event=>{
-  const image=event.target;
-  if(image.tagName!=='IMG' || image.dataset.fallback)return;
-  image.dataset.fallback='true';
-  image.src=teacherPlaceholder;
-},true);
 
 function isRemovedTeacher(t){
  // Hide retired teacher Ali Abdelhamid regardless of stored display name, ID, or old poster.
@@ -147,8 +90,8 @@ function isRemovedTeacher(t){
 
 async function load(){try{const snap=await getDocs(collection(db,'teachers'));const stored=snap.docs.map(d=>({...d.data(),id:d.id}));
 const englishProfile=stored.find(t=>t.id===ENGLISH_TEACHER_PROFILE.legacyKey) || stored.find(isEnglishTeacherProfile);
-const raw=stored.filter(t=>!isEnglishTeacherProfile(t)&&!isRemovedTeacher(t));
-if(englishProfile)raw.push({...ENGLISH_TEACHER_PROFILE,...englishProfile,name:englishProfile.name || ENGLISH_TEACHER_PROFILE.name,legacyKey:ENGLISH_TEACHER_PROFILE.legacyKey});const byLegacy=new Map(raw.filter(x=>x.legacyKey).map(x=>[x.legacyKey,x]));const firestoreList=raw.filter(x=>x.visible!==false).map(x=>{if(byLegacy.has(x.legacyKey)){const legacy=LEGACY_TEACHERS.find(t=>t.legacyKey===x.legacyKey);return legacy?{...legacy,...x,image:isEnglishTeacherProfile(legacy) ? (x.image || legacy.image) : legacy.image}:x}return x});const fallbackList=LEGACY_TEACHERS.filter(x=>!byLegacy.has(x.legacyKey) && !raw.filter(y=>y.visible!==false).some(y=>{const a=text(y.name).replace(/^(الأستاذة|الأستاذ)\s+/, ''),b=text(x.name).replace(/^(الأستاذة|الأستاذ)\s+/, '');return a===b||(x.legacyKey==='zad-saad-alaa'&&a.startsWith('سعد علاء '));}));const list=[...firestoreList,...fallbackList].filter(t=>!isRemovedTeacher(t)).map(t=>{const n=text(t.name);if(t.legacyKey==='zad-saad-alaa'||/سعد\s+علاء/.test(n))return {...t,name:'الأستاذ سعد علاء',role:'مدرس الرياضيات والعلوم والكيمياء',subject:'الرياضيات, العلوم, الكيمياء',image:'../images/saad-alaa-poster.png',bookingSection:'الرياضيات',bookingSubject:'الرياضيات'};if(t.legacyKey==='zad-mohamed-khaled-mahmoud'||n.includes('محمد خالد محمود'))return {...t,subject:'الكيمياء, العلوم',stages:'المرحلة الثانوية',role:'مدرس الكيمياء والعلوم للمرحلة الثانوية',image:'../images/mohamed-khaled-mahmoud.webp',firstLessonFree:false,bookingSection:'العلوم',bookingSubject:'الكيمياء',bio:text(t.bio).replace(/،?\s*وأول حصة مجانية\.?/g,'')};return {...t,firstLessonFree:false,bio:text(t.bio).replace(/،?\s*وأول حصة مجانية\.?/g,'')};});if(!list.some(t=>/سعد\s+علاء/.test(text(t.name))))list.unshift({...LEGACY_TEACHERS.find(t=>t.legacyKey==='zad-saad-alaa')});if(!list.length){status.remove();grid.innerHTML='<p class="teacher-directory-status">لا يوجد معلمون للعرض حاليًا.</p>';return}status.remove();grid.innerHTML=list.map(render).join('')}catch(e){console.warn('تعذر تحميل المعلمين من Firebase؛ سيتم عرض المعلمين الموجودين داخل الموقع.',e);status.remove();grid.innerHTML=LEGACY_TEACHERS.filter(t=>!isRemovedTeacher(t)).map(render).join('')}}
+const raw=stored.filter(t=>!isRetiredTeacherProfile(t)&&!isEnglishTeacherProfile(t)&&!isRemovedTeacher(t));
+if(englishProfile)raw.push({...ENGLISH_TEACHER_PROFILE,...englishProfile,name:englishProfile.name || ENGLISH_TEACHER_PROFILE.name,legacyKey:ENGLISH_TEACHER_PROFILE.legacyKey});const byLegacy=new Map(raw.filter(x=>x.legacyKey).map(x=>[x.legacyKey,x]));const firestoreList=raw.filter(x=>x.visible!==false).map(x=>{if(byLegacy.has(x.legacyKey)){const legacy=LEGACY_TEACHERS.find(t=>t.legacyKey===x.legacyKey);return legacy?{...legacy,...x,image:isEnglishTeacherProfile(legacy) ? (x.image || legacy.image) : legacy.image}:x}return x});const fallbackList=LEGACY_TEACHERS.filter(x=>!byLegacy.has(x.legacyKey) && !raw.filter(y=>y.visible!==false).some(y=>{const a=text(y.name).replace(/^(الأستاذة|الأستاذ)\s+/, ''),b=text(x.name).replace(/^(الأستاذة|الأستاذ)\s+/, '');return a===b||(x.legacyKey==='zad-saad-alaa'&&a.startsWith('سعد علاء '));}));const list=[...firestoreList,...fallbackList].filter(t=>!isRetiredTeacherProfile(t)&&!isRemovedTeacher(t)).map(t=>{const n=text(t.name);if(t.legacyKey==='zad-saad-alaa'||/سعد\s+علاء/.test(n))return {...t,name:'الأستاذ سعد علاء',role:'مدرس الرياضيات والعلوم والكيمياء',subject:'الرياضيات, العلوم, الكيمياء',image:'../images/saad-alaa-poster.png',bookingSection:'الرياضيات',bookingSubject:'الرياضيات'};if(t.legacyKey==='zad-mohamed-khaled-mahmoud'||n.includes('محمد خالد محمود'))return {...t,subject:'الكيمياء, العلوم',stages:'المرحلة الثانوية',role:'مدرس الكيمياء والعلوم للمرحلة الثانوية',image:'../images/mohamed-khaled-mahmoud.webp',firstLessonFree:false,bookingSection:'العلوم',bookingSubject:'الكيمياء',bio:text(t.bio).replace(/،?\s*وأول حصة مجانية\.?/g,'')};return {...t,firstLessonFree:false,bio:text(t.bio).replace(/،?\s*وأول حصة مجانية\.?/g,'')};});if(!list.some(t=>/سعد\s+علاء/.test(text(t.name))))list.unshift({...LEGACY_TEACHERS.find(t=>t.legacyKey==='zad-saad-alaa')});if(!list.length){status.remove();grid.innerHTML='<div class="empty">لا يوجد معلمون مضافون حاليًا من لوحة التحكم.</div>';return}status.remove();grid.innerHTML=list.map(render).join('')}catch(e){console.warn('تعذر تحميل المعلمين من Firebase؛ سيتم عرض المعلمين الموجودين داخل الموقع.',e);status.remove();grid.innerHTML=LEGACY_TEACHERS.filter(t=>!isRemovedTeacher(t)).map(render).join('')}}
 load();
 </script>
 <script src="../assets/translation.js?v=20261016-globe2"></script><script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>

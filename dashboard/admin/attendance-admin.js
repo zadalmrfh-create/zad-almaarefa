@@ -5,7 +5,7 @@ import {advanceSnapshot} from '../advance-credit.js';
 import {archiveAttendance,restoreAttendance} from './attendance-archive.js';
 import { db, auth } from '../../firebase-config.js';
 import { collection, query, where, getDocs as rawGetDocs, getDoc, addDoc, updateDoc, deleteDoc, doc, writeBatch, serverTimestamp } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
-import { ENGLISH_TEACHER_NAME, findEnglishTeacherAccount, isEnglishCurriculumTeacher } from '../../assets/english-teacher.js';
+import { ENGLISH_TEACHER_NAME, findEnglishTeacherAccount, isEnglishCurriculumTeacher, isRetiredTeacherProfile, isRetiredTeacherName } from '../../assets/english-teacher.js';
 import { SUBJECTS, teacherForSubject, isEnglishSubject, availableScienceTeachers } from '../attendance-subjects.js';
 
 const $ = id => document.getElementById(id);
@@ -15,6 +15,7 @@ let latestLectureByStudent = new Map();
 let teacherProfiles = [];
 const teacherKey = name => String(name||'').normalize('NFKC').replace(/[\u064B-\u065F\u0670]/g,'').replace(/^(الأستاذ|أستاذ|مستر|ميس|أ\/)\s*/i,'').replace(/\s+/g,' ').trim().toLowerCase();
 function teacherUidForName(name) {
+  if(isRetiredTeacherName(name))return null;
   const key=teacherKey(name);
   if(!key||key.includes('،'))return null;
   if(isEnglishCurriculumTeacher(name))return findEnglishTeacherAccount(teacherProfiles)?.id || null;
@@ -158,7 +159,7 @@ function filteredAttendanceRecords() {
 function renderAttendanceLog(){
   if (!rows) return;
   const subjects=[...new Set(records.flatMap(subjectsOfAttendance))].sort((a,b)=>a.localeCompare(b,'ar'));
-  const teachers=[...new Set(records.map(record=>record.teacherName || 'الإدارة'))].sort((a,b)=>a.localeCompare(b,'ar'));
+  const teachers=[...new Set(records.map(record=>record.teacherName || 'الإدارة'))].filter(name=>!isRetiredTeacherName(name)).sort((a,b)=>a.localeCompare(b,'ar'));
   syncAttendanceLogOptions('attendanceLogSubject',subjects,'جميع المواد');
   syncAttendanceLogOptions('attendanceLogTeacher',teachers,'جميع المعلمين');
   const matches=filteredAttendanceRecords();
@@ -225,7 +226,7 @@ async function load() {
     message.textContent = 'جارٍ تحميل بيانات الحضور والطلاب والمدفوعات...';
     const [us, att, pay, latest] = await Promise.all([getDocs(collection(db, 'users')), getDocs(collection(db, 'lessonAttendance')), getDocs(collection(db, 'vodafonePayments')), getDocs(collection(db, 'latestLectureReview'))]);
     latestLectureByStudent=new Map(latest.docs.map(d=>[d.id,d.data().lessonId]));
-    teacherProfiles=us.docs.map(d=>({...d.data(),id:d.id})).filter(x=>x.role==='teacher' && x.status==='active');
+    teacherProfiles=us.docs.map(d=>({...d.data(),id:d.id})).filter(x=>x.role==='teacher' && x.status==='active' && !isRetiredTeacherProfile(x));
     const allStudentProfiles=us.docs.map(d=>({id:d.id,...d.data()})).filter(x=>x.role==='student');
     const candidateStudents=allStudentProfiles.filter(x=>!x.linkedToUid);
     const emailGroups=new Map();

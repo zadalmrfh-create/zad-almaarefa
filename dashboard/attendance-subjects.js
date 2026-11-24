@@ -21,7 +21,7 @@ export const SUBJECTS = [
   'البرمجة وتكنولوجيا المعلومات'
 ];
 
-export const ENGLISH_TEACHERS = [ENGLISH_TEACHER_NAME];
+export const ENGLISH_TEACHERS = [ENGLISH_TEACHER_NAME]; // المعلم الحالي للغة الإنجليزية
 export const SCIENCE_TEACHERS = ['محمد خالد محمود', 'سعد علاء'];
 export const MATH_TEACHER = 'سعد علاء';
 export const isScientificSubject = name => ['العلوم','مادة العلوم','الكيمياء','مادة الكيمياء','الرياضيات','الرياضيات (عام)','رياضيات','math','mathematics'].includes(String(name||'').trim().toLowerCase());
