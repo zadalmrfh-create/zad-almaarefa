@@ -1,0 +1,41 @@
+<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>تحديث معلمي زاد المعرفة — محمد طلعت / بلال فرغلي</title>
+<style>
+:root{color-scheme:dark}*{box-sizing:border-box}body{margin:0;background:#081327;color:#eef6ff;font:16px Tahoma,Arial,sans-serif;line-height:1.9}main{width:min(850px,94%);margin:28px auto;padding:25px;background:#12233e;border-radius:20px;border:1px solid #445979}h1{margin:0;color:#ffd765;font-size:27px}h2{color:#ffd765;font-size:19px}.note{background:#172d4e;border:1px solid #527091;border-radius:10px;padding:12px 18px}.ok{color:#a5e7c4}.warn{color:#ffd990}label{display:block;margin:15px 0}input[type=file]{display:block;width:100%;background:#eef6ff;color:#142036;border-radius:8px;padding:14px}button{display:block;background:#f4c74d;color:#10213c;border:0;border-radius:10px;font-size:18px;font-weight:bold;padding:15px 22px;cursor:pointer;margin:20px 0}button:disabled{opacity:.45;cursor:wait}pre{white-space:pre-wrap;direction:rtl;text-align:right;font:13px Tahoma,Arial,sans-serif;color:#d7ecff;background:#07132a;border-radius:12px;padding:14px;max-height:280px;overflow:auto}a{color:#ffe07c}small{color:#cfdded}</style></head><body><main>
+<h1>تحديث طاقم زاد المعرفة</h1>
+<p>هذا التحديث يضيف <b>الأستاذ محمد طلعت عبدالله</b> إلى طاقم التدريس والحجز والحضور والغياب، ويمنع ظهور <b>بلال فرغلي</b> في القوائم النشطة. <b>مرتبات محمد طلعت الموجودة لن تتغير</b>، ولا يحذف أي سجلات مالية محفوظة.</p>
+<div class="note"><h2>طريقة العمل</h2><ol><li>من GitHub افتح مستودع المنصة واختر <b>Code ← Download ZIP</b> لتحميل <b>أحدث نسخة</b>.</li><li>اختر ملف ZIP الجديد في الخانة أدناه.</li><li>اضغط «إنشاء ملفات التعديل فقط» لتحصل على ZIP يحتوي الملفات المعدلة وصورة الأستاذ فقط، دون تغيير باقي المشروع.</li><li>فك ضغط الملف الناتج، وارفع الملفات إلى نفس المسارات داخل GitHub ثم انشر الموقع.</li></ol><small>كل شيء يتم محليًا على جهازك؛ لا يتم إرسال ملفات المنصة لأي سيرفر.</small></div>
+<label>اختيار أحدث ملف ZIP لمشروع زاد المعرفة<input id="source" type="file" accept=".zip,application/zip"></label>
+<button id="go">إنشاء ملفات التعديل فقط</button>
+<p id="status" role="status">لم يتم اختيار الملف بعد.</p><pre id="report" hidden></pre>
+<div class="note"><b>بعد النشر:</b> ادخل بحساب الأدمن إلى «إدارة المحتوى ← طاقم التدريس» واضغط «إضافة بطاقة الأستاذ محمد طلعت للإدارة» إذا كان الزر ظاهرًا. هذا يحفظ بطاقته في Firestore دون إضافة أو تعديل أي مرتبات. جرّب بعد ذلك اختيار اللغة الإنجليزية في الحضور والغياب والحجز.</div>
+</main><script src="jszip.min.js"></script><script src="teacher-photo-data.js"></script><script src="patch-engine.js"></script><script>
+const $=id=>document.getElementById(id);
+$('go').addEventListener('click',async()=>{
+ const src=$('source').files[0];if(!src){$('status').textContent='اختر ملف ZIP للمشروع أولًا.';return;}
+ $('go').disabled=true;$('status').textContent='جارٍ فحص الملفات وتجهيز التعديل...';$('report').hidden=true;
+ try{
+  const sourceZip=await JSZip.loadAsync(src);
+  const marker='assets/english-teacher.js';const sources=Object.keys(sourceZip.files).filter(name=>name.endsWith(marker)&&!sourceZip.files[name].dir);
+  if(sources.length!==1)throw Error('لم أجد مجلد مشروع واحدًا صالحًا. يجب اختيار ZIP من مستودع زاد المعرفة.');
+  const prefix=sources[0].slice(0,-marker.length);
+  const updater=window.ZadTeacherUpdate;updater.reset();const out=new JSZip(),avail=[];
+  for(const path of Object.keys(updater.fixes)){
+   const file=sourceZip.file(prefix+path);
+   if(!file)continue;
+   avail.push(path);
+   const original=await file.async('string'),after=updater.patch(path,original);
+   if(original!==after)out.file(path,after);
+  }
+  const report=updater.verify(avail);
+  if(report.errors.length)throw Error(report.errors.join('\n'));
+  const imagePath='images/teacher-thumbs/mohamed-talaat.webp';
+  out.file(imagePath,window.ZAD_TALAAT_PHOTO_BASE64,{base64:true});
+  out.file('README_اقرأني_أولا.txt',`زاد المعرفة – تحديث المعلم محمد طلعت عبدالله وإزالة بلال من الواجهات\n\n1) هذا الملف يضم التعديلات فقط على أحدث نسخة من المشروع التي اخترتها.\n2) انقل جميع الملفات والمجلدات، مع الحفاظ على المسارات، إلى مستودع GitHub.\n3) حدث GitHub Pages ثم اضغط Ctrl+F5.\n4) من لوحة الأدمن > إدارة محتوى المنصة > طاقم التدريس اضغط «إضافة بطاقة الأستاذ محمد طلعت للإدارة» إن ظهر الزر.\n5) لا يوجد أي تعديل لقيمة المرتبات أو سجلات الدفع والتحويلات أو الحضور التاريخي.\n6) تظل حسابات Firestore القديمة على قاعدة البيانات؛ إذا أردت إيقاف تسجيل دخول حساب معلم سابق، راجع صلاحياته في الإدارة على حدة.\n\nالملفات المعدّلة:\n${report.changedPaths.join('\n')}\n\nالملاحظات:\n${report.notes.join('\n')}\n`);
+  const blob=await out.generateAsync({type:'blob',compression:'DEFLATE',compressionOptions:{level:6}});
+  const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='Zad_Mohamed_Talaat_Remove_Bilal_PATCH_ONLY.zip';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),15000);
+  $('status').innerHTML='<span class="ok">✓ تم تجهيز ملف التعديلات بنجاح. راجع تنزيلات Chrome.</span>';
+  $('report').textContent='الملفات التي تغيرت:\n'+report.changedPaths.join('\n')+'\n\n'+report.notes.join('\n');$('report').hidden=false;
+ }catch(e){$('status').innerHTML='<span class="warn">تعذر إنشاء التحديث، ولم يتم تغيير ملفك الأصلي.</span>';$('report').textContent=String(e.message||e);$('report').hidden=false;}
+ finally{$('go').disabled=false;}
+});
+</script></body></html>
