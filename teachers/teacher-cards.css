@@ -85,7 +85,7 @@ body.zad-teachers {
   display: block;
   width: 100%;
   aspect-ratio: 1 / 1;
-  background: #0a1426 url("../images/teacher-thumbs/logo.webp") center / 34% no-repeat;
+  background: #0a1426;
   border: 1px solid #5b6d89;
   border-radius: .7rem;
   overflow: hidden;
@@ -148,3 +148,17 @@ body.zad-teachers {
 @media (max-width: 400px) {
   .zad-teachers .teacher-card-header { grid-template-columns: 4.25rem minmax(0, 1fr); }
 }
+
+/* Poster-first teaching staff cards (2026-11-24) */
+.zad-teachers .teacher-card{padding:0;overflow:hidden;gap:0;background:#14243d;box-shadow:0 12px 28px #0002}
+.zad-teachers .teacher-card-header{display:flex;flex-direction:column;gap:0;align-items:stretch}
+.zad-teachers .teacher-card-photo{display:block;width:100%;height:auto;aspect-ratio: 11 / 14;overflow:hidden;border:0;border-radius:0;background:#152e4e}
+.zad-teachers .teacher-card-photo img{display:block;width:100%;height:100%;object-fit:contain;object-position:center top}
+.zad-teachers .teacher-card-header>div{padding:.95rem 1rem .15rem;text-align:center}
+.zad-teachers .teacher-card-name{font-size:1.05rem}
+.zad-teachers .teacher-card-data,.zad-teachers .teacher-card-bio,.zad-teachers .teacher-card-stats,.zad-teachers .teacher-card-course-note{margin-inline:1rem}
+.zad-teachers .teacher-card-data{margin-block:.7rem}
+.zad-teachers .teacher-card-bio{margin-block:.3rem .8rem}
+.zad-teachers .teacher-card-stats{margin-block:.5rem}
+.zad-teachers .teacher-card-cta{margin: .8rem 1rem 1rem;min-height:48px}
+@media (max-width:400px){.zad-teachers .teacher-card-header{display:flex}}

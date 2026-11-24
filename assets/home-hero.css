@@ -116,3 +116,25 @@
   .zad-home-hero__stats { display: none; }
   .zad-home-hero__image img { aspect-ratio: 16 / 9; object-position: center 34%; }
 }
+
+/* Restore original Zad Al-Maarefa library photo as homepage hero background. */
+#hero.zad-home-hero{
+  background-image:linear-gradient(90deg,rgba(7,18,34,.88),rgba(9,24,43,.73) 55%,rgba(9,24,43,.80)),url('../images/hero-bg.webp');
+  background-position:center center;
+  background-size:cover;
+  background-repeat:no-repeat;
+  background-color:#0c2038;
+  min-height:clamp(570px,72vh,800px);
+  display:flex;
+  align-items:center;
+}
+#hero.zad-home-hero .zad-home-hero__inner{
+  width:100%;grid-template-columns:minmax(0,1fr);
+  max-width:75rem;
+}
+#hero.zad-home-hero .zad-home-hero__copy{max-width:47rem;margin-inline-start:auto;position:relative;z-index:1}
+#hero.zad-home-hero .zad-home-hero__image{display:none}
+@media(max-width:720px){
+  #hero.zad-home-hero{min-height:570px;background-position:center;background-image:linear-gradient(90deg,rgba(7,18,34,.83),rgba(7,18,34,.77)),url('../images/hero-bg.webp')}
+  #hero.zad-home-hero .zad-home-hero__copy{max-width:100%}
+}
