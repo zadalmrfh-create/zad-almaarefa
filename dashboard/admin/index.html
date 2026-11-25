@@ -251,7 +251,7 @@ onAuthStateChanged(auth, async (user) => {
 
 <section class="card" id="weeklyReviewsAdmin" dir="rtl">
   <h2>⭐ مركز جودة التعليم — التقييمات الأسبوعية</h2>
-  <p>تقييمات المعلمين والمنصة والإدارة، مع أسماء الطلاب للأدمن فقط. آراء المعلمين المنشورة لا تحتوي على هوية الطالب. لا يمكن تعديل درجات التقييم.</p>
+  <p>تقييمات المعلمين والمنصة والإدارة، مع أسماء الطلاب للأدمن فقط. آراء المعلمين المنشورة لا تحتوي على هوية الطالب. لا يمكن تعديل درجات التقييم. يمكن للإدارة حذف التقييم بعد التأكيد.</p>
   <div class="zwr-controls">
     <label>النوع<select id="zwrAdminKind"><option value="">جميع الأنواع</option><option value="teacher">المعلمون</option><option value="platform">المنصة</option><option value="administration">الإدارة</option></select></label>
     <label>الفترة (أسبوع / شهر)<select id="zwrAdminWeek"><option value="">كل الفترات</option></select></label>
@@ -267,7 +267,7 @@ onAuthStateChanged(auth, async (user) => {
   <p id="zwrAdminSyncStatus" role="status" aria-live="polite" style="font-weight:700"></p><div id="zwrAdminResults"></div>
   <p>نشر الآراء للعامة متاح فقط إذا وافق الطالب على النشر. يقوم الأدمن باعتماد الرأي أو إلغاء نشره دون تغيير نص التقييم الأصلي.</p>
 </section>
-<link rel="stylesheet" href="../../reviews/weekly-admin.css"><script type="module" src="weekly-reviews-admin.js?v=20261113-monthly1"></script>
+<link rel="stylesheet" href="../../reviews/weekly-admin.css?v=20261125-delete1"><script type="module" src="weekly-reviews-admin.js?v=20261125-delete1"></script>
 <section class="card" id="manualPaymentLedger" dir="rtl">
 <h2>💰 سجل المدفوعات اليدوية</h2><p>سجل دفعة حتى لو الطالب لم يرسل طلب دفع. السجل مستقل عن اعتماد تحويلات فودافون ولا يخصم تلقائيًا من المستحقات، لمنع احتساب المبلغ مرتين.</p>
 <form id="manualLedgerForm" class="admin-form">

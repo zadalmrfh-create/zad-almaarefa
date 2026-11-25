@@ -1127,7 +1127,9 @@ service cloud.firestore {
             && request.resource.data.feedbackId == ''
             && (request.resource.data.kind != 'administration' || request.resource.data.publishConsent == false))
         );
-      allow update, delete: if false;
+      allow update: if false;
+      // Deletion is an administrative moderation action, never a student/teacher write.
+      allow delete: if isCertificateAdmin();
     }
     // Anonymized copies: teacher reads NO student UID, names, email or original doc ID.
     match /weeklyTeacherFeedback/{feedbackId} {
@@ -1145,7 +1147,9 @@ service cloud.firestore {
         && getAfter(/databases/$(database)/documents/weeklyReviewPrivate/$(request.auth.uid + '__' + request.resource.data.weekStart + '__teacher__' + request.resource.data.teacherUid)).data.feedbackId == feedbackId
         && getAfter(/databases/$(database)/documents/weeklyReviewPrivate/$(request.auth.uid + '__' + request.resource.data.weekStart + '__teacher__' + request.resource.data.teacherUid)).data.scores == request.resource.data.scores
         && getAfter(/databases/$(database)/documents/weeklyReviewPrivate/$(request.auth.uid + '__' + request.resource.data.weekStart + '__teacher__' + request.resource.data.teacherUid)).data.comment == request.resource.data.comment;
-      allow update, delete: if false;
+      allow update: if false;
+      // Deletion is an administrative moderation action, never a student/teacher write.
+      allow delete: if isCertificateAdmin();
     }
     // Student comments are published atomically with their weekly private review.
     // Random public document IDs contain no student identifier.
