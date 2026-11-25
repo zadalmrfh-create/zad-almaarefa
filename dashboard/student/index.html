@@ -512,11 +512,11 @@ if(!container.children.length)container.textContent='لا توجد كتب محف
 
 import {getPreviewContext} from '../admin-preview-core.js';
 import {lessonRatingId, validLessonRating} from './lesson-interactions.js';
-import {lessonPageUrl} from '../lesson-page-links.js?v=20261122-schedule';
+import {lessonPageUrl} from '../lesson-page-links.js?v=20261125-weekly';
 import {openLessonMeet} from './lesson-meet.js?v=20261122-schedule';
 import {lessonForStudent, lessonPhase, lessonStartMs, webUrl} from './student-today-core.js?v=20261120-today1';
-import './student-today.js?v=20261122-schedule';
-import {personalLessonCollection, personalLesson} from '../student-schedule-core.js?v=20261122-schedule';
+import './student-today.js?v=20261125-weekly';
+import {personalLessonCollection, expandPersonalLessons, personalUpcomingRange} from '../student-schedule-core.js?v=20261125-weekly';
 import {
     auth,
     db
@@ -783,7 +783,7 @@ async function loadLiveLessons(
         const partial = [general, personal].some(source => source.status === 'rejected');
         const records = [
             ...(general.value?.docs || []).map(d => ({...d.data(),id:d.id,privateSchedule:false})),
-            ...(personal.value?.docs || []).map(d => personalLesson(d,uid))
+            ...expandPersonalLessons(personal.value?.docs || [],uid,personalUpcomingRange())
         ];
         const oldRatings = await oldRatingsPromise;
         if (currentStudentUid !== uid || generation !== lessonLoadGeneration) return;
@@ -819,6 +819,7 @@ async function loadLiveLessons(
             uid, state: partial ? 'error' : 'ready', lessons: lessons.map(lesson => ({
                 id: lesson.id,
                 privateSchedule: lesson.privateSchedule,
+                occurrenceDay: lesson.occurrenceDay,
                 start: lesson.startMs,
                 title: lesson.title || lesson.name || lesson.subject || 'محاضرة مباشرة',
                 teacher: lesson.teacherName || lesson.teacher || '',
@@ -920,7 +921,7 @@ async function loadLiveLessons(
 
                     </button>
 
-                    <a class="btn" href="${esc(lessonPageUrl(lesson.id, location.href, lesson.privateSchedule))}">صفحة الحصة</a>
+                    <a class="btn" href="${esc(lessonPageUrl(lesson.id, location.href, lesson.privateSchedule, lesson.occurrenceDay))}">صفحة الحصة</a>
 
                 </div>
 
@@ -1506,6 +1507,6 @@ const box=document.getElementById('zad-my-questions');onAuthStateChanged(auth,as
   <a href="../../sections/tests/code-exams.html"><span class="zad-bottom-icon" aria-hidden="true">✎</span><span class="zad-bottom-label">الامتحانات</span></a>
   <button type="button" data-stage4-open="profile" aria-controls="profileCard"><span class="zad-bottom-icon zad-bottom-icon--profile" aria-hidden="true"></span><span class="zad-bottom-label">حسابي</span></button>
 </nav>
-<script type="module" src="stage4-student.js?v=20261122-schedule"></script>
+<script type="module" src="stage4-student.js?v=20261125-weekly"></script>
 </body>
 </html>

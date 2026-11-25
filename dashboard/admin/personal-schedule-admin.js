@@ -2,7 +2,8 @@ import {auth,db} from '../../firebase-config.js';
 import {guard} from '../dashboard.js';
 import {collection,doc,getDocs,onSnapshot,query,where,orderBy,setDoc,updateDoc,serverTimestamp}
   from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
-import {personalLessonCollection,personalLessonData} from '../student-schedule-core.js?v=20261122-schedule';
+import {cairoDay} from '../student/stage4-core.js';
+import {personalLessonCollection,personalLessonData,WEEKDAYS} from '../student-schedule-core.js?v=20261125-weekly';
 
 const $ = id => document.getElementById(id);
 const selection = $('personalScheduleStudent');
@@ -12,6 +13,11 @@ const list = $('personalScheduleList');
 const save = $('personalScheduleSave');
 const cancel = $('personalScheduleCancel');
 const field = name => form.elements.namedItem(name);
+const weekdayFields = $('personalScheduleWeekly');
+const onceFields = $('personalScheduleOnce');
+const weekdayInputs = [...form.querySelectorAll('input[name=weekdays]')];
+const cairoDate = () => cairoDay();
+const timeOnly = new Intl.DateTimeFormat('ar-EG',{hour:'numeric',minute:'2-digit',timeZone:'UTC'});
 const clock = new Intl.DateTimeFormat('ar-EG',{dateStyle:'medium',timeStyle:'short',timeZone:'UTC'});
 let owner = '', generation = 0, busy = false;
 let stop = () => {};
@@ -22,11 +28,20 @@ function node(tag, text) {
   el.textContent = text;
   return el;
 }
+function updateMode() {
+  const weekly = field('recurrence').value === 'weekly';
+  weekdayFields.hidden = !weekly;
+  weekdayFields.disabled = !weekly;
+  onceFields.hidden = weekly;
+  field('date').disabled = weekly;
+  if (!entry) save.textContent = weekly ? 'احفظ الموعد الثابت' : 'أضف الحصة';
+}
 function reset() {
   form.reset();
   entry = null;
   draft = null;
-  save.textContent = 'أضف الحصة';
+  field('startDate').value = cairoDate();
+  updateMode();
   cancel.hidden = true;
 }
 function button(label, action) {
@@ -52,26 +67,37 @@ function display(entries, request) {
     const data = item.data();
     const title = node('div','');
     const time = new Date(data.date + ':00Z');
-    const when = Number.isFinite(time.getTime()) ? clock.format(time) + ' بتوقيت القاهرة' : 'موعد غير محدد';
+    const weekly = data.recurrence === 'weekly';
+    const dayNames = WEEKDAYS.filter(([day])=>Array.isArray(data.weekdays)&&data.weekdays.includes(day)).map(([,label])=>label).join('، ');
+    const when = Number.isFinite(time.getTime()) ? (weekly
+      ? `كل أسبوع: ${dayNames} — الساعة ${timeOnly.format(time)} · من ${String(data.date).slice(0,10)}${data.endDate?' إلى '+data.endDate:' · بدون نهاية'} بتوقيت القاهرة`
+      : clock.format(time) + ' بتوقيت القاهرة') : 'موعد غير محدد';
     title.append(node('strong',data.title || 'حصة'),node('small',[when,data.subject,data.teacherName].filter(Boolean).join(' · ')));
     const actions = node('div','');
     actions.className = 'actions';
     actions.append(button('تعديل',() => {
       if (busy || request !== generation)return;
       for (const key of ['title','subject','teacherName','date','meetUrl']) field(key).value = data[key] || '';
+      field('recurrence').value = weekly ? 'weekly' : 'once';
+      for(const input of weekdayInputs) input.checked=weekly&&Array.isArray(data.weekdays)&&data.weekdays.includes(Number(input.value));
+      field('startDate').value=weekly?String(data.date||'').slice(0,10):cairoDate();
+      field('time').value=weekly?String(data.date||'').slice(11,16):'';
+      field('endDate').value=weekly?(data.endDate||''):'';
       entry = item.ref;
+      draft = null;
+      updateMode();
       save.textContent = 'احفظ التعديل';
       cancel.hidden = false;
       field('title').focus();
       status.textContent = 'بتعدّل الحصة المحددة.';
-    }),button('إلغاء الحصة',async () => {
+    }),button(weekly?'إيقاف التكرار':'إلغاء الحصة',async () => {
       if (busy || request !== generation || auth.currentUser?.uid!==owner)return;
-      if (!confirm('تلغي الحصة دي من جدول الطالب؟'))return;
+      if (!confirm(weekly?'توقف الموعد الأسبوعي بالكامل من جدول الطالب؟':'تلغي الحصة دي من جدول الطالب؟'))return;
       try {
         await updateDoc(item.ref,{deleted:true,updatedAt:serverTimestamp()});
         if(request === generation) {
           if(entry?.id === item.id) reset();
-          status.textContent = 'الحصة اتشالت من جدول الطالب.';
+          status.textContent = weekly?'تم إيقاف الموعد الأسبوعي.':'الحصة اتشالت من جدول الطالب.';
         }
       } catch(error) {
         if(request===generation)status.textContent = 'تعذر إلغاء الحصة: ' + (error.code || error.message);
@@ -103,6 +129,8 @@ function watchStudent() {
   });
 }
 
+field('recurrence').addEventListener('change',updateMode);
+reset();
 selection.addEventListener('change',watchStudent);
 cancel.addEventListener('click',reset);
 form.addEventListener('submit',async event => {
@@ -110,7 +138,7 @@ form.addEventListener('submit',async event => {
   const uid = selection.value, request = generation;
   if (busy || !uid || auth.currentUser?.uid !== owner)return;
   let data;
-  try { data = payload(Object.fromEntries(new FormData(form))); }
+  try { const values=new FormData(form); data = payload({...Object.fromEntries(values),weekdays:values.getAll('weekdays')}); }
   catch(error) { status.textContent=error.message;return; }
   const target = entry || draft || doc(collection(db,...personalLessonCollection(uid)));
   if (!entry) draft = target;
@@ -122,7 +150,7 @@ form.addEventListener('submit',async event => {
     else await setDoc(target,{...data,createdAt:serverTimestamp(),deleted:false});
     if(request!==generation)return;
     reset();
-    status.textContent = 'تم حفظ الحصة في جدول الطالب.';
+    status.textContent = data.recurrence==='weekly'?'تم حفظ الموعد الثابت. هيتكرر تلقائيًا كل أسبوع.':'تم حفظ الحصة في جدول الطالب.';
   } catch(error) {
     if(request===generation)status.textContent = 'تعذر حفظ الحصة: ' + (error.code || error.message);
   } finally {

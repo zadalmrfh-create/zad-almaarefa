@@ -5,8 +5,8 @@ import {getPreviewContext} from '../admin-preview-core.js';
 import {onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
 import {doc,getDoc,getDocs,collection,query,where,limit} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 import {cairoDay,weekRange,eligibleLesson,scheduleDays,studentMetrics} from './stage4-core.js';
-import {lessonPageUrl} from '../lesson-page-links.js?v=20261122-schedule';
-import {personalLessonCollection, personalLesson} from '../student-schedule-core.js?v=20261122-schedule';
+import {lessonPageUrl} from '../lesson-page-links.js?v=20261125-weekly';
+import {personalLessonCollection, expandPersonalLessons} from '../student-schedule-core.js?v=20261125-weekly';
 const $=id=>document.getElementById(id);
 const sched=$('zadStage4ScheduleList'),state=$('zadStage4ScheduleStatus'),weekLabel=$('zadStage4WeekLabel');
 const refresh=$('zadStage4Reload'),prev=$('zadStage4ThisWeek'),next=$('zadStage4NextWeek');
@@ -75,7 +75,7 @@ function renderSchedule(items,range){sched.replaceChildren();
     row.append(text('strong',lesson.title||lesson.name||'محاضرة جديدة'));
     const date=String(lesson.date||''),clock=(date.match(/T(\d{2}:\d{2})/)||[])[1];
     row.append(text('span',[clock?'🕒 '+clock:'الساعة غير محددة',lesson.privateSchedule?'حصة خاصة':'',lesson.subject||lesson.section||'',lesson.teacherName||lesson.teacher||''].filter(Boolean).join(' • ')));
-    const href=lessonPageUrl(lesson.id,location.href,lesson.privateSchedule);
+    const href=lessonPageUrl(lesson.id,location.href,lesson.privateSchedule,lesson.occurrenceDay);
     if(href){const link=text('a','صفحة الحصة','btn');link.href=href;row.append(link);}
     card.append(row);
   }
@@ -94,13 +94,16 @@ async function loadSchedule(){
   const target=uid;
   const [general, personal]=await Promise.allSettled([
     getDocs(query(collection(db,'lessons'),...bounds,limit(160))),
-    getDocs(query(collection(db,...personalLessonCollection(target)),...bounds))
+    Promise.all([
+      getDocs(query(collection(db,...personalLessonCollection(target)),...bounds)),
+      getDocs(query(collection(db,...personalLessonCollection(target)),where('recurrence','==','weekly')))
+    ]).then(snapshots=>({docs:[...new Map(snapshots.flatMap(s=>s.docs).map(d=>[d.id,d])).values()]}))
   ]);
   if (generation!==authGeneration)return;
   if (general.status==='rejected' && personal.status==='rejected') throw general.reason;
   const rows=[
     ...(general.value?.docs || []).map(d=>({...d.data(),id:d.id,privateSchedule:false})),
-    ...(personal.value?.docs || []).map(d=>personalLesson(d,target))
+    ...expandPersonalLessons(personal.value?.docs || [],target,range)
   ].filter(x=>eligibleLesson(x,target,grade,range));
   renderSchedule(rows,range);
   if(general.status==='rejected' || personal.status==='rejected')setStatus('بعض مواعيد الحصص تعذر تحميلها. جرّب التحديث.');

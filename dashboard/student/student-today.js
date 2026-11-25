@@ -1,6 +1,6 @@
 import {chooseLesson, latestExam, pendingBookings} from './student-today-core.js?v=20261120-today1';
 import {money} from '../payment-utils.js';
-import {lessonPageUrl} from '../lesson-page-links.js?v=20261122-schedule';
+import {lessonPageUrl} from '../lesson-page-links.js?v=20261125-weekly';
 
 const card = document.getElementById('studentToday');
 const status = document.getElementById('studentTodayStatus');
@@ -27,7 +27,7 @@ function focusSection(target) {
   target.scrollIntoView({block: 'start'});
 }
 function openLesson(lesson) {
-  const href = lessonPageUrl(lesson.id, location.href, lesson.privateSchedule);
+  const href = lessonPageUrl(lesson.id, location.href, lesson.privateSchedule, lesson.occurrenceDay);
   if (href) location.href = href;
   else selectTab('lessons');
 }
