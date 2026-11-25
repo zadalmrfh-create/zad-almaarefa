@@ -4,7 +4,7 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.18.0/fireba
 import { getAuth } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
 import { getFirestore } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 
-const firebaseConfig = {
+export const firebaseConfig = {
   apiKey: "AIzaSyB0RRPsezMpT1t7SPKAGC2nD7e5JI46Epo",
   authDomain: "zad-elmarefa.firebaseapp.com",
   projectId: "zad-elmarefa",

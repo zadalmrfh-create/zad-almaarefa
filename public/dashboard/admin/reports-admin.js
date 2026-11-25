@@ -1,8 +1,10 @@
+import {sharedAdminGetDocs,clearAdminReadCache} from './firestore-read-cache.js';
+const getDocs=(ref)=>sharedAdminGetDocs(ref,rawGetDocs,auth);
 import { auth, db } from '../../firebase-config.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
 import {
   collection,
-  getDocs,
+  getDocs as rawGetDocs,
   query,
   where,
   doc,
@@ -95,12 +97,12 @@ function renderStudentReports() {
     return { latest, items };
   }).filter(({ latest }) => {
     if (!search) return true;
-    return [
+    return window.ZadNameSearch.matches([
       latest.fullName,
       latest.phone,
       latest.email,
       latest.subject
-    ].join(' ').toLowerCase().includes(search);
+    ].join(' '), search);
   }).sort((a, b) => (toDate(b.latest.createdAt)?.getTime() || 0) - (toDate(a.latest.createdAt)?.getTime() || 0));
 
   body.innerHTML = rows.length ? rows.map(({ latest, items }) => `
@@ -251,7 +253,7 @@ function renderBookingReports() {
 
   filteredBookings = allBookings.filter(b => {
     const haystack = [b.fullName, b.email, b.phone, b.subject, b.teacherName, b.grade, b.stage, b.section].join(' ').toLowerCase();
-    if (search && !haystack.includes(search)) return false;
+    if (search && !window.ZadNameSearch.matches(haystack,search)) return false;
     if (status !== 'all' && (b.status || 'جديد') !== status) return false;
     if (section !== 'all' && (b.section || '') !== section) return false;
     if (subject !== 'all' && (b.subject || '') !== subject) return false;
@@ -498,7 +500,7 @@ function renderLibraryReports() {
 
   filteredLibraryDownloads = allLibraryDownloads.filter(item => {
     const haystack = [item.userName, item.userEmail, item.bookTitle, item.sourceLabel].join(' ').toLowerCase();
-    if (search && !haystack.includes(search)) return false;
+    if (search && !window.ZadNameSearch.matches(haystack,search)) return false;
     if (source !== 'all' && (item.source || '') !== source) return false;
     if (!dateRangeMatches(downloadTime(item), from, to)) return false;
     return true;

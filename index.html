@@ -10,7 +10,7 @@
 
   <meta
     name="description"
-    content="🎁 المنصة وخدماتها مجانية بالكامل بدون أي اشتراك، والدفع فقط مقابل الحصة التعليمية التي تحجزها."
+    content="منصة تعليمية للقرآن الكريم والعلوم الشرعية واللغة العربية، مع مكتبة تعليمية وحصص مع معلمين متخصصين."
   />
 
   <meta
@@ -22,7 +22,7 @@
 
   <!-- Social link preview: WhatsApp / Facebook / Telegram -->
   <meta property="og:title" content="زاد المعرفة — منصة تعليمية إسلامية" />
-  <meta property="og:description" content="🎁 المنصة وخدماتها مجانية بالكامل بدون أي اشتراك، والدفع فقط مقابل الحصة التعليمية التي تحجزها." />
+  <meta property="og:description" content="منصة تعليمية للقرآن الكريم والعلوم الشرعية واللغة العربية، مع مكتبة تعليمية وحصص مع معلمين متخصصين." />
   <meta property="og:image" content="https://zadalmrfh-create.github.io/zad-almaarefa/images/share-preview-v2.png" />
   <meta property="og:image:secure_url" content="https://zadalmrfh-create.github.io/zad-almaarefa/images/share-preview-v2.png" />
   <meta property="og:image:type" content="image/png" />
@@ -35,7 +35,7 @@
   <!-- X / Twitter preview -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="زاد المعرفة — منصة تعليمية إسلامية" />
-  <meta name="twitter:description" content="🎁 المنصة وخدماتها مجانية بالكامل بدون أي اشتراك، والدفع فقط مقابل الحصة التعليمية التي تحجزها." />
+  <meta name="twitter:description" content="منصة تعليمية للقرآن الكريم والعلوم الشرعية واللغة العربية، مع مكتبة تعليمية وحصص مع معلمين متخصصين." />
   <meta name="twitter:image" content="https://zadalmrfh-create.github.io/zad-almaarefa/images/share-preview-v2.png" />
 
   <!-- Favicon -->
@@ -52,6 +52,10 @@
   />
 
   <link rel="stylesheet" href="assets/home-hero.css?v=20261124-restore-photo">
+  <link rel="stylesheet" href="assets/navigation-accessibility.css?v=20261125-navigation1">
+  <link rel="stylesheet" href="assets/platform-discovery.css?v=20261125">
+  <script src="assets/header-navigation.js?v=20261125-navigation1" defer></script>
+  <script src="assets/navigation-accessibility.js?v=20261125-navigation1" defer></script>
 
   <!-- Google Fonts -->
   <link
@@ -256,9 +260,10 @@
         </div>
       </div>
     </section>
-<section id="personalHome" class="personal-home" hidden>
-  <div><span class="personal-kicker">لوحتك السريعة</span><h2 id="personalWelcome">مرحبًا، ماذا تريد أن تكمل اليوم؟</h2><p>ارجع بسرعة إلى آخر ما كنت تتابعه أو افتح حسابك لمتابعة الحصص والإشعارات.</p></div>
-  <div class="personal-actions"><a href="sections/library.html">📚 مكتبتي</a><a class="account-dashboard-link" href="dashboard/student/index.html">👤 لوحتي</a><a href="sections/booking/index.html">📅 حجز حصة</a></div>
+<section id="zadStudentProgress" aria-labelledby="zadStudentProgressTitle">
+  <h2 id="zadStudentProgressTitle">متابعتك الدراسية</h2>
+  <p role="status">جارٍ تجهيز ملخص حسابك…</p>
+  <noscript>فعّل JavaScript لعرض ملخص حسابك، أو <a href="dashboard/student/index.html">افتح لوحة الطالب</a>.</noscript>
 </section>
 
 <!-- Mission Section -->
@@ -383,81 +388,18 @@
             </div>
           </div>
         </div>
-        <div class="about-visual sr sr-delay-2" style="position: relative">
-          <div class="dash-mockup">
-            <div class="dash-bar">
-              <div class="dash-dot" style="background: #ff5f57"></div>
-              <div class="dash-dot" style="background: #febc2e"></div>
-              <div class="dash-dot" style="background: #28c840"></div>
-            </div>
-            <div class="dash-body">
-              <div class="dash-grid">
-                <div class="dash-widget">
-                  <div class="dw-label">الدروس المتاحة</div>
-                  <div class="dw-val" id="availableBooksCount">—</div>
-                </div>
-                <div class="dash-widget">
-                  <div class="dw-label">التصنيفات</div>
-                  <div class="dw-val" id="categoriesCount">—</div>
-                </div>
-              </div>
-              <div class="dash-bar2">
-                <div
-                  class="dbar-label"
-                  style="
-                    margin-bottom: 16px;
-                    font-family: &quot;Cairo&quot;, sans-serif;
-                    font-weight: 800;
-                    color: var(--text);
-                    font-size: 0.85rem;
-                  "
-                >
-                  تقدّمك هذا الأسبوع
-                </div>
-                <div class="dbar-row">
-                  <span class="dbar-label">الكتب المقروءة</span
-                  ><span class="dbar-pct" id="readBooksPercent">٠٪</span>
-                </div>
-                <div class="dbar-track" style="margin-bottom: 14px; width: 0%">
-                  <div class="dbar-fill" id="readBooksBar" data-w="0%"></div>
-                </div>
-                <div class="dbar-row">
-                  <span class="dbar-label">المفضلة</span
-                  ><span class="dbar-pct" id="favoriteBooksPercent">٠٪</span>
-                </div>
-                <div class="dbar-track" style="margin-bottom: 14px; width: 0%">
-                  <div class="dbar-fill" id="favoriteBooksBar" data-w="0%"></div>
-                </div>
-                <div class="dbar-row">
-                  <span class="dbar-label">النشاط الأخير</span
-                  ><span class="dbar-pct" id="recentActivityPercent">٠٪</span>
-                </div>
-                <div class="dbar-track" style="width: 0%">
-                  <div class="dbar-fill" id="recentActivityBar" data-w="0%"></div>
-                </div>
-              </div>
-              <div class="dash-list">
-                <div
-                  style="
-                    font-family: &quot;Cairo&quot;, sans-serif;
-                    font-weight: 800;
-                    color: var(--text);
-                    font-size: 0.85rem;
-                    margin-bottom: 12px;
-                  "
-                >
-                  آخر الدروس
-                </div>
-                <div id="recentLessonsList">
-                  <div class="dl-row">
-                    <div class="dl-icon">📚</div>
-                    <span class="dl-text">لا توجد دروس تمت مشاهدتها بعد</span>
-                    <span class="dl-badge">—</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+        <div class="about-visual sr sr-delay-2">
+          <aside class="home-study-card" aria-labelledby="homeStudyTitle">
+            <span class="home-study-kicker">خطوتك التالية</span>
+            <h3 id="homeStudyTitle">تعلّم بخطوات واضحة</h3>
+            <p>اختر ما تحتاجه اليوم، وارجع إلى حسابك لمتابعة حصصك ونتائجك المعتمدة.</p>
+            <ol>
+              <li><span aria-hidden="true">١</span><div><strong>اكتشف المحتوى</strong><p>ابحث حسب المادة والصف ونوع المحتوى.</p></div></li>
+              <li><span aria-hidden="true">٢</span><div><strong>تعلّم مع معلمك</strong><p>اختر الحصة المناسبة وتابع مواعيدك من حسابك.</p></div></li>
+              <li><span aria-hidden="true">٣</span><div><strong>راجع تقدمك</strong><p>اطّلع على الحضور المسجّل ودرجاتك المعتمدة.</p></div></li>
+            </ol>
+            <a href="sections/library.html">استكشف المكتبة <span aria-hidden="true">←</span></a>
+          </aside>
         </div>
       </div>
     </section>
@@ -809,160 +751,10 @@
           .forEach((el) => srObs.observe(el));
       }
 
-      /* ── PROGRESS BARS ── */
-      const pbObs = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((e) => {
-            if (e.isIntersecting) {
-              e.target.querySelectorAll(".dbar-fill").forEach((b) => {
-                b.style.width = b.dataset.w || "0%";
-              });
-              pbObs.unobserve(e.target);
-            }
-          });
-        },
-        { threshold: 0.3 },
-      );
-
-
-      /* ── REAL PLATFORM PROGRESS ── */
-      function parseStoredValue(key) {
-        try {
-          const raw = localStorage.getItem(key);
-          if (!raw) return null;
-          return JSON.parse(raw);
-        } catch (_) {
-          return null;
-        }
-      }
-
-      function asArray(value) {
-        if (Array.isArray(value)) return value;
-        if (value && typeof value === "object") {
-          if (Array.isArray(value.items)) return value.items;
-          if (Array.isArray(value.books)) return value.books;
-          if (Array.isArray(value.documents)) return value.documents;
-          return Object.values(value).filter((v) => v && typeof v === "object");
-        }
-        return [];
-      }
-
-      function findStoredArrays(keyPattern) {
-        const result = [];
-        for (let i = 0; i < localStorage.length; i++) {
-          const key = localStorage.key(i) || "";
-          if (!keyPattern.test(key)) continue;
-          const value = parseStoredValue(key);
-          const arr = asArray(value);
-          if (arr.length) result.push(...arr);
-        }
-        return result;
-      }
-
-      function itemTitle(item) {
-        if (typeof item === "string") return item.trim();
-        if (!item || typeof item !== "object") return "";
-        return String(
-          item.title || item.name || item.bookTitle || item.lessonTitle ||
-          item.documentTitle || item.text || ""
-        ).trim();
-      }
-
-      function uniqueItems(items) {
-        const map = new Map();
-        items.forEach((item) => {
-          const title = itemTitle(item);
-          if (!title) return;
-          const id = String(item.id || item.uid || item.bookId || item.lessonId || title);
-          if (!map.has(id)) map.set(id, item);
-        });
-        return [...map.values()];
-      }
-
-      function getRealProgressData() {
-        const allBooks = uniqueItems(findStoredArrays(/book|library|document/i));
-        const readBooks = uniqueItems(findStoredArrays(/read|completed|finished|progress/i));
-        const favorites = uniqueItems(findStoredArrays(/favorite|favourite|مفضل/i));
-        let recent = findStoredArrays(/recent|history|last|activity|viewed|visited/i)
-          .filter((item) => itemTitle(item));
-
-        // بعض صفحات المكتبة تحفظ سجل القراءة داخل كائن واحد باسم readingHistory.
-        if (!recent.length) {
-          recent = readBooks.slice();
-        }
-
-        recent = uniqueItems(recent).sort((a, b) => {
-          const ta = new Date(a.updatedAt || a.lastOpened || a.createdAt || a.timestamp || 0).getTime();
-          const tb = new Date(b.updatedAt || b.lastOpened || b.createdAt || b.timestamp || 0).getTime();
-          return tb - ta;
-        });
-
-        return { allBooks, readBooks, favorites, recent };
-      }
-
-      function setProgressValue(percentId, barId, percent) {
-        const safe = Math.max(0, Math.min(100, Math.round(percent || 0)));
-        const label = document.getElementById(percentId);
-        const bar = document.getElementById(barId);
-        if (label) label.textContent = `${safe}٪`;
-        if (bar) {
-          bar.dataset.w = `${safe}%`;
-          bar.style.width = `${safe}%`;
-        }
-        const track = bar?.parentElement;
-        if (track) track.style.width = `${safe}%`;
-      }
-
-      function renderRealProgress() {
-        const { allBooks, readBooks, favorites, recent } = getRealProgressData();
-        const available = allBooks.length;
-        const readPercent = available ? (readBooks.length / available) * 100 : 0;
-        const favoritePercent = available ? (favorites.length / available) * 100 : 0;
-        const activityPercent = available ? Math.min(100, (recent.length / available) * 100) : 0;
-
-        const availableEl = document.getElementById("availableBooksCount");
-        if (availableEl) availableEl.textContent = available ? `+${available}` : "٠";
-
-        const categoriesEl = document.getElementById("categoriesCount");
-        if (categoriesEl) categoriesEl.textContent = CATS.length;
-
-        setProgressValue("readBooksPercent", "readBooksBar", readPercent);
-        setProgressValue("favoriteBooksPercent", "favoriteBooksBar", favoritePercent);
-        setProgressValue("recentActivityPercent", "recentActivityBar", activityPercent);
-
-        const list = document.getElementById("recentLessonsList");
-        if (!list) return;
-        const latest = recent.slice(0, 3);
-        if (!latest.length) {
-          list.innerHTML = `<div class="dl-row"><div class="dl-icon">📚</div><span class="dl-text">لا توجد دروس تمت مشاهدتها بعد</span><span class="dl-badge">—</span></div>`;
-          return;
-        }
-        list.innerHTML = latest.map((item, index) => {
-          const rawTitle = itemTitle(item);
-          let title = rawTitle;
-          try { title = decodeURIComponent(title); } catch (_) {}
-          title = title
-            .replace(/https?:\/\/\S+/gi, " ")
-            .replace(/(?:usp=drive_link|view\?[^\s]*)/gi, " ")
-            .replace(/[|\[\]{}]+/g, " ")
-            .replace(/\s+/g, " ")
-            .trim();
-          if (!title) title = "درس من المكتبة";
-          if (title.length > 72) title = title.slice(0, 69).trim() + "…";
-          const status = item.completed || item.status === "completed" || item.read ? "مكتمل" : (index === 0 ? "جارٍ" : "مُشاهد");
-          const icon = item.icon || ["📖", "🌙", "⚖️"][index] || "📚";
-          return `<div class="dl-row" title="${title.replace(/[<>&"']/g, "")}"><div class="dl-icon">${icon}</div><span class="dl-text">${title.replace(/[<>&"']/g, "")}</span><span class="dl-badge">${status}</span></div>`;
-        }).join("");
-      }
-
       /* ── INIT ── */
       document.addEventListener("DOMContentLoaded", () => {
         renderCats();
         observeNewSR();
-        document
-          .querySelectorAll(".dash-mockup")
-          .forEach((m) => pbObs.observe(m));
-        renderRealProgress();
       });
 
       function goTo(link) {
@@ -1001,7 +793,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   const PLATFORM_URL = "https://zadalmrfh-create.github.io/zad-almaarefa/";
   const SHARE_TITLE = "زاد المعرفة — منصة تعليمية إسلامية";
-  const SHARE_TEXT = "🎁 المنصة وخدماتها مجانية بالكامل بدون أي اشتراك، والدفع فقط مقابل الحصة التعليمية التي تحجزها.";
+  const SHARE_TEXT = "منصة تعليمية للقرآن الكريم والعلوم الشرعية واللغة العربية، مع مكتبة تعليمية وحصص مع معلمين متخصصين.";
 
   function showToast(message) {
     let toast = document.getElementById("zadShareToast");
@@ -1225,30 +1017,11 @@ async function loadHomeExtras(){
 document.addEventListener('DOMContentLoaded',loadHomeExtras);
 </script>
 
-<div id="globalSearchModal" class="global-search-modal" role="dialog" aria-modal="true" aria-label="البحث في المنصة" hidden>
-  <div class="global-search-panel">
-    <button id="closeGlobalSearch" class="search-close" type="button" aria-label="إغلاق البحث">✕</button>
-    <h2>ابحث في زاد المعرفة</h2>
-    <input id="globalSearchInput" type="search" placeholder="مثال: نحو، قرآن، حجز، معلم..." autocomplete="off">
-    <div id="globalSearchResults" class="global-search-results"></div>
-  </div>
-</div>
-<script type="module">
-
-import { auth, db } from './firebase-config.js';
-import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
-import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
-const modal=document.getElementById('globalSearchModal'),input=document.getElementById('globalSearchInput'),results=document.getElementById('globalSearchResults');
-const items=[
-['المكتبة والكتب','sections/library.html','كتب مذكرات تحميل'],['أسئلة المكتبة','sections/library.html','أسئلة نحو توحيد مراجعة'],['حجز حصة','sections/booking/index.html','حجز موعد حصة'],['التعليم الأزهري','sections/Azhar/azhar.html','ازهر أزهري'],['القرآن الكريم','sections/Quran/quran.html','قرآن تجويد حفظ'],['اللغة العربية','sections/Arabic/arabic.html','عربي نحو صرف بلاغة'],['العلوم الشرعية','sections/Sharia/sharia.html','شرعي فقه عقيدة'],['التزكية والتربية','sections/Tazkea/tazkea.html','تزكية تربية'],['طاقم التدريس','teachers/index.html','معلم مدرس'],['أحداث المنصة','events/events.html','أحداث اخبار'],['الخدمات','sections/services/services.html','خدمات'],['الطلاب المتميزون','students/students.html','شهادات تكريم'],['آراء الطلاب','reviews/index.html','آراء تقييمات'],['سياسة المدفوعات','sections/payment-policy.html','الدفع الحصص محاسبة الطلاب المعلمين']];
-function norm(x=''){return x.toLowerCase().replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي')}
-function draw(){const q=norm(input?.value||'');const arr=!q?items.slice(0,7):items.filter(x=>norm(x.join(' ')).includes(q));results.innerHTML=arr.map(x=>`<a href="${x[1]}"><strong>${x[0]}</strong><br><small>${x[2]}</small></a>`).join('')||'<p>لا توجد نتائج مطابقة.</p>'}
-document.getElementById('globalSearchBtn')?.addEventListener('click',()=>{modal.hidden=false;draw();setTimeout(()=>input.focus(),30)});document.getElementById('closeGlobalSearch')?.addEventListener('click',()=>modal.hidden=true);modal?.addEventListener('click',e=>{if(e.target===modal)modal.hidden=true});input?.addEventListener('input',draw);
-onAuthStateChanged(auth,async user=>{const box=document.getElementById('personalHome');if(!box)return;if(!user){box.hidden=true;return}box.hidden=false;let name=user.displayName||user.email?.split('@')[0]||'طالبنا';try{const snap=await getDoc(doc(db,'users',user.uid));if(snap.exists())name=snap.data().fullName||name}catch(e){}document.getElementById('personalWelcome').textContent=`مرحبًا ${name}، ماذا تريد أن تكمل اليوم؟`;});
-
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&modal&&!modal.hidden){modal.hidden=true;}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();if(modal){modal.hidden=false;draw();input?.focus();}}});
-
-</script>
+<dialog id="zadGlobalSearchDialog" class="zad-search-dialog" aria-labelledby="zadGlobalSearchTitle">
+  <section id="zadGlobalSearch"></section>
+</dialog>
+<script type="module" src="assets/global-search.js?v=20261125"></script>
+<script type="module" src="assets/student-home-progress.js?v=20261125"></script>
 
 <script>
 (function(){

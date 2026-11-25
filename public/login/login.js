@@ -93,6 +93,11 @@ function clearMsg() {
 
 
 
+// عند الدخول من صفحة تعليمية محمية، وضّح للمستخدم سبب طلب الدخول.
+if (new URLSearchParams(window.location.search).get('required') === '1') {
+  msg('يجب تسجيل الدخول أولًا للوصول إلى المكتبة والكتب والملخصات والامتحانات.', 'info');
+}
+
 /* =========================================================
    Firebase
 ========================================================= */
@@ -100,16 +105,26 @@ function clearMsg() {
 
 async function redirectAfterLogin(user) {
   const target = sessionStorage.getItem('redirectAfterLogin');
-  if (target && target.includes('/sections/library.html')) {
+  // عودة المستخدم لنفس صفحة المكتبة أو الكتاب أو الملخصات أو الامتحانات بعد تسجيل الدخول.
+  // المسار يُقبل فقط إذا كان من صفحات المحتوى الداخلي على نفس الموقع.
+  if (target) {
+    try {
+      const original = new URL(target, window.location.origin);
+      const isProtectedPage = /\/store\/index\.html$/i.test(original.pathname)
+        || /\/dashboard\/student\/lesson\.html$/i.test(original.pathname)
+        || /\/sections\/booking\/index\.html$/i.test(original.pathname)
+        || /\/sections\/(?:library|library-payment|book|book-access)\.html$/i.test(original.pathname)
+        || /\/sections\/(?:Arabic|Azhar|Quran|Sharia|Tazkea|tests)\/[^/]+\.html$/i.test(original.pathname);
+      if (target.startsWith('/') && !target.startsWith('//')
+          && original.origin === window.location.origin && isProtectedPage) {
+        sessionStorage.removeItem('redirectAfterLogin');
+        window.location.replace(original.href);
+        return;
+      }
+    } catch (error) {
+      console.warn('تعذر استعادة الصفحة المطلوبة:', error);
+    }
     sessionStorage.removeItem('redirectAfterLogin');
-    window.location.replace('../sections/library.html');
-    return;
-  }
-
-  if (target && target.includes('/sections/Azhar/azhar.html')) {
-    sessionStorage.removeItem('redirectAfterLogin');
-    window.location.replace('../sections/Azhar/azhar.html');
-    return;
   }
 
   // الأدمن الأساسي دائمًا يذهب إلى لوحة الإدارة
@@ -121,7 +136,9 @@ async function redirectAfterLogin(user) {
   try {
     const snap = await getDoc(doc(db, 'users', user.uid));
     const profile = snap.exists() ? snap.data() : {};
-    if (profile.role === 'admin') {
+    // تأكيد صلاحية الإدارة من سجل admins المخصص، لا من واجهة المستخدم وحدها.
+    const adminSnap = await getDoc(doc(db, 'admins', user.uid));
+    if (adminSnap.exists() || (user.email?.toLowerCase() === 'maleksameh121@gmail.com' && user.emailVerified)) {
       window.location.replace('../dashboard/admin/index.html');
     } else if (profile.role === 'teacher' && profile.status === 'active') {
       window.location.replace('../dashboard/teacher/index.html');
@@ -501,10 +518,11 @@ emailLoginForm?.addEventListener(
     }
 
 
-    const email =
-      document.getElementById(
-        'email'
-      ).value.trim();
+    const enteredLogin = document.getElementById('email').value.trim();
+
+    const email = enteredLogin.includes('@')
+      ? enteredLogin
+      : enteredLogin.toLowerCase()+'@students.zad-almaarefa.example';
 
 
     const password =

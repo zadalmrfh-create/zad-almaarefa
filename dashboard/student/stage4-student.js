@@ -1,5 +1,6 @@
 /* Stage4 student companion — real weekly timetable, progress and quick mobile actions. */
 import {auth,db} from '../../firebase-config.js';
+import {studentErrorMessage} from './student-navigation-core.js';
 import {getPreviewContext} from '../admin-preview-core.js';
 import {onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
 import {doc,getDoc,getDocs,collection,query,where,limit} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
@@ -32,6 +33,7 @@ function updateMobileActive(id) {
 for (const button of mobileActions) {
   button.addEventListener('click', () => {
     const id=button.dataset.stage4Open;
+    if(window.zadStudentNavigation){window.zadStudentNavigation.open(id);return;}
     const tab=document.querySelector(`.student-tabs [data-student-tab="${id}"]`);
     if(!tab)return;
     tab.click();
@@ -47,6 +49,7 @@ document.querySelector('.student-tabs')?.addEventListener('click',event => {
   if(id)updateMobileActive(id);
 });
 updateMobileActive(document.querySelector('.student-tabs [data-student-tab].active')?.dataset.studentTab || 'overview');
+window.addEventListener('zad:student-tab-changed',event=>updateMobileActive(event.detail.tab));
 
 function putBookingPrefs(){const el=$('zadStage4BookingPrefs');if(!el)return;el.replaceChildren();
  if(!board.bookings.length){el.append(text('p','لا توجد حجوزات مسجلة حاليًا.'));return;}
@@ -84,7 +87,7 @@ function renderSchedule(items,range){sched.replaceChildren();
 async function loadSchedule(){
  if(loading||!uid){setStatus('سجّل الدخول بحساب طالب لعرض جدولك.');return;}
  loading=true;const generation=authGeneration,day=cairoDay(),range=weekRange(day,offset);
- refresh.disabled=true;prev.disabled=true;next.disabled=true;sched.replaceChildren();setStatus('جارٍ تحميل مواعيد هذا الأسبوع من Firebase...');setWeekButtons();
+ refresh.disabled=true;prev.disabled=true;next.disabled=true;sched.replaceChildren();setStatus('جارٍ تحميل مواعيد هذا الأسبوع...');setWeekButtons();
  try{
   // Range query is bounded and reads only scheduled lessons, not the entire collection.
   const bounds=[where('date','>=',range.start+'T00:00'),where('date','<',range.until+'T00:00')];
@@ -102,7 +105,7 @@ async function loadSchedule(){
   renderSchedule(rows,range);
   if(general.status==='rejected' || personal.status==='rejected')setStatus('بعض مواعيد الحصص تعذر تحميلها. جرّب التحديث.');
   else if(general.value.size===160)setStatus('تم عرض أول 160 محاضرة من السجل العام، بالإضافة إلى حصصك الخاصة.');
- }catch(err){sched.replaceChildren(text('p','تعذر تحميل الجدول: '+(err.code||err.message)));setStatus('فشل التحميل؛ جرّب زر التحديث.');}
+ }catch(err){console.warn('Student timetable load failed:',err);sched.replaceChildren(text('p',studentErrorMessage(err,'الجدول')));setStatus('تعذر تحميل المواعيد؛ جرّب زر تحديث الجدول.');}
  finally{loading=false;refresh.disabled=false;prev.disabled=false;next.disabled=false;}
 }
 refresh?.addEventListener('click',loadSchedule);
@@ -118,5 +121,5 @@ onAuthStateChanged(auth,async user=>{
  try{const pv=await getPreviewContext(user,'student');if(generation!==authGeneration||pv.denied)return;uid=pv.uid;
    try{const x=await getDoc(doc(db,'users',uid));grade=String(x.data()?.grade||x.data()?.studyGrade||'').trim()}catch(error){console.warn('تعذر معرفة الصف عند تحديث الجدول',error.code||error.message)}
    if(generation===authGeneration){setWeekButtons();putBookingPrefs();showProgress();loadSchedule()}
- }catch(error){setStatus('تعذر معرفة حساب الطالب: '+(error.code||error.message));}
+ }catch(error){console.warn('Student timetable account lookup failed:',error);setStatus(studentErrorMessage(error,'حساب الطالب'));}
 });

@@ -1,0 +1,44 @@
+/* Readable task controls and predictable focus without changing the brand palette. */
+:focus-visible { outline: 3px solid #edc55f; outline-offset: 3px; }
+[inert] { pointer-events: none; }
+/* Keep the hero and anchor headings below the actual fixed header, including its top inset.
+   The important longhand also wins over the older responsive padding shorthands. */
+html.zad-header-measured { scroll-padding-top: var(--zad-header-clearance); }
+html.zad-header-measured body #hero.zad-home-hero {
+  padding-top: max(var(--zad-header-clearance), clamp(7.8rem, 12vh, 9rem)) !important;
+}
+@media (max-width:1024px) {
+  html.zad-header-measured body #hero.zad-home-hero {
+    padding-top: max(var(--zad-header-clearance), 6.4rem) !important;
+  }
+}
+@media (max-width:720px) {
+  html.zad-header-measured body #hero.zad-home-hero {
+    padding-top: max(var(--zad-header-clearance), 6.6rem) !important;
+  }
+}
+.student-panel[hidden] { display: none !important; }
+.student-panel { scroll-margin-top: 110px; }
+.student-panel h1:focus, .student-panel h2:focus, .student-panel h3:focus { outline-offset: 6px; }
+.student-tabs .student-tab { font-size: 14px; line-height: 1.7; min-height: 46px; padding: 10px 14px; }
+.student-tabs { scroll-padding-inline: 8px; }
+.student-tabs .student-tab[aria-current="page"] { border-color: var(--gold, #d4a843); }
+.student-tab:focus-visible { outline-offset: -3px; }
+.student-info-list, .student-panel .notice { line-height: 1.9; }
+.student-panel .notice, #loading { font-size: 15px; }
+.student-error-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+.student-error-actions .btn { min-height: 44px; }
+.student-notification-status { padding: 10px 0; color: #ffe3a3; font-size: 14px; }
+.student-data-support { margin-block: 12px; padding: 12px 14px; border: 1px solid #384b64; border-radius: 12px; }
+.student-data-support summary { cursor: pointer; min-height: 44px; font-size: 14px; display: flex; align-items: center; }
+@media (max-width:680px) {
+  .top .actions .btn { min-height: 44px; font-size: 14px; line-height: 1.7; }
+  .student-tabs { top: 0; }
+  .student-tabs .student-tab { min-height: 46px; font-size: 14px; }
+  .student-panel { scroll-margin-top: 74px; }
+  .student-panel .btn { min-height: 44px; }
+}
+@media (prefers-reduced-motion:reduce) {
+  .student-panel { animation: none !important; }
+  html { scroll-behavior: auto !important; }
+}

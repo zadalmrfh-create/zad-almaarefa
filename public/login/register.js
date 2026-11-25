@@ -13,8 +13,10 @@ import {
 
 import {
   doc,
+  collection,
   getDoc,
   setDoc,
+  addDoc,
   writeBatch,
   runTransaction,
   increment,
@@ -142,6 +144,22 @@ async function saveUserProfile(user, role, provider, extraData = {}) {
   // عداد الطلاب خدمة إضافية؛ إذا فشل لا نفشل إنشاء الحساب نفسه.
   await setDoc(userRef, profileData, { merge: true });
 
+  // إشعار حساب جديد: الفشل لا يؤثر في إنشاء حساب المستخدم.
+  try {
+    await addDoc(collection(db, 'notifications'), {
+      audience: 'admin',
+      studentUid: user.uid,
+      type: 'signup',
+      title: '👤 حساب جديد في زاد المعرفة',
+      message: `${name} (${user.email || 'لا يوجد بريد'}) — ${role === 'teacher' ? 'معلم بانتظار الاعتماد' : 'طالب'}`,
+      createdAt: serverTimestamp(),
+      readBy: []
+    });
+  } catch (notifyError) {
+    console.warn('تم تسجيل الحساب، لكن تعذر إرسال إشعار الإدارة:', notifyError);
+  }
+
+
   if (role === 'student') {
     try {
       const claimRef = doc(db, 'studentCounterClaims', user.uid);
@@ -177,6 +195,23 @@ async function saveUserProfile(user, role, provider, extraData = {}) {
   return true;
 }
 function goHome() {
+  // بعد إنشاء حساب طالب، ارجع إلى نفس الصفحة الدراسية المطلوبة.
+  const target = sessionStorage.getItem('redirectAfterLogin');
+  if (target && getRole() === 'student') {
+    try {
+      const destination = new URL(target, window.location.origin);
+      const isAllowed = /\/store\/index\.html$/i.test(destination.pathname)
+        || /\/sections\/(?:library|library-payment|book|book-access)\.html$/i.test(destination.pathname)
+        || /\/sections\/(?:Arabic|Azhar|Quran|Sharia|Tazkea|tests)\/[^/]+\.html$/i.test(destination.pathname);
+      if (target.startsWith('/') && !target.startsWith('//')
+          && destination.origin === window.location.origin && isAllowed) {
+        sessionStorage.removeItem('redirectAfterLogin');
+        window.location.replace(destination.href);
+        return;
+      }
+    } catch (error) { console.warn('تعذر فتح الصفحة المطلوبة بعد إنشاء الحساب:', error); }
+  }
+  if (target) sessionStorage.removeItem('redirectAfterLogin');
   window.location.replace('../index.html');
 }
 

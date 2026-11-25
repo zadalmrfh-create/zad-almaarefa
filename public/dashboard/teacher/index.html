@@ -1,14 +1,17 @@
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
+<script src="../name-search.js?v=20261103-1"></script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>لوحة المعلم | زاد المعرفة</title>
   <link rel="stylesheet" href="../dashboard.css">
-  <link rel="stylesheet" href="../../assets/translation.css">
-  <script src="../../assets/translation.js"></script>
+  <link rel="stylesheet" href="../../assets/translation.css?v=20261016-globe2">
+  <script src="../../assets/translation.js?v=20261016-globe2"></script>
   <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
   <script src="../../content-protection.js" defer></script>
+<style>.zwr-item{padding:17px;margin:15px 0;border:1px solid #50627d;border-radius:15px;background:#15273e}.zwr-item strong{color:#ecc56c}.zwr-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin:13px 0}.zwr-grid>div{padding:10px;border:1px solid #53637c;border-radius:11px;background:#0b1d30}.zwr-grid small{display:block;color:#c5d0e0;font-size:12px}.zwr-grid b{font-size:16px;color:#edca7e}.zwr-comment{padding:10px;border-right:3px solid #eac366;background:#172f4e;color:white;white-space:pre-wrap;overflow-wrap:anywhere}</style>
+  <link rel="stylesheet" href="../today-tasks.css?v=20261122-step5">
 </head>
 <body class="teacher-dashboard-page">
   <div class="wrap teacher-wrap">
@@ -21,6 +24,7 @@
         </div>
       </div>
       <div class="actions">
+        <a class="btn" href="../../sections/payment-policy.html" title="عرض سياسة المدفوعات">💳 سياسة المدفوعات</a>
         <a class="btn" href="../../index.html">🏠 الرئيسية</a>
         <button id="logout" class="btn danger">تسجيل الخروج</button>
       </div>
@@ -40,16 +44,30 @@
     <nav class="teacher-tabs" id="teacherTabs" aria-label="أقسام لوحة المعلم">
       <button class="teacher-tab active" data-tab="overview">🏠 الرئيسية</button>
       <button class="teacher-tab" data-tab="students">👥 طلابي</button>
-      <button class="teacher-tab" data-tab="attendance">✅ الحضور والغياب</button>
+      <button class="teacher-tab" data-tab="attendance">📊 متابعة الحضور</button>
       <button class="teacher-tab" data-tab="notes">🗒️ ملاحظاتي</button>
+      <button class="teacher-tab" data-tab="payments">💳 مدفوعات طلابي</button>
+      <button class="teacher-tab" data-tab="salary">💼 مرتبي والإضافي</button>
       <button class="teacher-tab" data-tab="reports">📈 التقارير</button>
+      <button class="teacher-tab" data-tab="exam-results">📝 نتائج امتحانات طلابي</button>
+      <button class="teacher-tab" data-tab="weekly-reviews">⭐ تقييمات طلابي</button>
       <button class="teacher-tab" data-tab="notifications">🔔 التنبيهات <span class="teacher-badge" id="teacherNotificationBadge">0</span></button>
       <button class="teacher-tab" data-tab="profile">⚙️ ملفي</button>
       <button class="teacher-tab" data-tab="contact">💬 التواصل السريع</button>
     </nav>
 
+    <div id="teacherDataNotice" class="notice" role="alert" hidden style="border:1px solid #dab64d;margin-bottom:16px"></div>
+    <div style="margin-bottom:12px"><button type="button" class="btn" id="refreshTeacherData">🔄 تحديث بياناتي</button></div>
     <main class="teacher-workspace">
       <section class="teacher-panel active" data-panel="overview">
+        <section class="card" aria-labelledby="teacherScheduleTodayTitle">
+          <div class="zad-today-heading">
+            <h3 id="teacherScheduleTodayTitle">حصصي النهارده</h3>
+            <time id="teacherScheduleDay"></time>
+          </div>
+          <p id="teacherScheduleStatus" role="status">جارٍ تحميل حصص اليوم…</p>
+          <div id="teacherScheduleLessons"></div>
+        </section>
         <div class="enh-grid teacher-stats-grid">
           <div class="enh-stat"><span>👥 طلابي</span><b id="teacherStudentsCount">0</b><small>طلاب مرتبطون بك</small></div>
           <div class="enh-stat"><span>✅ الحضور</span><b id="teacherAttendanceCount">0</b><small>سجلات الحضور</small></div>
@@ -62,8 +80,10 @@
             <div class="teacher-section-head"><div><h3>⚡ إجراءات سريعة</h3><p>اختصارات لأكثر المهام استخدامًا.</p></div></div>
             <div class="teacher-quick-actions">
               <button class="teacher-action-card" data-go="students"><span>👥</span><strong>عرض طلابي</strong><small>بيانات الطلاب والتواصل</small></button>
-              <button class="teacher-action-card" data-go="attendance"><span>✅</span><strong>تسجيل حضور</strong><small>حضور أو غياب الطالب</small></button>
-              <button class="teacher-action-card" data-go="notes"><span>🗒️</span><strong>إضافة ملاحظة</strong><small>ملاحظات خاصة على الطلاب</small></button>
+              <button class="teacher-action-card" data-go="attendance"><span>📊</span><strong>عرض الحضور</strong><small>سجلات الإدارة للقراءة فقط</small></button>
+              <button class="teacher-action-card" data-go="exam-results"><span>📝</span><strong>نتائج امتحانات طلابي</strong><small>الدرجات والإجابات وطباعة التقرير</small></button>
+              <button class="teacher-action-card" data-go="payments"><span>💳</span><strong>عرض مدفوعات طلابي</strong><small>اطلاع وطباعة فقط — من غير تعديل</small></button>
+              <button class="teacher-action-card" data-go="salary"><span>💼</span><strong>مستحقاتي والإضافي</strong><small>أجر الحصص + مكافآت المنصة</small></button>
             </div>
           </section>
 
@@ -86,7 +106,7 @@
       <section class="teacher-panel" data-panel="students">
         <section class="card">
           <div class="teacher-section-head">
-            <div><h3>👥 طلابي</h3><p>يظهر هنا الطلاب المرتبطون بك فقط.</p></div>
+            <div><h3>👥 طلابي</h3><p>عرض ومتابعة الطلاب المرتبطين بك فقط. إنشاء حسابات الطلاب وإضافتهم من صلاحيات الإدارة فقط.</p></div>
             <input id="studentSearch" class="teacher-input teacher-search" type="search" placeholder="ابحث بالاسم أو الهاتف أو الصف...">
           </div>
           <div class="table-wrap teacher-table-wrap">
@@ -101,15 +121,7 @@
       <section class="teacher-panel" data-panel="attendance">
         <div class="teacher-two-col">
           <section class="card">
-            <div class="teacher-section-head"><div><h3>✅ تسجيل حضور أو غياب</h3><p>سجل حالة الطالب في الحصة.</p></div></div>
-            <form id="attendanceForm" class="teacher-form">
-              <label>الطالب<select id="attendanceStudent" class="teacher-input" required></select></label>
-              <label>التاريخ<input id="attendanceDate" class="teacher-input" type="date" required></label>
-              <label>الحالة<select id="attendanceStatus" class="teacher-input" required><option value="حاضر">حاضر</option><option value="غائب">غائب</option><option value="اعتذر">اعتذر</option></select></label>
-              <label>المادة<input id="attendanceSubject" class="teacher-input" placeholder="مثال: النحو"></label>
-              <label class="full">ملاحظة<textarea id="attendanceNote" class="teacher-input" rows="3" placeholder="ملاحظة اختيارية..."></textarea></label>
-              <div class="full teacher-form-actions"><button class="btn gold" type="submit">حفظ الحضور</button><span id="attendanceFormStatus" class="teacher-form-status"></span></div>
-            </form>
+            <div class="teacher-section-head"><div><h3>🔒 الحضور والغياب بصلاحية الإدارة</h3><p>تسجيل الحضور والغياب وتعديل السجلات وحذفها متاح للإدارة فقط. يمكنك هنا الاطلاع على السجلات والتقارير المرتبطة بطلابك دون تغييرها.</p></div></div>
           </section>
           <section class="card">
             <div class="teacher-section-head"><div><h3>📊 ملخص الحضور</h3><p>إحصائيات سجلاتك الحالية.</p></div></div>
@@ -123,36 +135,114 @@
         </div>
         <section class="card">
           <div class="teacher-section-head"><div><h3>📋 سجل الحضور</h3><p>آخر سجلات الحضور والغياب.</p></div><select id="attendanceFilterStudent" class="teacher-input teacher-filter"><option value="">كل الطلاب</option></select></div>
-          <div class="table-wrap teacher-table-wrap"><table class="table teacher-table"><thead><tr><th>الطالب</th><th>التاريخ</th><th>المادة</th><th>الحالة</th><th>الملاحظة</th><th>إجراء</th></tr></thead><tbody id="attendanceRows"><tr><td colspan="6">لا توجد سجلات.</td></tr></tbody></table></div>
+          <div class="table-wrap teacher-table-wrap"><table class="table teacher-table"><thead><tr><th>الطالب</th><th>التاريخ</th><th>المادة</th><th>الحالة</th><th>سعر الحصة</th><th>الملاحظة</th></tr></thead><tbody id="attendanceRows"><tr><td colspan="6">لا توجد سجلات.</td></tr></tbody></table></div>
         </section>
       </section>
 
       <section class="teacher-panel" data-panel="notes">
-        <div class="teacher-two-col">
-          <section class="card">
-            <div class="teacher-section-head"><div><h3>🗒️ إضافة ملاحظة</h3><p>اكتب ملاحظة للمتابعة، ويمكنك اختيار إظهارها للطالب.</p></div></div>
-            <form id="noteForm" class="teacher-form">
-              <label>الطالب<select id="noteStudent" class="teacher-input" required></select></label>
-              <label>نوع الملاحظة<select id="noteCategory" class="teacher-input"><option>عام</option><option>المستوى</option><option>المتابعة</option><option>الالتزام</option></select></label>
-              <label class="full">الملاحظة<textarea id="noteText" class="teacher-input" rows="5" required placeholder="اكتب ملاحظتك هنا..."></textarea></label>
-              <label class="full teacher-check-label"><input id="noteVisibleToStudent" type="checkbox"> <span>إظهار هذه الملاحظة للطالب داخل لوحة الطالب</span></label>
-              <div class="full teacher-form-actions"><button class="btn gold" type="submit">حفظ الملاحظة</button><span id="noteFormStatus" class="teacher-form-status"></span></div>
-            </form>
-          </section>
-          <section class="card">
-            <div class="teacher-section-head"><div><h3>📌 إرشاد</h3><p>استخدم الملاحظات لمتابعة مستوى الطالب وتقدمه، وتجنب كتابة بيانات حساسة غير لازمة.</p></div></div>
-            <div class="teacher-tip">يمكنك فتح ملف أي طالب من قسم <strong>طلابي</strong> لمشاهدة ملخص حضوره وملاحظاته. الملاحظة لا تظهر للطالب إلا إذا فعّلت خيار الإظهار.</div>
-          </section>
-        </div>
+        <section class="card"><div class="teacher-section-head"><div><h3>🗒️ الملاحظات — عرض فقط</h3><p>يمكن للمعلم الاطلاع على ملاحظات طلابه، وإدارة الملاحظات من صلاحيات الإدارة.</p></div></div></section>
         <section class="card">
           <div class="teacher-section-head"><div><h3>📋 الملاحظات المسجلة</h3><p>مرتبة من الأحدث إلى الأقدم.</p></div><select id="notesFilterStudent" class="teacher-input teacher-filter"><option value="">كل الطلاب</option></select></div>
           <div id="notesList" class="teacher-notes-list"><div class="teacher-empty">لا توجد ملاحظات.</div></div>
         </section>
       </section>
 
+      <section class="teacher-panel" data-panel="payments">
+        <section class="card">
+          <div class="teacher-section-head"><div><h3>💳 مدفوعات الطلاب لدى المعلم</h3><p>بيانات مدفوعات الطلاب للعرض فقط؛ ولا تعبر عن راتب المعلم. اضغط «مرتبي والإضافي» لرؤية مستحقاتك.</p></div><div class="actions"><button class="btn" type="button" data-go="salary">💼 مرتبي والإضافي</button><button class="btn" id="printTeacherPayments" type="button">🖨️ طباعة</button><button class="btn gold" id="exportTeacherPayments" type="button">⬇️ CSV</button></div></div>
+          <div class="teacher-export-feedback" id="teacherPaymentsExportStatus" role="status" aria-live="polite"></div>
+          <div class="teacher-payment-filters" style="display:flex;flex-wrap:wrap;gap:12px;margin:14px 0">
+            <label>الطالب<select class="teacher-input" id="teacherPaymentsStudent"><option value="">كل الطلاب</option></select></label>
+            <label>من تاريخ<input class="teacher-input" id="teacherPaymentsFrom" type="date"></label>
+            <label>إلى تاريخ<input class="teacher-input" id="teacherPaymentsTo" type="date"></label>
+          </div>
+          <div class="enh-grid teacher-stats-grid">
+            <div class="enh-stat"><span>إجمالي الحصص</span><b id="teacherPaymentsDue">—</b></div>
+            <div class="enh-stat"><span>المدفوع المباشر</span><b id="teacherPaymentsCash">—</b></div>
+            <div class="enh-stat"><span>إجمالي المحصل</span><b id="teacherPaymentsCollected">—</b></div>
+            <div class="enh-stat"><span>غير المسدد</span><b id="teacherPaymentsRemaining">—</b></div>
+          </div>
+          <div class="teacher-payroll-shortcut" role="note">
+            <span>💼 <strong>إضافي المنصة هذا الأسبوع:</strong> <b id="teacherBonusQuick">—</b><small>المبلغ مكافأة من المنصة للمعلم، وليس مديونية على الطالب.</small></span>
+            <button type="button" class="btn gold" data-go="salary">عرض المرتب والإضافي بالتفصيل</button>
+          </div>
+          <p id="teacherPaymentsSyncNote" class="notice" role="status"></p>
+          <h3 style="margin-top:16px">📋 ملخص حسب الطالب</h3>
+          <div class="table-wrap teacher-table-wrap"><table class="table teacher-table"><thead><tr><th>الطالب</th><th>الحصص</th><th>القيمة</th><th>المحصل</th><th>المتبقي</th></tr></thead><tbody id="teacherPaymentsStudentRows"></tbody></table></div>
+          <h3 style="margin-top:16px">تفاصيل الحصص والدفعات المرتبطة بها</h3>
+          <div class="table-wrap teacher-table-wrap"><table class="table teacher-table"><thead><tr><th>التاريخ</th><th>الطالب</th><th>المادة</th><th>الحضور</th><th>القيمة</th><th>إجمالي المحصل</th><th>المتبقي</th></tr></thead><tbody id="teacherPaymentsRows"></tbody></table></div>
+        </section>
+      </section>
+      <section class="teacher-panel" data-panel="salary">
+        <section class="card">
+          <div class="teacher-section-head">
+            <div>
+              <h3>💼 مستحقاتي من المنصة والإضافي</h3>
+              <p>أجر كل حصة حاضرة، والمكافأة التي أضافتها الإدارة، وإجمالي المستحق. هذه الأرقام مستقلة تمامًا عن حسابات الطلاب وليست إيصال صرف.</p>
+            </div>
+            <div class="actions">
+              <button type="button" id="teacherSalaryPrint" class="btn">🖨️ طباعة</button>
+              <button type="button" id="teacherSalaryCSV" class="btn gold">⬇️ CSV</button>
+              <button type="button" id="teacherSalaryRefresh" class="btn">🔄 تحديث</button>
+            </div>
+          </div>
+          <div class="teacher-payment-filters teacher-salary-filters">
+            <label>الفترة
+              <select id="teacherSalaryPeriod" class="teacher-input">
+                <option value="week">الأسبوع الحالي (السبت – الجمعة)</option>
+                <option value="last">الأسبوع السابق</option>
+                <option value="all">كل الفترات</option>
+                <option value="custom">فترة مخصصة</option>
+              </select>
+            </label>
+            <label>من تاريخ<input id="teacherSalaryFrom" type="date" class="teacher-input"></label>
+            <label>إلى تاريخ<input id="teacherSalaryTo" type="date" class="teacher-input"></label>
+            <label>الطالب<select id="teacherSalaryStudent" class="teacher-input"><option value="all">جميع الطلاب</option></select></label>
+            <label>المادة<select id="teacherSalarySubject" class="teacher-input"><option value="all">جميع المواد</option></select></label>
+          </div>
+          <div class="enh-grid teacher-stats-grid teacher-salary-stats">
+            <div class="enh-stat"><span>عدد الحصص الحاضرة</span><b id="teacherSalaryCount">—</b></div>
+            <div class="enh-stat"><span>إجمالي أجر الحصص</span><b id="teacherSalaryBase">—</b></div>
+            <div class="enh-stat"><span>➕ إضافي من المنصة</span><b id="teacherSalaryBonus">—</b></div>
+            <div class="enh-stat teacher-salary-total"><span>إجمالي المستحق</span><b id="teacherSalaryTotal">—</b></div>
+          </div>
+          <p id="teacherSalaryStatus" class="notice" role="status" aria-live="polite">جارٍ تحميل المستحقات...</p>
+          <div id="teacherSalaryExportStatus" class="teacher-export-feedback" role="status"></div>
+          <div class="table-wrap teacher-table-wrap">
+            <table class="table teacher-table">
+              <thead><tr><th>التاريخ</th><th>الطالب</th><th>المادة</th><th>أجر الحصة</th><th>إضافي المنصة</th><th>إجمالي الحصة</th><th>ملاحظات الإدارة</th></tr></thead>
+              <tbody id="teacherSalaryRows"><tr><td colspan="7">جارٍ تحميل المستحقات...</td></tr></tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+      <section class="teacher-panel" data-panel="exam-results" id="teacherExamResultsPanel">
+        <section class="card">
+          <div class="teacher-section-head">
+            <div>
+              <h3>📝 نتائج امتحانات طلابي</h3>
+              <p>درجات وإجابات الطلاب المرتبطين بحسابك فقط. تظهر الدرجة الموضوعية تلقائيًا فور التسليم، وتظل الأسئلة المقالية بانتظار تصحيح الإدارة فقط. لا يمكنك تعديل الدرجات.</p>
+            </div>
+            <button type="button" class="btn gold" id="teacherExamLoad">🔄 تحميل النتائج</button>
+          </div>
+          <p id="teacherExamResultsStatus" class="notice" role="status" aria-live="polite">اضغط تحميل النتائج لعرض امتحانات طلابك من دون استهلاك قراءات إضافية عند فتح اللوحة.</p>
+          <div class="teacher-exam-summary" id="teacherExamSummary" hidden>
+            <div class="enh-stat"><span>عدد النتائج</span><b id="teacherExamCount">0</b></div>
+            <div class="enh-stat"><span>طلاب لديهم نتائج</span><b id="teacherExamStudentCount">0</b></div>
+            <div class="enh-stat"><span>نتائج نهائية بعد المراجعة</span><b id="teacherExamVerifiedCount">0</b></div>
+          </div>
+          <div class="teacher-exam-filters">
+            <label>الطالب<select id="teacherExamStudentFilter" class="teacher-input"><option value="">كل طلابي</option></select></label>
+            <label>نوع الامتحان<select id="teacherExamTypeFilter" class="teacher-input"><option value="">كل الامتحانات</option><option value="special">العلوم والفقه</option><option value="unit">امتحانات الوحدة الأولى</option><option value="code">امتحانات بالكود</option><option value="quiz">الاختبارات الأخرى</option></select></label>
+            <label>بحث<input id="teacherExamSearch" class="teacher-input" type="search" placeholder="ابحث باسم الطالب أو الامتحان"></label>
+          </div>
+          <div id="teacherExamResultsList" class="teacher-exam-results-list"><div class="teacher-empty">اضغط «تحميل النتائج» للبدء.</div></div>
+        </section>
+      </section>
       <section class="teacher-panel" data-panel="reports">
         <section class="card">
-          <div class="teacher-section-head"><div><h3>📈 تقارير المعلم</h3><p>ملخص متابعة الطلاب والحضور والملاحظات.</p></div><div class="actions"><button id="printTeacherReport" class="btn">🖨️ طباعة</button><button id="exportTeacherReport" class="btn gold">⬇️ تصدير CSV</button></div></div>
+          <div class="teacher-section-head"><div><h3>📈 تقارير المعلم</h3><p>ملخص متابعة الطلاب والحضور والملاحظات.</p></div><div class="actions"><button id="printTeacherReport" class="btn">🖨️ طباعة</button><button id="exportTeacherReport" type="button" class="btn gold">⬇️ تصدير CSV</button></div></div>
+          <div class="teacher-export-feedback" id="teacherReportExportStatus" role="status" aria-live="polite"></div>
           <div class="enh-grid teacher-report-stats">
             <div class="enh-stat"><span>👥 الطلاب</span><b id="reportStudents">0</b></div>
             <div class="enh-stat"><span>✅ نسبة الحضور</span><b id="reportAttendanceRate">0%</b></div>
@@ -163,6 +253,20 @@
         </section>
       </section>
 
+      <section class="teacher-panel" data-panel="weekly-reviews">
+        <section class="card" id="teacherWeeklyReviews">
+          <h2>⭐ تقييماتي الأسبوعية — للقراءة فقط</h2>
+          <p>درجات وملاحظات طلابك بدون أسماء أو معرّفات، وتظهر فور إرسالها. الملاحظات قد تكشف هوية الطالب ضمنيًا عند قلة عدد الطلاب.</p>
+          <div class="actions" style="display:flex;flex-wrap:wrap;gap:10px;margin:14px 0">
+            <label>الأسبوع <select class="teacher-input" id="teacherWeeklyWeek"><option value="">كل الأسابيع</option></select></label>
+            <button class="btn" type="button" id="teacherWeeklyPrint">🖨️ طباعة التقييمات</button>
+            <button class="btn" type="button" id="teacherWeeklyCSV">⬇️ CSV</button>
+            <button class="btn" type="button" id="teacherWeeklyRefresh">🔄 تحديث</button>
+          </div>
+          <p id="teacherWeeklyStats" role="status">جارٍ تحميل تقييماتك...</p>
+          <div id="teacherWeeklyBody"></div>
+        </section>
+      </section>
       <section class="teacher-panel" data-panel="notifications">
         <section class="card">
           <div class="teacher-section-head"><div><h3>🔔 تنبيهات المعلم</h3><p>الإشعارات الموجهة إلى حسابك.</p></div><button id="markAllTeacherNotifications" class="btn">✓ تحديد الكل كمقروء</button></div>
@@ -195,7 +299,7 @@
           <div class="teacher-section-head"><div><h3>💬 التواصل السريع</h3><p>تواصل مع الإدارة أو أحد طلابك بسرعة.</p></div></div>
           <div class="teacher-contact-admin">
             <div><strong>إدارة زاد المعرفة</strong><span>للدعم والاستفسارات</span></div>
-            <a class="btn gold" target="_blank" rel="noopener" href="https://wa.me/201515474939">واتساب الإدارة</a>
+            <a class="btn gold" target="_blank" rel="noopener" href="https://wa.me/201042239704">واتساب الإدارة</a>
           </div>
           <div id="teacherContactStudents" class="teacher-contact-grid"><div class="teacher-empty">لا يوجد طلاب مرتبطون بك.</div></div>
         </section>
@@ -210,6 +314,156 @@
     </div>
   </div>
 
-  <script type="module" src="teacher-enhancements.js"></script>
+  <style id="teacherExportPrintFixStyles">
+    .teacher-export-feedback:empty { display:none; }
+    .teacher-export-feedback {margin:9px 0 13px;padding:10px 13px;border:1px solid #a68945;border-radius:9px;background:#252820;color:#ffe39c;font-size:13px;line-height:1.8}
+    .teacher-export-feedback a {color:#ffe39c;text-decoration:underline;font-weight:bold;margin-inline:8px}
+    @media screen {
+      body.teacher-print-preview {overflow:hidden !important;}
+      body.teacher-print-preview > #teacherPrintDocument {display:block !important;position:fixed !important;inset:0 !important;z-index:2147483640 !important;overflow:auto !important;background:#e8edf5 !important;padding:18px max(18px,calc((100vw - 1100px)/2)) 48px !important;color:#13263f !important;direction:rtl !important;font:14px/1.75 Tahoma,Arial,sans-serif !important;}
+      #teacherPrintDocument .teacher-print-toolbar {display:flex;align-items:center;flex-wrap:wrap;gap:12px;position:sticky;top:0;z-index:2;padding:12px 18px;margin:-6px 0 16px;background:#112b48;color:white;border-radius:11px;box-shadow:0 4px 14px #0002;}
+      #teacherPrintDocument .teacher-print-toolbar button {cursor:pointer;border:1px solid #d4ad54;border-radius:9px;background:#e6b939;color:#1c2c41;font-weight:bold;padding:9px 18px;font-size:14px;}
+      #teacherPrintDocument .teacher-print-toolbar button[data-close-teacher-print] {background:transparent;color:white;border-color:#9caac0;}
+      #teacherPrintDocument .teacher-print-paper {background:white;box-shadow:0 4px 20px #0002;border-radius:6px;padding:24px 28px;max-width:1100px;margin:auto;}
+      #teacherPrintDocument .print-brand {display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #d3a02f;padding-bottom:15px;margin-bottom:17px;}
+      #teacherPrintDocument .print-brand-identity {display:flex;gap:14px;align-items:center;}
+      #teacherPrintDocument .print-logo {width:72px;height:72px;object-fit:contain;}
+      #teacherPrintDocument .print-brand-name {font-size:22px;font-weight:900;color:#132b4b;}
+      #teacherPrintDocument .print-brand-tagline {color:#637187;}
+      #teacherPrintDocument .print-brand-badge {border:1px solid #d4ad54;border-radius:40px;padding:5px 12px;color:#70521e;}
+      #teacherPrintDocument .print-title-block {text-align:center;margin:18px 0;}
+      #teacherPrintDocument h1 {color:#112c49;font-size:24px;}
+      #teacherPrintDocument .print-subtitle {color:#627185;}
+      #teacherPrintDocument .print-meta {display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0;}
+      #teacherPrintDocument .print-meta > div {display:flex;justify-content:space-between;border:1px solid #d9e0e8;border-radius:8px;padding:9px 14px;}
+      #teacherPrintDocument .print-stat-grid {display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:18px 0;}
+      #teacherPrintDocument .print-stat-grid.print-stat-six {grid-template-columns:repeat(6,minmax(0,1fr));}
+      #teacherPrintDocument .print-stat {border:1px solid #d5dfed;border-top:3px solid #d3a02f;padding:8px;background:#f7f9fc;}
+      #teacherPrintDocument .print-stat span {display:block;font-size:12px;color:#506079;}
+      #teacherPrintDocument .print-stat strong {color:#112b47;}
+      #teacherPrintDocument .print-section {margin:18px 0;}
+      #teacherPrintDocument .print-section h2 {color:#876011;font-size:16px;}
+      #teacherPrintDocument .print-table {width:100%;border-collapse:collapse;font-size:12px;}
+      #teacherPrintDocument .print-table th,#teacherPrintDocument .print-table td {border:1px solid #c5d1e0;padding:8px 6px;text-align:right;color:#13263f;}
+      #teacherPrintDocument .print-table thead th {background:#142b49;color:white;}
+      #teacherPrintDocument .print-table tfoot th {background:#e5edf6;color:#17334e;border-top:2px solid #d3a02f;}
+      #teacherPrintDocument .print-num {text-align:center !important;direction:ltr;}
+      #teacherPrintDocument .print-warning {padding:10px;border:1px solid #d7a34b;background:#fff8e5;color:#674d16;}
+      #teacherPrintDocument .print-disclaimer {color:#51627a;}
+      #teacherPrintDocument .print-footer {display:flex;justify-content:space-between;border-top:1px solid #c5d1e0;margin-top:22px;padding:12px 0;color:#627185;}
+    }
+    @media print {
+      #teacherPrintDocument .teacher-print-toolbar {display:none !important;}
+      #teacherPrintDocument .teacher-print-paper {margin:0 !important;padding:0 !important;border:0 !important;box-shadow:none !important;}
+      #teacherPrintDocument .print-stat {background:#f7f9fc !important;}
+    }
+  </style>
+  <style id="teacherPrintStyles">
+    /* خصص المستند المطبوع دون المساس بعناصر لوحة المعلم أو صلاحياتها. */
+    @media screen { body:not(.teacher-print-preview) > #teacherPrintDocument { display:none !important; } }
+    @media print {
+      @page { size:A4 landscape; margin:12mm 11mm 14mm; }
+      html, body { background:#fff !important; }
+      body.teacher-dashboard-page.teacher-print-active { margin:0 !important; padding:0 !important; background:#fff !important; color:#18283f !important; }
+      body.teacher-dashboard-page.teacher-print-active > :not(#teacherPrintDocument) { display:none !important; }
+      body.teacher-dashboard-page.teacher-print-active > #teacherPrintDocument {
+        display:block !important; position:static !important; visibility:visible !important;
+        box-sizing:border-box; width:100% !important; margin:0 !important; padding:0 !important;
+        background:#fff !important; color:#18283f !important; direction:rtl;
+        font:12.3px/1.85 Tahoma,Arial,sans-serif !important; overflow:visible !important;
+        -webkit-print-color-adjust:exact; print-color-adjust:exact;
+      }
+      #teacherPrintDocument * { box-sizing:border-box; }
+      #teacherPrintDocument .print-brand { display:flex; justify-content:space-between; align-items:center; gap:18px; border-bottom:3px solid #ca9c32; padding:4px 0 13px; margin-bottom:16px; break-inside:avoid; }
+      #teacherPrintDocument .print-brand-identity { display:flex; align-items:center; gap:14px; }
+      #teacherPrintDocument .print-logo { width:68px; height:68px; object-fit:contain; border-radius:50%; }
+      #teacherPrintDocument .print-brand-name { color:#132c4e; font-size:20px; font-weight:900; line-height:1.45; }
+      #teacherPrintDocument .print-brand-tagline { color:#637187; font-size:11.6px; }
+      #teacherPrintDocument .print-brand-badge { padding:7px 13px; border:1px solid #ddc585; border-radius:999px; font-size:11px; color:#6a4d16; white-space:nowrap; }
+      #teacherPrintDocument .print-title-block { text-align:center; margin:9px 0 15px; break-inside:avoid; }
+      #teacherPrintDocument .print-title-block h1 { color:#132c4e; font-size:22px; margin:0; font-weight:900; }
+      #teacherPrintDocument .print-subtitle { color:#59687c; font-size:12px; margin:3px 0 0; }
+      #teacherPrintDocument .print-meta { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; break-inside:avoid; }
+      #teacherPrintDocument .print-meta > div { padding:7px 12px; border:1px solid #d5dce6; border-radius:7px; display:flex; gap:10px; align-items:center; }
+      #teacherPrintDocument .print-meta span { font-size:11px; color:#59687c; }
+      #teacherPrintDocument .print-meta strong { color:#142c4b; font-size:12.5px; }
+      #teacherPrintDocument .print-stat-grid { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:8px; margin:14px 0 18px; break-inside:avoid; }
+      #teacherPrintDocument .print-stat-grid.print-stat-six { grid-template-columns:repeat(6,minmax(0,1fr)); }
+      #teacherPrintDocument .print-stat { border:1px solid #d7dfeb; border-top:3px solid #c59b38; border-radius:7px; padding:8px 10px; min-width:0; background:#fafbfd; }
+      #teacherPrintDocument .print-stat span { display:block; color:#536781; font-size:10.8px; }
+      #teacherPrintDocument .print-stat strong { display:block; color:#142c4b; font-size:14px; font-weight:900; white-space:normal; }
+      #teacherPrintDocument .print-section { margin-top:16px; }
+      #teacherPrintDocument .print-section h2 { display:flex; align-items:center; gap:9px; border-bottom:1px solid #dce3ec; padding:0 0 7px; color:#bd8b25; font-size:15px; font-weight:900; margin:0 0 9px; break-after:avoid; }
+      #teacherPrintDocument .print-section h2 span { color:#142c4b; }
+      #teacherPrintDocument .print-table { width:100% !important; margin:0 0 17px; border-collapse:collapse !important; border-spacing:0; table-layout:auto; direction:rtl; font-size:11.4px !important; }
+      #teacherPrintDocument .print-table th,#teacherPrintDocument .print-table td { border:1px solid #cbd3df !important; padding:7px 6px !important; color:#17263d !important; text-align:right; vertical-align:middle; white-space:normal; overflow-wrap:anywhere; font-weight:500; }
+      #teacherPrintDocument .print-table thead th { background:#152d4a !important; color:#fff !important; font-weight:900; }
+      #teacherPrintDocument .print-table tbody tr:nth-child(even) td { background:#f4f7fb !important; }
+      #teacherPrintDocument .print-table tfoot th { background:#e6edf6 !important; color:#102944 !important; border-top:2px solid #b78b2c !important; font-weight:900; }
+      #teacherPrintDocument .print-table .print-num { text-align:center !important; white-space:nowrap; direction:ltr; font-variant-numeric:tabular-nums; }
+      #teacherPrintDocument .print-table tr { break-inside:avoid; page-break-inside:avoid; }
+      #teacherPrintDocument .print-table thead { display:table-header-group; }
+      #teacherPrintDocument .print-table tfoot { display:table-row-group; }
+      #teacherPrintDocument .print-number { direction:ltr; unicode-bidi:isolate; display:inline-block; }
+      #teacherPrintDocument .print-warning { border:1px solid #ba8b28; border-right:4px solid #ba8b28; color:#58400d; background:#fffaf0 !important; padding:9px 13px; font-size:11.5px; break-inside:avoid; }
+      #teacherPrintDocument .print-disclaimer { color:#526075; font-size:10.8px; padding:4px 0; margin:9px 0; }
+      #teacherPrintDocument .print-footer { display:flex; justify-content:space-between; gap:15px; border-top:1px solid #cad3df; color:#536781; padding-top:9px; margin-top:21px; font-size:10.5px; break-inside:avoid; }
+      #teacherPrintDocument p { orphans:2; widows:2; }
+    }
+  </style>
+  <section id="teacherPrintDocument" aria-label="مستند الطباعة"></section>
+  <script type="module" src="teacher-enhancements.js?v=20261122-step5"></script>
+  <link rel="stylesheet" href="teacher-exam-results.css?v=20261108-1">
+  <script type="module" src="teacher-exam-results.js?v=20261114-essay-auto1"></script>
+  <script type="module" src="teacher-payroll-view.js?v=20261106-salary1"></script>
+  <style>
+    .teacher-payroll-shortcut{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px;margin:14px 0;background:#17283e;border:1px solid #ae8a3b;border-radius:14px;padding:14px}
+    .teacher-payroll-shortcut b{color:#f4cb67;font-size:1.15em}
+    .teacher-payroll-shortcut small{display:block;color:#b4c5d8;margin-top:3px}
+    .teacher-salary-filters{display:flex;flex-wrap:wrap;gap:12px;margin:16px 0 18px}
+    .teacher-salary-filters label{display:flex;flex-direction:column;gap:6px;flex:1 1 160px;min-width:0}
+    .teacher-salary-filters select,.teacher-salary-filters input{width:100%;min-width:0}
+    .teacher-salary-stats .teacher-salary-total{border-color:#d4ac48;background:linear-gradient(135deg,#222e42,#3a311c)}
+    .teacher-salary-stats .teacher-salary-total b{color:#f4cf6b}
+    #teacherSalaryRows td{vertical-align:middle}
+    #teacherSalaryRows .teacher-salary-bonus{color:#f4ce6e;font-weight:800}
+    @media(max-width:640px){.teacher-salary-filters label{flex-basis:100%}}
+  </style>
+
+  <script type="module" src="weekly-teacher-reviews.js?v=20261105-evals1"></script>
+<script type="module" src="../admin-switcher.js"></script>
+
+<!-- متجر زاد المعرفة: إضافة مستقلة لا تمس وظائف الأكاديمية -->
+<a href="../../store/teacher.html" class="zad-store-access" aria-label="متجر زاد المعرفة">🛍️ مساحة معلم المتجر</a>
+<style>
+/* زر متجر زاد المعرفة: أعلى زر المشاركة في الناحية اليسرى */
+.zad-store-access{
+  position:fixed!important;
+  left:20px!important;
+  right:auto!important;
+  bottom:94px!important;
+  z-index:8000;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  background:#e9bd40;
+  color:#0c203b!important;
+  border:2px solid #f7d878;
+  border-radius:999px;
+  padding:11px 16px;
+  font-family:Cairo,Tajawal,sans-serif;
+  font-weight:900;
+  box-shadow:0 6px 25px #0008;
+  text-decoration:none;
+  max-width:calc(100vw - 24px);
+}
+.zad-store-access:hover{filter:brightness(1.07)}
+@media(max-width:900px){
+  .zad-store-access{left:15px!important;right:auto!important;bottom:90px!important}
+}
+@media(max-width:600px){
+  .zad-store-access{left:12px!important;right:auto!important;bottom:84px!important;padding:9px 12px;font-size:12px}
+}
+</style>
 </body>
 </html>

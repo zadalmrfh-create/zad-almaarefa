@@ -5,5 +5,7 @@
       "source": "/api/:path*",
       "destination": "/api/index.js"
     }
-  ]
+  ],
+  "buildCommand": "npm run release:check",
+  "outputDirectory": "public"
 }

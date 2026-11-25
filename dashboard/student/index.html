@@ -106,6 +106,8 @@
 <link rel="stylesheet" href="../vodafone-payment.css">
 <link rel="stylesheet" href="stage4-student.css?v=20261122-step6">
 <link rel="stylesheet" href="student-today.css?v=20261120-today1">
+<link rel="stylesheet" href="../../assets/navigation-accessibility.css?v=20261125-navigation1">
+<script type="module" src="student-navigation.js?v=20261125-navigation1"></script>
 </head>
 
 <body>
@@ -142,38 +144,41 @@
     /* مراقب مستقل عن Firebase: يعمل حتى إذا فشل استيراد ملفات JavaScript الخارجية. */
     (function(){
       window.zadStudentAuthReady = false;
+      window.zadStudentShowLoadingProblem = function(message){
+        var notice=document.getElementById('loading');
+        if(!notice)return;
+        notice.style.display='block';
+        notice.setAttribute('role','status');
+        notice.replaceChildren();
+        var text=document.createElement('p');text.textContent=message;
+        var actions=document.createElement('div');actions.className='student-error-actions';
+        var retry=document.createElement('button');retry.type='button';retry.className='btn gold';retry.textContent='إعادة المحاولة';
+        retry.addEventListener('click',function(){location.reload();});
+        var home=document.createElement('a');home.className='btn';home.href='../../index.html';home.textContent='العودة للرئيسية';
+        actions.append(retry,home);notice.append(text,actions);
+      };
       window.addEventListener('error', function(e){
         if(window.zadStudentAuthReady) return;
         var notice=document.getElementById('loading');
         if(notice && (e.target?.tagName === 'SCRIPT' || /module|firebase|import/i.test(e.message||''))){
-          notice.style.display='block';
-          notice.textContent='تعذر تحميل أحد ملفات تسجيل الدخول. تأكد من الإنترنت وافتح أدوات المطور (F12) لمعرفة الملف الذي فشل.';
+          console.warn('Student page initialization failed:',e.error||e.message||e.target?.src);
+          window.zadStudentShowLoadingProblem('تعذر فتح حسابك الآن. تأكد من اتصال الإنترنت ثم أعد المحاولة.');
         }
       },true);
       window.addEventListener('unhandledrejection',function(e){
         if(window.zadStudentAuthReady) return;
         var notice=document.getElementById('loading');
-        if(notice){notice.style.display='block';notice.textContent='حدث خطأ أثناء تهيئة حساب الطالب: '+(e.reason?.code||e.reason?.message||'تعذر تحميل البيانات');}
+        if(notice){console.warn('Student page startup request failed:',e.reason);window.zadStudentShowLoadingProblem('تعذر تحميل حسابك الآن. أعد المحاولة، وتواصل مع الإدارة إذا استمرت المشكلة.');}
       });
       var timeout = setTimeout(function(){
         if (window.zadStudentAuthReady) return;
         var el = document.getElementById('loading');
         if (!el) return;
-        el.style.display = 'block';
-        el.innerHTML = '';
-        var msg = document.createElement('span');
-        msg.textContent = 'تعذر إكمال التحقق من الحساب. قد يكون الاتصال بخدمات Firebase متوقفًا أو يوجد خطأ في تحميل ملفات الصفحة.';
-        var retry = document.createElement('button');
-        retry.type = 'button';
-        retry.className = 'btn gold';
-        retry.textContent = '🔄 إعادة المحاولة';
-        retry.style.marginInlineStart = '12px';
-        retry.addEventListener('click', function(){location.reload();});
-        el.append(msg, retry);
+        window.zadStudentShowLoadingProblem('استغرق فتح حسابك وقتًا أطول من المعتاد. تأكد من الاتصال وأعد المحاولة.');
         var bookings=document.getElementById('myBookingRows');
-        if(bookings && /تحميل/.test(bookings.textContent)) bookings.innerHTML='<tr><td colspan="5">تعذر بدء تحميل الحجوزات. افحص اتصال Firebase وأخطاء Console.</td></tr>';
+        if(bookings && /تحميل/.test(bookings.textContent)) bookings.innerHTML='<tr><td colspan="5">تعذر تحميل الحجوزات الآن. أعد المحاولة بعد التأكد من الاتصال.</td></tr>';
         var lessons=document.getElementById('liveLessonsList');
-        if(lessons && /تحميل/.test(lessons.textContent)) lessons.textContent='تعذر بدء تحميل المحاضرات. افحص اتصال Firebase وأخطاء Console.';
+        if(lessons && /تحميل/.test(lessons.textContent)) lessons.textContent='تعذر تحميل المحاضرات الآن. اضغط تحديث المحاضرات للمحاولة مرة أخرى.';
       }, 12000);
       window.zadStudentMarkAuthReady = function(){
         window.zadStudentAuthReady = true;
@@ -297,7 +302,7 @@
         <div class="profile-mini"><b id="studentExcusedCount">0</b><span>اعتذر</span></div>
         <div class="profile-mini"><b id="studentAttendanceRate">0%</b><span>نسبة الحضور</span></div>
       </div>
-      <div class="actions" style="justify-content:space-between;align-items:center;flex-wrap:wrap;margin:12px 0"><div style="flex:1"><p id="studentFinanceLoadStatus" role="status" aria-live="polite" style="margin:0;color:var(--muted)">جارٍ تحميل سجلاتك من Firebase...</p><small id="studentLinkedAccount" style="color:var(--muted)"></small></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn gold" type="button" id="studentFinanceRefresh">🔄 تحديث حضوري ومدفوعاتي</button><button class="btn" type="button" id="zadCopyStudentUid">📋 نسخ UID الحساب</button><button class="btn" type="button" id="zadCheckStudentRecords">🔍 فحص ربط حسابي بالسجلات</button></div></div><div id="zadStudentRecordReport" hidden aria-live="polite" style="margin:12px 0;padding:14px;border-radius:12px;border:1px solid #7b9ab8;background:#101e34;color:#f5f1e4;line-height:1.9;white-space:pre-wrap"></div>
+      <div class="actions" style="justify-content:space-between;align-items:center;flex-wrap:wrap;margin:12px 0"><div style="flex:1"><p id="studentFinanceLoadStatus" role="status" aria-live="polite" style="margin:0;color:var(--muted)">جارٍ تحميل سجلات حصصك ومدفوعاتك...</p><small id="studentLinkedAccount" style="color:var(--muted)"></small></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn gold" type="button" id="studentFinanceRefresh">🔄 تحديث حضوري ومدفوعاتي</button><button class="btn" type="button" id="zadCopyStudentUid">📋 نسخ رقم الحساب للدعم</button><button class="btn" type="button" id="zadCheckStudentRecords">🔍 فحص ربط حسابي بالسجلات</button></div></div><div id="zadStudentRecordReport" hidden aria-live="polite" style="margin:12px 0;padding:14px;border-radius:12px;border:1px solid #7b9ab8;background:#101e34;color:#f5f1e4;line-height:1.9;white-space:pre-wrap"></div>
       <div class="student-payment-total">💰 إجمالي المبلغ المسدد للحصص (بما فيه المستخدم من المقدم): <strong id="studentPaidTotal">0 ج.م</strong></div><p id="studentAdvanceSummary" class="zad-pay-ok">جارٍ حساب الرصيد المقدم...</p><div class="table-wrap"><table class="table"><thead><tr><th>التاريخ</th><th>المادة</th><th>المعلم</th><th>الحالة</th><th>السعر</th><th>الدفع</th><th>الملاحظة</th></tr></thead><tbody id="studentAttendanceRows"><tr><td colspan="7">جارٍ التحميل...</td></tr></tbody></table></div>
     </section>
 
@@ -494,7 +499,7 @@ if(!container.children.length)container.textContent='لا توجد كتب محف
 
     <section class="card student-panel" data-student-panel="notifications" id="studentNotificationsCard">
       <div class="actions" style="justify-content:space-between"><div><h3>🔔 تنبيهاتي</h3><p style="color:var(--muted)">إشعارات الحساب والحجوزات والمتابعة.</p></div><button id="markAllStudentNotifications" class="btn" type="button">✓ تحديد الكل كمقروء</button></div>
-      <div id="studentNotificationsList" class="student-info-list"><div class="notice">جارٍ تحميل التنبيهات...</div></div><button id="zadStage4RefreshNotifications" type="button" class="btn" style="margin-top:10px">🔄 تحديث قائمة التنبيهات</button>
+      <p id="studentNotificationStatus" class="student-notification-status" role="status" aria-live="polite"></p><div id="studentNotificationsList" class="student-info-list"><div class="notice">جارٍ تحميل التنبيهات...</div></div><button id="zadStage4RefreshNotifications" type="button" class="btn" style="margin-top:10px">🔄 تحديث قائمة التنبيهات</button>
       <p class="zad-stage4-help">تنبيهات الحصص القادمة تظهر داخل اللوحة عند فتحها، وليست رسائل هاتف أو إشعارات دفع خارجية.</p>
     </section>
 
@@ -984,7 +989,8 @@ async function loadLiveLessons(
                                 console.warn('تعذر التحقق من حالة التقييم:', checkError.code || checkError.message);
                             }
                             rateButton.disabled = false;
-                            alert('تعذر حفظ التقييم: ' + (error.code || error.message));
+                            console.warn('Unable to save student lesson rating:',error);
+                            alert('تعذر إرسال التقييم الآن. أعد المحاولة بعد قليل.');
                         }
                     });
 
@@ -1017,8 +1023,7 @@ async function loadLiveLessons(
             <div class="card">
 
                 <p>
-                    تعذر تحميل المحاضرات:
-                    ${esc(e.code || e.message)}
+                    تعذر تحميل المحاضرات الآن. اضغط تحديث المحاضرات للمحاولة مرة أخرى.
                 </p>
 
             </div>
@@ -1067,7 +1072,7 @@ const zadAuthTimer = setTimeout(() => {
     const notice = document.getElementById('loading');
     if (notice) {
       notice.style.display = 'block';
-      notice.textContent = 'تأخر التحقق من الحساب. تأكد من اتصال الإنترنت، ثم أعد تحميل الصفحة. إذا استمرت المشكلة، سجّل الخروج وادخل مرة أخرى.';
+      window.zadStudentShowLoadingProblem?.('تأخر فتح حسابك. تأكد من اتصال الإنترنت ثم أعد المحاولة.');
     }
 }, 12000);
 
@@ -1181,7 +1186,7 @@ onAuthStateChanged(
             // ما زال بالإمكان استخدام الأقسام بعد تسجيل الدخول ولو تعذر جلب الملف الشخصي.
             if (loadingElem) {
                 loadingElem.style.display = 'block';
-                loadingElem.textContent = 'تعذر تحديث بيانات الملف الشخصي: ' + (err.code || err.message) + '. الحجوزات والمحاضرات يتم تحميلها بشكل مستقل.';
+                window.zadStudentShowLoadingProblem?.('تعذر تحديث بيانات الملف الشخصي الآن. يمكنك متابعة الحجوزات والمحاضرات المتاحة، أو إعادة المحاولة.');
             }
         } finally {
             if (auth.currentUser?.uid === user.uid && currentStudentUid === displayUid) {
@@ -1198,7 +1203,7 @@ onAuthStateChanged(
       const notice = document.getElementById('loading');
       if (notice) {
         notice.style.display = 'block';
-        notice.textContent = 'تعذر الاتصال بنظام تسجيل الدخول: ' + (error.code || error.message || 'خطأ غير معروف') + '. حاول إعادة تحميل الصفحة.';
+        window.zadStudentShowLoadingProblem?.('تعذر تسجيل الدخول الآن. تأكد من الاتصال ثم أعد المحاولة.');
       }
     }
 );
@@ -1403,11 +1408,7 @@ document
                 } else {
 
                     alert(
-                        'تعذر إكمال الحذف: ' +
-                        (
-                            error.code ||
-                            error.message
-                        )
+                        'تعذر إكمال حذف الحساب الآن. أعد المحاولة أو تواصل مع الإدارة.'
                     );
 
                 }
@@ -1455,7 +1456,7 @@ document
 <script type="module">
 import {getPreviewContext} from '../admin-preview-core.js';
 import {auth,db} from '../../firebase-config.js';import {onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';import {collection,query,where,onSnapshot} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
-const box=document.getElementById('zad-my-questions');onAuthStateChanged(auth,async user=>{if(!user){box.textContent='سجل دخولك لمتابعة الأسئلة.';return}const pv=await getPreviewContext(user,'student');if(pv.denied)return;onSnapshot(query(collection(db,'studyQuestions'),where('studentUid','==',pv.uid)),snap=>{box.replaceChildren();if(snap.empty){box.textContent='لم ترسل أسئلة بعد.';return}snap.docs.sort((a,b)=>(b.data().createdAt?.seconds||0)-(a.data().createdAt?.seconds||0)).forEach(it=>{let x=it.data(),p=document.createElement('div');p.style.cssText='padding:12px;border-bottom:1px solid #76663f';const q=document.createElement('strong');q.textContent=x.question||'';p.appendChild(q);const answer=document.createElement('p');answer.textContent=x.status==='answered'?'رد الإدارة: '+(x.reply||''):'⏳ بانتظار رد الإدارة';p.appendChild(answer);box.appendChild(p)})},e=>box.textContent='تعذر عرض الأسئلة: '+e.message)});
+const box=document.getElementById('zad-my-questions');onAuthStateChanged(auth,async user=>{if(!user){box.textContent='سجل دخولك لمتابعة الأسئلة.';return}const pv=await getPreviewContext(user,'student');if(pv.denied)return;onSnapshot(query(collection(db,'studyQuestions'),where('studentUid','==',pv.uid)),snap=>{box.replaceChildren();if(snap.empty){box.textContent='لم ترسل أسئلة بعد.';return}snap.docs.sort((a,b)=>(b.data().createdAt?.seconds||0)-(a.data().createdAt?.seconds||0)).forEach(it=>{let x=it.data(),p=document.createElement('div');p.style.cssText='padding:12px;border-bottom:1px solid #76663f';const q=document.createElement('strong');q.textContent=x.question||'';p.appendChild(q);const answer=document.createElement('p');answer.textContent=x.status==='answered'?'رد الإدارة: '+(x.reply||''):'⏳ بانتظار رد الإدارة';p.appendChild(answer);box.appendChild(p)})},e=>{console.warn('Student questions load failed:',e);box.textContent='تعذر عرض أسئلتك الآن. أعد تحميل الصفحة للمحاولة مرة أخرى.'})});
 </script>
 <section dir="rtl" class="zad-student-exam-section" aria-labelledby="zad-results-heading">
  <div class="zad-results-header"><div><span class="zad-results-eyebrow">سجل الإنجاز الدراسي</span><h2 id="zad-results-heading" tabindex="-1">نتائج امتحاناتي</h2><p>تابع نتائج امتحاناتك واطبع تقارير إجاباتك. إصدار شهادات التقدير وعرضها وتنزيلها من اختصاص الإدارة فقط.</p></div><span class="zad-results-header-icon" aria-hidden="true">📊</span></div>

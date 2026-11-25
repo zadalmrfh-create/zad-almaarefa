@@ -1,4 +1,24 @@
-document.addEventListener("DOMContentLoaded", () => {
+/* Source links are confined to this project's sections/store HTML pages. */
+const zadChatProjectRoot = typeof document !== 'undefined'
+  ? new URL('.', document.currentScript?.src || new URL('chatbot.js', document.baseURI).href)
+  : null;
+function zadResolveChatSource(value, projectRoot = zadChatProjectRoot) {
+  if (typeof value !== 'string' || !value || value.length > 2048 || !projectRoot
+      || /[\u0000-\u0020\u007f\\]/.test(value) || /^(?:[a-z][a-z0-9+.-]*:|\/)/i.test(value)) return '';
+  try {
+    const base = new URL(projectRoot), path = value.split(/[?#]/)[0];
+    const decoded = decodeURIComponent(path);
+    if (!/^(?:sections|store)\/[A-Za-z0-9_/-]+\.html$/.test(decoded)
+        || decoded.split('/').some(part => part === '.' || part === '..')
+        || /%/.test(decoded)) return '';
+    const url = new URL(value, base);
+    if (url.origin !== base.origin || url.username || url.password
+        || !url.pathname.startsWith(base.pathname)) return '';
+    return url.href;
+  } catch { return ''; }
+}
+
+if (typeof document !== "undefined") document.addEventListener("DOMContentLoaded", () => {
  const $=id=>document.getElementById(id), panel=$("chat-box"),toggle=$("chat-toggle-btn"),messages=$("chat-messages"),form=$("chat-form"),input=$("chat-input"),submit=$("chat-submit");
  if(!panel||!toggle||!messages||!form||!input)return;
  let history=[],busy=false,controller=null,typingTimer=null;
@@ -9,12 +29,13 @@ document.addEventListener("DOMContentLoaded", () => {
    line.append(block);messages.append(line);bottom();return {line,block};
  }
  function sources(items,heading){
-  if(!items?.length)return;
+  if(!Array.isArray(items)||!items.length)return;
+  const validItems=items.map(item=>({item,url:zadResolveChatSource(item?.url)})).filter(x=>x.url);
+  if(!validItems.length)return;
   const wrap=document.createElement("div");wrap.className="zad-chat-sources";
   const title=document.createElement("strong");title.textContent=heading;wrap.append(title);
-  for(const item of items){
-   if(!item.url || !(item.url.startsWith("/sections/")||item.url.startsWith("https://drive.google.com/")||item.url.startsWith("https://docs.google.com/")))continue;
-   const a=document.createElement("a");a.href=item.url;a.textContent="📖 "+item.title;a.target="_blank";a.rel="noopener noreferrer";wrap.append(a);
+  for(const {item,url} of validItems){
+   const a=document.createElement("a");a.href=url;a.textContent="📖 "+String(item.title||'محتوى المنصة');a.target="_blank";a.rel="noopener noreferrer";wrap.append(a);
   }messages.append(wrap);bottom();
  }
  function setBusy(v){busy=v;submit.disabled=v;input.disabled=v;document.querySelectorAll("[data-chat-prompt]").forEach(b=>b.disabled=v);const s=$("chat-status");if(s)s.textContent=v?"جارٍ إعداد الرد…":"مساعد تعليمي — راجع المعلومات المهمة من مصادرك";}

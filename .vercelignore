@@ -6,5 +6,6 @@ node_modules
 .gitignore
 start-local.bat
 local-server.js
-firestore.rules
 README-GITHUB-AR.md
+
+# firestore.rules is a build/test input; scripts/site-files.mjs excludes it from public/.

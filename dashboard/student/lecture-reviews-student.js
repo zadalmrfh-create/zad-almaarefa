@@ -1,5 +1,6 @@
 import {auth,db} from '../../firebase-config.js';
 import {getPreviewContext} from '../admin-preview-core.js';
+import {studentErrorMessage} from './student-navigation-core.js';
 import {onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
 import {collection,query,where,onSnapshot,doc,getDoc,setDoc,serverTimestamp} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 const box=document.getElementById('studentLectureRatingsList');
@@ -83,7 +84,8 @@ box?.addEventListener('submit',async e=>{
  }catch(error){
   // If another tab submitted first, treat the existing review as success.
   try{const existing=await getDoc(doc(db,'lectureReviews',id));if(existing.exists()){ratings.set(id,existing.data());render();return;}}catch(_){}
-  message.textContent=error.code==='permission-denied'?'تعذّر الحفظ: راجع قواعد Firestore وحالة حضور المحاضرة.':(error.code||error.message||'تعذر إرسال التقييم');btn.disabled=false;
+  console.warn('Student lecture review save failed:',error);
+  message.textContent=studentErrorMessage(error,'إرسال التقييم');btn.disabled=false;
  }finally{submittingLessonId=null;}
 });
 onAuthStateChanged(auth,async user=>{
@@ -92,7 +94,7 @@ onAuthStateChanged(auth,async user=>{
  if(!user){if(box)box.textContent='سجّل الدخول لعرض تقييمات المحاضرات.';return;}
  const pv=await getPreviewContext(user,'student');if(pv.denied){if(box)box.textContent='لا يمكن عرض هذا الحساب.';return;}
  uid=pv.uid;preview=pv.active;
- const onError=e=>{if(box)box.textContent='تعذر عرض التقييمات: '+(e.code||e.message)};
+ const onError=e=>{console.warn('Student lecture reviews load failed:',e);if(box)box.textContent=studentErrorMessage(e,'التقييمات')};
  unsubs.push(onSnapshot(doc(db,'latestLectureReview',uid),snap=>{
    latestPointerLoaded=true;latestLessonId=snap.exists()?snap.data().lessonId:null;
    if(subscribedLessonId!==latestLessonId){
@@ -109,8 +111,7 @@ onAuthStateChanged(auth,async user=>{
    }
    render();
  },onError));
- // A shared link opens the rating tab directly, after the normal tab controls are loaded.
- if(new URLSearchParams(location.search).get('tab')==='lectureRatings')setTimeout(()=>document.querySelector('[data-student-tab="lectureRatings"]')?.click(),0);
+ // Shared rating links are handled by the account-independent navigation controller.
  unsubs.push(onSnapshot(query(collection(db,'lessonAttendance'),where('studentUid','==',uid)),snap=>{lessons=snap.docs.map(d=>({id:d.id,...d.data()}));render();},onError));
  // Read only the current review by its attendance ID; never query other students' reviews.
 });

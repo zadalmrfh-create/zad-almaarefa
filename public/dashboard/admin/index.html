@@ -2,6 +2,7 @@
 <html lang="ar" dir="rtl">
 
 <head>
+<script src="../name-search.js?v=20261103-1"></script>
 
   <meta charset="UTF-8">
 
@@ -47,10 +48,59 @@
 </style>
 
 
-<link rel="stylesheet" href="../../assets/translation.css">
-<script src="../../assets/translation.js"></script>
+<link rel="stylesheet" href="../../assets/translation.css?v=20261016-globe2">
+<script src="../../assets/translation.js?v=20261016-globe2"></script>
 <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
-</head>
+<style id="zad-admin-gate-style">html:not(.zad-admin-authorized) body{visibility:hidden}html.zad-admin-denied body{visibility:visible}</style>
+<script type="module">
+import {auth, db} from '../../firebase-config.js';
+import {onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
+import {doc, getDoc} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
+onAuthStateChanged(auth, async (user) => {
+  if (!user) { location.replace('../../login/index.html'); return; }
+  try {
+    const [adminSnap, profileSnap] = await Promise.all([
+      getDoc(doc(db, 'admins', user.uid)),
+      getDoc(doc(db, 'users', user.uid))
+    ]);
+    const approved = adminSnap.exists() || profileSnap.data()?.role === 'admin'
+       || (user.email?.toLowerCase() === 'maleksameh121@gmail.com' && user.emailVerified);
+    if (!approved) { location.replace('../../index.html'); return; }
+    document.documentElement.classList.add('zad-admin-authorized');
+  } catch (error) {
+    console.error('Admin permission check failed:', error);
+    location.replace('../../index.html');
+  }
+});
+</script>
+<link rel="stylesheet" href="admin-workspace.css?v=20261105-finance2">
+<link rel="stylesheet" href="daily-ops.css?v=20261114-stage3">
+<link rel="stylesheet" href="teacher-payroll-admin.css?v=20261105-1">
+<style>
+.zad-subject-picker{position:relative;width:100%;min-width:0;color:#f7e5aa}
+.zad-subject-picker summary{list-style:none;cursor:pointer;border:1px solid #586a89;background:#111d32;padding:12px 15px;border-radius:11px;min-height:45px;user-select:none}
+.zad-subject-picker summary::-webkit-details-marker{display:none}
+.zad-subject-picker summary::after{content:'⌄';float:left;font-weight:900}
+.zad-subject-picker[open] summary{border-color:#d8b447;border-radius:11px 11px 0 0}
+.zad-subject-options{max-height:260px;overflow:auto;background:#101d32;border:1px solid #d4ad41;border-top:0;border-radius:0 0 11px 11px;padding:9px;display:grid;gap:3px}
+.zad-subject-options label{display:flex!important;gap:10px;align-items:center;cursor:pointer;padding:9px 10px;border-radius:7px;margin:0!important;color:#fff}
+.zad-subject-options label:hover{background:#263953}
+.zad-subject-options input{width:18px;height:18px;accent-color:#d6ab32;margin:0;flex:none}
+</style><link rel="stylesheet" href="student-comprehensive-report.css">
+<link rel="stylesheet" href="../vodafone-payment.css">
+<style id="zad-attendance-log-filter-styles">
+.zad-attendance-log-filters{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:14px 0 10px;padding:16px;border:1px solid #364862;border-radius:15px;background:#111f34}
+.zad-attendance-log-filters label{display:flex;flex-direction:column;gap:7px;color:#e9edf5;font-weight:700;font-size:13px;min-width:0}
+.zad-attendance-log-filters input,.zad-attendance-log-filters select{width:100%;min-width:0;min-height:43px;padding:9px 11px;border:1px solid #475a74;border-radius:9px;color:#fff;background:#101a2d;color-scheme:dark;font:inherit;outline:none}
+.zad-attendance-log-filters input:focus-visible,.zad-attendance-log-filters select:focus-visible{border-color:#edc34b;box-shadow:0 0 0 2px #edc34b33}
+.zad-attendance-log-filters .zad-attendance-filter-search{grid-column:span 2}
+.zad-attendance-log-filters #attendanceLogClear{align-self:end;min-height:43px;white-space:nowrap}
+.zad-attendance-log-count{color:#eac866;font-weight:700;margin:4px 0 12px;font-size:14px}
+@media(max-width:900px){.zad-attendance-log-filters{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.zad-attendance-log-filters{grid-template-columns:minmax(0,1fr)}.zad-attendance-log-filters .zad-attendance-filter-search{grid-column:span 1}.zad-attendance-log-filters #attendanceLogClear{width:100%}}
+</style>
+
+<style>.attendance-partial-payment{background:#e3b934!important;color:#14213a!important;border-color:#e3b934!important}.attendance-unpaid-payment{background:#18283f!important;color:#e4eaf5!important;border-color:#3a4d67!important}</style></head>
 
 
 <body>
@@ -94,15 +144,6 @@
       </a>
 
 
-      <a
-        class="btn gold"
-        href="#contentManagement"
-        id="contentManagementBtn"
-      >
-        ⚙️ إدارة محتوى المنصة
-      </a>
-
-
       <button
         id="logout"
         class="btn danger"
@@ -122,6 +163,11 @@
   ====================================================== -->
 
   <main>
+    <section id="zadActivityAlerts" class="card zad-activity-alerts" dir="rtl">
+      <div class="zad-activity-heading"><div><h2>🔔 إشعارات نشاط المنصة <span id="zadActivityUnread" class="zad-activity-counter" hidden>0</span></h2><p>التسجيلات الجديدة، حجوزات الحصص، وتنزيلات الكتب.</p></div><button id="zadActivityReadAll" type="button" class="btn">تحديد الكل كمقروء</button></div>
+      <div id="zadActivityList" class="zad-activity-list" aria-live="polite">جارٍ تحميل الإشعارات…</div>
+    </section>
+
 
 
     <div
@@ -147,22 +193,169 @@
         إدارة الحسابات واعتماد المعلمين.
       </p>
 
+    </section>
 
-      <a
-        class="btn gold"
-        href="#contentManagement"
-        style="display:inline-block;margin-top:12px"
-      >
-        ⚙️ الانتقال إلى إدارة محتوى المنصة
-      </a>
-
+    <section class="card admin-quick-nav-card" id="adminQuickNav">
+      <div class="section-heading">
+        <div>
+          <h2 style="margin:0">🗂️ أقسام لوحة التحكم</h2>
+          <p style="margin:6px 0 0;color:var(--muted)">اختصارات سريعة حتى تبقى اللوحة مقسمة وواضحة على الموبايل والكمبيوتر.</p>
+        </div>
+      </div>
+      <div class="admin-quick-nav">
+        <a class="admin-quick-link" href="#platformAnalytics"><span>📊</span><strong>الإحصائيات</strong><small>أرقام المنصة</small></a>
+        <a class="admin-quick-link" href="#usersManagement"><span>👥</span><strong>المستخدمون</strong><small>إدارة الحسابات</small></a>
+        <a class="admin-quick-link" href="#zadVodafoneAdminPanel"><span>💳</span><strong>المدفوعات</strong><small>كشف الطالب ومراجعة التحويلات</small></a>
+        <a class="admin-quick-link" href="#bookingsManagement"><span>📅</span><strong>الحجوزات</strong><small>طلبات وتقارير</small></a>
+        <a class="admin-quick-link" href="#codeExamsManagement"><span>🧑‍💻</span><strong>امتحانات بالكود</strong><small>إضافة ونشر</small></a>
+        <a class="admin-quick-link" href="#codeExamResultsSection"><span>📘</span><strong>نتائج الامتحانات</strong><small>درجات وتقارير</small></a>
+        <a class="admin-quick-link" href="#libraryDownloadTracking"><span>📥</span><strong>تنزيلات المكتبة</strong><small>متابعة التنزيل</small></a>
+        <a class="admin-quick-link" href="library-protected-admin.html"><span>🔒</span><strong>كتب محمية</strong><small>رفع PDF للمشتركين</small></a>
+        <a class="admin-quick-link" href="library-migration.html"><span>📚</span><strong>مراجعة الكتب القديمة</strong><small>التصنيف وربط النسخ المحمية</small></a>
+        
+        <a class="admin-quick-link" href="#weeklyReviewsAdmin"><span>⭐</span><strong>التقييمات</strong><small>المعلمون أسبوعيًا، والمنصة والإدارة شهريًا</small></a>
+        <a class="admin-quick-link" href="#attendanceManagement"><span>✅</span><strong>الحضور</strong><small>متابعة الغياب</small></a>
+        <a class="admin-quick-link" href="#teacherPayrollManagement"><span>💼</span><strong>مرتبات المعلمين</strong><small>الأسبوع والإضافي والتقارير</small></a>
+        <a class="admin-quick-link" href="#loginLogsManagement"><span>🔐</span><strong>سجلات الدخول</strong><small>آخر النشاطات</small></a>
+        <a class="admin-quick-link" href="#contentManagement"><span>⚙️</span><strong>المحتوى</strong><small>إدارة محتوى المنصة</small></a>
+      </div>
     </section>
 
 
+<section class="card" id="weeklyReviewsAdmin" dir="rtl">
+  <h2>⭐ مركز جودة التعليم — التقييمات الأسبوعية</h2>
+  <p>تقييمات المعلمين والمنصة والإدارة، مع أسماء الطلاب للأدمن فقط. آراء المعلمين المنشورة لا تحتوي على هوية الطالب. لا يمكن تعديل درجات التقييم.</p>
+  <div class="zwr-controls">
+    <label>النوع<select id="zwrAdminKind"><option value="">جميع الأنواع</option><option value="teacher">المعلمون</option><option value="platform">المنصة</option><option value="administration">الإدارة</option></select></label>
+    <label>الفترة (أسبوع / شهر)<select id="zwrAdminWeek"><option value="">كل الفترات</option></select></label>
+    <label>الطالب<input id="zwrAdminStudent" type="search" placeholder="اسم الطالب" style="padding:10px;background:#14243a;color:#fff;border:1px solid #526987;border-radius:11px"></label>
+    <label>المعلم<select id="zwrAdminTeacher"><option value="">كل المعلمين</option></select></label>
+    <button type="button" class="btn gold" id="zwrAdminRefresh">🔄 تحديث</button>
+<button type="button" class="btn gold" id="zwrAdminSyncPublic" style="border:2px solid #e9bf42;min-height:46px;font-weight:800;white-space:normal">🌟 مزامنة التقييمات المسموح بنشرها</button>
+    <button type="button" class="btn" id="zwrAdminPrint">🖨️ طباعة</button>
+    <button type="button" class="btn" id="zwrAdminCSV">⬇️ CSV</button>
+  </div>
+  <p id="zwrAdminStats" role="status">جارٍ التحميل...</p>
+  <div id="zwrAdminMetrics" class="zwr-metrics"></div>
+  <p id="zwrAdminSyncStatus" role="status" aria-live="polite" style="font-weight:700"></p><div id="zwrAdminResults"></div>
+  <p>نشر الآراء للعامة متاح فقط إذا وافق الطالب على النشر. يقوم الأدمن باعتماد الرأي أو إلغاء نشره دون تغيير نص التقييم الأصلي.</p>
+</section>
+<link rel="stylesheet" href="../../reviews/weekly-admin.css"><script type="module" src="weekly-reviews-admin.js?v=20261113-monthly1"></script>
+<section class="card" id="manualPaymentLedger" dir="rtl">
+<h2>💰 سجل المدفوعات اليدوية</h2><p>سجل دفعة حتى لو الطالب لم يرسل طلب دفع. السجل مستقل عن اعتماد تحويلات فودافون ولا يخصم تلقائيًا من المستحقات، لمنع احتساب المبلغ مرتين.</p>
+<form id="manualLedgerForm" class="admin-form">
+<div class="manual-ledger-grid">
+<label>اسم الطالب<input id="mlStudent" required placeholder="اسم الطالب"></label>
+<label>حساب الطالب (اختياري)<select id="mlUser"><option value="">طالب غير مرتبط بحساب</option></select></label>
+<label>البند<select id="mlCategory"><option value="lesson">حصة تعليمية</option><option value="qureo">كيرو</option><option value="finance">الثقافة المالية</option><option value="library">اشتراك المكتبة</option><option value="product">منتج من المتجر</option><option value="advance">رصيد مقدم غير مخصص</option></select></label>
+<label>اختيار الحصة أو المنتج<select id="mlItem"><option value="">اختر البند</option></select></label>
+<label>المبلغ بالجنيه<input id="mlAmount" type="number" min="0.01" step="0.01" required></label>
+<label>تاريخ الدفعة<input id="mlDate" type="date" required></label>
+<label>رقم مرجع التحويل (اختياري)<input id="mlReference"></label>
+<label>ملاحظات<input id="mlNotes"></label>
+</div><button class="btn gold" type="submit">💾 حفظ الدفعة</button><button class="btn" type="button" id="mlRefresh">تحديث القائمة</button>
+<p id="mlMessage" role="status"></p></form>
+<div style="overflow-x:auto"><table style="width:100%;margin-top:16px"><thead><tr><th>الطالب</th><th>البند</th><th>المبلغ</th><th>التاريخ</th><th>المرجع</th><th>إجراءات</th></tr></thead><tbody id="mlRows"><tr><td colspan="6">جارٍ التحميل…</td></tr></tbody></table></div>
+</section>
+<style>.manual-ledger-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin:15px 0}.manual-ledger-grid label{display:grid;gap:7px}.manual-ledger-grid input,.manual-ledger-grid select{width:100%;padding:10px;background:#101d32;color:white;border:1px solid #53647d;border-radius:9px}.ml-actions{display:flex;gap:6px;flex-wrap:wrap}</style>
+<script type="module" src="manual-payment-ledger.js"></script>
+
+<section class="card" id="codeExamsManagement" dir="rtl">
+  <h2>🧑‍💻 امتحانات بالكود</h2>
+  <p>الصق كود HTML كامل (ويمكن تضمين CSS وJavaScript بداخله)، وعاين الامتحان ثم انشره للطلاب. الكود يعمل في إطار مستقل معزول. تظهر تسليمات الطلاب تلقائيًا هنا عندما يستطيع الكود إظهار الدرجة أو يحتوي على مفتاح إجابات واضح؛ الأكواد التي لا تحسب أي نتيجة تحتاج ضبط آلية تصحيحها.</p>
+  <div class="codeexam-fields">
+    <label>اسم الامتحان <input id="ceTitle" maxlength="120" placeholder="مثال: امتحان النحو - الصف الثاني الثانوي"></label>
+    <label>المرحلة <select id="ceStage"><option value="prep">الإعدادية</option><option value="secondary">الثانوية الأزهرية</option><option value="general">عام</option></select></label>
+    <label>الصف <input id="ceGrade" maxlength="70" placeholder="مثال: الثاني الثانوي"></label>
+    <label>المادة <input id="ceSubject" maxlength="70" placeholder="مثال: النحو"></label>
+  </div>
+  <p style="border:1px solid #967d42;border-radius:9px;padding:10px;color:#f6df9e">⚠️ كود HTML المنشور يصل إلى جهاز الطالب، فلا تضع فيه مفتاح إجابات سرّيًا. الدرجة الصادرة من متصفح الطالب مبدئية ولا تصبح معتمدة إلا بعد مراجعة الأدمن.</p>
+  <label class="codeexam-code-label">كود الامتحان (HTML + CSS + JavaScript داخل الملف)
+    <textarea id="ceCode" dir="ltr" spellcheck="false" placeholder="<!doctype html> ..."></textarea>
+  </label>
+  <div class="actions" style="gap:10px;flex-wrap:wrap;margin-top:12px">
+    <button class="btn" id="cePreview" type="button">👁️ معاينة</button>
+    <button class="btn gold" id="ceSave" type="button">💾 حفظ مسودة</button>
+    <button class="btn gold" id="cePublish" type="button">🚀 نشر الامتحان</button>
+    <button class="btn" id="ceReset" type="button">➕ امتحان جديد</button>
+    <a class="btn" href="../../sections/tests/code-exams.html" target="_blank" rel="noopener">📚 صفحة امتحانات الطلاب</a>
+  </div>
+  <p id="ceStatus" role="status" aria-live="polite"></p>
+  <div id="cePreviewBox" hidden><h3>معاينة الامتحان</h3><iframe id="ceFrame" sandbox="allow-scripts" referrerpolicy="no-referrer" title="معاينة الامتحان" style="width:100%;height:540px;border:1px solid #8a763f;border-radius:12px;background:white"></iframe></div>
+  <h3 style="margin-top:24px">الامتحانات المحفوظة</h3>
+  <p class="zad-exam-hint">كل امتحان منشور له زر «📊 نتائج الامتحان» يفتح نتائج طلابه مباشرة. العدد يتحدث تلقائيًا عند تسليم الطلاب وحفظ نتائجهم.</p>
+  <div id="ceList">جاري تحميل الامتحانات...</div>
+</section>
+<section class="card" dir="rtl" id="adminCertificatesSection"><h2>🏅 شهادات التقدير — للإدارة فقط</h2><p>إصدار شهادة للطالب بعد مراجعة النتيجة. يمكن تعديل الشهادة أو طباعتها أو حذفها من هنا فقط. انسخ معرّف حساب الطالب UID من بياناته في Firebase.</p><form id="certificateAdminForm" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin:18px 0"><label style="display:grid;gap:6px">معرّف حساب الطالب (UID)<input name="studentUid" value="" required style="width:100%;padding:10px;border-radius:9px;color:#17233b;background:#fff;border:1px solid #64748b;font:inherit"></label><label style="display:grid;gap:6px">اسم الطالب<input name="studentName" value="" required style="width:100%;padding:10px;border-radius:9px;color:#17233b;background:#fff;border:1px solid #64748b;font:inherit"></label><label style="display:grid;gap:6px">سبب التكريم أو اسم الامتحان<input name="title" value="" required style="width:100%;padding:10px;border-radius:9px;color:#17233b;background:#fff;border:1px solid #64748b;font:inherit"></label><label style="display:grid;gap:6px">التقدير<input name="grade" value="ممتاز"  style="width:100%;padding:10px;border-radius:9px;color:#17233b;background:#fff;border:1px solid #64748b;font:inherit"></label><label style="display:grid;gap:6px">عبارة الشهادة<input name="description" value=""  style="width:100%;padding:10px;border-radius:9px;color:#17233b;background:#fff;border:1px solid #64748b;font:inherit"></label><label style="display:grid;gap:6px">تاريخ الإصدار<input name="issueDate" value=""  style="width:100%;padding:10px;border-radius:9px;color:#17233b;background:#fff;border:1px solid #64748b;font:inherit"></label><div style="display:grid;gap:6px;align-content:center;padding:12px;border:1px solid #b9821a;border-radius:10px;background:#101d31;color:#f1d17b"><strong>🏅 ختم زاد المعرفة</strong><span style="font-size:13px;line-height:1.6">يظهر الختم الرسمي تلقائيًا على الشهادة بدلًا من إمضاء المعلم.</span></div><div style="display:flex;align-items:end;gap:8px"><button type="submit" class="btn gold" id="certificateSubmit">إصدار الشهادة</button><button type="button" class="btn" id="certificatePrintPreview">🖨️ معاينة وطباعة الشهادة بالختم الرسمي</button><button type="button" class="btn" id="certificateCancel" hidden>إلغاء التعديل</button></div></form><p id="certificateAdminStatus" aria-live="polite"></p><div id="certificateAdminList"></div></section><script type="module" src="certificates-admin.js"></script>
+<section class="card" dir="rtl" id="codeExamResultsSection"><h2>📊 نتائج الامتحانات الإلكترونية</h2><p>الامتحانات التي تنشرها من الأعلى تظهر تلقائيًا هنا، حتى لو لم يسلم أي طالب بعد. تظهر النتائج المسجلة لحظة وصولها إلى Firebase، بدون إعداد يدوي جديد.</p><p>تظهر هنا نتائج <strong>كل الامتحانات بالكود وامتحانات الوحدة الأولى بالإضافة إلى امتحان علم البديع (تانية بكالوريا)</strong> حسب تاريخ التسليم. تظهر نتائج الأسئلة الموضوعية مباشرة بلا اعتماد يدوي، وتظل درجة المقالي في انتظار تصحيح الإدارة فقط. نتائج الوحدة الأولى لها قسم تصحيح المقالي الخاص بها أسفل النتائج. استخدم زر «طباعة تقرير الإجابات» بجانب كل نتيجة لطباعة إجابات الطالب والإجابات الصحيحة المتاحة، أو حفظها PDF.</p><div id="codeExamResultsList">جارٍ تحميل النتائج...</div></section>
+<section class="card" dir="rtl" id="saadAlaaAdminPanel" style="border:1px solid #c6a251">
+ <h2>📐 إعداد مدرس الرياضيات والعلوم والكيمياء — أ/ سعد علاء</h2>
+ <p>هذه الأدوات موجودة داخل قسم <b>المستخدمون ← إدارة وإعدادات المعلمين</b>. نفّذ إضافة الملف مرة واحدة فقط إذا لم يكن موجودًا في Firestore.</p>
+ <p>المدرس مضاف داخل دليل طاقم التدريس والحجز والحضور. اضغط الزر لتسجيل <b>ملف تدريسه القابل للتعديل</b> في قسم «إدارة محتوى المنصة ← طاقم التدريس»، دون إنشاء حساب دخول وهمي أو المساس بالمدرسين الحاليين.</p>
+ <button class="btn gold" type="button" id="createSaadTeacherProfile">➕ إضافة ملف سعد علاء للإدارة</button>
+ <p id="saadTeacherAdminStatus" role="status" aria-live="polite"></p>
+ <div style="display:grid;gap:12px;margin:15px 0;padding:15px;border:1px solid #526780;border-radius:12px;background:#101f35">
+  <strong>🔗 فحص وربط حساب سعد علاء بالحجوزات والحضور</strong>
+  <p id="saadAdminAccountInfo" role="status" aria-live="polite">افحص إذا كان حساب سعد نشطًا، ثم راجع أي سجلات قديمة مسجلة باسمه دون UID.</p>
+  <div class="actions" style="display:flex;gap:10px;flex-wrap:wrap">
+   <button type="button" class="btn" id="saadAdminInspect">🔍 فحص الحساب والسجلات</button>
+   <button type="button" class="btn gold" id="saadAdminLink" disabled>🔗 ربط السجلات التي تم التحقق منها</button>
+  </div>
+  <small>لا يجري إنشاء حساب أو صرف مرتبات أو تعديل مبالغ. الربط متاح فقط لحساب معلم نشط واحد مطابق للاسم، وبموافقة الإدارة الصريحة.</small>
+ </div>
+ <p>لظهور الحضور والمرتبات ونتائج الامتحانات في حسابه: يسجل سعد حسابه الحقيقي، وتعتمده الإدارة بصفة <b>معلم نشط</b>؛ ثم ترتبط الحجوزات والحصص بمعرّف UID الخاص به. بعد ذلك شغّل «مزامنة صلاحيات نتائج طلاب المعلمين». لا تُنشئ كلمات مرور أو معرفات UID تجريبية.</p>
+</section><script type="module" src="saad-teacher-admin.js?v=20261110-4"></script>
+<section class="card" dir="rtl" id="teacherExamAccessAdmin" style="border:1px solid #9b8241">
+  <h2>👨‍🏫 ربط نتائج الامتحانات بالمعلمين</h2>
+  <p>يرتبط المعلم بطلاب حجوزاته أو حصصه المسجلة برقم UID فقط. بعد ضبط ربط المعلمين، اضغط «مزامنة صلاحيات النتائج» مرة، وأعدها عند نقل طالب لمعلم آخر. لن يطلع المعلم على نتائج أي طالب غير معتمد له.</p>
+  <button id="syncTeacherExamAccess" type="button" class="btn gold">🔗 مزامنة صلاحيات نتائج طلاب المعلمين</button>
+  <p id="teacherExamAccessStatus" role="status" aria-live="polite">المزامنة يدوية للحفاظ على حصة قراءات Firebase.</p>
+</section>
+<script type="module" src="teacher-exam-access-admin.js?v=20261110-4"></script>
+<section class="card" dir="rtl" id="zadSpecialExamResults" style="border:2px solid #bd9841">
+<h2>📘 امتحانا العلوم المتكاملة والفقه — مراجعة الإجابات</h2>
+<p>استلام إجابات الطلاب من الامتحانين الجديدين، وتصحيح الاختياري والصح والخطأ مبدئيًا، ومراجعة المقالية والإكمال، واعتماد الدرجة وطباعة تقرير الإجابات كاملًا.</p>
+<p>يُجرى تحميل النتائج عند الضغط على الزر فقط لتقليل قراءات Firebase.</p>
+<button type="button" class="btn gold" id="zadSpecialReload">🔄 تحميل إجابات الطلاب</button>
+<p id="zadSpecialAdminStatus" role="status">جارٍ تجهيز لوحة النتائج...</p>
+<div id="zadSpecialAdminList"></div><div id="zadSpecialReview" hidden></div>
+</section>
+<link rel="stylesheet" href="zad-special-results-admin.css">
+<script type="module" src="zad-special-results-admin.js"></script>
+<link rel="stylesheet" href="code-exams-admin.css?v=20261114-stage4-essay2">
+<script type="module" src="code-exam-results-admin.js?v=20261114-stage4-essay2"></script>
+<section class="card" dir="rtl" id="unitOneExamsAdmin" style="border:1px solid #bb983c">
+<h2>📚 امتحانات الوحدة الأولى — الصف الثاني الثانوي والبكالوريا</h2>
+<p>امتحانات الوحدة الأولى وامتحان علم البديع (تانية بكالوريا)، 30 سؤالًا في كل امتحان. إجابات الاختيار والصح والخطأ والإكمال تُصحَّح آليًا كدرجة أولية؛ تُراجع الإدارة الأسئلة المقالية الأربعة وتثبت الدرجة النهائية.</p>
+<a class="btn gold" href="../../sections/tests/code-exams.html" target="_blank" rel="noopener">👁️ معاينة الامتحانات الإلكترونية</a>
+<button type="button" class="btn" id="ueAdminReload">🔄 تحديث محاولات الطلاب</button>
+<p id="ueAdminStatus" role="status">جارٍ تحميل محاولات الوحدة الأولى...</p>
+<div id="ueAdminAttempts"></div>
+</section>
+<script type="module" src="unit-one-review.js"></script>
+<script type="module" src="code-exams-admin.js?v=20261113-results1"></script>
 
     <!-- =====================================================
          PLATFORM ANALYTICS
     ====================================================== -->
+    <section class="card" id="zadDailyOpsSection" dir="rtl">
+  <div class="zad-ops-head"><div><h2>📋 مركز المتابعة اليومية</h2><p>الحجوزات والتحويلات وتصحيح المقالي والحصص في مكان واحد — قراءة فقط.</p></div></div>
+  <div class="zad-ops-actions">
+    <label for="zadOpsDate">تاريخ الحصص <input id="zadOpsDate" type="date" aria-label="تاريخ الحصص"></label>
+    <button id="zadOpsRefresh" type="button" class="btn gold">🔄 تحميل متابعة اليوم</button>
+    <button id="zadOpsCSV" type="button" class="btn" disabled>📥 تصدير CSV</button>
+    <button id="zadOpsPrint" type="button" class="btn" disabled>🖨️ طباعة ملخص</button>
+  </div>
+  <div class="zad-ops-shortcuts" aria-label="اختصارات التقارير">
+    <button type="button" class="btn" data-zad-ops-shortcut="student">👤 تقارير الطلاب الشاملة</button>
+    <button type="button" class="btn" data-zad-ops-shortcut="attendance">📋 تقارير الحضور والغياب</button>
+    <button type="button" class="btn" data-zad-ops-shortcut="teachers">🔗 مراجعة صلاحيات نتائج المعلمين</button>
+  </div>
+  <p style="font-size:12px;color:#b8c5da;margin:6px 0">لتقرير طالب معيّن: افتح «تقارير الطلاب الشاملة»، واختر الطالب من قائمة المستخدمين ثم اضغط تقريره. مزامنة المعلمين تظل بموافقة الإدارة.</p>
+  <p id="zadOpsStatus" class="zad-ops-status" role="status" aria-live="polite">اضغط تحميل متابعة اليوم لاستعراض البيانات.</p>
+  <div id="zadOpsSummary" aria-live="polite"></div>
+  <p style="color:#afbed2;font-size:12px;line-height:1.7">الأعداد مبنية على قراءات محدودة لتقليل استهلاك Firebase؛ قد تكون جزئية إذا تجاوز عدد السجلات الحد الموضح. التقارير لا تعدّل المدفوعات أو نتائج الطلاب.</p>
+</section>
     <section class="card" id="platformAnalytics">
       <div class="actions" style="justify-content:space-between;align-items:center">
         <div><h2 style="margin:0">📊 إحصائيات المنصة</h2><p id="enhDataStatus" style="margin:6px 0;color:var(--muted)">بيانات مباشرة من Firebase.</p></div>
@@ -174,7 +367,7 @@
         <div class="enh-stat">👨‍🏫 المعلمون<b id="enhTeachers">0</b><small>حسابات المعلمين</small></div>
         <div class="enh-stat">⏳ معلمون بانتظار الاعتماد<b id="enhPendingTeachers">0</b><small>تحتاج مراجعة</small></div>
         <div class="enh-stat">📅 الحجوزات<b id="enhBookings">0</b><small>إجمالي الطلبات</small></div>
-        <div class="enh-stat">📝 محاولات الاختبارات<b id="enhQuizAttempts">0</b><small>المحفوظة</small></div>
+        <div class="enh-stat">📝 محاولات الاختبارات<b id="enhQuizAttempts">—</b><small id="zadExamAttemptsStatNote">جارٍ تحميل نتائج الامتحانات المحفوظة…</small></div>
         <div class="enh-stat">🆕 تسجيلات اليوم<b id="enhNewToday">0</b><small>منذ منتصف الليل</small></div>
       </div>
     </section>
@@ -194,12 +387,27 @@
         </div>
       </div>
 
+
+      <details style="margin:16px 0;background:#101c30;padding:17px;border:1px solid #b9943b;border-radius:12px">
+        <summary style="cursor:pointer;font-weight:800;color:#f1cc65">➕ إضافة حساب طالب يدوي — باسم مستخدم وكلمة مرور</summary>
+        <p style="color:#aab7cf">يمكن للطالب تسجيل الدخول باسم المستخدم وكلمة المرور، ولا يحتاج بريد Gmail. لا تُحفظ كلمة المرور في قاعدة البيانات.</p>
+        <form id="manualStudentSignup" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px">
+          <label>اسم الطالب بالكامل<input name="fullName" required minlength="2" maxlength="120" placeholder="اسم الطالب" style="width:100%;padding:12px"></label>
+          <label>اسم المستخدم (إنجليزي)<input name="username" required pattern="[a-zA-Z0-9._-]{4,32}" placeholder="مثال: ahmed2026" autocomplete="off" style="width:100%;padding:12px" dir="ltr"></label>
+          <label>كلمة مرور مؤقتة<input name="password" type="password" required minlength="8" autocomplete="new-password" placeholder="8 أحرف على الأقل" style="width:100%;padding:12px"></label>
+          <label>رقم الهاتف (اختياري)<input name="phone" type="tel" style="width:100%;padding:12px"></label>
+          <label>الصف الدراسي (اختياري)<input name="grade" style="width:100%;padding:12px"></label>
+          <div style="grid-column:1/-1"><button type="submit" class="btn gold">إنشاء حساب الطالب</button><p id="manualStudentSignupStatus" role="status" aria-live="polite"></p></div>
+        </form>
+      </details>
+
       <div class="enh-toolbar users-filter-toolbar" style="margin-top:14px">
         <input id="enhUserSearch" type="search" placeholder="ابحث بالاسم أو البريد أو الهاتف أو المدينة">
         <select id="enhRoleFilter">
           <option value="all">كل الأنواع</option>
           <option value="student">طلاب</option>
           <option value="teacher">معلمون</option>
+          <option value="admin">مديرون</option>
         </select>
         <select id="enhStatusFilter">
           <option value="all">كل الحالات</option>
@@ -236,6 +444,9 @@
             <tr><td colspan="10">جارٍ التحميل…</td></tr>
           </tbody>
         </table>
+      </div>
+      <div class="users-mobile-list" id="usersCards">
+        <div class="user-mobile-empty">جارٍ تحميل المستخدمين…</div>
       </div>
     </section>
 
@@ -484,7 +695,7 @@
 
       </form>
 
-
+      <button type="button" id="addEnglishTeacherProfile" class="btn gold" hidden>إضافة بطاقة الأستاذ محمد طلعت للإدارة</button>
 
       <div class="table-wrap">
 
@@ -528,7 +739,7 @@
          LIVE GOOGLE MEET LESSONS
     ====================================================== -->
 
-    <section class="card" id="liveLessonsManagement">
+    <section class="card" id="liveLessonsManagement" hidden style="display:none!important">
       <div class="actions" style="justify-content:space-between">
         <div>
           <h3>🎥 المحاضرات المباشرة وGoogle Meet</h3>
@@ -542,7 +753,7 @@
           <label>عنوان المحاضرة<input id="lessonTitle" required placeholder="مثال: النحو — المحاضرة الأولى"></label>
           <label>المادة<input id="lessonSubject" required placeholder="النحو"></label>
           <label>الصف الدراسي<input id="lessonGrade" required placeholder="أولى ثانوي"></label>
-          <label>اسم المعلم<input id="lessonTeacher" placeholder="اسم المعلم" list="zadLessonTeachers"><datalist id="zadLessonTeachers"><option value="محمد طلعت عبدالله"></option></datalist></label>
+          <label>اسم المعلم<input id="lessonTeacher" placeholder="اسم المعلم"></label>
           <label>موعد المحاضرة<input id="lessonDate" type="datetime-local" required></label>
           <label>رابط Google Meet<input id="lessonMeetUrl" type="url" required placeholder="https://meet.google.com/..."></label>
           <div style="grid-column:1/-1;border:1px solid rgba(212,168,67,.25);border-radius:14px;padding:14px">
@@ -555,7 +766,7 @@
               </select>
             </label>
             <div id="lessonStudentsWrap" style="display:none">
-              <input id="lessonStudentSearch" type="search" placeholder="ابحث باسم الطالب أو البريد الإلكتروني" style="margin-bottom:10px">
+              <input id="lessonStudentSearch" type="search" placeholder="ابحث بالعربي أو الإنجليزي باسم الطالب أو البريد" style="margin-bottom:10px">
               <div id="lessonStudentsList" style="max-height:260px;overflow:auto;display:grid;gap:8px"></div>
               <small id="lessonStudentsStatus" style="color:var(--muted)">جارٍ تحميل الحسابات المسجلة…</small>
             </div>
@@ -581,7 +792,7 @@
     <!-- =====================================================
          LIVE LESSON FOLLOW-UP
     ====================================================== -->
-    <section class="card" id="lessonFollowUpManagement">
+    <section class="card" id="lessonFollowUpManagement" hidden style="display:none!important">
       <div class="actions" style="justify-content:space-between">
         <div>
           <h3>👥 متابعة حضور المحاضرات والاختبارات</h3>
@@ -598,10 +809,156 @@
     </section>
 
 
-    <section class="card" id="attendanceManagement">
-      <div class="actions" style="justify-content:space-between"><div><h3>📋 إدارة الحضور والغياب</h3><p style="margin:6px 0;color:var(--muted)">حدد المحاضرة ثم سجل حاضر أو غائب لكل طالب مستهدف.</p></div><button id="refreshAttendance" class="btn gold" type="button">🔄 تحديث</button></div>
-      <div class="grid" style="margin-top:14px"><label>المحاضرة<select id="attendanceLessonSelect"><option value="">اختر المحاضرة</option></select></label><label>بحث عن طالب<input id="attendanceStudentSearch" placeholder="اسم الطالب أو البريد"></label></div>
-      <div class="table-wrap" style="margin-top:14px"><table class="table"><thead><tr><th>الطالب</th><th>الصف</th><th>الحالة</th><th>إجراء</th></tr></thead><tbody id="attendanceRows"><tr><td colspan="4">اختر محاضرة.</td></tr></tbody></table></div>
+    <section class="card" id="teacherPayrollManagement" dir="rtl">
+  <div class="salary-heading"><div><h2>💼 إدارة مرتبات المعلمين</h2><p>تقارير مستقلة للإدارة، محسوبة على الحصص التي حالتها «حاضر» فقط. أجر الحصة والإضافي من المنصة لا يغيّران مستحقات الطالب.</p></div><button type="button" class="btn gold" id="salaryRefresh">🔄 تحديث</button></div>
+  <div class="salary-filters">
+    <label>👨‍🏫 المعلم<select id="salaryTeacher"><option value="all">جميع المعلمين</option></select></label>
+    <label>📅 من تاريخ<input type="date" id="salaryFrom"></label>
+    <label>📅 إلى تاريخ<input type="date" id="salaryTo"></label>
+    <label>🎓 الطالب<select id="salaryStudent"><option value="all">جميع الطلاب</option></select></label>
+    <label>📚 المادة<select id="salarySubject"><option value="all">جميع المواد</option></select></label>
+  </div>
+  <div class="salary-actions"><button type="button" class="btn gold" id="salaryThisWeek">الأسبوع الحالي</button><button type="button" class="btn" id="salaryLastWeek">الأسبوع السابق</button><button type="button" class="btn" id="salaryAllDates">كل الفترات</button><button type="button" class="btn" id="salaryPrint">🖨️ طباعة التقرير</button><button type="button" class="btn" id="salaryCSV">⬇️ تحميل CSV</button></div>
+  <p id="salaryStatus" role="status" aria-live="polite">جارٍ تحميل المرتبات...</p>
+  <div id="salaryTotals" class="salary-totals"></div>
+  <h3>👨‍🏫 مستحقات كل معلم خلال الفترة</h3>
+  <div id="salaryTeacherCards" class="salary-teacher-cards"></div>
+  <div class="salary-settlement-panel" style="margin:24px 0;padding:20px;border:1px solid #cba84b;border-radius:16px;background:#101d32">
+    <h3>💳 تسوية وصرف مستحقات المعلمين</h3>
+    <p>الصرف يدوي للأدمن فقط. يمكنك الصرف من إجمالي الرصيد أو من أسبوع محدد. تُخصم الدفعة من أقدم الحصص غير المسددة داخل النطاق المختار، دون حذف الحصص أو الإضافي.</p>
+    <div class="salary-filters">
+      <label>المعلم<select id="salarySettlementTeacher"><option value="">اختر المعلم</option></select></label>
+      <label>طريقة التسوية<select id="salarySettlementScope"><option value="all">إجمالي الرصيد (الأقدم أولًا)</option><option value="week">أسبوع محدد</option></select></label>
+      <label id="salarySettlementWeekWrap" hidden>الأسبوع<select id="salarySettlementWeek"></select></label>
+    </div>
+    <div class="salary-totals" id="salarySettlementMetrics"></div>
+    <form id="salarySettlementForm">
+      <div class="salary-filters">
+        <label>المبلغ المصروف بالجنيه<input id="salarySettlementAmount" type="number" min=".01" step=".01" required></label>
+        <label>طريقة الدفع<select id="salarySettlementMethod"><option>تحويل بنكي</option><option>محفظة إلكترونية</option><option>نقدًا</option><option>طريقة أخرى</option></select></label>
+        <label>مرجع التحويل (اختياري)<input id="salarySettlementReference" maxlength="120"></label>
+        <label>ملاحظات (اختياري)<input id="salarySettlementNote" maxlength="300"></label>
+      </div>
+      <p id="salarySettlementAvailable">اختر معلمًا أولًا.</p>
+      <div class="salary-actions"><button type="button" class="btn" id="salarySettlementFull">تحديد كامل المتبقي</button><button type="submit" class="btn gold">💾 تأكيد صرف المستحقات</button></div>
+    </form>
+    <p id="salarySettlementStatus" role="status" aria-live="polite"></p>
+    <h3>📜 سجل الصرف والتسويات</h3>
+    <div class="table-wrap salary-table-wrap"><table class="table"><thead><tr><th>التاريخ</th><th>المبلغ</th><th>النطاق</th><th>طريقة الدفع</th><th>المرجع</th><th>ملاحظات</th></tr></thead><tbody id="salarySettlementHistory"><tr><td colspan="6">اختر معلمًا لعرض السجل.</td></tr></tbody></table></div>
+  </div>
+  <h3>📋 تفاصيل الحصص والمستحقات</h3>
+  <div class="table-wrap salary-table-wrap"><table class="table"><thead><tr><th>التاريخ</th><th>المعلم</th><th>الطالب</th><th>المادة</th><th>أجر الحصة</th><th>إضافي المنصة</th><th>إجمالي الحصة</th><th>ملاحظات</th><th>تعديل</th></tr></thead><tbody id="salaryRows"><tr><td colspan="9">جارٍ التحميل...</td></tr></tbody></table></div>
+  <p class="salary-explain">مهم: عند تسجيل أكثر من مادة في حصة واحدة تُحسب حصة واحدة فقط. وإذا كان السجل يضم أكثر من معلم، يجب تحديد المعلم المستحق من زر «تعديل الأجر». الإضافي تتحمله المنصة، وليس الطالب. هذا تقرير مستحقات وليس إثبات صرف.</p>
+</section>
+
+<section class="card" dir="rtl" id="lectureReviewsAdminSection" style="border:1px solid #bda04f">
+ <h2>🌟 تقييمات المحاضرات</h2>
+ <p>عند تسجيل الطالب حاضرًا تصله دعوة تقييم. هنا تظهر تقييماته لكل حصة، ومعدل التقييم حسب المعلم، دون إظهارها للطلاب الآخرين.</p>
+ <div class="actions" style="gap:10px;flex-wrap:wrap;margin:12px 0">
+  <label>المعلم <select id="lectureRatingsTeacher"><option value="all">جميع المعلمين</option></select></label>
+  <button type="button" class="btn" id="lectureRatingsRefresh">🔄 تحديث التقييمات</button>
+  <strong id="lectureRatingsSummary" style="color:#e6c769"></strong>
+ </div>
+ <div id="lectureRatingsByTeacher" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin:15px 0"></div>
+ <div id="lectureRatingsList" style="display:grid;gap:12px">جارٍ تحميل تقييمات المحاضرات...</div>
+</section>
+
+<section class="card" id="attendanceManagement">
+      <h2>📋 تسجيل الحضور والغياب يدويًا</h2>
+      <p class="admin-muted">اختر حساب الطالب من المنصة، ثم حدد التاريخ والمواد وسعر الحصة. يمكنك اختيار مادة واحدة أو أكثر، ولا يشترط إنشاء محاضرة مباشرة.</p>
+      <form id="manualAttendanceForm" class="manual-attendance-form">
+        <label>بحث عن الطالب<input id="attendanceStudentSearch" type="search" placeholder="ابحث بالعربي أو الإنجليزي باسم الطالب أو البريد" autocomplete="off"></label>
+        <label>حساب الطالب<select id="attendanceStudent" required><option value="">جارٍ تحميل الطلاب...</option></select></label>
+        <p id="attendanceIdentityWarning" class="attendance-full" role="status" style="color:#f5d76e;font-size:13px;margin:0">جارٍ التأكد من الحسابات...</p>
+        <label>تاريخ الحصة<input id="attendanceDate" type="date" required></label>
+        <label>المواد <small style="color:#94a3b8;font-weight:400">(يمكن اختيار أكثر من مادة)</small><details id="attendanceSubjectPicker" class="zad-subject-picker"><summary id="attendanceSubjectSummary">اختر مادة أو أكثر ▾</summary><div id="attendanceSubjectOptions" class="zad-subject-options"></div></details><select id="attendanceSubject" multiple hidden aria-hidden="true" tabindex="-1"></select></label>
+        <label>المعلم <small style="color:#94a3b8;font-weight:400">(اختر المعلم عند وجود أكثر من مدرس للمادة)</small><select id="attendanceTeacherName" aria-label="معلم الحصة" style="background:#121e30;color:#f5d76e;font-weight:bold;min-height:44px"><option value="">اختر المادة أولًا</option></select></label>
+        <label>الحالة<select id="attendanceStatus" required><option value="حاضر">✅ حاضر</option><option value="غائب">❌ غائب</option></select></label>
+        <label>سعر الحصة (بالجنيه المصري)<input id="attendancePrice" type="number" min="0" max="100000" step="0.01" value="0" required></label>
+        <label class="attendance-full">ملاحظات (اختياري)<textarea id="attendanceNote" rows="2" maxlength="500"></textarea></label>
+        <div class="attendance-full attendance-actions"><button class="btn gold" type="submit">💾 حفظ سجل الحضور</button><button id="refreshAttendance" class="btn" type="button">🔄 تحديث السجلات</button><span id="attendanceMessage" aria-live="polite"></span></div>
+      </form>
+      <style>#zadStudentUidRepairPanel [hidden]{display:none!important}</style>
+      <details id="zadStudentUidRepairPanel" style="margin:20px 0;padding:16px;border:1px solid #d5aa3d;border-radius:14px;background:#101d31">
+        <summary style="cursor:pointer;color:#f5d572;font-weight:800;font-size:16px">🛠️ إظهار كل الحصص القديمة على حساب الطالب الحقيقي (للأدمن فقط)</summary>
+        <p style="color:#e3e8f1;line-height:1.8">إذا كانت الحصص القديمة مسجلة على حساب أو عدة حسابات قديمة تحمل <strong>نفس البريد الإلكتروني حرفيًا</strong>، اختر أحد الحسابات القديمة والصق UID الحقيقي من تسجيل دخول الطالب. ستجمع الأداة كل السجلات القديمة لنفس البريد للمراجعة ثم تصحح ربطها بعد موافقتك، دون نسخ الحصص أو تغيير حالتها المالية. لا تعتمد على تشابه الاسم وحده.</p>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:13px;margin:12px 0" dir="rtl">
+          <label style="display:grid;gap:6px">الحساب القديم الذي تظهر عليه الحصص
+            <select id="zadRepairSourceUid" style="padding:12px;width:100%;background:#121f35;color:#fff;border:1px solid #63758c;border-radius:9px"><option value="">جارٍ تحميل حسابات الطلاب...</option></select>
+            <small style="font-weight:400;color:#acc4e1">القائمة اختيارية. لو التحميل بطيء أو الحساب مش ظاهر، استخدم حقل UID القديم مباشرةً.</small>
+            <label style="display:grid;gap:6px;margin-top:10px">أو الصق UID الحساب القديم من Firebase
+              <input id="zadRepairSourceUidManual" aria-label="UID الحساب القديم يدويًا" placeholder="UID الحساب الذي عليه الحصص القديمة" dir="ltr" autocomplete="off" spellcheck="false" style="padding:12px;width:100%;background:#121f35;color:#fff;border:1px solid #63758c;border-radius:9px" />
+            </label>
+          </label>
+          <label style="display:grid;gap:6px">UID الحساب الحقيقي (انسخه من لوحة الطالب)
+            <input id="zadRepairTargetUid" placeholder="الصق UID الطالب الحقيقي هنا" dir="ltr" autocomplete="off" spellcheck="false" style="padding:12px;width:100%;background:#121f35;color:#fff;border:1px solid #63758c;border-radius:9px" />
+          </label>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin:10px 0">
+          <button type="button" id="zadRepairPreview" class="btn gold">🔍 فحص السجلات والتحقق من تطابق البريد</button>
+          <button type="button" id="zadRepairApply" class="btn" hidden>✅ تنفيذ تصحيح الربط بعد التأكيد</button>
+          <button type="button" id="zadRepairReload" class="btn">🔄 تحديث قائمة الحسابات</button>
+        </div>
+        <pre id="zadRepairReport" aria-live="polite" style="white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.9;max-width:100%;background:#0d1728;padding:15px;border-radius:10px;color:#f6ead0">جارٍ تجهيز أداة المراجعة...</pre>
+      </details>
+      <details id="zadTeacherLinker" dir="rtl" style="margin:18px 0;padding:16px;border:1px solid #d8b85a;border-radius:14px;background:#152038">
+        <summary style="cursor:pointer;font-weight:700;color:#f7d96c">👨‍🏫 ربط سجلات المعلمين القديمة وتحديث عرض مدفوعاتهم (للإدارة فقط)</summary>
+        <p>بعض الحصص والحجوزات مسجلة باسم المعلم فقط بدون UID. الأداة تعرض السجلات أولًا؛ لا تغير سعر الحصة ولا حالة السداد ولا بيانات الطالب. بعد التأكيد تربط السجلات بالمعلم المختار، وتحدّث المقدم المستخدم في كشفه.</p>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:end">
+          <label>حساب المعلم<select id="zadLinkTeacher" style="min-width:210px"><option value="">اختر المعلم</option></select></label>
+          <label>اسم المعلم كما هو في السجلات<select id="zadLinkAlias" style="min-width:210px"><option value="">اختر الاسم المسجل</option></select></label>
+          <button type="button" id="zadLinkPreview" class="btn gold">🔍 مراجعة السجلات</button>
+          <button type="button" id="zadLinkApply" class="btn" hidden>✅ اعتماد الربط وتحديث أرصدة العرض</button>
+          <button type="button" id="zadLinkRefresh" class="btn">🔄 تحميل من جديد</button>
+        </div>
+        <p id="zadLinkStatus" role="status" style="white-space:pre-wrap;overflow-wrap:anywhere;color:#f3d989"></p>
+        <div id="zadLinkDetails" style="max-height:260px;overflow:auto"></div>
+        <p style="font-size:13px">المبالغ المقدمة تُستخرج من التحويلات المعتمدة والمخصصة بحسب نظام الأكاديمية، ولا تعتبر إذنًا لصرف مستحقات المعلم. عند وصول دفعة جديدة، شغّل تحديث الأرصدة مرة أخرى.</p>
+      </details>
+      <h3>📚 سجل الحضور والغياب</h3>
+      <div class="zad-attendance-log-filters" id="attendanceLogFilters" dir="rtl" role="search" aria-label="البحث وتصفية سجلات الحضور والغياب">
+        <label class="zad-attendance-filter-search">🔎 بحث عن طالب
+          <input id="attendanceLogSearch" type="search" placeholder="اسم الطالب أو البريد الإلكتروني" autocomplete="off">
+        </label>
+        <label>📚 المادة
+          <select id="attendanceLogSubject"><option value="all">جميع المواد</option></select>
+        </label>
+        <label>👨‍🏫 المعلم
+          <select id="attendanceLogTeacher"><option value="all">جميع المعلمين</option></select>
+        </label>
+        <label>✅ الحضور
+          <select id="attendanceLogStatus"><option value="all">حضور وغياب</option><option value="حاضر">حاضر فقط</option><option value="غائب">غائب فقط</option><option value="اعتذر">اعتذر</option></select>
+        </label>
+        <label>💳 حالة الدفع
+          <select id="attendanceLogPayment"><option value="all">كل حالات الدفع</option><option value="paid">مدفوعة بالكامل</option><option value="partial">مدفوعة جزئيًا</option><option value="unpaid">غير مدفوعة</option><option value="owed">عليها مبلغ متبقٍ</option><option value="free">مجانية</option></select>
+        </label>
+        <label>📅 من تاريخ
+          <input id="attendanceLogFrom" type="date">
+        </label>
+        <label>📅 إلى تاريخ
+          <input id="attendanceLogTo" type="date">
+        </label>
+        <button id="attendanceLogClear" class="btn" type="button">↺ مسح التصفية</button>
+      </div>
+      <p id="attendanceLogCount" class="zad-attendance-log-count" role="status" aria-live="polite">جارٍ تحميل السجلات...</p>
+      <div class="table-wrap"><table class="table"><thead><tr><th>الطالب</th><th>التاريخ</th><th>المادة</th><th>الحالة</th><th>سعر الحصة</th><th>الدفع</th><th>سجله</th><th>إضافي المعلم</th><th>إجراء</th></tr></thead><tbody id="attendanceRows"><tr><td colspan="9">جارٍ تحميل السجلات...</td></tr></tbody></table></div><details class="zad-pay-archive-history" dir="rtl"><summary>🗃️ الحصص الملغاة — سجل محفوظ للمراجعة والاسترجاع</summary><div id="zadArchivedAttendanceList">جارٍ التحميل...</div></details>
+      <div id="attendanceReportTools" dir="rtl" style="margin:16px 0;padding:15px;border:1px solid #bca26a;border-radius:14px">
+        <h3>📊 تقرير الحضور والمدفوعات حسب الفلاتر الموجودة بالأعلى</h3>
+        <p>اختر المعلم فقط لعرض كل طلابه، أو ابحث عن طالب مع تحديد المعلم. زر الطباعة يطبع البيانات المطابقة للبحث والتواريخ وحالات الدفع المحددة أعلاه.</p>
+        <button type="button" class="btn gold" id="attendancePrintReport">🖨️ طباعة تقرير الحضور والمدفوعات</button>
+        <p id="attendanceReportNotice" role="status"></p>
+      </div>
+      <div id="attendanceStudentSummary" class="attendance-summary" aria-live="polite">
+<h3>📊 ملخص حضور الطلاب والمبالغ المدفوعة</h3>
+<p>تُحسب الحصص والحضور حسب المادة المختارة، أما الرصيد المالي (له / عليه) فيُحسب بشكل مستقل لكل طالب عبر جميع المواد. ويظهر الطالب الذي دفع مقدمًا حتى قبل أول حصة.</p>
+<div class="attendance-summary-controls">
+<label>بحث باسم الطالب<input id="attendanceSummarySearch" type="search" placeholder="اسم الطالب بالعربي أو الإنجليزي"></label>
+<label>المادة<select id="attendanceSummarySubject"><option value="all">كل المواد</option></select></label>
+<label>الترتيب<select id="attendanceSummarySort"><option value="name">حسب الاسم</option><option value="most-present">الأكثر حضورًا</option><option value="most-paid">الأعلى مدفوعًا</option></select></label>
+</div>
+<p id="attendanceSummaryCount" aria-live="polite"></p>
+<div class="attendance-summary-grid" id="attendanceSummaryCards">جارٍ حساب السجلات...</div>
+</div>
     </section>
 
     <section class="card" id="loginLogsManagement">
@@ -775,6 +1132,7 @@
     ====================================================== -->
 
     <section
+      id="adminNotificationsManagement"
       class="card notifications-admin-card"
     >
 
@@ -956,6 +1314,44 @@
 
     </section>
 
+
+
+    <section class="card" id="librarySubscriptionsAdminPanel" dir="rtl">
+      <h2>🔐 إدارة اشتراكات المكتبتين</h2>
+      <p>الاشتراك الواحد يفتح المكتبة الرئيسية ومكتبة التعليم الأزهري. تصفح أسماء الكتب مجاني، وفتح الملفات يحتاج اعتمادًا من الإدارة.</p>
+      <div class="actions" style="align-items:center;flex-wrap:wrap">
+        <label>سعر الاشتراك بالجنيه (قابل للتعديل) <input type="number" id="libraryMembershipPrice" min="1" max="1000000" step="0.01" value="200.00" style="max-width:170px" placeholder="قيمة الاشتراك" /></label>
+        <button type="button" id="libraryMembershipSavePrice" class="btn gold">💾 حفظ سعر الاشتراك</button>
+        <button type="button" id="libraryMembershipReload" class="btn">🔄 تحديث الطلبات والطلاب</button>
+      </div>
+      <p id="libraryMembershipAdminMessage" role="status" aria-live="polite">جارٍ تحميل الاشتراكات...</p>
+      <h3>📨 طلبات دفع المكتبة</h3>
+      <div id="libraryMembershipRequests">جارٍ التحميل...</div>
+      <h3 style="margin-top:26px">👥 منح أو إلغاء الاشتراك لأي طالب</h3>
+      <input type="search" id="libraryMembershipSearch" placeholder="ابحث باسم الطالب أو البريد أو الهاتف" style="width:100%;padding:12px;margin-bottom:12px">
+      <div id="libraryMembershipUsers">جارٍ التحميل...</div>
+    </section>
+
+    <section class="card zad-pay-card" id="zadVodafoneAdminPanel" dir="rtl">
+      <h2>💳 إدارة المدفوعات</h2>
+      <p>محفظة استقبال التحويلات: <b dir="ltr">01042239704</b>. راجع المبلغ والمرجع في محفظتك الفعلية قبل اعتماد الطلب. الموقع لا يتحقق تلقائيًا من التحويل. بعد الاعتماد يظهر زر «🧾 طباعة الإيصال / حفظ PDF» بجانب العملية المعتمدة؛ احفظ الإيصال PDF وأرسله للطالب.</p>
+      <div class="zad-pay-grid zad-pay-admin-status"><div class="zad-pay-metric"><small>طلبات تحويل بانتظار المراجعة</small><strong id="zadVodafonePendingCount">—</strong></div><div class="zad-pay-metric"><small>⚠️ تحويلات تحتاج تسوية لحصص ملغاة (إجمالي السجل الجديد)</small><strong id="zadVodafoneNeedSettlement">—</strong></div></div>
+      <section class="zad-student-accounts" aria-label="كشوف حسابات الطلاب منفصلة">
+        <h3>👤 كشف حساب الطالب بالتفصيل</h3>
+        <p>اختر طالبًا واحدًا من القائمة وسيظهر كشف حسابه فقط: ما حوّله واعتمدته الإدارة، قيمة حصصه، المقدم والمتبقي، والمدفوع والمؤخر. ويمكنك فتح تفاصيل كل حصة وتحويل من نفس الكشف.</p>
+        <div class="zad-student-account-controls">
+          <label>🔎 البحث عن الطالب <input id="zadStudentBalanceSearch" type="search" placeholder="اكتب اسم الطالب أو البريد لتصفية القائمة" autocomplete="off"></label>
+          <label>👤 اختر الطالب لعرض كشف حسابه <select id="zadStudentBalancePicker" aria-label="اختر الطالب لعرض كشف حسابه"><option value="">— اختر الطالب أولًا —</option></select></label>
+        </div>
+        <p id="zadStudentBalanceCount" class="zad-pay-small" aria-live="polite">جارٍ تحميل حسابات الطلاب...</p>
+        <div id="zadStudentBalanceCards" class="zad-student-account-list" aria-live="polite">اختر الطالب لعرض الحساب.</div>
+      </section>
+      <div class="actions"><label for="zadVodafoneFilter">حالة الطلب</label><select id="zadVodafoneFilter" style="width:auto"><option value="pending" selected>بانتظار المراجعة</option><option value="all">كل التحويلات</option><option value="approved">المعتمدة</option><option value="rejected">المرفوضة</option><option value="archived">📁 السجل السابق (أرشيف للقراءة فقط)</option></select><button class="btn gold" id="zadVodafoneRefreshAdmin" type="button">🔄 تحديث الطلبات</button></div>
+      <p id="zadVodafoneAdminMessage" role="status" aria-live="polite"></p>
+      <p class="zad-pay-archived-notice">بدأ سجل جديد للمدفوعات؛ العمليات السابقة مؤرشفة للمراجعة، ولم تُحذف من Firebase ولم تتغير أرصدة الحصص القديمة.</p>
+      <div id="zadVodafoneRequests">جارٍ التحميل...</div>
+    </section>
+
   </main>
 
 </div>
@@ -1089,6 +1485,8 @@
 ===================================================== */
 
 import { guard } from '../dashboard.js';
+import { ENGLISH_TEACHER_NAME, ENGLISH_TEACHER_PROFILE, isEnglishTeacherProfile, isRetiredTeacherProfile } from '../../assets/english-teacher.js';
+import { isEnglishSubject } from '../attendance-subjects.js';
 
 import {
   auth,
@@ -1357,28 +1755,6 @@ function showUser(user) {
     ).join('');
 
 
-  userInfo.innerHTML += `
-    <div class="card" style="margin-top:14px">
-      <h4>✏️ تعديل البيانات الأساسية</h4>
-      <form id="enhEditUserForm" class="admin-form" style="display:grid;gap:8px;margin-top:10px">
-        <input id="enhEditName" value="${escapeHtml(user.fullName || user.name || '')}" placeholder="الاسم">
-        <input id="enhEditPhone" value="${escapeHtml(user.phone || '')}" placeholder="الهاتف">
-        <input id="enhEditCountry" value="${escapeHtml(user.country || '')}" placeholder="البلد">
-        <input id="enhEditCity" value="${escapeHtml(user.city || '')}" placeholder="المدينة">
-        <input id="enhEditGrade" value="${escapeHtml(user.role === 'teacher' ? (user.subject || user.grade || '') : (user.grade || user.studyGrade || ''))}" placeholder="الصف / المادة">
-        <button class="btn gold" type="submit">💾 حفظ التعديلات</button>
-        <span id="enhEditStatus" class="notice" style="display:none"></span>
-      </form>
-    </div>`;
-  document.getElementById('enhEditUserForm')?.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    const out=document.getElementById('enhEditStatus'); out.style.display='block'; out.textContent='جارٍ الحفظ…';
-    try {
-      const patch={fullName:document.getElementById('enhEditName').value.trim(),name:document.getElementById('enhEditName').value.trim(),phone:document.getElementById('enhEditPhone').value.trim(),country:document.getElementById('enhEditCountry').value.trim(),city:document.getElementById('enhEditCity').value.trim(),updatedAt:serverTimestamp()};
-      if(user.role==='teacher') patch.subject=document.getElementById('enhEditGrade').value.trim(); else patch.grade=document.getElementById('enhEditGrade').value.trim();
-      await updateDoc(doc(db,'users',user.uid),patch); out.textContent='تم الحفظ بنجاح.'; out.classList.add('success'); await loadUsers();
-    } catch(error){ console.error(error); out.textContent='تعذر حفظ التعديلات.'; }
-  });
 
   modal.classList.add('show');
 
@@ -1415,33 +1791,281 @@ modal.addEventListener(
 
 const tbody =
   $('users');
+const usersCards = $('usersCards');
+const refreshUsersButton = $('refresh');
+let adminUidSet = new Set();
+let usersLoadInProgress = false;
+
+// انتظر استعادة جلسة Firebase قبل قراءة بيانات المستخدمين.
+async function waitForSignedInUser(timeoutMs = 10000) {
+  if (auth.currentUser) return auth.currentUser;
+  return await new Promise((resolve, reject) => {
+    let unsubscribe = () => {};
+    const timer = setTimeout(() => {
+      unsubscribe();
+      reject(new Error('انتهت مهلة انتظار تسجيل الدخول إلى Firebase. أعد تسجيل الدخول ثم حاول مرة أخرى.'));
+    }, timeoutMs);
+    unsubscribe = onAuthStateChanged(auth, user => {
+      if (user) {
+        clearTimeout(timer);
+        unsubscribe();
+        resolve(user);
+      }
+    }, error => {
+      clearTimeout(timer);
+      unsubscribe();
+      reject(error);
+    });
+  });
+}
+
+function getDocsWithTimeout(reference, timeoutMs = 15000) {
+  return Promise.race([
+    getDocs(reference),
+    new Promise((_, reject) => setTimeout(() => reject(new Error('استغرق الاتصال بقاعدة البيانات وقتًا أطول من المتوقع. تحقق من الإنترنت وصلاحيات Firestore ثم اضغط تحديث.')), timeoutMs))
+  ]);
+}
 
 
 window.applyAdminUserFilters = function applyAdminUserFilters() {
-  if (!tbody) return;
+  if (!tbody && !usersCards) return;
   const queryText = String($('enhUserSearch')?.value || '').trim().toLowerCase();
   const role = $('enhRoleFilter')?.value || 'all';
   const status = $('enhStatusFilter')?.value || 'all';
   const country = $('enhCountryFilter')?.value || 'all';
-  const rows = [...tbody.querySelectorAll('tr[data-user-row="1"]')];
+  const rowEntries = tbody ? [...tbody.querySelectorAll('tr[data-user-row="1"]')] : [];
+  const cardEntries = usersCards ? [...usersCards.querySelectorAll('[data-user-card="1"]')] : [];
   let visible = 0;
 
-  rows.forEach(row => {
+  const applyMatch = entry => {
     const matches =
-      (!queryText || String(row.dataset.search || '').includes(queryText)) &&
-      (role === 'all' || row.dataset.role === role) &&
-      (status === 'all' || row.dataset.status === status) &&
-      (country === 'all' || row.dataset.country === country);
-    row.hidden = !matches;
-    if (matches) visible += 1;
-  });
+      (!queryText || window.ZadNameSearch.matches(entry.dataset.search || '', queryText)) &&
+      (role === 'all' || entry.dataset.role === role) &&
+      (status === 'all' || entry.dataset.status === status) &&
+      (country === 'all' || entry.dataset.country === country);
+    entry.hidden = !matches;
+    return matches;
+  };
+
+  rowEntries.forEach(row => { if (applyMatch(row)) visible += 1; });
+  cardEntries.forEach(applyMatch);
 
   const counter = $('enhUsersResultCount');
-  if (counter) counter.textContent = `يعرض ${visible.toLocaleString('ar-EG')} من ${rows.length.toLocaleString('ar-EG')} حساب`;
+  if (counter) counter.textContent = `يعرض ${visible.toLocaleString('ar-EG')} من ${rowEntries.length.toLocaleString('ar-EG')} حساب`;
 };
 
 
+function adminBadgeMarkup(isAdmin) {
+  return isAdmin ? '<span class="mini-badge mini-badge-admin">👑 أدمن</span>' : '';
+}
+
+function buildUserActionButtons({ isTeacher, isPending, isDisabled, isBanned, isAdmin }) {
+  let buttons = `
+    <button class="action-btn action-view" title="عرض بيانات الطالب" data-action="view" type="button">👁️ عرض البيانات</button>
+    ${!isTeacher && !isAdmin ? '<button class="action-btn zad-rpt-open" title="التقرير الشامل للطالب" data-action="comprehensive-report" type="button">📊 التقرير الشامل</button>' : ''}
+    <button class="action-btn ${isTeacher ? 'action-assigned' : 'action-assign-teacher'}" title="${isTeacher ? 'حساب معلم حاليًا' : 'تعيين كمعلّم'}" data-action="assign-teacher" type="button">👨‍🏫 ${isTeacher ? 'معلم' : 'تعيين معلم'}</button>
+    ${isTeacher && !isAdmin ? '<button class="action-btn action-revoke-teacher" title="إلغاء صلاحية المعلم وتحويل الحساب إلى طالب عادي" data-action="revoke-teacher" type="button">🎓 إلغاء صلاحية المعلم</button>' : ''}
+    <button class="action-btn ${isAdmin ? 'action-assigned' : 'action-assign-admin'}" title="تعيين كأدمن" data-action="assign-admin" type="button">👑 ${isAdmin ? 'أدمن' : 'تعيين أدمن'}</button>
+  `;
+
+  if (isTeacher && isPending) {
+    buttons += `
+      <button class="action-btn action-approve" title="اعتماد المعلم" data-action="approve" type="button">👨‍🏫 اعتماد</button>
+    `;
+  }
+
+  if (isBanned) {
+    buttons += `
+      <button class="action-btn action-toggle" title="إلغاء الحظر" data-action="ban" type="button">🟢 إلغاء الحظر</button>
+    `;
+  } else {
+    buttons += `
+      <button class="action-btn action-ban" title="حظر الحساب" data-action="ban" type="button">⛔ حظر</button>
+    `;
+  }
+
+  if (!isBanned) {
+    buttons += isDisabled
+      ? `<button class="action-btn action-toggle" title="تفعيل الحساب" data-action="toggle" type="button">🟢 تفعيل</button>`
+      : `<button class="action-btn action-toggle" title="تعطيل الحساب" data-action="toggle" type="button">🚫 تعطيل</button>`;
+  }
+
+  buttons += `<button class="action-btn action-delete" title="حذف المستخدم" data-action="delete" type="button">🗑️</button>`;
+  return buttons;
+}
+
+function bindUserEntryActions(root, { user, userDoc, name, isTeacher, isPending, isDisabled, isBanned, isAdmin }) {
+  root.querySelector('[data-action="view"]')?.addEventListener('click', () => showUser(user));
+  root.querySelector('[data-action="comprehensive-report"]')?.addEventListener('click', () => {
+    window.dispatchEvent(new CustomEvent('zad:student-report', {detail:{uid:userDoc.id}}));
+  });
+
+  root.querySelector('[data-action="assign-teacher"]')?.addEventListener('click', async (event) => {
+    if (isAdmin) { alert('لا يمكن تحويل حساب أدمن إلى معلم من هذا الزر.'); return; }
+    if (isTeacher) { alert('هذا الحساب مُعيَّن بالفعل كمعلّم.'); return; }
+    const button = event.currentTarget;
+    if (!confirm(`هل تريد تعيين ${name} كمعلّم؟`)) return;
+    try {
+      button.disabled = true;
+      button.textContent = 'جارٍ التعيين…';
+      await updateDoc(doc(db, 'users', userDoc.id), {
+        role: 'teacher',
+        status: user.status === 'banned' ? 'banned' : (user.status || 'active'),
+        updatedAt: serverTimestamp()
+      });
+      await loadUsers();
+    } catch (error) {
+      console.error('خطأ في تعيين المعلّم:', error);
+      alert('حدث خطأ أثناء تعيين المستخدم كمعلّم.');
+    }
+  });
+
+  // سحب صلاحية المعلم لا يحذف الحساب ولا يمس سجلات الحضور والحصص والمرتبات.
+  // تغيير الدور في users/{uid} يجعل isTeacher() في قواعد Firestore تُعيد false فورًا.
+  root.querySelector('[data-action="revoke-teacher"]')?.addEventListener('click', async event => {
+    if (!isTeacher || isAdmin) return;
+    const button = event.currentTarget;
+    const confirmed = confirm(`هل تريد إلغاء صلاحية المعلم من حساب ${name}؟\n\n` +
+      'سيتحول حسابه إلى طالب نشط، ويستطيع تسجيل الدخول وفتح لوحة الطالب بشكل عادي.\n' +
+      'سيفقد حق الدخول إلى لوحة المعلم وقراءة بيانات طلابه أو مرتباته.\n' +
+      'لن يتم حذف حصصه أو سجلاته أو بياناته المالية السابقة.');
+    if (!confirmed) return;
+    try {
+      button.disabled = true;
+      button.textContent = 'جارٍ إلغاء الصلاحية…';
+      await updateDoc(doc(db, 'users', userDoc.id), {
+        role: 'student',
+        status: 'active',
+        roleChangedAt: serverTimestamp(),
+        roleChangedBy: auth.currentUser?.uid || '',
+        updatedAt: serverTimestamp()
+      });
+      await loadUsers();
+      alert('تم إلغاء صلاحية المعلم، والحساب الآن طالب نشط دون حذف السجلات القديمة.');
+    } catch (error) {
+      console.error('تعذر إلغاء صلاحية المعلم:', error);
+      alert('لم يُنفذ إلغاء صلاحية المعلم. تحقق من اتصال الإنترنت وصلاحيات Firestore: ' + (error.code || error.message || 'خطأ غير معروف'));
+      button.disabled = false;
+      button.textContent = '🎓 إلغاء صلاحية المعلم';
+    }
+  });
+
+  root.querySelector('[data-action="assign-admin"]')?.addEventListener('click', async (event) => {
+    if (isAdmin) { alert('هذا الحساب مُعيَّن بالفعل كأدمن.'); return; }
+    const button = event.currentTarget;
+    if (!confirm(`هل تريد تعيين ${name} كأدمن؟`)) return;
+    try {
+      button.disabled = true;
+      button.textContent = 'جارٍ التعيين…';
+      // منح الصلاحية عبر users.role، وهو المسار المسموح للأدمن في قواعد Firebase الحالية.
+      await updateDoc(doc(db, 'users', userDoc.id), {
+        role: 'admin',
+        status: 'active',
+        updatedAt: serverTimestamp()
+      });
+      await loadUsers();
+    } catch (error) {
+      console.error('خطأ في تعيين الأدمن:', error);
+      alert('حدث خطأ أثناء تعيين المستخدم كأدمن.');
+    }
+  });
+
+  root.querySelector('[data-action="approve"]')?.addEventListener('click', async event => {
+    const button = event.currentTarget;
+    try {
+      button.disabled = true;
+      button.textContent = 'جارٍ الاعتماد…';
+      await updateDoc(doc(db, 'users', userDoc.id), { status: 'active' });
+      await loadUsers();
+    } catch (error) {
+      console.error('خطأ في اعتماد المعلم:', error);
+      alert('حدث خطأ أثناء اعتماد المعلم.');
+      button.disabled = false;
+      button.textContent = '👨‍🏫 اعتماد';
+    }
+  });
+
+  root.querySelector('[data-action="ban"]')?.addEventListener('click', async event => {
+    const button = event.currentTarget;
+    const banning = !isBanned;
+    const confirmed = confirm(banning
+      ? `هل أنت متأكد من حظر حساب ${name}؟
+
+بعد الحظر لن يستطيع تسجيل الدخول بهذا الحساب.`
+      : `هل تريد إلغاء حظر حساب ${name}؟`);
+    if (!confirmed) return;
+    try {
+      button.disabled = true;
+      button.textContent = banning ? 'جارٍ الحظر…' : 'جارٍ إلغاء الحظر…';
+      await updateDoc(doc(db, 'users', userDoc.id), { status: banning ? 'banned' : 'active' });
+      await loadUsers();
+    } catch (error) {
+      console.error('خطأ في الحظر:', error);
+      alert('حدث خطأ أثناء تغيير حالة الحظر.');
+      button.disabled = false;
+    }
+  });
+
+  root.querySelector('[data-action="toggle"]')?.addEventListener('click', async () => {
+    const newStatus = isDisabled ? 'active' : 'disabled';
+    const actionText = isDisabled ? 'تفعيل' : 'تعطيل';
+    if (!confirm(`هل أنت متأكد من ${actionText} هذا الحساب؟`)) return;
+    try {
+      await updateDoc(doc(db, 'users', userDoc.id), { status: newStatus });
+      await loadUsers();
+    } catch (error) {
+      console.error('خطأ في تغيير حالة المستخدم:', error);
+      alert('حدث خطأ أثناء تغيير حالة الحساب.');
+    }
+  });
+
+  root.querySelector('[data-action="delete"]')?.addEventListener('click', async () => {
+    const confirmed = confirm(`هل أنت متأكد من حذف حساب ${name} من قائمة المستخدمين؟
+
+سيتم حذف بياناته من Firestore فقط، وليس حساب Firebase Authentication.`);
+    if (!confirmed) return;
+    try {
+      const uid = userDoc.id;
+      const [tokensSnap, librarySnap, logsSnap, attemptsSnap, attendanceSnap, bookingsSnap, notificationsSnap] = await Promise.all([
+        getDocs(collection(db, 'users', uid, 'fcmTokens')),
+        getDocs(collection(db, 'users', uid, 'library')),
+        getDocs(query(collection(db, 'loginLogs'), where('uid', '==', uid))),
+        getDocs(query(collection(db, 'quizAttempts'), where('studentUid', '==', uid))),
+        getDocs(query(collection(db, 'lessonAttendance'), where('studentUid', '==', uid))),
+        getDocs(query(collection(db, 'bookings'), where('studentUid', '==', uid))),
+        getDocs(query(collection(db, 'notifications'), where('targetUid', '==', uid)))
+      ]);
+      if(attendanceSnap.docs.some(d=>Number(d.data().cashPaidPiastres||0)>0||d.data().paid===true)) {
+        alert('هذا الطالب لديه سجلات مدفوعات أو حصص مسددة. يجب مراجعة وتسوية السجل المالي قبل حذف حسابه؛ لم يتم حذف أي بيانات.');
+        return;
+      }
+      await Promise.all([
+        ...tokensSnap.docs.map(d => deleteDoc(d.ref)),
+        ...librarySnap.docs.map(d => deleteDoc(d.ref)),
+        ...logsSnap.docs.map(d => deleteDoc(d.ref)),
+        ...attemptsSnap.docs.map(d => deleteDoc(d.ref)),
+        ...attendanceSnap.docs.map(d => deleteDoc(d.ref)),
+        ...bookingsSnap.docs.map(d => deleteDoc(d.ref)),
+        ...notificationsSnap.docs.map(d => deleteDoc(d.ref)),
+        deleteDoc(doc(db, 'users', uid))
+      ]);
+      await loadUsers();
+      await syncAutomaticHomeStats();
+      await loadBookings();
+      await loadLessonFollowUp();
+      await loadLoginLogs();
+    } catch (error) {
+      console.error('خطأ في حذف المستخدم:', error);
+      alert('حدث خطأ أثناء حذف المستخدم.');
+    }
+  });
+}
+
 async function loadUsers() {
+  if (!tbody) return;
+  if (usersLoadInProgress) return;
+  usersLoadInProgress = true;
+  if (refreshUsersButton) { refreshUsersButton.disabled = true; refreshUsersButton.textContent = '⏳ جارٍ التحديث…'; }
 
   tbody.innerHTML = `
 
@@ -1452,14 +2076,29 @@ async function loadUsers() {
     </tr>
 
   `;
+  if (usersCards) usersCards.innerHTML = `<div class="user-mobile-empty">جارٍ تحميل المستخدمين…</div>`;
 
 
   try {
 
-    const snap =
-      await getDocs(
-        collection(db, 'users')
-      );
+    await waitForSignedInUser();
+    const snap = await getDocsWithTimeout(collection(db, 'users'));
+    adminUidSet = new Set(snap.docs.filter(d => d.data().role === 'admin').map(d => d.id));
+    // الإحصائيات العامة لا تحتوي على أي معلومات شخصية.
+    const actualStudents=snap.docs.filter(d=>d.data().role==='student').length;
+    const actualTeachers=snap.docs.filter(d=>d.data().role==='teacher' && d.data().status!=='banned').length;
+    const statsSignature=`${actualStudents}:${actualTeachers}`;
+    if(window.__zadLastHomeStatsSignature!==statsSignature){
+      window.__zadLastHomeStatsSignature=statsSignature;
+      Promise.all([
+        setDoc(doc(db,'publicStats','students'),{total:actualStudents,updatedAt:serverTimestamp()},{merge:true}),
+        setDoc(doc(db,'publicStats','teachers'),{total:actualTeachers,updatedAt:serverTimestamp()},{merge:true})
+      ]).catch(error=>{
+        window.__zadLastHomeStatsSignature=null;
+        console.warn('تعذر تحديث إحصائيات الصفحة الرئيسية:',error);
+      });
+    }
+
 
 
     populateNotificationUsers(snap);
@@ -1478,6 +2117,7 @@ async function loadUsers() {
         </tr>
 
       `;
+      if (usersCards) usersCards.innerHTML = `<div class="user-mobile-empty">لا يوجد مستخدمون بعد.</div>`;
 
       return;
 
@@ -1485,6 +2125,7 @@ async function loadUsers() {
 
 
     tbody.innerHTML = '';
+    if (usersCards) usersCards.innerHTML = '';
 
     // عرض الأحدث أولًا حتى تظهر الحسابات الجديدة مباشرة في أعلى القائمة.
     const userDocs = [...snap.docs].sort((a, b) => {
@@ -1534,199 +2175,28 @@ async function loadUsers() {
           status === 'banned';
 
 
-        const roleText =
-          isTeacher
-            ? 'معلم'
-            : 'طالب';
+        const isAdmin = adminUidSet.has(userDoc.id) || user.email?.toLowerCase() === 'maleksameh121@gmail.com';
 
+        const roleText = isAdmin ? 'أدمن' : isTeacher ? 'معلم' : 'طالب';
 
         let statusClass =
           'status status-active';
 
-
         if (isPending) {
-
-          statusClass =
-            'status status-pending';
-
+          statusClass = 'status status-pending';
+        } else if (isDisabled) {
+          statusClass = 'status status-disabled';
+        } else if (isBanned) {
+          statusClass = 'status status-banned';
         }
 
-        else if (isDisabled) {
+        const buttons = buildUserActionButtons({ isTeacher, isPending, isDisabled, isBanned, isAdmin });
 
-          statusClass =
-            'status status-disabled';
+        const tr = document.createElement('tr');
 
-        }
-
-        else if (isBanned) {
-
-          statusClass =
-            'status status-banned';
-
-        }
-
-
-        let buttons = `
-
-          <button
-            class="action-btn action-view"
-            title="عرض البيانات"
-            data-action="view"
-            type="button"
-          >
-            👁️
-          </button>
-
-        `;
-
-
-        /* اعتماد المعلم */
-
-        if (
-          isTeacher &&
-          isPending
-        ) {
-
-          buttons += `
-
-            <button
-              class="action-btn action-approve"
-              title="اعتماد المعلم"
-              data-action="approve"
-              type="button"
-            >
-              👨‍🏫 اعتماد
-            </button>
-
-          `;
-
-        }
-
-
-        /* الحظر */
-
-        if (isBanned) {
-
-          buttons += `
-
-            <button
-              class="action-btn action-toggle"
-              title="إلغاء الحظر"
-              data-action="ban"
-              type="button"
-            >
-              🟢 إلغاء الحظر
-            </button>
-
-          `;
-
-        }
-
-        else {
-
-          buttons += `
-
-            <button
-              class="action-btn action-ban"
-              title="حظر الحساب"
-              data-action="ban"
-              type="button"
-            >
-              ⛔ حظر
-            </button>
-
-          `;
-
-        }
-
-
-        /* تعطيل */
-
-        if (!isBanned) {
-
-          if (isDisabled) {
-
-            buttons += `
-
-              <button
-                class="action-btn action-toggle"
-                title="تفعيل الحساب"
-                data-action="toggle"
-                type="button"
-              >
-                🟢 تفعيل
-              </button>
-
-            `;
-
-          }
-
-          else {
-
-            buttons += `
-
-              <button
-                class="action-btn action-toggle"
-                title="تعطيل الحساب"
-                data-action="toggle"
-                type="button"
-              >
-                🚫 تعطيل
-              </button>
-
-            `;
-
-          }
-
-        }
-
-
-        /* حذف */
-
-        buttons += `
-
-          <button
-            class="action-btn action-delete"
-            title="حذف المستخدم"
-            data-action="delete"
-            type="button"
-          >
-            🗑️
-          </button>
-
-        `;
-
-
-        const tr =
-          document.createElement('tr');
-
-
-        const phone =
-          user.phone ||
-          user.phoneNumber ||
-          '';
-
-
-        const studyInfo =
-          isTeacher
-            ? (
-                user.subject ||
-                user.grade ||
-                '-'
-              )
-            : (
-                user.grade ||
-                user.studyGrade ||
-                user.className ||
-                '-'
-              );
-
-
-        tr.dataset.userRow = '1';
-        tr.dataset.role = isTeacher ? 'teacher' : 'student';
-        tr.dataset.status = status;
-        tr.dataset.country = String(user.country || '');
-        tr.dataset.search = [
+        const phone = user.phone || user.phoneNumber || '';
+        const studyInfo = isTeacher ? (user.subject || user.grade || '-') : (user.grade || user.studyGrade || user.className || '-');
+        const searchText = [
           name,
           email,
           phone,
@@ -1734,396 +2204,72 @@ async function loadUsers() {
           user.city || '',
           studyInfo,
           roleText,
-          getStatusText(status)
+          getStatusText(status),
+          isAdmin ? 'ادمن' : ''
         ].join(' ').toLowerCase();
 
+        tr.dataset.userRow = '1';
+        tr.dataset.role = isAdmin ? 'admin' : isTeacher ? 'teacher' : 'student';
+        tr.dataset.status = status;
+        tr.dataset.country = String(user.country || '');
+        tr.dataset.search = searchText;
 
         tr.innerHTML = `
-
-          <td>
-            ${escapeHtml(name)}
-          </td>
-
-
-          <td>
-            ${escapeHtml(email)}
-          </td>
-
-
-          <td>
-            ${escapeHtml(phone || '-')}
-          </td>
-
-          <td>
-            ${escapeHtml(user.country || '-')}
-          </td>
-
-          <td>
-            ${escapeHtml(user.city || '-')}
-          </td>
-
-          <td>
-
-            ${
-              phone
-
-                ? `
-
-                  <a
-                    class="action-btn action-whatsapp"
-                    target="_blank"
-                    rel="noopener"
-                    href="https://wa.me/${whatsappNumber(phone)}"
-                  >
-                    واتساب
-                  </a>
-
-                `
-
-                : '-'
-            }
-
-          </td>
-
-
-          <td>
-            ${escapeHtml(studyInfo)}
-          </td>
-
-
-          <td>
-            ${roleText}
-          </td>
-
-
-          <td>
-
-            <span class="${statusClass}">
-              ${getStatusText(status)}
-            </span>
-
-          </td>
-
-
-          <td>
-
-            <div class="user-actions">
-
-              ${buttons}
-
-            </div>
-
-          </td>
-
+          <td>${escapeHtml(name)} ${adminBadgeMarkup(isAdmin)}</td>
+          <td>${escapeHtml(email)}</td>
+          <td>${escapeHtml(phone || '-')}</td>
+          <td>${escapeHtml(user.country || '-')}</td>
+          <td>${escapeHtml(user.city || '-')}</td>
+          <td>${phone ? `<a class="action-btn action-whatsapp" target="_blank" rel="noopener" href="https://wa.me/${whatsappNumber(phone)}">واتساب</a>` : '-'}</td>
+          <td>${escapeHtml(studyInfo)}</td>
+          <td>${roleText}</td>
+          <td><span class="${statusClass}">${getStatusText(status)}</span></td>
+          <td><div class="user-actions">${buttons}</div></td>
         `;
-
-
-        /* عرض */
-
-        tr
-          .querySelector(
-            '[data-action="view"]'
-          )
-          ?.addEventListener(
-            'click',
-            () => showUser(user)
-          );
-
-
-        /* اعتماد المعلم */
-
-        tr
-          .querySelector(
-            '[data-action="approve"]'
-          )
-          ?.addEventListener(
-            'click',
-            async event => {
-
-              const button =
-                event.currentTarget;
-
-
-              try {
-
-                button.disabled = true;
-
-                button.textContent =
-                  'جارٍ الاعتماد…';
-
-
-                await updateDoc(
-                  doc(
-                    db,
-                    'users',
-                    userDoc.id
-                  ),
-                  {
-                    status: 'active'
-                  }
-                );
-
-
-                await loadUsers();
-
-              }
-
-              catch (error) {
-
-                console.error(
-                  'خطأ في اعتماد المعلم:',
-                  error
-                );
-
-
-                alert(
-                  'حدث خطأ أثناء اعتماد المعلم.'
-                );
-
-
-                button.disabled =
-                  false;
-
-                button.textContent =
-                  '👨‍🏫 اعتماد';
-
-              }
-
-            }
-          );
-
-
-        /* حظر / إلغاء حظر */
-
-        tr
-          .querySelector(
-            '[data-action="ban"]'
-          )
-          ?.addEventListener(
-            'click',
-            async event => {
-
-              const button =
-                event.currentTarget;
-
-
-              const banning =
-                !isBanned;
-
-
-              const confirmed =
-                confirm(
-
-                  banning
-
-                    ? `هل أنت متأكد من حظر حساب ${name}؟\n\nبعد الحظر لن يستطيع تسجيل الدخول بهذا الحساب.`
-
-                    : `هل تريد إلغاء حظر حساب ${name}؟`
-
-                );
-
-
-              if (!confirmed)
-                return;
-
-
-              try {
-
-                button.disabled =
-                  true;
-
-
-                button.textContent =
-                  banning
-                    ? 'جارٍ الحظر…'
-                    : 'جارٍ إلغاء الحظر…';
-
-
-                await updateDoc(
-                  doc(
-                    db,
-                    'users',
-                    userDoc.id
-                  ),
-                  {
-                    status:
-                      banning
-                        ? 'banned'
-                        : 'active'
-                  }
-                );
-
-
-                await loadUsers();
-
-              }
-
-              catch (error) {
-
-                console.error(
-                  'خطأ في الحظر:',
-                  error
-                );
-
-
-                alert(
-                  'حدث خطأ أثناء تغيير حالة الحظر.'
-                );
-
-
-                button.disabled =
-                  false;
-
-              }
-
-            }
-          );
-
-
-        /* تعطيل / تفعيل */
-
-        tr
-          .querySelector(
-            '[data-action="toggle"]'
-          )
-          ?.addEventListener(
-            'click',
-            async () => {
-
-              const newStatus =
-                isDisabled
-                  ? 'active'
-                  : 'disabled';
-
-
-              const actionText =
-                isDisabled
-                  ? 'تفعيل'
-                  : 'تعطيل';
-
-
-              const confirmed =
-                confirm(
-                  `هل أنت متأكد من ${actionText} هذا الحساب؟`
-                );
-
-
-              if (!confirmed)
-                return;
-
-
-              try {
-
-                await updateDoc(
-                  doc(
-                    db,
-                    'users',
-                    userDoc.id
-                  ),
-                  {
-                    status: newStatus
-                  }
-                );
-
-
-                await loadUsers();
-
-              }
-
-              catch (error) {
-
-                console.error(
-                  'خطأ في تغيير حالة المستخدم:',
-                  error
-                );
-
-
-                alert(
-                  'حدث خطأ أثناء تغيير حالة الحساب.'
-                );
-
-              }
-
-            }
-          );
-
-
-        /* حذف */
-
-        tr
-          .querySelector(
-            '[data-action="delete"]'
-          )
-          ?.addEventListener(
-            'click',
-            async () => {
-
-              const confirmed =
-                confirm(
-                  `هل أنت متأكد من حذف حساب ${name} من قائمة المستخدمين؟\n\nسيتم حذف بياناته من Firestore فقط، وليس حساب Firebase Authentication.`
-                );
-
-
-              if (!confirmed)
-                return;
-
-
-              try {
-
-                const uid = userDoc.id;
-
-                // حذف بيانات المستخدم المرتبطة من المجموعات التي يديرها الأدمن.
-                const [tokensSnap, librarySnap, logsSnap, attemptsSnap, attendanceSnap, bookingsSnap, notificationsSnap] = await Promise.all([
-                  getDocs(collection(db, 'users', uid, 'fcmTokens')),
-                  getDocs(collection(db, 'users', uid, 'library')),
-                  getDocs(query(collection(db, 'loginLogs'), where('uid', '==', uid))),
-                  getDocs(query(collection(db, 'quizAttempts'), where('studentUid', '==', uid))),
-                  getDocs(query(collection(db, 'lessonAttendance'), where('studentUid', '==', uid))),
-                  getDocs(query(collection(db, 'bookings'), where('studentUid', '==', uid))),
-                  getDocs(query(collection(db, 'notifications'), where('targetUid', '==', uid)))
-                ]);
-
-                await Promise.all([
-                  ...tokensSnap.docs.map(d => deleteDoc(d.ref)),
-                  ...librarySnap.docs.map(d => deleteDoc(d.ref)),
-                  ...logsSnap.docs.map(d => deleteDoc(d.ref)),
-                  ...attemptsSnap.docs.map(d => deleteDoc(d.ref)),
-                  ...attendanceSnap.docs.map(d => deleteDoc(d.ref)),
-                  ...bookingsSnap.docs.map(d => deleteDoc(d.ref)),
-                  ...notificationsSnap.docs.map(d => deleteDoc(d.ref)),
-                  deleteDoc(doc(db, 'users', uid))
-                ]);
-
-                await loadUsers();
-                await syncAutomaticHomeStats();
-                await loadBookings();
-                await loadLessonFollowUp();
-                await loadLoginLogs();
-
-              }
-
-              catch (error) {
-
-                console.error(
-                  'خطأ في حذف المستخدم:',
-                  error
-                );
-
-
-                alert(
-                  'حدث خطأ أثناء حذف المستخدم.'
-                );
-
-              }
-
-            }
-          );
-
 
         tbody.appendChild(tr);
 
+        if (usersCards) {
+          const card = document.createElement('article');
+          card.className = 'user-mobile-card';
+          card.dataset.userCard = '1';
+          card.dataset.role = isAdmin ? 'admin' : isTeacher ? 'teacher' : 'student';
+          card.dataset.status = status;
+          card.dataset.country = String(user.country || '');
+          card.dataset.search = searchText;
+          card.innerHTML = `
+            <div class="user-mobile-head">
+              <div>
+                <h3>${escapeHtml(name)}</h3>
+                <div class="user-mobile-tags">
+                  <span class="mini-badge">${roleText}</span>
+                  ${isAdmin ? '<span class="mini-badge mini-badge-admin">👑 أدمن</span>' : ''}
+                  <span class="status ${statusClass.replace('status ','')}">${getStatusText(status)}</span>
+                </div>
+              </div>
+            </div>
+            <div class="user-mobile-meta">
+              <div><span>البريد</span><strong>${escapeHtml(email)}</strong></div>
+              <div><span>الهاتف</span><strong>${escapeHtml(phone || '-')}</strong></div>
+              <div><span>البلد</span><strong>${escapeHtml(user.country || '-')}</strong></div>
+              <div><span>المدينة</span><strong>${escapeHtml(user.city || '-')}</strong></div>
+              <div class="full"><span>الصف الدراسي / المادة</span><strong>${escapeHtml(studyInfo)}</strong></div>
+            </div>
+            ${phone ? `<a class="btn user-mobile-wa" target="_blank" rel="noopener" href="https://wa.me/${whatsappNumber(phone)}">💬 فتح واتساب</a>` : ''}
+            <div class="user-mobile-actions">${buttons}</div>
+          `;
+          usersCards.appendChild(card);
+          bindUserEntryActions(card, { user, userDoc, name, isTeacher, isPending, isDisabled, isBanned, isAdmin });
+        }
+
+        bindUserEntryActions(tr, { user, userDoc, name, isTeacher, isPending, isDisabled, isBanned, isAdmin });
+
       }
     );
+
+    if (usersCards && !usersCards.children.length) {
+      usersCards.innerHTML = `<div class="user-mobile-empty">لا يوجد مستخدمون مطابقون.</div>`;
+    }
 
     window.applyAdminUserFilters?.();
 
@@ -2157,12 +2303,26 @@ async function loadUsers() {
       </tr>
 
     `;
+    const errorMessage = String(error.code || error.message || 'خطأ غير معروف');
+    if (usersCards) usersCards.innerHTML = `<div class="user-mobile-empty">❌ تعذر تحميل المستخدمين: ${escapeHtml(errorMessage)}<br><button class="btn gold" type="button" id="retryUsersLoad">إعادة المحاولة</button></div>`;
+    const resultCount = $('enhUsersResultCount');
+    if (resultCount) resultCount.textContent = 'تعذر تحميل المستخدمين — اضغط تحديث لإعادة المحاولة.';
 
+  } finally {
+    usersLoadInProgress = false;
+    if (refreshUsersButton) { refreshUsersButton.disabled = false; refreshUsersButton.textContent = '🔄 تحديث'; }
   }
 
 }
 
+// زر تحديث واضح، مع إعادة المحاولة من رسالة الخطأ على الهاتف.
+refreshUsersButton?.addEventListener('click', loadUsers);
+usersCards?.addEventListener('click', event => {
+  if (event.target.closest('#retryUsersLoad')) loadUsers();
+});
 
+// تحميل قائمة المستخدمين عند فتح لوحة الإدارة
+loadUsers();
 
 /* =====================================================
    LIVE GOOGLE MEET LESSONS
@@ -2337,7 +2497,7 @@ function renderLessonStudents() {
   const filtered = lessonStudents.filter(u => {
     const name = String(u.fullName || u.name || '').toLowerCase();
     const email = String(u.email || '').toLowerCase();
-    return !term || name.includes(term) || email.includes(term);
+    return !term || window.ZadNameSearch.matches([name, email], term);
   });
 
   lessonStudentsList.innerHTML = filtered.length ? filtered.map(u => `
@@ -2378,6 +2538,17 @@ lessonAudience?.addEventListener('change', () => {
   if (selected) loadLessonStudents();
 });
 lessonStudentSearch?.addEventListener('input', renderLessonStudents);
+$('lessonSubject')?.addEventListener('input', () => {
+  const field = $('lessonTeacher');
+  if (editingLessonId) return;
+  if (isEnglishSubject($('lessonSubject').value) && !field.value.trim()) {
+    field.value = ENGLISH_TEACHER_NAME;
+    field.dataset.autoEnglish = 'true';
+  } else if (!isEnglishSubject($('lessonSubject').value) && field.dataset.autoEnglish === 'true') {
+    if (field.value === ENGLISH_TEACHER_NAME) field.value = '';
+    delete field.dataset.autoEnglish;
+  }
+});
 loadLessonStudents();
 lessonForm?.addEventListener('submit', async (event) => {
   event.preventDefault();
@@ -2395,7 +2566,8 @@ lessonForm?.addEventListener('submit', async (event) => {
     title: $('lessonTitle').value.trim(),
     subject: $('lessonSubject').value.trim(),
     grade: $('lessonGrade').value.trim(),
-    teacherName: $('lessonTeacher').value.trim(),
+    teacherName: $('lessonTeacher').value.trim()
+      || (!editingLessonId && isEnglishSubject($('lessonSubject').value) ? ENGLISH_TEACHER_NAME : ''),
     date: $('lessonDate').value,
     meetUrl,
     preQuiz: questions,
@@ -2475,6 +2647,7 @@ async function loadLessonFollowUp() {
     });
     attendanceSnap.forEach(d => {
       const x = d.data();
+      if(x.deleted===true)return;
       rows.push({
         id: d.id,
         collection: 'lessonAttendance',
@@ -2513,7 +2686,12 @@ $('lessonFollowUpRows')?.addEventListener('click', async (event) => {
   if (!confirm('هل تريد حذف سجل المتابعة هذا نهائيًا؟')) return;
   try {
     button.disabled = true;
-    await deleteDoc(doc(db, button.dataset.collection, button.dataset.id));
+    if(button.dataset.collection==='lessonAttendance') {
+      const {archiveAttendance}=await import('./attendance-archive.js');
+      await archiveAttendance(button.dataset.id);
+    } else {
+      await deleteDoc(doc(db, button.dataset.collection, button.dataset.id));
+    }
     await loadLessonFollowUp();
   } catch (error) {
     console.error('خطأ في حذف سجل المتابعة:', error);
@@ -3282,6 +3460,7 @@ let editingContentId =
 
 const contentRows =
   $('contentRows');
+const englishProfileButton = $('addEnglishTeacherProfile');
 
 
 const fieldSets = {
@@ -3469,14 +3648,8 @@ const fieldSets = {
     ],
 
     [
-      'certificateLink',
-      'رابط الشهادة (صورة أو PDF) — يظهر مباشرة داخل كارت الطالب',
-      'text'
-    ],
-
-    [
       'category',
-      'قسم الشهادة: quran أو tajweed أو arabic أو sharia',
+      'قسم التميز: quran أو tajweed أو arabic أو sharia',
       'text'
     ]
 
@@ -3653,32 +3826,9 @@ function setContentStatus(
 
 
 
-// اقتراح المعلم الجديد عند اختيار اللغة الإنجليزية؛ لا يغيّر الحصص القديمة.
-$('lessonSubject')?.addEventListener('input', () => {
-  const subject=String($('lessonSubject')?.value||'').toLowerCase();
-  const english=/إنجليز|انجليز|english/.test(subject);
-  const field=$('lessonTeacher');
-  if(!field)return;
-  if(english&&!field.value.trim()){
-    field.value='محمد طلعت عبدالله';
-    field.dataset.zadAutoTalaat='true';
-  }else if(!english&&field.dataset.zadAutoTalaat==='true'){
-    field.value='';delete field.dataset.zadAutoTalaat;
-  }
-});
-
 /* مزامنة المعلمين القدامى مرة واحدة بدون استبدال أي بيانات موجودة */
 async function ensureLegacyTeachers() {
   const legacyTeachers = [
-    {
-      legacyKey: 'zad-mohamed-talaat',
-      name: 'الأستاذ محمد طلعت عبدالله',
-      subject: 'اللغة الإنجليزية',
-      role: 'مدرس اللغة الإنجليزية للتعليم الأزهري والعام',
-      image: '../images/mohamed-talaat-poster.png',
-      bio: 'شرح وتأسيس اللغة الإنجليزية للابتدائية والإعدادية والثانوية مع تدريبات ومراجعات.',
-      visible: true
-    },
     {
       legacyKey: 'legacy-dhia-quran',
       name: 'الأستاذ ضياء نبيل',
@@ -3705,1443 +3855,261 @@ async function ensureLegacyTeachers() {
       image: '../images/arabic-teacher.png',
       bio: 'معلم متميز في اللغة العربية، يجمع بين العلم الشرعي والأصيل والإتقان في تعليم القرآن الكريم والمواد الشرعية بأسلوب مبسط وممتع.',
       visible: true
-    }
+    },
+    // لم يعد هناك ملف افتراضي لهذا المعلم؛ السجلات التاريخية منفصلة عن الدليل.
   ];
-
-  const snap = await getDocs(collection(db, 'teachers'));
-  const existingDocs = new Map(
-    snap.docs
-      .map(d => [d.data()?.legacyKey, d])
-      .filter(([key]) => !!key)
-  );
-
-  await Promise.all(legacyTeachers.map(t => {
-    const existingDoc = existingDocs.get(t.legacyKey) || (
-      t.legacyKey === 'zad-mohamed-talaat'
-        ? snap.docs.find(d => /محمد\s+طلعت/.test(String(d.data()?.name || d.data()?.fullName || '')))
-        : null
-    );
-    const { legacyKey, ...data } = t;
-    return setDoc(doc(db, 'teachers', existingDoc?.id || legacyKey), {
-      ...data,
-      legacyKey,
-      updatedAt: serverTimestamp(),
-      ...(existingDoc ? {} : { createdAt: serverTimestamp() })
-    }, { merge: true });
-  }));
-
-  return legacyTeachers.length;
+  // الاحتفاظ بالقائمة القديمة للرجوع إليها دون الكتابة فوق بيانات المعلمين الموجودة.
+  return legacyTeachers;
 }
 
-
-/* تحميل المحتوى */
-
-async function loadContent() {
-
-  contentRows.innerHTML = `
-
-    <tr>
-
-      <td colspan="5">
-        جارٍ التحميل...
-      </td>
-
-    </tr>
-
-  `;
-
-
-  try {
-
-    const snap =
-      await getDocs(
-        collection(
-          db,
-          activeContentType
-        )
-      );
-
-
-    contentRows.innerHTML =
-      '';
-
-
-    if (snap.empty) {
-
-      contentRows.innerHTML = `
-
-        <tr>
-
-          <td colspan="5">
-            لا توجد بيانات مضافة حتى الآن.
-          </td>
-
-        </tr>
-
-      `;
-
-      return;
-
-    }
-
-
-    snap.forEach(
-      item => {
-
-        const data =
-          item.data();
-
-
-        const title =
-          data.title ||
-          data.name ||
-          '';
-
-
-        const details =
-          data.subtitle ||
-          data.subject ||
-          data.grade ||
-          data.date ||
-          '';
-
-
-        contentRows.insertAdjacentHTML(
-          'beforeend',
-          `
-
-            <tr>
-
-              <td>
-                ${contentTypes[activeContentType]}
-              </td>
-
-              <td>
-                ${escapeHtml(title)}
-              </td>
-
-              <td>
-                ${escapeHtml(details)}
-              </td>
-
-              <td>
-                ${
-                  data.visible === false
-                    ? 'مخفي'
-                    : 'ظاهر'
-                }
-              </td>
-
-              <td>
-
-                <button
-                  class="btn edit"
-                  data-id="${escapeHtml(item.id)}"
-                  type="button"
-                >
-                  تعديل
-                </button>
-
-
-                <button
-                  class="btn toggle"
-                  data-id="${escapeHtml(item.id)}"
-                  data-visible="${data.visible !== false}"
-                  type="button"
-                >
-                  ${
-                    data.visible === false
-                      ? 'إظهار'
-                      : 'إخفاء'
-                  }
-                </button>
-
-
-                <button
-                  class="btn danger del"
-                  data-id="${escapeHtml(item.id)}"
-                  type="button"
-                >
-                  حذف
-                </button>
-
-              </td>
-
-            </tr>
-
-          `
-        );
-
-      }
-    );
-
-  }
-
-  catch (error) {
-
-    console.error(
-      'Content load error:',
-      error
-    );
-
-
-    contentRows.innerHTML = `
-
-      <tr>
-
-        <td colspan="5">
-
-          تعذر تحميل البيانات.
-
-        </td>
-
-      </tr>
-
-    `;
-
-
-    setContentStatus(
-      'خطأ في تحميل المحتوى: ' +
-      (
-        error.code ||
-        error.message
-      ),
-      true
-    );
-
-  }
-
-}
-
-
-
-/* تبديل نوع المحتوى */
-
-document
-  .querySelectorAll(
-    '[data-content-tab]'
-  )
-  .forEach(
-    button => {
-
-      button.addEventListener(
-        'click',
-        () => {
-
-          activeContentType =
-            button.dataset.contentTab;
-
-
-          $('contentType').value =
-            activeContentType;
-
-
-          editingContentId =
-            null;
-
-
-          fillContentForm({});
-
-
-          if (activeContentType === 'teachers') {
-            ensureLegacyTeachers()
-              .then(() => loadContent())
-              .catch(error => {
-                console.error('Legacy teachers sync error:', error);
-                loadContent();
-              });
-          } else {
-            loadContent();
-          }
-
-        }
-      );
-
-    }
-  );
-
-
-
-/* حفظ المحتوى */
-
-$('contentForm')
-  .addEventListener(
-    'submit',
-    async event => {
-
-      event.preventDefault();
-
-
-      const requiredKey =
-        (activeContentType === 'events' || activeContentType === 'libraryBooks' || activeContentType === 'azharBooks')
-          ? 'title'
-          : 'name';
-
-
-      const title =
-        contentValue(
-          requiredKey
-        );
-
-
-      if (!title) {
-
-        setContentStatus(
-          'اكتب البيانات الأساسية أولًا.',
-          true
-        );
-
-        return;
-
-      }
-
-
-      const data = {
-
-        visible:
-          $('contentVisible').checked,
-
-        updatedAt:
-          serverTimestamp()
-
-      };
-
-
-      (
-        fieldSets[
-          activeContentType
-        ] || []
-      )
-        .forEach(
-          ([key]) => {
-
-            data[key] =
-              contentValue(key);
-
-          }
-        );
-
-
-      if (
-        activeContentType ===
-        'events'
-      ) {
-
-        data.title =
-          contentValue('title');
-
-
-        data.status =
-          'upcoming';
-
-      }
-
-
-      if (
-        activeContentType ===
-        'featuredStudents'
-      ) {
-
-        data.title =
-          contentValue('name');
-
-      }
-
-
-      try {
-
-        if (editingContentId) {
-
-          await updateDoc(
-            doc(
-              db,
-              activeContentType,
-              editingContentId
-            ),
-            data
-          );
-
-
-          setContentStatus(
-            'تم تعديل العنصر وحفظه بنجاح.'
-          );
-
-        }
-
-        else {
-
-          data.createdAt =
-            serverTimestamp();
-
-
-          const ref =
-            await addDoc(
-              collection(
-                db,
-                activeContentType
-              ),
-              data
-            );
-
-
-          console.log(
-            'Added document:',
-            ref.id
-          );
-
-
-          setContentStatus(
-            'تمت إضافة العنصر وحفظه في Firestore بنجاح.'
-          );
-
-        }
-
-
-        editingContentId =
-          null;
-
-
-        fillContentForm({});
-
-
-        await loadContent();
-        await syncAutomaticHomeStats();
-
-      }
-
-      catch (error) {
-
-        console.error(
-          'Content save error:',
-          error
-        );
-
-
-        setContentStatus(
-          'لم يتم الحفظ: ' +
-          (
-            error.code ||
-            error.message
-          ),
-          true
-        );
-
-      }
-
-    }
-  );
-
-
-
-/* إلغاء التعديل */
-
-$('contentCancel')
-  .onclick = () => {
-
-    editingContentId =
-      null;
-
-
-    fillContentForm({});
-
-
-    setContentStatus(
-      'تم إلغاء التعديل.'
-    );
-
-  };
-
-
-
-/* إجراءات المحتوى */
-
-contentRows.addEventListener(
-  'click',
-  async event => {
-
-    const button =
-      event.target.closest(
-        'button'
-      );
-
-
-    if (!button)
-      return;
-
-
-    const id =
-      button.dataset.id;
-
-
-    if (!id)
-      return;
-
-
-    try {
-
-
-      /* حذف */
-
-      if (
-        button.classList.contains(
-          'del'
-        )
-      ) {
-
-        if (
-          confirm(
-            'حذف هذا العنصر؟'
-          )
-        ) {
-
-          await deleteDoc(
-            doc(
-              db,
-              activeContentType,
-              id
-            )
-          );
-
-
-          setContentStatus(
-            'تم الحذف بنجاح.'
-          );
-
-        }
-
-      }
-
-
-      /* إظهار / إخفاء */
-
-      else if (
-        button.classList.contains(
-          'toggle'
-        )
-      ) {
-
-        await updateDoc(
-          doc(
-            db,
-            activeContentType,
-            id
-          ),
-          {
-            visible:
-              button.dataset.visible ===
-              'false',
-
-            updatedAt:
-              serverTimestamp()
-          }
-        );
-
-
-        setContentStatus(
-          'تم تغيير حالة الظهور.'
-        );
-
-      }
-
-
-      /* تعديل */
-
-      else if (
-        button.classList.contains(
-          'edit'
-        )
-      ) {
-
-        const snap =
-          await getDocs(
-            collection(
-              db,
-              activeContentType
-            )
-          );
-
-
-        const hit =
-          snap.docs.find(
-            item =>
-              item.id === id
-          );
-
-
-        if (hit) {
-
-          editingContentId =
-            id;
-
-
-          fillContentForm({
-            id,
-            ...hit.data()
-          });
-
-
-          window.scrollTo({
-
-            top:
-              $('contentForm')
-                .offsetTop - 80,
-
-            behavior:
-              'smooth'
-
-          });
-
-        }
-
-      }
-
-
-      await loadContent();
-      await syncAutomaticHomeStats();
-
-    }
-
-    catch (error) {
-
-      console.error(
-        'Content action error:',
-        error
-      );
-
-
-      setContentStatus(
-        'تعذر تنفيذ العملية: ' +
-        (
-          error.code ||
-          error.message
-        ),
-        true
-      );
-
-    }
-
-  }
-);
-
-
-
-/* =====================================================
-   BOOKINGS
-===================================================== */
-
+/* إصلاح استكمال دوال لوحة الإدارة التي انقطع ملفها. */
+const bookingRows = $('bookingRows');
+const bookingStatuses = ['جديد', 'قيد المراجعة', 'تم التواصل', 'تم الحجز', 'مكتمل', 'ملغي'];
+let bookingsCache = new Map();
 async function loadBookings() {
-
-  const body =
-    $('bookingRows');
-
-
-  if (!body)
-    return;
-
-
-  body.innerHTML = `
-
-    <tr>
-
-      <td colspan="10">
-        جارٍ تحميل الطلبات...
-      </td>
-
-    </tr>
-
-  `;
-
-
+  if (!bookingRows) return;
+  bookingRows.innerHTML = '<tr><td colspan="8">جارٍ تحميل الحجوزات…</td></tr>';
   try {
-
-    const snap =
-      await getDocs(
-
-        query(
-          collection(
-            db,
-            'bookings'
-          ),
-
-          orderBy(
-            'createdAt',
-            'desc'
-          )
-        )
-
-      );
-
-
-    body.innerHTML =
-      '';
-
-
-    if (snap.empty) {
-
-      body.innerHTML = `
-
-        <tr>
-
-          <td colspan="9">
-            لا توجد طلبات حجز.
-          </td>
-
-        </tr>
-
-      `;
-
-      return;
-
-    }
-
-
-    /*
-     * مهم:
-     * هنا نحتفظ ببيانات كل حجز
-     * داخل الصف نفسه.
-     *
-     * وبالتالي لن نستخدم المتغير b
-     * خارج نطاقه.
-     */
-
-    snap.forEach(
-      bookingDoc => {
-
-        const booking =
-          bookingDoc.data();
-
-
-        const currentStatus =
-          booking.status ||
-          'جديد';
-
-
-        const tr =
-          document.createElement(
-            'tr'
-          );
-
-
-        tr.innerHTML = `
-
-          <td>
-            ${escapeHtml(
-              booking.fullName ||
-              '-'
-            )}
-          </td>
-
-
-          <td>
-
-            ${escapeHtml(
-              booking.email ||
-              '-'
-            )}
-
-            <br>
-
-            ${escapeHtml(
-              booking.phone ||
-              '-'
-            )}
-
-          </td>
-
-
-          <td>
-
-            ${escapeHtml(
-              booking.educationType ||
-              '-'
-            )}
-
-            /
-
-            ${escapeHtml(
-              booking.grade ||
-              '-'
-            )}
-
-          </td>
-
-
-          <td>
-            ${escapeHtml(
-              booking.subject ||
-              '-'
-            )}
-          </td>
-
-
-          <td>
-
-            ${escapeHtml(
-              booking.preferredDay1 ||
-              '-'
-            )}
-
-            —
-
-            ${escapeHtml(
-              booking.preferredDay2 ||
-              '-'
-            )}
-
-            <br>
-
-            ${escapeHtml(
-              booking.preferredPeriod ||
-              ''
-            )}
-
-          </td>
-
-
-          <td>
-
-            ${escapeHtml(
-              booking.teacherName ||
-              'لم يُعيّن'
-            )}
-
-          </td>
-
-
-          <td>
-
-            <select
-              class="booking-status-select"
-              data-id="${escapeHtml(
-                bookingDoc.id
-              )}"
-            >
-
-              <option
-                value="جديد"
-                ${
-                  currentStatus ===
-                  'جديد'
-                    ? 'selected'
-                    : ''
-                }
-              >
-                جديد
-              </option>
-
-
-              <option
-                value="قيد المراجعة"
-                ${
-                  currentStatus ===
-                  'قيد المراجعة'
-                    ? 'selected'
-                    : ''
-                }
-              >
-                قيد المراجعة
-              </option>
-
-
-              <option
-                value="تم التواصل"
-                ${
-                  currentStatus ===
-                  'تم التواصل'
-                    ? 'selected'
-                    : ''
-                }
-              >
-                تم التواصل
-              </option>
-
-
-              <option
-                value="تم الحجز"
-                ${
-                  currentStatus ===
-                  'تم الحجز'
-                    ? 'selected'
-                    : ''
-                }
-              >
-                تم الحجز
-              </option>
-
-
-              <option
-                value="مكتمل"
-                ${
-                  currentStatus ===
-                  'مكتمل'
-                    ? 'selected'
-                    : ''
-                }
-              >
-                مكتمل
-              </option>
-
-
-              <option
-                value="ملغي"
-                ${
-                  currentStatus ===
-                  'ملغي'
-                    ? 'selected'
-                    : ''
-                }
-              >
-                ملغي
-              </option>
-
-            </select>
-
-          </td>
-
-
-          <td>
-            <div class="booking-row-actions">
-              <button class="btn booking-save-btn" data-booking-id="${escapeHtml(bookingDoc.id)}" type="button">💾 حفظ</button>
-              <button class="btn booking-report-btn" data-booking-report-id="${escapeHtml(bookingDoc.id)}" type="button">📄 تقرير الحجز</button>
-              <button class="btn booking-student-report-btn" data-booking-student-id="${escapeHtml(bookingDoc.id)}" type="button">👤 تقرير الطالب</button>
-              <button class="btn danger booking-delete-btn" data-booking-delete-id="${escapeHtml(bookingDoc.id)}" type="button">🗑️ حذف</button>
-            </div>
-          </td>
-
-        `;
-
-
-        body.appendChild(tr);
-
-
-        /*
-         * نحفظ بيانات الحجز في الـ button
-         * نفسه، وبذلك لا يوجد أي b
-         * خارج نطاق snap.forEach.
-         */
-
-        const saveButton =
-          tr.querySelector(
-            '[data-booking-id]'
-          );
-
-
-        saveButton.addEventListener(
-          'click',
-          async () => {
-
-            const select =
-              tr.querySelector(
-                '.booking-status-select'
-              );
-
-
-            const newStatus =
-              select.value;
-
-
-            const oldStatus =
-              currentStatus;
-
-
-            const bookingId =
-              bookingDoc.id;
-
-
-            try {
-
-              saveButton.disabled =
-                true;
-
-
-              saveButton.textContent =
-                'جارٍ الحفظ...';
-
-
-              /*
-               * تحديث حالة الحجز
-               */
-
-              await updateDoc(
-
-                doc(
-                  db,
-                  'bookings',
-                  bookingId
-                ),
-
-                {
-
-                  status:
-                    newStatus,
-
-                  updatedAt:
-                    serverTimestamp()
-
-                }
-
-              );
-
-              if (newStatus !== oldStatus) {
-                try {
-                  await addDoc(collection(db, 'bookingStatusHistory'), {
-                    bookingId,
-                    studentUid: booking.studentUid || null,
-                    studentName: booking.fullName || null,
-                    previousStatus: oldStatus,
-                    status: newStatus,
-                    changedByUid: auth.currentUser?.uid || null,
-                    changedByEmail: auth.currentUser?.email || null,
-                    changedByName: auth.currentUser?.displayName || null,
-                    changedAt: serverTimestamp(),
-                    clientChangedAt: new Date().toISOString()
-                  });
-                } catch (historyError) {
-                  console.warn('تعذر حفظ سجل تغيير حالة الحجز:', historyError);
-                }
-              }
-
-
-              /*
-               * إرسال إشعار للطالب
-               *
-               * نستخدم booking.studentUid
-               * مباشرة من بيانات الحجز.
-               */
-
-              if (
-
-                booking.studentUid &&
-
-                newStatus !==
-                oldStatus
-
-              ) {
-
-                await addDoc(
-
-                  collection(
-                    db,
-                    'notifications'
-                  ),
-
-                  {
-
-                    audience:
-                      'user',
-
-                    targetUid:
-                      booking.studentUid,
-
-                    type:
-                      'booking',
-
-                    title:
-                      `📅 تم تحديث حالة طلب حجز الحصة للطالب ${booking.fullName || booking.studentName || 'غير معروف'}`,
-
-                    message:
-                      newStatus ===
-                      'تم الحجز'
-
-                        ? `تم تحديث حالة طلب حجز الحصة للطالب ${booking.fullName || booking.studentName || 'غير معروف'} إلى: تم الحجز. سيتم التواصل لتأكيد التفاصيل.`
-
-                        : `تم تحديث حالة طلب حجز الحصة للطالب ${booking.fullName || booking.studentName || 'غير معروف'} إلى: ${newStatus}`,
-
-                    bookingId:
-
-                      bookingId,
-
-                    createdBy:
-                      auth.currentUser?.uid ||
-                      null,
-
-                    createdAt:
-                      serverTimestamp(),
-
-                    readBy: []
-
-                  }
-
-                );
-
-              }
-
-
-              saveButton.textContent =
-                '✅ تم الحفظ';
-
-
-              /*
-               * إعادة تحميل الجدول
-               */
-
-              await loadBookings();
-
-            }
-
-            catch (error) {
-
-              console.error(
-                'خطأ في تحديث حالة الحجز:',
-                error
-              );
-
-
-              alert(
-                'تعذر تحديث الحالة: ' +
-                (
-                  error.code ||
-                  error.message
-                )
-              );
-
-
-              saveButton.disabled =
-                false;
-
-
-              saveButton.textContent =
-                'حفظ الحالة';
-
-            }
-
-          }
-        );
-
-      }
-    );
-
-  }
-
-  catch (error) {
-
-    console.error(
-      'خطأ في تحميل طلبات الحجز:',
-      error
-    );
-
-
-    body.innerHTML = `
-
+    const snap = await getDocsWithTimeout(collection(db, 'bookings'));
+    const rows = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    rows.sort((a, b) => (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0));
+    bookingsCache = new Map(rows.map(row => [row.id, row]));
+    bookingRows.innerHTML = rows.length ? rows.map(item => `
       <tr>
-
-        <td colspan="10">
-
-          تعذر تحميل الطلبات:
-
-          ${escapeHtml(
-            error.code ||
-            error.message
-          )}
-
-        </td>
-
+        <td>${escapeHtml(item.fullName || item.studentName || 'طالب')}<br><small>${escapeHtml(formatDate(item.createdAt))}</small></td>
+        <td>${escapeHtml(item.phone || '—')}<br>${escapeHtml(item.email || '—')}</td>
+        <td>${escapeHtml([item.educationType, item.stage, item.grade].filter(Boolean).join(' — ') || '—')}</td>
+        <td>${escapeHtml(item.subject || '—')}</td>
+        <td>${escapeHtml([item.preferredDay1, item.preferredDay2].filter(Boolean).join(' / ') || '—')}</td>
+        <td>${escapeHtml(item.teacherName || '—')}</td>
+        <td><select class="booking-status-select" data-id="${escapeHtml(item.id)}" aria-label="حالة الحجز">${bookingStatuses.map(status => `<option value="${status}" ${status === (item.status || 'جديد') ? 'selected' : ''}>${status}</option>`).join('')}</select></td>
+        <td><button type="button" class="btn gold booking-save-btn" data-id="${escapeHtml(item.id)}">حفظ</button> <button type="button" class="btn booking-report-btn" data-booking-report-id="${escapeHtml(item.id)}">تقرير</button></td>
       </tr>
-
-    `;
-
-  }
-
-}
-
-
-
-
-
-/* =====================================================
-   SYNC EXISTING STUDENTS COUNTER
-===================================================== */
-const syncStudentCounterButton = $('syncStudentCounter');
-const studentCounterSyncStatus = $('studentCounterSyncStatus');
-
-syncStudentCounterButton?.addEventListener('click', async () => {
-  if (!confirm('سيتم حساب كل الحسابات التي role فيها student وتحديث العداد العام. هل تريد المتابعة؟')) return;
-  syncStudentCounterButton.disabled = true;
-  studentCounterSyncStatus.textContent = 'جارٍ حساب الطلاب...';
-  try {
-    const snapshot = await getDocs(collection(db, 'users'));
-    const totalStudents = snapshot.docs.filter(item => item.data()?.role === 'student').length;
-    await setDoc(doc(db, 'publicStats', 'students'), {
-      total: totalStudents,
-      updatedAt: serverTimestamp(),
-      source: 'admin-sync'
-    }, { merge: true });
-    studentCounterSyncStatus.textContent = `✅ تم تحديث العداد إلى ${totalStudents.toLocaleString('ar-EG')} طالب.`;
+    `).join('') : '<tr><td colspan="8">لا توجد طلبات حجز حتى الآن.</td></tr>';
   } catch (error) {
-    console.error('Student counter sync error:', error);
-    studentCounterSyncStatus.textContent = '❌ تعذر تحديث العداد: ' + (error.code || error.message);
-  } finally {
-    syncStudentCounterButton.disabled = false;
-  }
-});
-
-
-
-/* =====================================================
-   AUTOMATIC HOMEPAGE STATS
-===================================================== */
-async function fetchLocalText(url) {
-  try {
-    const response = await fetch(url, { cache: 'no-store' });
-    return response.ok ? await response.text() : '';
-  } catch (error) {
-    console.warn('تعذر قراءة الملف لحساب الإحصائيات:', url, error);
-    return '';
+    console.error('تعذر تحميل طلبات الحجز:', error);
+    bookingRows.innerHTML = `<tr><td colspan="8">تعذر تحميل الحجوزات: ${escapeHtml(error.code || error.message)}</td></tr>`;
   }
 }
-
-function staticLibraryKeys(source) {
-  const keys = new Set();
-  const start = source.indexOf('var books = [');
-  if (start < 0) return keys;
-  const end = source.indexOf('];', start);
-  const chunk = end > start ? source.slice(start, end) : source.slice(start);
-  for (const objectText of (chunk.match(/\{[\s\S]*?\}/g) || [])) {
-    const title = objectText.match(/\btitle\s*:\s*["']([^"']+)["']/)?.[1]?.trim() || '';
-    const url = objectText.match(/\burl\s*:\s*["']([^"']+)["']/)?.[1]?.trim() || '';
-    if (title) keys.add(`${title}|${url}`);
-  }
-  return keys;
-}
-
-function legacyTeacherKeys(source) {
-  return new Set(
-    [...source.matchAll(/\blegacyKey\s*:\s*["']([^"']+)["']/g)]
-      .map(match => String(match[1] || '').trim())
-      .filter(Boolean)
-  );
-}
-
-function activeStaticTestLinks(source) {
-  const links = new Set();
-  try {
-    const parsed = new DOMParser().parseFromString(source, 'text/html');
-    parsed.querySelectorAll('a.subject.active[href]').forEach(link => {
-      const href = String(link.getAttribute('href') || '').trim();
-      if (href) links.add(href);
-    });
-  } catch (error) {
-    console.warn('تعذر تحليل صفحة الاختبارات:', error);
-  }
-  return links;
-}
-
-async function syncAutomaticHomeStats() {
-  try {
-    const [
-      usersSnap,
-      teachersSnap,
-      booksSnap,
-      quizzesSnap,
-      librarySource,
-      teachersSource,
-      testsSource
-    ] = await Promise.all([
-      getDocs(collection(db, 'users')),
-      getDocs(collection(db, 'teachers')),
-      getDocs(collection(db, 'libraryBooks')),
-      getDocs(collection(db, 'quizzes')),
-      fetchLocalText('../../sections/library.html'),
-      fetchLocalText('../../teachers/index.html'),
-      fetchLocalText('../../sections/tests/index.html')
-    ]);
-
-    const students = usersSnap.docs.filter(item => item.data()?.role === 'student').length;
-
-    const bookKeys = staticLibraryKeys(librarySource);
-    booksSnap.docs.forEach(item => {
-      const book = item.data() || {};
-      if (book.visible === false || !book.title) return;
-      bookKeys.add(`${String(book.title).trim()}|${String(book.url || '').trim()}`);
-    });
-
-    const legacyKeys = legacyTeacherKeys(teachersSource);
-    const teacherKeys = new Set([...legacyKeys].map(key => `legacy:${key}`));
-    teachersSnap.docs.forEach(item => {
-      const teacher = item.data() || {};
-      if (teacher.visible === false) return;
-      if (teacher.legacyKey && legacyKeys.has(String(teacher.legacyKey))) {
-        teacherKeys.add(`legacy:${String(teacher.legacyKey)}`);
-      } else {
-        teacherKeys.add(`firestore:${item.id}`);
-      }
-    });
-
-    const testKeys = new Set([...activeStaticTestLinks(testsSource)].map(href => `static:${href}`));
-    quizzesSnap.docs.forEach(item => {
-      const quiz = item.data() || {};
-      if (quiz.type === 'pre') return;
-      testKeys.add(`firestore:${item.id}`);
-    });
-
-    const values = {
-      students,
-      books: bookKeys.size,
-      categories: teacherKeys.size,
-      tests: testKeys.size
-    };
-
-    await Promise.all(Object.entries(values).map(([id, total]) =>
-      setDoc(doc(db, 'publicStats', id), {
-        total,
-        updatedAt: serverTimestamp(),
-        source: 'automatic-dashboard-sync',
-        updatedBy: auth.currentUser?.uid || null
-      }, { merge: true })
-    ));
-
-    return values;
-  } catch (error) {
-    console.error('Automatic homepage stats sync error:', error);
-    return null;
-  }
-}
-
-$('enhRefreshData')?.addEventListener('click', syncAutomaticHomeStats);
-
-
-/* =====================================================
-   INITIALIZATION
-===================================================== */
-
-renderContentFields();
-
-fillContentForm({});
-
-
-loadNotificationHistory();
-
-
-
-/*
- * حماية لوحة الإدارة
- *
- * guard هو المسؤول عن التأكد
- * أن المستخدم أدمن.
- */
-
-guard(
-  'admin',
-  async () => {
-
-    await loadUsers();
-
-    await loadLoginLogs();
-
-    try {
-      await ensureLegacyTeachers();
-    } catch (error) {
-      console.error('Initial legacy teachers sync error:', error);
-    }
-
-    await loadContent();
-
-    await loadBookings();
-    await syncAutomaticHomeStats();
-    await loadLibraryDownloads();
-
-  }
-);
-
-
-
-$('bookingRows')?.addEventListener('click', async (event) => {
-  const button = event.target.closest('.booking-delete-btn');
+bookingRows?.addEventListener('click', async event => {
+  const button = event.target.closest('.booking-save-btn');
   if (!button) return;
-  if (!confirm('هل تريد حذف طلب الحجز هذا نهائيًا؟')) return;
+  const booking = bookingsCache.get(button.dataset.id);
+  const status = button.closest('tr')?.querySelector('.booking-status-select')?.value;
+  if (!booking || !bookingStatuses.includes(status)) return;
+  const previous = booking.status || 'جديد';
+  if (previous === status) return;
+  button.disabled = true;
   try {
-    button.disabled = true;
-    await deleteDoc(doc(db, 'bookings', button.dataset.bookingDeleteId));
+    await updateDoc(doc(db, 'bookings', booking.id), { status, updatedAt: serverTimestamp() });
+    try {
+      await addDoc(collection(db, 'bookingStatusHistory'), {
+        bookingId: booking.id, oldStatus: previous, newStatus: status, status,
+        changedBy: auth.currentUser?.uid || null, createdAt: serverTimestamp()
+      });
+    } catch (historyError) { console.warn('تعذر تسجيل تاريخ تغيير الحجز:', historyError); }
     await loadBookings();
   } catch (error) {
-    console.error('خطأ في حذف الحجز:', error);
-    alert('تعذر حذف طلب الحجز: ' + (error.code || error.message));
+    console.error('تعذر تحديث حالة الحجز:', error);
+    alert('تعذر حفظ الحجز: ' + (error.code || error.message));
     button.disabled = false;
   }
 });
 
-/* =====================================================
-   REFRESH BUTTON
-===================================================== */
+async function syncAutomaticHomeStats() {
+  // بيانات الإحصائيات يتم تحميلها بواسطة ملف admin-enhancements.js.
+  window.dispatchEvent(new Event('zad:admin-data-changed'));
+}
+$('syncStudentCounter')?.addEventListener('click', async () => {
+  const button = $('syncStudentCounter');
+  const status = $('studentCounterSyncStatus');
+  button.disabled = true;
+  status.textContent = 'جارٍ حساب الطلاب من قاعدة البيانات…';
+  try {
+    await waitForSignedInUser();
+    const snap = await getDocsWithTimeout(collection(db, 'users'));
+    const total = snap.docs.filter(d => d.data().role === 'student').length;
+    await setDoc(doc(db, 'publicStats', 'students'), { total, updatedAt: serverTimestamp() }, { merge: true });
+    status.textContent = `✅ تم تحديث العداد: ${total.toLocaleString('ar-EG')} طالب`;
+  } catch (error) {
+    console.error('خطأ مزامنة عداد الطلاب:', error);
+    status.textContent = '❌ تعذر تحديث عداد الطلاب: ' + (error.code || error.message);
+  } finally { button.disabled = false; }
+});
 
-$('refresh').onclick =
-  loadUsers;
-
-
-
-/* =====================================================
-   LOGOUT
-===================================================== */
-
-$('logout').onclick =
-  async () => {
-
-    try {
-
-      await signOut(auth);
-
-      location.href =
-        '../../index.html';
-
-    }
-
-    catch (error) {
-
-      console.error(
-        'Logout error:',
-        error
-      );
-
-      alert(
-        'تعذر تسجيل الخروج.'
-      );
-
-    }
-
-  };
-
-
-
-/* =====================================================
-   AUTH STATE
-===================================================== */
-
-onAuthStateChanged(
-  auth,
-  user => {
-
-    if (!user) {
-
-      const body =
-        $('bookingRows');
-
-
-      if (body) {
-
-        body.innerHTML = `
-
-          <tr>
-
-            <td colspan="10">
-              يجب تسجيل الدخول بحساب الأدمن.
-            </td>
-
-          </tr>
-
-        `;
-
-      }
-
-    }
-
+// إدارة محتوى المنصة: قراءة وإضافة وتعديل وحذف دون المساس بالمحتوى القديم.
+function getContentTitle(row) { return row.title || row.name || row.subject || row.id || 'عنصر'; }
+async function loadContent() {
+  if (!contentRows) return;
+  contentRows.innerHTML = '<tr><td colspan="5">جارٍ تحميل المحتوى…</td></tr>';
+  try {
+    const type = activeContentType;
+    const snap = await getDocsWithTimeout(collection(db, type));
+    if (type !== activeContentType) return;
+    const items = snap.docs.map(d => ({ ...d.data(), id: d.id })).filter(t => type !== 'teachers' || !isRetiredTeacherProfile(t));
+    if (englishProfileButton) englishProfileButton.hidden = type !== 'teachers' || items.some(isEnglishTeacherProfile);
+    contentRows.innerHTML = items.length ? items.map(item => `
+      <tr>
+        <td>${escapeHtml(contentTypes[activeContentType])}</td>
+        <td>${escapeHtml(getContentTitle(item))}</td>
+        <td>${escapeHtml(item.description || item.bio || item.subject || item.grade || '—')}</td>
+        <td>${item.visible === false ? 'مخفي' : 'ظاهر'}</td>
+        <td><button type="button" class="btn" data-content-edit="${escapeHtml(item.id)}">تعديل</button> <button type="button" class="btn danger" data-content-delete="${escapeHtml(item.id)}">حذف</button></td>
+      </tr>
+    `).join('') : '<tr><td colspan="5">لا توجد عناصر في هذا القسم حتى الآن.</td></tr>';
+    contentRows._contentItems = new Map(items.map(item => [item.id, item]));
+  } catch (error) {
+    console.error('تعذر تحميل المحتوى:', error);
+    contentRows.innerHTML = `<tr><td colspan="5">تعذر تحميل المحتوى: ${escapeHtml(error.code || error.message)}</td></tr>`;
   }
-);
+}
+function switchContentTab(tab) {
+  if (!(tab in contentTypes)) return;
+  activeContentType = tab;
+  if (englishProfileButton) englishProfileButton.hidden = true;
+  editingContentId = null;
+  $('contentType').value = tab;
+  $('contentId').value = '';
+  $('contentVisible').checked = true;
+  document.querySelectorAll('[data-content-tab]').forEach(button => button.classList.toggle('gold', button.dataset.contentTab === tab));
+  renderContentFields();
+  loadContent();
+}
+document.querySelectorAll('[data-content-tab]').forEach(button => button.addEventListener('click', () => switchContentTab(button.dataset.contentTab)));
+$('contentCancel')?.addEventListener('click', () => switchContentTab(activeContentType));
+englishProfileButton?.addEventListener('click', async () => {
+  englishProfileButton.disabled = true;
+  try {
+    const profiles = await getDocsWithTimeout(collection(db, 'teachers'));
+    if (!profiles.docs.some(profile => isEnglishTeacherProfile({...profile.data(), id: profile.id}))) {
+      const ref = doc(db, 'teachers', ENGLISH_TEACHER_PROFILE.legacyKey);
+      const saved = await getDoc(ref);
+      if (!saved.exists()) await setDoc(ref, {...ENGLISH_TEACHER_PROFILE, visible: true, createdAt: serverTimestamp()});
+    }
+    setContentStatus('بطاقة الأستاذ محمد طلعت مسجلة في إدارة طاقم التدريس.');
+    if (activeContentType === 'teachers') await loadContent();
+  } catch (error) {
+    setContentStatus('تعذر حفظ البطاقة: ' + (error.code || error.message), true);
+  } finally {
+    englishProfileButton.disabled = false;
+  }
+});
+$('contentForm')?.addEventListener('submit', async event => {
+  event.preventDefault();
+  const submit = event.currentTarget.querySelector('[type="submit"]');
+  const data = {};
+  for (const [key] of fieldSets[activeContentType] || []) data[key] = contentValue(key);
+  data.visible = $('contentVisible').checked;
+  data.updatedAt = serverTimestamp();
+  submit.disabled = true;
+  try {
+    if (editingContentId) {
+      await updateDoc(doc(db, activeContentType, editingContentId), data);
+    } else {
+      await addDoc(collection(db, activeContentType), { ...data, createdAt: serverTimestamp() });
+    }
+    setContentStatus('✅ تم حفظ المحتوى بنجاح.');
+    switchContentTab(activeContentType);
+  } catch (error) {
+    console.error('تعذر حفظ المحتوى:', error);
+    setContentStatus('❌ تعذر الحفظ: ' + (error.code || error.message), true);
+  } finally { submit.disabled = false; }
+});
+contentRows?.addEventListener('click', async event => {
+  const edit = event.target.closest('[data-content-edit]');
+  const del = event.target.closest('[data-content-delete]');
+  const id = edit?.dataset.contentEdit || del?.dataset.contentDelete;
+  if (!id) return;
+  const item = contentRows._contentItems?.get(id);
+  if (!item) return;
+  if (edit) {
+    editingContentId = id;
+    fillContentForm(item);
+    $('contentId').value = id;
+    $('contentForm').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  } else if (del && confirm('هل تريد حذف هذا العنصر نهائيًا؟')) {
+    del.disabled = true;
+    try {
+      await deleteDoc(doc(db, activeContentType, id));
+      await loadContent();
+    } catch (error) {
+      console.error('خطأ حذف المحتوى:', error);
+      alert('تعذر حذف العنصر: ' + (error.code || error.message));
+      del.disabled = false;
+    }
+  }
+});
 
+$('refreshNotifications')?.addEventListener('click', loadNotificationHistory);
+$('logout')?.addEventListener('click', async () => {
+  try { await signOut(auth); location.replace('../../login/index.html'); }
+  catch (error) { alert('تعذر تسجيل الخروج: ' + (error.message || error)); }
+});
+
+// تشغيل باقي الواجهات بعد التحقق من تسجيل الدخول.
+guard('admin', async () => {
+  switchContentTab('events');
+  await Promise.allSettled([
+    loadBookings(),
+    loadLoginLogs(),
+    loadNotificationHistory(),
+    loadLibraryDownloads()
+  ]);
+});
 </script>
-
-<script type="module" src="reports-admin.js"></script>
+<!-- ملفات مستقلة كانت غير مُحمّلة بسبب انقطاع نهاية الصفحة -->
+<script type="module" src="admin-activity-alerts.js"></script>
 <script type="module" src="admin-enhancements.js"></script>
-<script type="module" src="attendance-admin.js"></script>
-</body>
+<script type="module" src="admin-workspace.js?v=20261112-lecture-ratings1"></script>
+<script type="module" src="attendance-admin.js?v=20261116-english"></script>
+<link rel="stylesheet" href="lecture-reviews-share.css?v=20261113-share2">
+<script type="module" src="lecture-reviews-admin.js?v=20261113-share2"></script>
+<script type="module" src="teacher-payroll-admin.js?v=20261116-english"></script>
+<script type="module" src="teacher-linker-admin.js?v=20261105-1"></script>
 
+
+<script type="module" src="account-link-repair.js?v=20261103-stable3"></script>
+<script type="module" src="manual-students-admin.js"></script>
+<script type="module" src="quiz-center-admin.js"></script>
+<script type="module" src="reports-admin.js"></script>
+<script type="module" src="student-comprehensive-report.js"></script>
+<script type="module" src="daily-ops-admin.js?v=20261114-stage3"></script>
+<script type="module" src="exam-answer-report.js"></script>
+<script type="module" src="vodafone-payments-admin.js?v=20261105-finance2"></script>
+<script type="module" src="library-subscriptions-admin.js"></script>
+<script type="module" src="../admin-switcher.js"></script>
+
+<!-- متجر زاد المعرفة: إضافة مستقلة لا تمس وظائف الأكاديمية -->
+<a href="../../store/admin.html" class="zad-store-access" aria-label="متجر زاد المعرفة">🛍️ إدارة المتجر</a>
+<style>
+/* زر متجر زاد المعرفة: أعلى زر المشاركة في الناحية اليسرى */
+.zad-store-access{
+  position:fixed!important;
+  left:20px!important;
+  right:auto!important;
+  bottom:67px!important;
+  z-index:8000;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  background:#e9bd40;
+  color:#0c203b!important;
+  border:2px solid #f7d878;
+  border-radius:999px;
+  padding:11px 16px;
+  font-family:Cairo,Tajawal,sans-serif;
+  font-weight:900;
+  box-shadow:0 6px 25px #0008;
+  text-decoration:none;
+  max-width:calc(100vw - 24px);
+}
+.zad-store-access:hover{filter:brightness(1.07)}
+@media(max-width:900px){
+  .zad-store-access{left:15px!important;right:auto!important;bottom:63px!important}
+}
+@media(max-width:600px){
+  .zad-store-access{left:12px!important;right:auto!important;bottom:60px!important;padding:9px 12px;font-size:12px}
+}
+</style>
+<a href="remove-teacher-record.html" title="حذف سجل فاطمة أشرف من Firebase" style="position:fixed;bottom:12px;right:12px;z-index:101;background:#b48b25;color:#071629;border-radius:10px;padding:6px 12px;font-size:12px">تنظيف سجل المعلمة المحذوفة</a></body>
 </html>

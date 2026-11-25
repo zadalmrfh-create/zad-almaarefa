@@ -1,4 +1,5 @@
 import {getPreviewContext} from '../admin-preview-core.js';
+import {studentErrorMessage} from './student-navigation-core.js';
 import {amountPaid,amountRemaining,money} from '../payment-utils.js';
 import {advanceSnapshot} from '../advance-credit.js';
 import { auth, db } from '../../firebase-config.js';
@@ -16,8 +17,8 @@ let attendanceLoadError = '';
 let paymentsLoadError = '';
 let dashboardGeneration = 0;
 function describeLoadError(error, label) {
-  if (error?.code === 'permission-denied') return `تعذر قراءة ${label}: صلاحيات Firebase لا تسمح للحساب الحالي بالاطلاع على السجلات. تأكد من تسجيل الدخول بحساب الطالب الصحيح، وراجع قواعد Firestore.`;
-  return `تعذر تحميل ${label}: ${error?.code || error?.message || 'خطأ غير معروف'}. حاول التحديث.`;
+  console.warn('Student data load failed:', label, error);
+  return studentErrorMessage(error, label);
 }
 async function studentDataRequest(fn) {
   let timer;
@@ -41,14 +42,7 @@ function dateKey(value){const d=toDate(value);return d?d.getTime():0;}
 function percent(part,total){return total?Math.round((part/total)*100):0;}
 function setStatus(message, ok=false){if(!statusBox)return;statusBox.textContent=message;statusBox.className=ok?'notice success':'notice';statusBox.style.display='block';}
 
-function initTabs(){
-  document.querySelectorAll('.student-tab').forEach(btn=>btn.addEventListener('click',()=>openTab(btn.dataset.studentTab)));
-}
-function openTab(name){
-  document.querySelectorAll('.student-tab').forEach(btn=>btn.classList.toggle('active',btn.dataset.studentTab===name));
-  document.querySelectorAll('.student-panel').forEach(panel=>panel.classList.toggle('active',panel.dataset.studentPanel===name));
-  window.scrollTo({top:0,behavior:'smooth'});
-}
+// Navigation is initialized independently in student-navigation.js, including deep links.
 
 function fill(p={}){
   profile=p;
@@ -90,12 +84,12 @@ async function loadDashboardData(){
   libraryCount=libR.status==='fulfilled'?libR.value.size:0;
   results.filter(x=>x.status==='rejected').forEach(x=>console.warn('تعذر تحميل جزء من لوحة الطالب:',x.reason));
   renderDashboard();
-  if($('studentLinkedAccount'))$('studentLinkedAccount').textContent='حسابك المرتبط بالسجلات: '+(profile.fullName||profile.name||'طالب')+' · '+(profile.email||auth.currentUser?.email||'')+' · UID: '+uid;
+  if($('studentLinkedAccount'))$('studentLinkedAccount').textContent='السجلات الخاصة بـ '+(profile.fullName||profile.name||'طالب')+' · '+(profile.email||auth.currentUser?.email||'');
   if(loadStatus){
     loadStatus.textContent=[attendanceLoadError,paymentsLoadError].filter(Boolean).join(' | ')
       || (attendance.length||studentPayments.length
         ? '✅ تم تحديث سجلاتك المسجلة بواسطة الإدارة.'
-        : 'لا تظهر سجلات مرتبطة بحسابك الحالي. إذا سجّل الأدمن حصصًا باسمك، اطلب منه التأكد أن الحساب المختار هو نفس حساب دخولك؛ تشابه الأسماء لا يكفي لربط البيانات.');
+        : 'لا توجد سجلات حصص على حسابك حتى الآن. لو كنت حضرت حصة بالفعل، تواصل مع الإدارة لمراجعة تسجيلها.');
   }
 }
 
@@ -181,7 +175,13 @@ function renderNotifications(){
     const unread=!(Array.isArray(n.readBy)&&n.readBy.includes(uid));
     return `<article class="student-notification ${unread?'unread':''}" data-notification-id="${esc(n.id)}"><strong>${esc(n.title||'تنبيه')}</strong><p>${esc(n.message||'')}</p><small>${fmt(n.createdAt,true)}</small>${unread?'<div style="margin-top:9px"><button class="btn" data-read-notification type="button">تمت القراءة</button></div>':''}</article>`;
   }).join(''):'<div class="notice">لا توجد تنبيهات.</div>';
-  list.querySelectorAll('[data-notification-id]').forEach(card=>card.querySelector('[data-read-notification]')?.addEventListener('click',()=>markRead(card.dataset.notificationId)));
+  list.querySelectorAll('[data-notification-id]').forEach(card=>card.querySelector('[data-read-notification]')?.addEventListener('click',async event=>{
+    const button=event.currentTarget;button.disabled=true;
+    const status=$('studentNotificationStatus');if(status)status.textContent='';
+    try{await markRead(card.dataset.notificationId);}
+    catch(error){console.warn('Unable to mark notification read:',error);if(status)status.textContent=studentErrorMessage(error,'تحديث التنبيه');}
+    finally{if(button.isConnected)button.disabled=false;}
+  }));
 }
 async function markRead(id){
   await updateDoc(doc(db,'notifications',id),{readBy:arrayUnion(uid)});
@@ -207,7 +207,7 @@ $('profileForm')?.addEventListener('submit',async event=>{
     await updateDoc(doc(db,'users',uid),data);profile={...profile,...data};setStatus('تم حفظ بيانات الملف الشخصي بنجاح ✅',true);
     const nameElement=document.querySelector('[data-name]');if(nameElement)nameElement.textContent=data.fullName;
     if($('profileLocationSummary'))$('profileLocationSummary').textContent=`${data.country} — ${data.city}`;
-  }catch(error){console.error('PROFILE_SAVE_ERROR:',error);let message=error?.message||'تعذر حفظ البيانات.';if(error?.code==='permission-denied')message='تم رفض حفظ البيانات من Firebase Rules.';setStatus(message);}
+  }catch(error){console.error('PROFILE_SAVE_ERROR:',error);setStatus(studentErrorMessage(error,'حفظ الملف الشخصي'));}
   finally{if(saveButton){saveButton.disabled=false;saveButton.textContent='💾 حفظ البيانات';}}
 });
 
@@ -215,21 +215,26 @@ $('passwordForm')?.addEventListener('submit',async event=>{
   event.preventDefault();const password=$('newPassword')?.value||'',confirmation=$('confirmPassword')?.value||'',box=$('passwordStatus');
   if(password.length<6||password!==confirmation){if(box){box.textContent=password.length<6?'كلمة المرور يجب ألا تقل عن 6 أحرف.':'كلمتا المرور غير متطابقتين.';box.style.display='block';}return;}
   try{await updatePassword(auth.currentUser,password);if(box){box.textContent='تم تغيير كلمة المرور بنجاح.';box.className='notice success';box.style.display='block';}event.target.reset();}
-  catch(error){if(box){box.textContent=error.code==='auth/requires-recent-login'?'لأسباب أمنية، سجّل الدخول مرة أخرى ثم غيّر كلمة المرور.':(error.message||'تعذر تغيير كلمة المرور.');box.style.display='block';}}
+  catch(error){console.warn('Unable to update student password:',error);if(box){box.textContent=studentErrorMessage(error,'تغيير كلمة المرور');box.style.display='block';}}
 });
 
-$('markAllStudentNotifications')?.addEventListener('click',()=>markAllRead().catch(console.error));
-initTabs();
+$('markAllStudentNotifications')?.addEventListener('click',async event=>{
+  const button=event.currentTarget;button.disabled=true;
+  const status=$('studentNotificationStatus');if(status)status.textContent='';
+  try{await markAllRead();if(status)status.textContent='تم تحديد التنبيهات كمقروءة.';}
+  catch(error){console.warn('Unable to mark all notifications read:',error);if(status)status.textContent='تعذر تحديث بعض التنبيهات. اضغط تحديث القائمة ثم أعد المحاولة.';}
+  finally{button.disabled=false;}
+});
 $('studentFinanceRefresh')?.addEventListener('click',()=>{loadDashboardData().catch(console.error);window.dispatchEvent(new Event('zad:refresh-student-payment-section'));});
 $('zadCopyStudentUid')?.addEventListener('click',async()=>{
   const button=$('zadCopyStudentUid');
-  if(!uid){if($('studentFinanceLoadStatus'))$('studentFinanceLoadStatus').textContent='لا يوجد معرّف UID متاح قبل تسجيل الدخول.';return;}
+  if(!uid){if($('studentFinanceLoadStatus'))$('studentFinanceLoadStatus').textContent='سجّل الدخول أولًا لنسخ رقم حسابك للدعم.';return;}
   try {
     await navigator.clipboard.writeText(uid);
-    button.textContent='✅ تم نسخ UID';
+    button.textContent='✅ تم نسخ رقم الحساب';
   } catch(e) {
-    // A readable UID is also available in the account-link caption if clipboard is blocked.
-    button.textContent='انسخ UID من النص الظاهر تحت الزر';
+    button.textContent='تعذر النسخ؛ جرّب مرة أخرى';
+    console.warn('Unable to copy student account identifier:',e);
   }
 });
 

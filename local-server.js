@@ -3,9 +3,13 @@ import express from "express";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import app from "./server.js";
+import {verifyPublicTree} from "./scripts/site-files.mjs";
 
 const root = path.dirname(fileURLToPath(import.meta.url));
 const port = Number(process.env.PORT) || 3000;
+// Refuse to preview a stale source copy; npm start rebuilds it automatically.
+try { await verifyPublicTree(root); }
+catch (error) { console.error(error.message + " Run npm run build first."); process.exit(1); }
 
 // Only public files are served. Never expose source, credentials, or dependencies.
 const blockedSegments = new Set(["node_modules", ".git", "books"]);
@@ -19,7 +23,7 @@ app.use((req, res, next) => {
   try { decoded = decodeURIComponent(req.path).toLowerCase(); }
   catch { return res.sendStatus(400); }
   const parts = decoded.split(/[\/\\]/).filter(Boolean);
-  if (parts.some(part => part.startsWith(".") || blockedSegments.has(part) || blockedNames.has(part)) || /\.(?:map|log|bak|sql|env|bat|ps1|sh|md|json)$/i.test(decoded)) {
+  if (parts.some(part => part.startsWith(".") || blockedSegments.has(part) || blockedNames.has(part)) || /\.(?:map|log|bak|sql|env|bat|ps1|sh|md)$/i.test(decoded)) {
     return res.sendStatus(403);
   }
   next();

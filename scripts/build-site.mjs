@@ -1,0 +1,10 @@
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {execFileSync} from 'node:child_process';
+import {createPublicTree} from './site-files.mjs';
+const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
+execFileSync(process.execPath,[path.join(root,'scripts/build-search-index.mjs')],{cwd:root,stdio:'inherit'});
+execFileSync(process.execPath,[path.join(root,'scripts/library-migration-inventory.mjs'),'--write-index'],{cwd:root,stdio:'inherit'});
+const result=await createPublicTree(root);
+console.log(`Built ${result.files.length} website files from the canonical root into public/.`);
+console.log('Private source PDFs, server code, credentials, rules and developer files are not copied.');

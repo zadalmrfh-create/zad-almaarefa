@@ -3,3 +3,7 @@ node_modules/
 .env.*
 !.env.example
 *.log
+
+# Generated website output; edit canonical root files.
+public/
+.public-build-*/

@@ -191,6 +191,46 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    // Library-file management follows the existing Storage owner-only policy.
+    // Do not broaden Storage upload rights merely to match an administrative UI.
+    function isLibraryFileOwner() {
+      return signedIn()
+        && request.auth.token.email == 'maleksameh121@gmail.com'
+        && request.auth.token.email_verified == true;
+    }
+
+    // Legacy URL identities are SHA-256 hashes. Protected mappings never contain
+    // a direct URL, Storage token, source URL, or file path. Only explicit free
+    // classifications carry a public destination. Students cannot enumerate them.
+    match /libraryMigrationMappings/{legacyKey} {
+      function validMapping(data) {
+        return legacyKey.matches('[a-f0-9]{64}')
+          && data.keys().hasOnly(['version','kind','bookId','freeTarget','title','updatedAt','updatedBy'])
+          && data.keys().hasAll(['version','kind','bookId','freeTarget','title','updatedAt','updatedBy'])
+          && data.version == 1
+          && data.kind in ['unclassified','free','protected']
+          && data.title is string && data.title.size() >= 2 && data.title.size() <= 180
+          && data.bookId is string && data.freeTarget is string
+          && data.updatedAt == request.time && data.updatedBy == request.auth.uid
+          && (
+            (data.kind == 'unclassified' && data.bookId == '' && data.freeTarget == '')
+            || (data.kind == 'free' && data.bookId == ''
+                && data.freeTarget.size() <= 2048 && data.freeTarget.matches('https?://[^ @]+'))
+            || (data.kind == 'protected' && data.freeTarget == ''
+                && data.bookId.matches('[a-zA-Z0-9_-]{6,150}')
+                && exists(/databases/$(database)/documents/libraryProtectedBooks/$(data.bookId))
+                && get(/databases/$(database)/documents/libraryProtectedBooks/$(data.bookId)).data.published == true)
+          );
+      }
+      allow get: if signedIn() && legacyKey.matches('[a-f0-9]{64}');
+      allow list: if isLibraryFileOwner();
+      allow create: if isLibraryFileOwner() && validMapping(request.resource.data);
+      allow update: if isLibraryFileOwner() && validMapping(request.resource.data)
+        && !(resource.data.kind == 'protected' && request.resource.data.kind == 'unclassified');
+      // Retain a migrated key; deleting it could revive a legacy URL fallback.
+      allow delete: if false;
+    }
+
     // Stage 2: metadata for newly uploaded, protected library PDFs.
     // Legacy external/public URLs remain public until explicitly migrated.
     function librarySubscriptionActive() {
