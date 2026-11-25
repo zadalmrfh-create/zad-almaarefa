@@ -69,9 +69,13 @@
     group.addEventListener('keydown', event => {
       if (event.key === 'Escape' && !menu.hidden) { event.preventDefault(); setOpen(false, true); }
     });
-    group.addEventListener('focusout', () => queueMicrotask(() => {
-      if (!group.contains(document.activeElement)) setOpen(false);
-    }));
+    // A native focusout/blur can run while activeElement is temporarily BODY,
+    // even when the next focused element is a link inside this group.
+    // Wait for the destination's focusin instead, so the menu remains visible
+    // throughout the pointer press and the anchor receives its native click.
+    document.addEventListener('focusin', event => {
+      if (!menu.hidden && !group.contains(event.target)) setOpen(false);
+    });
     document.addEventListener('click', event => { if (!group.contains(event.target)) setOpen(false); });
     window.matchMedia('(max-width:1024px)').addEventListener('change', () => setOpen(false));
     // The mobile drawer keeps its existing independent list of all page links.
