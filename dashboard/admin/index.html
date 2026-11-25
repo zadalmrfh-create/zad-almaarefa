@@ -100,7 +100,26 @@ onAuthStateChanged(auth, async (user) => {
 @media(max-width:520px){.zad-attendance-log-filters{grid-template-columns:minmax(0,1fr)}.zad-attendance-log-filters .zad-attendance-filter-search{grid-column:span 1}.zad-attendance-log-filters #attendanceLogClear{width:100%}}
 </style>
 
-<style>.attendance-partial-payment{background:#e3b934!important;color:#14213a!important;border-color:#e3b934!important}.attendance-unpaid-payment{background:#18283f!important;color:#e4eaf5!important;border-color:#3a4d67!important}</style></head>
+<style>.attendance-partial-payment{background:#e3b934!important;color:#14213a!important;border-color:#e3b934!important}.attendance-unpaid-payment{background:#18283f!important;color:#e4eaf5!important;border-color:#3a4d67!important}</style><style id="zad-personal-schedule-styles">
+#personalScheduleManagement{scroll-margin-top:92px;min-width:0}
+#personalScheduleManagement [hidden]{display:none!important}
+#personalScheduleManagement label{display:grid;gap:8px;min-width:0;font-size:15px;font-weight:700;color:var(--text,#f5f7fc)}
+#personalScheduleManagement input,#personalScheduleManagement select{box-sizing:border-box;width:100%;min-width:0;min-height:46px;padding:12px;border:1px solid #53647d;border-radius:10px;background:var(--bg,#101a2b);color:var(--text,#fff);font:inherit}
+#personalScheduleManagement input:focus-visible,#personalScheduleManagement select:focus-visible{outline:2px solid #dfbb4d;outline-offset:2px}
+#personalScheduleManagement input::placeholder{color:var(--muted,#aebdd0);opacity:1}
+#personalScheduleManagement .zad-schedule-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:20px 0;padding:18px;border:1px solid #53647d;border-radius:12px}
+#personalScheduleManagement .zad-schedule-wide{grid-column:1/-1}
+#personalScheduleManagement .btn{min-height:42px;font:inherit;font-weight:700}
+#personalScheduleManagement #personalScheduleStatus{min-height:24px;color:var(--text,#f5f7fc);line-height:1.7}
+#personalScheduleManagement .zad-today-list{list-style:none;display:grid;gap:12px;padding:0}
+#personalScheduleManagement .zad-today-list li{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;padding:14px;border:1px solid #53647d;border-radius:12px;overflow-wrap:anywhere}
+#personalScheduleManagement .zad-today-list li small{display:block;margin-top:6px;color:var(--muted,#c2cddd)}
+#contentManagement #contentFields input,#contentManagement #contentFields textarea{box-sizing:border-box;width:100%;min-height:44px;padding:11px 13px;background:var(--bg,#101a2b);color:var(--text,#fff);border:1px solid #53647d;border-radius:10px;font:inherit}
+#contentManagement #contentFields textarea{min-height:90px;resize:vertical}
+#contentManagement #contentFields input::placeholder,#contentManagement #contentFields textarea::placeholder{color:var(--muted,#b6c4d5);opacity:1}
+@media(max-width:650px){#personalScheduleManagement .zad-schedule-form{grid-template-columns:minmax(0,1fr);padding:12px}}
+</style>
+</head>
 
 
 <body>
@@ -206,6 +225,7 @@ onAuthStateChanged(auth, async (user) => {
         <a class="admin-quick-link" href="#platformAnalytics"><span>📊</span><strong>الإحصائيات</strong><small>أرقام المنصة</small></a>
         <a class="admin-quick-link" href="#usersManagement"><span>👥</span><strong>المستخدمون</strong><small>إدارة الحسابات</small></a>
         <a class="admin-quick-link" href="#zadVodafoneAdminPanel"><span>💳</span><strong>المدفوعات</strong><small>كشف الطالب ومراجعة التحويلات</small></a>
+        <a class="admin-quick-link" href="#personalScheduleManagement"><span>📅</span><strong>جداول الطلاب</strong><small>إضافة وتعديل حصص كل طالب</small></a>
         <a class="admin-quick-link" href="#bookingsManagement"><span>📅</span><strong>الحجوزات</strong><small>طلبات وتقارير</small></a>
         <a class="admin-quick-link" href="#codeExamsManagement"><span>🧑‍💻</span><strong>امتحانات بالكود</strong><small>إضافة ونشر</small></a>
         <a class="admin-quick-link" href="#codeExamResultsSection"><span>📘</span><strong>نتائج الامتحانات</strong><small>درجات وتقارير</small></a>
@@ -551,6 +571,28 @@ onAuthStateChanged(auth, async (user) => {
       <div id="libraryDownloadStatus" style="margin-top:10px;color:var(--muted)"></div>
     </section>
 
+    <section class="card" id="personalScheduleManagement" dir="rtl" aria-labelledby="personalScheduleTitle">
+      <h2 id="personalScheduleTitle">📅 جداول الطلاب</h2>
+      <p>اختار حساب الطالب، ثم أضف مواعيد حصصه الخاصة. الحصص تظهر لصاحب الحساب في جدوله فقط، ولا تُسجَّل كحضور رسمي بمجرد إضافتها.</p>
+      <label class="zad-schedule-student" for="personalScheduleStudent">اختر الطالب
+        <select id="personalScheduleStudent" disabled><option value="">جارٍ تحميل قائمة الطلاب…</option></select>
+      </label>
+      <form id="personalScheduleForm" class="zad-schedule-form" hidden>
+        <label>عنوان الحصة <input name="title" type="text" required maxlength="150" placeholder="مثال: شرح المضارع البسيط"></label>
+        <label>المادة <input name="subject" type="text" required maxlength="100" placeholder="مثال: اللغة الإنجليزية"></label>
+        <label>اسم المعلم (اختياري) <input name="teacherName" type="text" maxlength="100" placeholder="اسم المعلم"></label>
+        <label>التاريخ والوقت (بتوقيت القاهرة) <input name="date" type="datetime-local" required step="60"></label>
+        <label class="zad-schedule-wide">رابط الحصة (اختياري) <input name="meetUrl" type="url" maxlength="1000" dir="ltr" placeholder="https://meet.google.com/..."></label>
+        <div class="actions zad-schedule-wide">
+          <button type="submit" id="personalScheduleSave" class="btn gold">أضف الحصة</button>
+          <button type="button" id="personalScheduleCancel" class="btn" hidden>إلغاء التعديل</button>
+        </div>
+      </form>
+      <p id="personalScheduleStatus" role="status" aria-live="polite">اختار حساب طالب لعرض جدوله.</p>
+      <h3>الحصص المسجلة للطالب</h3>
+      <div id="personalScheduleList"></div>
+    </section>
+
     <!-- =====================================================
          CONTENT MANAGEMENT
     ====================================================== -->
@@ -566,8 +608,7 @@ onAuthStateChanged(auth, async (user) => {
 
 
       <p>
-        إضافة وتعديل وحذف وإظهار أو إخفاء الأحداث وطاقم التدريس والطلاب المتميزين،
-        وإدارة كتب المكتبة العامة ومكتبة التعليم الأزهري.
+        إضافة وتعديل وحذف وإظهار أو إخفاء الأحداث وطاقم التدريس والطلاب المتميزين.
       </p>
 
 
@@ -605,24 +646,6 @@ onAuthStateChanged(auth, async (user) => {
           type="button"
         >
           الطلاب المتميزون
-        </button>
-
-
-        <button
-          class="btn"
-          data-content-tab="libraryBooks"
-          type="button"
-        >
-          المكتبة العامة
-        </button>
-
-
-        <button
-          class="btn"
-          data-content-tab="azharBooks"
-          type="button"
-        >
-          مكتبة التعليم الأزهري
         </button>
 
       </div>
@@ -3439,13 +3462,7 @@ const contentTypes = {
     'طاقم التدريس',
 
   featuredStudents:
-    'الطلاب المتميزون',
-
-  libraryBooks:
-    'المكتبة العامة',
-
-  azharBooks:
-    'مكتبة التعليم الأزهري'
+    'الطلاب المتميزون'
 
 };
 
@@ -3567,32 +3584,6 @@ const fieldSets = {
       'عدد الطلاب',
       'text'
     ]
-
-  ],
-
-
-  libraryBooks: [
-
-    ['title', 'اسم الكتاب', 'text'],
-    ['grade', 'الصف / المرحلة', 'text'],
-    ['subject', 'المادة', 'text'],
-    ['category', 'التصنيف', 'text'],
-    ['icon', 'الأيقونة', 'text'],
-    ['description', 'وصف الكتاب', 'textarea'],
-    ['url', 'رابط الكتاب', 'text']
-
-  ],
-
-
-  azharBooks: [
-
-    ['title', 'اسم الكتاب', 'text'],
-    ['grade', 'الصف / المرحلة', 'text'],
-    ['subject', 'المادة', 'text'],
-    ['category', 'التصنيف', 'text'],
-    ['icon', 'الأيقونة', 'text'],
-    ['description', 'وصف الكتاب', 'textarea'],
-    ['url', 'رابط الكتاب', 'text']
 
   ],
 
@@ -3964,7 +3955,7 @@ async function loadContent() {
   }
 }
 function switchContentTab(tab) {
-  if (!(tab in contentTypes)) return;
+  if (!Object.hasOwn(contentTypes, tab)) return;
   activeContentType = tab;
   if (englishProfileButton) englishProfileButton.hidden = true;
   editingContentId = null;
@@ -4061,6 +4052,7 @@ guard('admin', async () => {
 <script type="module" src="admin-activity-alerts.js"></script>
 <script type="module" src="admin-enhancements.js"></script>
 <script type="module" src="admin-workspace.js?v=20261112-lecture-ratings1"></script>
+<script type="module" src="personal-schedule-admin.js?v=20261125-schedule-form"></script>
 <script type="module" src="attendance-admin.js?v=20261116-english"></script>
 <link rel="stylesheet" href="lecture-reviews-share.css?v=20261113-share2">
 <script type="module" src="lecture-reviews-admin.js?v=20261113-share2"></script>
